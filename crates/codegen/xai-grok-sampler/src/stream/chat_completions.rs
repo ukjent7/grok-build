@@ -69,6 +69,10 @@ pub fn stream_chat_completions<'a>(
 
         let mut content_acc = String::new();
         let mut reasoning_acc = String::new();
+        // Keep track of field presence separately from text. Some providers
+        // emit an explicit empty reasoning_content delta for a tool call; if
+        // we only look at reasoning_acc, that protocol field is silently lost.
+        let mut reasoning_field_seen = false;
         // Tool call deltas keyed by positional index. Each entry is
         // (id, name, arguments_buffer); the first chunk for an index
         // carries id+name and starts the arguments buffer, subsequent
@@ -174,24 +178,25 @@ pub fn stream_chat_completions<'a>(
                     };
                 }
 
-                if let Some(thought) = delta.reasoning_content
-                    && !thought.is_empty()
-                {
-                    if !first_token_emitted {
-                        first_token_emitted = true;
-                        yield SamplingEvent::FirstToken {
+                if let Some(thought) = delta.reasoning_content {
+                    reasoning_field_seen = true;
+                    if !thought.is_empty() {
+                        if !first_token_emitted {
+                            first_token_emitted = true;
+                            yield SamplingEvent::FirstToken {
+                                request_id: request_id.clone(),
+                            };
+                        }
+                        chunk_has_content = true;
+                        chunk_index += 1;
+                        reasoning_acc.push_str(&thought);
+                        yield SamplingEvent::ChannelToken {
                             request_id: request_id.clone(),
+                            channel: SamplingChannel::Reasoning,
+                            text: thought,
+                            chunk_index,
                         };
                     }
-                    chunk_has_content = true;
-                    chunk_index += 1;
-                    reasoning_acc.push_str(&thought);
-                    yield SamplingEvent::ChannelToken {
-                        request_id: request_id.clone(),
-                        channel: SamplingChannel::Reasoning,
-                        text: thought,
-                        chunk_index,
-                    };
                 }
 
                 for tc_delta in delta.tool_calls.into_iter() {
@@ -263,7 +268,11 @@ pub fn stream_chat_completions<'a>(
         // Build the trailing Assistant + any reasoning sibling.
         let mut items: Vec<ConversationItem> = Vec::new();
         if first_choice_seen {
-            if !reasoning_acc.is_empty() {
+            // A tool-call assistant message must carry the reasoning field
+            // when replayed to thinking-mode providers such as DeepSeek. Keep
+            // the real text when present; otherwise retain the field as an
+            // empty value instead of dropping it with the empty content.
+            if reasoning_field_seen || !reasoning_acc.is_empty() || !tool_calls.is_empty() {
                 items.push(ConversationItem::Reasoning(
                     xai_grok_sampling_types::synthesized_reasoning_item(reasoning_acc),
                 ));
@@ -576,6 +585,11 @@ mod tests {
                 assert_eq!(calls[0].id.as_ref(), "call_abc");
                 assert_eq!(calls[0].name, "do_thing");
                 assert_eq!(calls[0].arguments.as_ref(), "{\"x\":1}");
+                assert_eq!(
+                    response.reasoning_items().count(),
+                    1,
+                    "tool-call responses retain a reasoning sibling even when its text is empty"
+                );
                 // Tool calls force ToolCalls stop reason.
                 assert_eq!(response.stop_reason, Some(StopReason::ToolCalls));
             }
