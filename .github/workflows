@@ -1,0 +1,95 @@
+name: Build Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    paths:
+      - "**.rs"
+      - "**.toml"
+      - "Cargo.lock"
+      - "bin/protoc"
+      - ".github/workflows/build-windows.yml"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+  RUST_BACKTRACE: "1"
+
+jobs:
+  build-windows:
+    name: Build Windows x86_64
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Rust 1.94
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.94.0
+          components: rustfmt, clippy
+
+      # bin/protoc is a Linux/macOS DotSlash wrapper in this repository.
+      # On Windows, install a native protoc and let the build helper discover
+      # it through PATH.
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "29.3"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: windows-rust-${{ runner.arch }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml') }}
+          restore-keys: |
+            windows-rust-${{ runner.arch }}-
+
+      - name: Verify toolchain
+        shell: pwsh
+        run: |
+          rustc --version
+          cargo --version
+          protoc --version
+
+      - name: Test sampling types
+        run: cargo test -p xai-grok-sampling-types --lib
+
+      - name: Test sampler
+        run: cargo test -p xai-grok-sampler --lib
+
+      - name: Build Grok Build
+        run: cargo build -p xai-grok-pager-bin --release
+
+      - name: Package artifact
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $binary = "target\release\xai-grok-pager.exe"
+          if (!(Test-Path -LiteralPath $binary)) {
+            throw "Build output not found: $binary"
+          }
+
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          Compress-Archive -Force -Path $binary -DestinationPath "artifacts\grok-build-windows-x86_64.zip"
+
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: grok-build-windows-x86_64
+          path: artifacts/grok-build-windows-x86_64.zip
+          if-no-files-found: error
+          retention-days: 14
