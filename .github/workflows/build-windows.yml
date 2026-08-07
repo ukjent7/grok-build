@@ -47,6 +47,16 @@ jobs:
           version: "29.3"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Select native protoc
+        shell: pwsh
+        run: |
+          $protoc = (Get-Command protoc -CommandType Application).Path
+          if (!$protoc) {
+            throw "protoc.exe was not found on PATH"
+          }
+          "PROTOC=$protoc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Using PROTOC=$protoc"
+
       - name: Cache Cargo
         uses: actions/cache@v4
         with:
@@ -66,13 +76,13 @@ jobs:
           protoc --version
 
       - name: Test sampling types
-        run: cargo test -p xai-grok-sampling-types --lib
+        run: cargo test --locked -p xai-grok-sampling-types --lib
 
       - name: Test sampler
-        run: cargo test -p xai-grok-sampler --lib
+        run: cargo test --locked -p xai-grok-sampler --lib
 
       - name: Build Grok Build
-        run: cargo build -p xai-grok-pager-bin --release
+        run: cargo build --locked -p xai-grok-pager-bin --release
 
       - name: Package artifact
         shell: pwsh
