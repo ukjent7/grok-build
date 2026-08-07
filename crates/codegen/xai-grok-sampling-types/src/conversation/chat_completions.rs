@@ -127,6 +127,13 @@ pub fn conversation_item_to_chat_message(item: ConversationItem) -> ChatRequestM
                 })
                 .collect();
 
+            // DeepSeek thinking-mode requires reasoning_content on assistant
+            // messages that contain tool calls. Preserve the field even when
+            // the upstream stream supplied no visible reasoning text; a
+            // missing field is what causes the follow-up request to be
+            // rejected after the tool result is appended.
+            let reasoning_content = (!tool_calls.is_empty()).then(|| String::new());
+
             ChatRequestMessage {
                 role: Role::Assistant,
                 content: MessageContent::Text(a.content.as_ref().to_owned()),
@@ -134,7 +141,7 @@ pub fn conversation_item_to_chat_message(item: ConversationItem) -> ChatRequestM
                 tool_calls,
                 tool_call_id: None,
                 model_id: a.model_id,
-                reasoning_content: None,
+                reasoning_content,
             }
         }
         ConversationItem::ToolResult(t) => {
@@ -191,10 +198,12 @@ pub fn conversation_item_to_chat_message(item: ConversationItem) -> ChatRequestM
 pub fn conversation_to_chat_messages(items: Vec<ConversationItem>) -> Vec<ChatRequestMessage> {
     let mut out: Vec<ChatRequestMessage> = Vec::with_capacity(items.len());
     let mut pending_reasoning: Vec<String> = Vec::new();
+    let mut pending_reasoning_present = false;
 
     for item in items {
         match item {
             ConversationItem::Reasoning(r) => {
+                pending_reasoning_present = true;
                 let text = reasoning_item_text(&r);
                 if !text.is_empty() {
                     pending_reasoning.push(text);
@@ -202,9 +211,10 @@ pub fn conversation_to_chat_messages(items: Vec<ConversationItem>) -> Vec<ChatRe
             }
             ConversationItem::Assistant(_) => {
                 let mut msg = conversation_item_to_chat_message(item);
-                if !pending_reasoning.is_empty() {
+                if pending_reasoning_present {
                     msg.reasoning_content = Some(pending_reasoning.join("\n"));
                     pending_reasoning.clear();
+                    pending_reasoning_present = false;
                 }
                 out.push(msg);
             }
@@ -215,6 +225,7 @@ pub fn conversation_to_chat_messages(items: Vec<ConversationItem>) -> Vec<ChatRe
             }
             other => {
                 pending_reasoning.clear();
+                pending_reasoning_present = false;
                 out.push(conversation_item_to_chat_message(other));
             }
         }
