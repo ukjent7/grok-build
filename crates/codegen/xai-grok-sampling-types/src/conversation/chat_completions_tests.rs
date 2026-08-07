@@ -154,6 +154,11 @@ fn test_tool_calls_roundtrip_to_chat_request() {
 
     let chat_msg = conversation_item_to_chat_message(item.clone());
     assert_eq!(chat_msg.tool_calls.len(), 1);
+    assert_eq!(
+        chat_msg.reasoning_content.as_deref(),
+        Some(""),
+        "tool-call assistant messages must retain the reasoning_content field"
+    );
     assert_eq!(chat_msg.tool_calls[0].id, Some("call_abc123".to_string()));
     assert_eq!(chat_msg.tool_calls[0].function.name, "read_file");
     assert_eq!(
@@ -171,6 +176,26 @@ fn test_tool_calls_roundtrip_to_chat_request() {
     assert_eq!(
         a.tool_calls[0].arguments.as_ref(),
         r#"{"path": "/foo.txt", "limit": 100}"#
+    );
+}
+
+#[test]
+fn tool_call_reasoning_sibling_overrides_empty_compatibility_fallback() {
+    let tool_call = ToolCall {
+        id: "call_reasoning".into(),
+        name: "read_file".to_string(),
+        arguments: "{}".into(),
+    };
+    let items = vec![
+        reasoning_sibling("rs_1", "real streamed reasoning", None),
+        ConversationItem::assistant_tool_calls(vec![tool_call]),
+        ConversationItem::tool_result("call_reasoning", "ok"),
+    ];
+
+    let msgs = conversation_to_chat_messages(items);
+    assert_eq!(
+        msgs[0].reasoning_content.as_deref(),
+        Some("real streamed reasoning")
     );
 }
 
