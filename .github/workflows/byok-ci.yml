@@ -77,5 +77,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       # Substring filters: agent::config covers config.rs, config_tests and
       # config_model_override_parse; model_providers covers the provider layer.
+      # Filters go after `--` (cargo itself takes a single TESTNAME positional).
       - name: Test shell config layers
-        run: cargo test -p xai-grok-shell agent::config agent::model_providers
+        run: cargo test -p xai-grok-shell -- agent::config agent::model_providers
