@@ -763,6 +763,9 @@ async fn read_parent_sampling_config(
                 &cfg.api_backend,
                 &cfg.base_url,
             );
+            // Same trusted-URL rule as session setup (cfg here is the
+            // chat-state SamplingConfig, which carries no byok flag).
+            let byok_compat = crate::agent::config::byok_compat_for_base_url(&cfg.base_url);
             let inherited = xai_grok_sampler::SamplerConfig {
                 api_key: creds.api_key,
                 base_url: cfg.base_url,
@@ -804,7 +807,7 @@ async fn read_parent_sampling_config(
                     .models_manager
                     .model_compaction_at_tokens(catalog_model_id.0.as_ref()),
                 doom_loop_recovery: ctx.sampling_config.doom_loop_recovery,
-                byok_compat: cfg.byok_compat,
+                byok_compat,
                 header_injector: ctx.sampling_config.header_injector.clone(),
             };
             let model_id = ctx.model_id.clone();
