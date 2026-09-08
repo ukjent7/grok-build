@@ -33,28 +33,28 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
+  # Single source of steps for both build jobs below (YAML anchor).
+  # Per-platform names travel via ARTIFACT/BIN env, never matrix, so the
+  # macOS job can reuse them without a matrix of its own.
   build:
     name: build (${{ matrix.os }})
-    # Tags always build all platforms; manual runs default to linux+windows.
-    if: ${{ matrix.full_only != true || github.event_name == 'push' || inputs.platforms == 'all' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
     strategy:
-      # Windows is best-effort upstream; don't kill linux/mac if it fails.
+      # Windows is best-effort upstream; don't kill linux if it fails.
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             artifact: xai-grok-pager-linux-x64
             bin: xai-grok-pager
-          - os: macos-latest
-            artifact: xai-grok-pager-macos-arm64
-            bin: xai-grok-pager
-            full_only: true
           - os: windows-latest
             artifact: xai-grok-pager-windows-x64
             bin: xai-grok-pager.exe
-    steps:
+    env:
+      ARTIFACT: ${{ matrix.artifact }}
+      BIN: ${{ matrix.bin }}
+    steps: &build-steps
       - uses: actions/checkout@v7
 
       # Proto codegen is mandatory in CI (see xai-proto-build find_protoc).
@@ -107,20 +107,31 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          cp "target/ci-release/${{ matrix.bin }}" "dist/${{ matrix.artifact }}"
+          cp "target/ci-release/${{ env.BIN }}" "dist/${{ env.ARTIFACT }}"
 
       - name: Upload binary
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.artifact }}
-          path: dist/${{ matrix.artifact }}
+          name: ${{ env.ARTIFACT }}
+          path: dist/${{ env.ARTIFACT }}
           if-no-files-found: error
           retention-days: 14
+
+  # macOS is 2x slower: tags always build it, manual runs only on request.
+  build-macos:
+    name: build (macos-latest)
+    if: ${{ github.event_name == 'push' || inputs.platforms == 'all' }}
+    runs-on: macos-latest
+    timeout-minutes: 120
+    env:
+      ARTIFACT: xai-grok-pager-macos-arm64
+      BIN: xai-grok-pager
+    steps: *build-steps
 
   release:
     name: publish GitHub Release
     if: startsWith(github.ref, 'refs/tags/byok-v')
-    needs: [build]
+    needs: [build, build-macos]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
