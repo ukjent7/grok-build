@@ -511,4 +511,55 @@ mod tests {
         assert!(json.get("effort").is_none(), "effort omitted when None");
         assert_eq!(json["format"]["type"], "json_schema");
     }
+
+    /// Canonical Anthropic SSE sequence a third-party Messages gateway replays
+    /// verbatim (docs example shapes, including the `ping` keep-alive).
+    /// Every event must parse; runs in CI (`byok-ci.yml`).
+    #[test]
+    fn standard_anthropic_stream_sequence_parses() {
+        let parse = |raw: &str| -> MessageStreamEvent {
+            serde_json::from_str(raw).unwrap_or_else(|e| panic!("event must parse: {raw} ({e})"))
+        };
+        match parse(
+            r#"{"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","content":[],"model":"third-party-model","stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":25,"output_tokens":1}}}"#,
+        ) {
+            MessageStreamEvent::MessageStart { message } => {
+                assert_eq!(message.usage.input_tokens, 25);
+            }
+            other => panic!("expected MessageStart, got {other:?}"),
+        }
+        match parse(
+            r#"{"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}"#,
+        ) {
+            MessageStreamEvent::ContentBlockStart { index, .. } => assert_eq!(index, 0),
+            other => panic!("expected ContentBlockStart, got {other:?}"),
+        }
+        assert!(matches!(parse(r#"{"type":"ping"}"#), MessageStreamEvent::Ping));
+        match parse(
+            r#"{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hi"}}"#,
+        ) {
+            MessageStreamEvent::ContentBlockDelta { delta, .. } => match delta {
+                StreamDelta::TextDelta { text } => assert_eq!(text, "Hi"),
+                other => panic!("expected TextDelta, got {other:?}"),
+            },
+            other => panic!("expected ContentBlockDelta, got {other:?}"),
+        }
+        assert!(matches!(
+            parse(r#"{"type":"content_block_stop","index":0}"#),
+            MessageStreamEvent::ContentBlockStop { .. }
+        ));
+        match parse(
+            r#"{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":15}}"#,
+        ) {
+            MessageStreamEvent::MessageDelta { delta, usage } => {
+                assert!(matches!(delta.stop_reason, Some(StopReason::EndTurn)));
+                assert_eq!(usage.output_tokens, 15);
+            }
+            other => panic!("expected MessageDelta, got {other:?}"),
+        }
+        assert!(matches!(
+            parse(r#"{"type":"message_stop"}"#),
+            MessageStreamEvent::MessageStop
+        ));
+    }
 }

@@ -163,6 +163,13 @@ fn extract_context_total(value: &serde_json::Value) -> Option<u32> {
     Some(i.saturating_add(o))
 }
 
+/// Drop hosted-tool entries a strict third-party Responses endpoint rejects.
+/// `web_search` is standard OpenAI; `x_search` is xAI-only and 400s elsewhere as an
+/// unknown tool `type`. Only applied in BYOK mode; first-party keeps everything.
+pub(crate) fn retain_byok_hosted_tool_entries(entries: &mut Vec<serde_json::Value>) {
+    entries.retain(|t| t.get("type").and_then(|t| t.as_str()) != Some("x_search"));
+}
+
 /// Splice the raw-JSON hosted-tool entries for `web_search` and `x_search` into a serialized Responses request body's `tools` array.
 /// `x_search` has no `rs::Tool` variant, and `web_search`'s typed filters cannot carry `excluded_domains`, so both travel as raw JSON.
 /// Neither may also be emitted as a typed `rs::Tool`; the API rejects the duplicate.
@@ -2008,7 +2015,10 @@ impl SamplingClient {
         let x_grok_agent_id = request.x_grok_agent_id.clone();
 
         // The hosted tools travel as raw JSON, spliced in after serialization by `splice_extra_tool_entries`, whose doc explains why each one does
-        let extra_tools = xai_grok_sampling_types::extra_tool_entries(&request.hosted_tools);
+        let mut extra_tools = xai_grok_sampling_types::extra_tool_entries(&request.hosted_tools);
+        if self.defaults.byok_compat {
+            retain_byok_hosted_tool_entries(&mut extra_tools);
+        }
 
         let responses_request: rs::CreateResponse = (&request).into();
 
@@ -2044,7 +2054,10 @@ impl SamplingClient {
         let x_grok_agent_id = request.x_grok_agent_id.clone();
 
         // The hosted tools travel as raw JSON, spliced in by `create_response` via `splice_extra_tool_entries`, whose doc explains why
-        let extra_tools = xai_grok_sampling_types::extra_tool_entries(&request.hosted_tools);
+        let mut extra_tools = xai_grok_sampling_types::extra_tool_entries(&request.hosted_tools);
+        if self.defaults.byok_compat {
+            retain_byok_hosted_tool_entries(&mut extra_tools);
+        }
 
         let responses_request: rs::CreateResponse = (&request).into();
 
@@ -3262,5 +3275,131 @@ mod tests {
             event,
             rs::ResponseStreamEvent::ResponseOutputTextDelta(_)
         ));
+    }
+
+    // ===== Third-party (BYOK) standard-protocol verification =====
+    // Simulates what a standard OpenAI-compatible endpoint sends us and what we
+    // send it. Runs in CI (`byok-ci.yml`); no local Rust needed.
+
+    #[test]
+    fn byok_hosted_tool_filter_drops_x_search_keeps_web_search() {
+        let mut entries = vec![
+            serde_json::json!({ "type": "web_search" }),
+            serde_json::json!({ "type": "x_search" }),
+        ];
+        retain_byok_hosted_tool_entries(&mut entries);
+        assert_eq!(entries, vec![serde_json::json!({ "type": "web_search" })]);
+    }
+
+    #[test]
+    fn byok_wire_body_has_no_xai_only_keys() {
+        // Final serialized Responses body for a BYOK endpoint: byok_compat skips
+        // the store/include defaults, the strip pass removes the rest, and the
+        // tool filter drops xAI-only tool types.
+        let mut tools = vec![
+            serde_json::json!({ "type": "web_search" }),
+            serde_json::json!({ "type": "x_search" }),
+        ];
+        retain_byok_hosted_tool_entries(&mut tools);
+        let mut body = serde_json::json!({
+            "model": "third-party-model",
+            "input": [{ "type": "message", "role": "user", "content": "hi" }],
+            "stream": true,
+            "tools": tools,
+            "reasoning": { "effort": null },
+            "prompt_cache_key": "session-123",
+        });
+        strip_byok_response_extensions(&mut body);
+        assert_eq!(
+            body,
+            serde_json::json!({
+                "model": "third-party-model",
+                "input": [{ "type": "message", "role": "user", "content": "hi" }],
+                "stream": true,
+                "tools": [{ "type": "web_search" }],
+            })
+        );
+    }
+
+    #[test]
+    fn standard_responses_lifecycle_events_parse() {
+        // Canonical OpenAI Responses shapes a third-party gateway replays verbatim.
+        let created = r#"{
+            "type": "response.created",
+            "sequence_number": 0,
+            "response": {
+                "id": "resp_1",
+                "object": "response",
+                "created_at": 0,
+                "model": "third-party-model",
+                "status": "in_progress",
+                "output": []
+            }
+        }"#;
+        assert!(matches!(
+            deserialize_response_event(created).expect("created parses"),
+            rs::ResponseStreamEvent::ResponseCreated(_)
+        ));
+
+        let completed = r#"{
+            "type": "response.completed",
+            "sequence_number": 1,
+            "response": {
+                "id": "resp_1",
+                "object": "response",
+                "created_at": 0,
+                "model": "third-party-model",
+                "status": "completed",
+                "output": [],
+                "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 5,
+                    "total_tokens": 15
+                }
+            }
+        }"#;
+        let event = deserialize_response_event(completed).expect("completed parses");
+        let rs::ResponseStreamEvent::ResponseCompleted(e) = event else {
+            panic!("expected ResponseCompleted");
+        };
+        let usage = e.response.usage.expect("usage present");
+        // No context_details: standard totals pass through untouched.
+        assert_eq!(usage.input_tokens, 10);
+        assert_eq!(usage.output_tokens, 5);
+        assert_eq!(usage.total_tokens, 15);
+    }
+
+    #[test]
+    fn standard_chat_chunks_parse() {
+        // Canonical OpenAI Chat Completions chunk shapes.
+        let delta: ChatCompletionChunk = serde_json::from_str(
+            r#"{
+                "id": "chatcmpl-123",
+                "object": "chat.completion.chunk",
+                "created": 1694268190,
+                "model": "third-party-model",
+                "choices": [{
+                    "index": 0,
+                    "delta": { "role": "assistant", "content": "Hello" },
+                    "finish_reason": null
+                }]
+            }"#,
+        )
+        .expect("delta chunk parses");
+        assert_eq!(delta.choices.len(), 1);
+
+        let done: ChatCompletionChunk = serde_json::from_str(
+            r#"{
+                "id": "chatcmpl-123",
+                "object": "chat.completion.chunk",
+                "created": 1694268190,
+                "model": "third-party-model",
+                "choices": [{ "index": 0, "delta": {}, "finish_reason": "stop" }],
+                "usage": { "prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15 }
+            }"#,
+        )
+        .expect("terminal chunk parses");
+        let usage = done.usage.expect("usage present");
+        assert_eq!(usage.total_tokens, 15);
     }
 }
