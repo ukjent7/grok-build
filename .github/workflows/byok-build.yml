@@ -61,16 +61,28 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      # Release profile on purpose: the shell build script only bundles
-      # ripgrep (network download) for release builds.
+      # Windows Defender scans every file cargo writes; excluding the workspace
+      # and cargo home is worth 20-40% on Windows builders. Needs admin, which
+      # GitHub-hosted runners have.
+      - name: Exclude build paths from Windows Defender
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Add-MpPreference -ExclusionPath '${{ github.workspace }}'
+          if ($env:CARGO_HOME) { Add-MpPreference -ExclusionPath $env:CARGO_HOME }
+
+      # ci-release profile on purpose (see Cargo.toml): same codegen as
+      # release, without the incremental bloat. The shell build script only
+      # bundles ripgrep (network download) for release-like builds, and
+      # ci-release inherits release so that still triggers.
       - name: Build release binary
-        run: cargo build -p xai-grok-pager-bin --release
+        run: cargo build -p xai-grok-pager-bin --profile ci-release
 
       - name: Upload binary
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
-          path: target/release/${{ matrix.bin }}
+          path: target/ci-release/${{ matrix.bin }}
           if-no-files-found: error
           retention-days: 14
 

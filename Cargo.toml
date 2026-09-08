@@ -387,6 +387,18 @@ zstd = "0.13"
 incremental = true
 panic = "abort"
 
+# CI-only release profile for cloud builds (see .github/workflows/byok-build.yml).
+# Same codegen as `release`, minus everything that slows one-shot CI builds or
+# bloats the shared 10 GB GitHub cache: no incremental artifacts, pinned
+# codegen-units, no debug info. Functionally identical binary (same opt-level,
+# same panic strategy).
+[profile.ci-release]
+inherits = "release"
+incremental = false
+codegen-units = 16
+debug = false
+lto = false
+
 # Hardened release profile for shipping to end users (alpha + stable).
 # Use `cargo build --profile release-dist` for distribution builds.
 # Not used by default `--release` to avoid slowing down local dev builds (~2.2x).
