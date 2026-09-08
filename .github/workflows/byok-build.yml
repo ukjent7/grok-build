@@ -47,6 +47,9 @@ jobs:
         uses: arduino/setup-protoc@v3
         with:
           version: "28.x"
+          # Unauthenticated api.github.com calls share 60 req/h per runner IP
+          # and Windows runners burn through it; the repo token raises it.
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
