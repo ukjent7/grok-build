@@ -1,0 +1,92 @@
+name: BYOK Build
+
+# Cloud build for machines without local Rust: compiles the release binary
+# and uploads it as a downloadable artifact.
+#
+# - Actions tab -> "BYOK Build" -> "Run workflow": builds main, download
+#   the binary from the run's Artifacts section (rename to `grok`, chmod +x).
+# - Push a tag like `byok-v0.1.0`: same build, plus attaches the binaries
+#   to a published GitHub Release.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "byok-v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      # Windows is best-effort upstream; don't kill linux/mac if it fails.
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: xai-grok-pager-linux-x64
+            bin: xai-grok-pager
+          - os: macos-latest
+            artifact: xai-grok-pager-macos-arm64
+            bin: xai-grok-pager
+          - os: windows-latest
+            artifact: xai-grok-pager-windows-x64
+            bin: xai-grok-pager.exe
+    steps:
+      - uses: actions/checkout@v7
+
+      # Proto codegen is mandatory in CI (see xai-proto-build find_protoc).
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "28.x"
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.98.1
+
+      - uses: Swatinem/rust-cache@v2
+
+      # Release profile on purpose: the shell build script only bundles
+      # ripgrep (network download) for release builds.
+      - name: Build release binary
+        run: cargo build -p xai-grok-pager-bin --release
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: target/release/${{ matrix.bin }}
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/byok-v')
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+      - name: Publish release
+        run: |
+          files=$(find dist -type f)
+          echo "$files"
+          # shellcheck disable=SC2086
+          gh release create "${{ github.ref_name }}" $files \
+            --title "${{ github.ref_name }}" \
+            --notes "BYOK build of grok (${{ github.sha }}). Artifact names carry the platform; rename the binary to \`grok\` to run it."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
