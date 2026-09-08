@@ -9,6 +9,12 @@ name: BYOK Build
 #   to a published GitHub Release.
 on:
   workflow_dispatch:
+    inputs:
+      platforms:
+        description: "Platforms to build (macOS is 2x slower; tags always build all)"
+        type: choice
+        options: [linux-windows, all]
+        default: linux-windows
   push:
     tags:
       - "byok-v*"
@@ -29,6 +35,8 @@ env:
 jobs:
   build:
     name: build (${{ matrix.os }})
+    # Tags always build all platforms; manual runs default to linux+windows.
+    if: ${{ !matrix.full_only || github.event_name == 'push' || inputs.platforms == 'all' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
     strategy:
@@ -42,6 +50,7 @@ jobs:
           - os: macos-latest
             artifact: xai-grok-pager-macos-arm64
             bin: xai-grok-pager
+            full_only: true
           - os: windows-latest
             artifact: xai-grok-pager-windows-x64
             bin: xai-grok-pager.exe
@@ -67,7 +76,12 @@ jobs:
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.11
 
+      # Registry-only: the multi-GB target dir is sccache's job now.
+      # Caching it too kept the 10 GB quota permanently thrashed (writes
+      # failing, restores always missing) for zero benefit.
       - uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
 
       # Windows Defender scans every file cargo writes; excluding the workspace
       # and cargo home is worth 20-40% on Windows builders. Needs admin, which

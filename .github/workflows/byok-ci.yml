@@ -55,7 +55,11 @@ jobs:
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.11
 
+      # Registry-only (see byok-build.yml): target dir caching thrashed
+      # the 10 GB quota for zero hits; sccache carries compilation.
       - uses: Swatinem/rust-cache@v2
+        with:
+          cache-targets: false
 
       # --all-targets also compiles the test/bench targets we edited.
       # Debug profile on purpose: the shell build script skips the
