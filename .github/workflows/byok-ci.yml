@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # xai-grok-tools-api runs proto codegen in its build script;
       # prefer a PATH protoc over the DotSlash-bundled one.
@@ -32,7 +32,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.94.0
+          toolchain: 1.98.1
 
       - uses: Swatinem/rust-cache@v2
 
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install protoc
         uses: arduino/setup-protoc@v3
         with:
@@ -55,7 +55,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.94.0
+          toolchain: 1.98.1
       - uses: Swatinem/rust-cache@v2
       - name: Test sampler
         run: cargo test -p xai-grok-sampler
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install protoc
         uses: arduino/setup-protoc@v3
         with:
@@ -73,7 +73,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.94.0
+          toolchain: 1.98.1
       - uses: Swatinem/rust-cache@v2
       # Substring filters: agent::config covers config.rs, config_tests and
       # config_model_override_parse; model_providers covers the provider layer.
