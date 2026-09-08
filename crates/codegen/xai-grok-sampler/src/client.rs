@@ -102,6 +102,7 @@ pub(crate) fn deserialize_response_event(data: &str) -> Result<rs::ResponseStrea
                 {
                     tools.retain(|t| serde_json::from_value::<rs::Tool>(t.clone()).is_ok());
                 }
+                backfill_usage_details(&mut value);
                 if let Ok(mut event) = serde_json::from_value::<rs::ResponseStreamEvent>(value) {
                     apply_terminal_event_overrides(&mut event, data);
                     return Ok(event);
@@ -203,6 +204,50 @@ fn strip_byok_response_extensions(body: &mut serde_json::Value) {
         obj.remove("reasoning");
     }
     obj.remove("prompt_cache_key");
+}
+
+/// Backfill `usage` detail objects a standard third-party gateway omits.
+/// The fork's `ResponseUsage` requires `input_tokens_details` /
+/// `output_tokens_details`, but they are only token breakdowns — a missing
+/// object means zero, not a broken response.
+fn backfill_usage_details(value: &mut serde_json::Value) {
+    for pointer in ["/response/usage", "/usage"] {
+        if let Some(usage) = value.pointer_mut(pointer).and_then(|v| v.as_object_mut()) {
+            usage
+                .entry("input_tokens_details")
+                .or_insert_with(|| serde_json::json!({ "cached_tokens": 0 }));
+            usage
+                .entry("output_tokens_details")
+                .or_insert_with(|| serde_json::json!({ "reasoning_tokens": 0 }));
+        }
+    }
+}
+
+/// Deserialize a unary Responses body, tolerating standard third-party shapes
+/// the fork's types are stricter than (see `backfill_usage_details`).
+pub(crate) fn deserialize_response_body(bytes: &[u8]) -> Result<rs::Response> {
+    match serde_json::from_slice::<rs::Response>(bytes) {
+        Ok(obj) => Ok(obj),
+        Err(first_err) => {
+            let raw_body = String::from_utf8_lossy(bytes);
+            tracing::error!(
+                error = %first_err,
+                raw_body = %raw_body,
+                "Failed to deserialize rs::Response"
+            );
+            let mut value: serde_json::Value = serde_json::from_slice(bytes)
+                .map_err(|_| SamplingError::Serialization(first_err))?;
+            backfill_usage_details(&mut value);
+            serde_json::from_value::<rs::Response>(value).map_err(|retry_err| {
+                tracing::error!(
+                    error = %retry_err,
+                    raw_body = %raw_body,
+                    "Failed to deserialize rs::Response after sanitize"
+                );
+                SamplingError::Serialization(retry_err)
+            })
+        }
+    }
 }
 
 /// Keep-alive / extension events a third-party Responses implementation may inject
@@ -1353,15 +1398,7 @@ impl SamplingClient {
             });
         }
 
-        let response_obj = serde_json::from_slice::<rs::Response>(&bytes).map_err(|e| {
-            let raw_body = String::from_utf8_lossy(&bytes);
-            tracing::error!(
-                error = %e,
-                raw_body = %raw_body,
-                "Failed to deserialize rs::Response"
-            );
-            SamplingError::Serialization(e)
-        })?;
+        let response_obj = deserialize_response_body(bytes.as_ref())?;
         Ok(response_obj)
     }
 
@@ -3400,6 +3437,30 @@ mod tests {
         )
         .expect("terminal chunk parses");
         let usage = done.usage.expect("usage present");
+        assert_eq!(usage.total_tokens, 15);
+    }
+
+    #[test]
+    fn standard_unary_response_without_usage_details_parses() {
+        // A standard third-party unary body omits the breakdown objects our
+        // fork's ResponseUsage requires; they backfill as zero, not an error.
+        let body = br#"{
+            "id": "resp_1",
+            "object": "response",
+            "created_at": 0,
+            "model": "third-party-model",
+            "status": "completed",
+            "output": [],
+            "usage": {
+                "input_tokens": 10,
+                "output_tokens": 5,
+                "total_tokens": 15
+            }
+        }"#;
+        let response = deserialize_response_body(body).expect("standard body parses");
+        let usage = response.usage.expect("usage present");
+        assert_eq!(usage.input_tokens, 10);
+        assert_eq!(usage.output_tokens, 5);
         assert_eq!(usage.total_tokens, 15);
     }
 }
