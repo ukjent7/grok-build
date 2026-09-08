@@ -711,8 +711,6 @@ impl SessionActor {
             &cfg.api_backend,
             &cfg.base_url,
         );
-        // Same trusted-URL rule as session setup: third-party endpoints get a clean standard payload.
-        let byok_compat = crate::agent::config::byok_compat_for_base_url(&cfg.base_url);
         SamplingConfig {
             api_key,
             base_url: cfg.base_url,
@@ -764,7 +762,6 @@ impl SessionActor {
             compaction_at_tokens: self.compaction_at_tokens.get(),
             // The sampler sends the opt-in header itself when this is set.
             doom_loop_recovery: self.doom_loop_recovery,
-            byok_compat,
             header_injector: Some(std::sync::Arc::new(TraceContextInjector)),
         }
     }

@@ -16,8 +16,10 @@ serde_json = { workspace = true, features = ["preserve_order"] }
 strum = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
+url = { workspace = true }
 xai-circuit-breaker = { workspace = true }
 xai-grok-compaction = { path = "../../common/xai-grok-compaction" }
+xai-grok-env = { workspace = true }
 xai-tool-types = { workspace = true }
 
 [dev-dependencies]

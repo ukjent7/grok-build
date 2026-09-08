@@ -3884,7 +3884,7 @@ impl ConfigModelOverride {
             && self
                 .base_url
                 .as_deref()
-                .is_some_and(byok_compat_for_base_url)
+                .is_some_and(xai_grok_sampling_types::endpoint_trust::is_third_party_base_url)
         {
             // Anthropic-protocol endpoints authenticate with `x-api-key`, not
             // `Authorization: Bearer`. Auto-default only for custom endpoints so
@@ -4926,12 +4926,6 @@ pub(crate) fn response_include_extensions(
         Vec::new()
     }
 }
-/// Whether `base_url` is a first-party route that understands xAI's Responses extensions.
-/// Anything else gets a clean standard-protocol payload (`SamplerConfig::byok_compat`).
-pub(crate) fn byok_compat_for_base_url(base_url: &str) -> bool {
-    !(crate::util::is_trusted_cli_chat_proxy_url(base_url)
-        || crate::util::is_trusted_xai_https_url(base_url))
-}
 /// Required request header for the Anthropic Messages API, sent when the model sets none.
 /// An explicit `[model.<id>].extra_headers` (or global `[models].extra_headers`) entry always wins.
 const ANTHROPIC_VERSION_HEADER: &str = "anthropic-version";
@@ -4971,7 +4965,6 @@ pub(crate) fn sampling_config_for_model(
             ANTHROPIC_DEFAULT_VERSION.to_string(),
         );
     }
-    let byok_compat = byok_compat_for_base_url(&credentials.base_url);
     SamplerConfig {
         api_key: credentials.api_key,
         model: model_name,
@@ -5005,7 +4998,6 @@ pub(crate) fn sampling_config_for_model(
         compactions_remaining: info.compactions_remaining,
         compaction_at_tokens: info.compaction_at_tokens,
         doom_loop_recovery: None,
-        byok_compat,
         header_injector: None,
     }
 }

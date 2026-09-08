@@ -3121,7 +3121,6 @@ fn byok_messages_model_defaults_to_x_api_key_and_version_header() {
     let sampling = resolve_sampling(model, None);
     assert_eq!(sampling.auth_scheme, AuthScheme::XApiKey);
     assert_eq!(sampling.api_key.as_deref(), Some("sk-ant-test"));
-    assert!(sampling.byok_compat);
     assert_eq!(
         sampling
             .extra_headers
@@ -3162,7 +3161,13 @@ fn byok_responses_model_gets_clean_payload_flag() {
         None,
     );
     let model = models.get("third-party").expect("model should exist");
-    assert!(resolve_sampling(model, None).byok_compat);
+    // The client derives third-party handling from base_url itself now (see
+    // endpoint_trust); config only routes the URL through untouched.
+    let sampling = resolve_sampling(model, None);
+    assert_eq!(sampling.base_url, "https://api.example.com/v1");
+    assert!(xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
+        &sampling.base_url
+    ));
 }
 #[test]
 fn first_party_model_keeps_xai_extensions() {
@@ -3174,7 +3179,9 @@ fn first_party_model_keeps_xai_extensions() {
         None,
     );
     let sampling = resolve_sampling(&model, Some("session-jwt"));
-    assert!(!sampling.byok_compat);
+    assert!(!xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
+        &sampling.base_url
+    ));
 }
 #[test]
 #[serial]

@@ -19,6 +19,9 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  # Newer than rust-toolchain.toml on purpose (see that file's bump policy);
+  # overrides it without touching the repo file.
+  RUSTUP_TOOLCHAIN: 1.98.1
 
 jobs:
   build:

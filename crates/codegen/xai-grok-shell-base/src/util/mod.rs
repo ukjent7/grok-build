@@ -71,37 +71,16 @@ mod expand_home_tests {
         );
     }
 }
-fn matches_trusted_base_url(candidate: &str, trusted_base: &str) -> bool {
-    let Ok(candidate) = reqwest::Url::parse(candidate) else {
-        return false;
-    };
-    let Ok(trusted) = reqwest::Url::parse(trusted_base) else {
-        return false;
-    };
-    let trusted_path = trusted.path();
-    let candidate_path = candidate.path();
-    let path_matches = candidate_path == trusted_path
-        || candidate_path
-            .strip_prefix(trusted_path)
-            .is_some_and(|suffix| suffix.starts_with('/'));
-    candidate.scheme() == trusted.scheme()
-        && candidate.host_str() == trusted.host_str()
-        && candidate.port_or_known_default() == trusted.port_or_known_default()
-        && path_matches
-}
 /// Production cli-chat-proxy base only (compiled-in constant). Unlike [`is_cli_chat_proxy_url`], this rejects loopback and staging/dev hosts. Used for security-sensitive remote kill-switches.
 /// Those must not become env toggles via `GROK_CLI_CHAT_PROXY_BASE_URL` (or similar) pointing at an attacker-controlled origin.
 pub fn is_prod_cli_chat_proxy_url(url: &str) -> bool {
-    matches_trusted_base_url(url, crate::env::PROD_CLI_CHAT_PROXY_BASE_URL)
+    xai_grok_sampling_types::endpoint_trust::is_prod_cli_chat_proxy_url(url)
 }
 /// True for configured first-party cli-chat-proxy routes, excluding arbitrary loopback URLs.
 /// Unlike [`is_cli_chat_proxy_url`], this only trusts the exact compiled or environment-selected route.
 /// It is suitable for xAI-only request extensions.
 pub fn is_trusted_cli_chat_proxy_url(url: &str) -> bool {
-    if is_prod_cli_chat_proxy_url(url) {
-        return true;
-    }
-    false
+    xai_grok_sampling_types::endpoint_trust::is_trusted_cli_chat_proxy_url(url)
 }
 /// True for cli-chat-proxy URLs (production, plus local-dev hosts when the optional non-production feature is enabled).
 /// When that feature is on, runtime env overrides can extend this trust set.
@@ -133,21 +112,7 @@ pub fn is_xai_api_bearer_url(url: &str) -> bool {
 }
 /// True for trusted first-party xAI HTTPS routes, excluding arbitrary loopback URLs.
 pub fn is_trusted_xai_https_url(url: &str) -> bool {
-    let Ok(parsed) = reqwest::Url::parse(url) else {
-        return false;
-    };
-    if parsed.scheme() != "https" {
-        return false;
-    }
-    if is_loopback_host(&parsed) {
-        return false;
-    }
-    if is_trusted_cli_chat_proxy_url(url) {
-        return true;
-    }
-    parsed
-        .host_str()
-        .is_some_and(|host| host == "x.ai" || host.ends_with(".x.ai"))
+    xai_grok_sampling_types::endpoint_trust::is_trusted_xai_https_url(url)
 }
 fn is_xai_api_url_impl(url: &str, require_https: bool) -> bool {
     if require_https {
@@ -160,14 +125,6 @@ fn is_xai_api_url_impl(url: &str, require_https: bool) -> bool {
         .ok()
         .and_then(|url| url.host_str().map(str::to_owned))
         .is_some_and(|host| host == "x.ai" || host.ends_with(".x.ai"))
-}
-fn is_loopback_host(parsed: &reqwest::Url) -> bool {
-    match parsed.host() {
-        Some(url::Host::Domain(host)) => host == "localhost",
-        Some(url::Host::Ipv4(ip)) => ip.is_loopback(),
-        Some(url::Host::Ipv6(ip)) => ip.is_loopback(),
-        None => false,
-    }
 }
 /// Truncate a string to at most `max_chars` characters.
 /// Slices at char boundaries so multi-byte UTF-8 never panics.

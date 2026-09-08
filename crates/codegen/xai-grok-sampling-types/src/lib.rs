@@ -6,6 +6,7 @@
 
 pub mod conversation;
 pub mod doom_loop;
+pub mod endpoint_trust;
 pub mod error;
 pub mod messages;
 pub mod provider_error;

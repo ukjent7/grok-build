@@ -428,7 +428,8 @@ struct ClientDefaults {
     top_p: Option<f32>,
     api_backend: ApiBackend,
     auth_scheme: AuthScheme,
-    /// Strip xAI-proprietary Responses fields for third-party endpoints (see `SamplerConfig::byok_compat`).
+    /// Strip xAI-proprietary Responses fields for third-party endpoints.
+    /// Derived once at construction from `base_url` (see `endpoint_trust`).
     byok_compat: bool,
     stream_tool_calls: bool,
     extra_response_includes: Vec<String>,
@@ -734,7 +735,10 @@ impl SamplingClient {
             top_p: config.top_p,
             api_backend: config.api_backend,
             auth_scheme: config.auth_scheme,
-            byok_compat: config.byok_compat,
+            // Derived here, not threaded through config: pure function of base_url.
+            byok_compat: xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
+                &config.base_url,
+            ),
             stream_tool_calls: config.stream_tool_calls,
             extra_response_includes: config.extra_response_includes,
             doom_loop_recovery: config.doom_loop_recovery,
@@ -2435,7 +2439,6 @@ mod tests {
             compactions_remaining: None,
             compaction_at_tokens: None,
             doom_loop_recovery: None,
-            byok_compat: false,
             header_injector: None,
         }
     }
@@ -3330,8 +3333,8 @@ mod tests {
 
     #[test]
     fn byok_wire_body_has_no_xai_only_keys() {
-        // Final serialized Responses body for a BYOK endpoint: byok_compat skips
-        // the store/include defaults, the strip pass removes the rest, and the
+        // Final serialized Responses body for a BYOK endpoint: no store/include
+        // defaults are applied, the strip pass removes the rest, and the
         // tool filter drops xAI-only tool types.
         let mut tools = vec![
             serde_json::json!({ "type": "web_search" }),
