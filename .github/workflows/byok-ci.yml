@@ -19,7 +19,7 @@ env:
 
 jobs:
   check:
-    name: cargo check (sampler + shell, incl. tests)
+    name: cargo check (sampler + shell + sampling-types, incl. tests)
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -46,7 +46,7 @@ jobs:
       # Debug profile on purpose: the shell build script skips the
       # ripgrep download outside release builds.
       - name: Check
-        run: cargo check -p xai-grok-sampler -p xai-grok-shell --all-targets
+        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types --all-targets
 
   test-sampler:
     name: cargo test -p xai-grok-sampler
@@ -68,6 +68,29 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Test sampler
         run: cargo test -p xai-grok-sampler
+
+  test-endpoint-trust:
+    name: cargo test endpoint_trust (canonical URL predicate)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "28.x"
+          # Unauthenticated api.github.com calls share 60 req/h per runner IP
+          # and Windows runners burn through it; the repo token raises it.
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.98.1
+      - uses: Swatinem/rust-cache@v2
+      # Scoped on purpose: the full sampling-types suite is upstream's
+      # responsibility; we only own the endpoint_trust module.
+      - name: Test endpoint trust predicate
+        run: cargo test -p xai-grok-sampling-types -- endpoint_trust
 
   test-shell-config:
     name: cargo test shell config/model layers

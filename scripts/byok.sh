@@ -39,12 +39,14 @@ if ! command -v protoc >/dev/null 2>&1 && [ -z "${PROTOC:-}" ]; then
     echo "warning: protoc not on PATH and \$PROTOC unset; the build may fall back to DotSlash (needs 'dotslash' on PATH)." >&2
 fi
 
-echo "==> cargo check (sampler + shell, incl. test targets)"
-cargo check -p xai-grok-sampler -p xai-grok-shell --all-targets
+echo "==> cargo check (sampler + shell + sampling-types, incl. test targets)"
+cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types --all-targets
 
 if [ "$SKIP_TESTS" -eq 0 ]; then
     echo "==> cargo test -p xai-grok-sampler"
     cargo test -p xai-grok-sampler
+    echo "==> cargo test -p xai-grok-sampling-types (endpoint_trust only)"
+    cargo test -p xai-grok-sampling-types -- endpoint_trust
     echo "==> cargo test -p xai-grok-shell (config/model layers)"
     cargo test -p xai-grok-shell -- agent::config agent::model_providers
 fi
