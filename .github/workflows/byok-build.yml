@@ -22,6 +22,9 @@ env:
   # Newer than rust-toolchain.toml on purpose (see that file's bump policy);
   # overrides it without touching the repo file.
   RUSTUP_TOOLCHAIN: 1.98.1
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
+  CARGO_INCREMENTAL: 0
 
 jobs:
   build:
@@ -59,6 +62,11 @@ jobs:
         with:
           toolchain: 1.98.1
 
+      # Content-addressed compile cache shared across branches/commits/jobs.
+      # Only wraps rustc (C builds pass through untouched).
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.11
+
       - uses: Swatinem/rust-cache@v2
 
       # Windows Defender scans every file cargo writes; excluding the workspace
@@ -78,11 +86,20 @@ jobs:
       - name: Build release binary
         run: cargo build -p xai-grok-pager-bin --profile ci-release
 
+      # Rename to the platform-unique artifact name first: linux and macOS
+      # binaries are both called xai-grok-pager and would collide as
+      # release assets. The installer downloads these exact names.
+      - name: Stage binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "target/ci-release/${{ matrix.bin }}" "dist/${{ matrix.artifact }}"
+
       - name: Upload binary
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
-          path: target/ci-release/${{ matrix.bin }}
+          path: dist/${{ matrix.artifact }}
           if-no-files-found: error
           retention-days: 14
 
