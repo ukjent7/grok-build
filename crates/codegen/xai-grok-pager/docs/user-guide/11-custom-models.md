@@ -77,7 +77,7 @@ Grok supports three API backends. Set `api_backend` in your `[model.*]` config t
 
 When you omit `api_backend`, Grok uses `chat_completions`.
 
-To send provider-specific authentication or version headers -- for example, Anthropic's `x-api-key` -- use the `extra_headers` field described below. Grok sends those headers verbatim with every request to the endpoint.
+Authentication follows `auth_scheme`: `bearer` sends `Authorization: Bearer`, `x_api_key` sends an `x-api-key` header. The `messages` backend defaults to `x_api_key` on custom endpoints, and Grok sends the required `anthropic-version` header automatically unless you set it yourself in `extra_headers`.
 
 ---
 
@@ -94,6 +94,7 @@ description = "Model description"          # Optional description
 api_key = "sk-..."                        # API key for this provider (optional)
 env_key = "XAI_API_KEY"                   # Env var holding the API key (optional; string or array)
 api_backend = "chat_completions"          # "chat_completions", "responses", or "messages"
+auth_scheme = "bearer"                    # "bearer" (Authorization: Bearer) or "x_api_key" (x-api-key header for Anthropic Messages)
 temperature = 0.7                         # Sampling temperature
 top_p = 0.95                              # Nucleus sampling parameter
 max_completion_tokens = 8192              # Maximum tokens per response
@@ -219,10 +220,12 @@ base_url = "https://api.anthropic.com/v1"
 name = "Claude Opus 4.6"
 api_backend = "messages"
 context_window = 200000
-extra_headers = { "x-api-key" = "sk-ant-...", "anthropic-version" = "2023-06-01" }
+env_key = "ANTHROPIC_API_KEY"
+# auth_scheme defaults to "x_api_key" for the messages backend on custom
+# endpoints, and the anthropic-version header is sent automatically.
 ```
 
-The `messages` backend uses the Anthropic Messages protocol. Anthropic authenticates with an `x-api-key` header rather than `Authorization: Bearer`, so pass your key through `extra_headers`, which Grok sends verbatim.
+The `messages` backend uses the Anthropic Messages protocol. Anthropic authenticates with an `x-api-key` header rather than `Authorization: Bearer`: point `env_key` (or `api_key`) at your key and Grok sends it as `x-api-key` automatically, along with the required `anthropic-version` header. Set `auth_scheme = "bearer"` explicitly only if your gateway expects Bearer auth for this protocol.
 
 ### OpenAI (Chat Completions)
 

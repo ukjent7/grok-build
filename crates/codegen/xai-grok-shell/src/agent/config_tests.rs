@@ -3104,6 +3104,79 @@ fn e2e_user_overrides_default_model_key_with_custom_endpoint() {
     unsafe { std::env::remove_var("ENTERPRISE_AUTH_TOKEN") };
 }
 #[test]
+fn byok_messages_model_defaults_to_x_api_key_and_version_header() {
+    let (_, models) = resolve_models_from_toml(
+        r#"
+        [model."claude-x"]
+        model = "claude-opus-4-6"
+        base_url = "https://api.anthropic.com/v1"
+        api_backend = "messages"
+        context_window = 200000
+        api_key = "sk-ant-test"
+        "#,
+        None,
+    );
+    let model = models.get("claude-x").expect("model should exist");
+    assert_eq!(model.info.auth_scheme, AuthScheme::XApiKey);
+    let sampling = resolve_sampling(model, None);
+    assert_eq!(sampling.auth_scheme, AuthScheme::XApiKey);
+    assert_eq!(sampling.api_key.as_deref(), Some("sk-ant-test"));
+    assert!(sampling.byok_compat);
+    assert_eq!(
+        sampling
+            .extra_headers
+            .get("anthropic-version")
+            .map(String::as_str),
+        Some("2023-06-01")
+    );
+}
+#[test]
+fn explicit_auth_scheme_bearer_overrides_messages_auto_default() {
+    let (_, models) = resolve_models_from_toml(
+        r#"
+        [model."gateway-messages"]
+        model = "m"
+        base_url = "https://gateway.example.com/v1"
+        api_backend = "messages"
+        context_window = 200000
+        api_key = "gw-key"
+        auth_scheme = "bearer"
+        "#,
+        None,
+    );
+    let model = models.get("gateway-messages").expect("model should exist");
+    assert_eq!(model.info.auth_scheme, AuthScheme::Bearer);
+    assert_eq!(resolve_sampling(model, None).auth_scheme, AuthScheme::Bearer);
+}
+#[test]
+fn byok_responses_model_gets_clean_payload_flag() {
+    let (_, models) = resolve_models_from_toml(
+        r#"
+        [model."third-party"]
+        model = "m"
+        base_url = "https://api.example.com/v1"
+        api_backend = "responses"
+        context_window = 128000
+        api_key = "sk-test"
+        "#,
+        None,
+    );
+    let model = models.get("third-party").expect("model should exist");
+    assert!(resolve_sampling(model, None).byok_compat);
+}
+#[test]
+fn first_party_model_keeps_xai_extensions() {
+    let model = test_model_entry(
+        "grok-4.5",
+        crate::env::PROD_CLI_CHAT_PROXY_BASE_URL,
+        None,
+        None,
+        None,
+    );
+    let sampling = resolve_sampling(&model, Some("session-jwt"));
+    assert!(!sampling.byok_compat);
+}
+#[test]
 #[serial]
 fn e2e_config_toml_model_overrides_default() {
     let dm = crate::models::default_model();

@@ -1,0 +1,81 @@
+name: BYOK CI
+
+# Minimal CI for the BYOK changes: compile + targeted tests for the two
+# touched crates. No local Rust needed; everything runs here on push/PR.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: cargo check (sampler + shell, incl. tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      # xai-grok-tools-api runs proto codegen in its build script;
+      # prefer a PATH protoc over the DotSlash-bundled one.
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "28.x"
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.94.0
+
+      - uses: Swatinem/rust-cache@v2
+
+      # --all-targets also compiles the test/bench targets we edited.
+      # Debug profile on purpose: the shell build script skips the
+      # ripgrep download outside release builds.
+      - name: Check
+        run: cargo check -p xai-grok-sampler -p xai-grok-shell --all-targets
+
+  test-sampler:
+    name: cargo test -p xai-grok-sampler
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "28.x"
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.94.0
+      - uses: Swatinem/rust-cache@v2
+      - name: Test sampler
+        run: cargo test -p xai-grok-sampler
+
+  test-shell-config:
+    name: cargo test shell config/model layers
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "28.x"
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.94.0
+      - uses: Swatinem/rust-cache@v2
+      # Substring filters: agent::config covers config.rs, config_tests and
+      # config_model_override_parse; model_providers covers the provider layer.
+      - name: Test shell config layers
+        run: cargo test -p xai-grok-shell agent::config agent::model_providers

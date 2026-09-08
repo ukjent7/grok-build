@@ -100,6 +100,7 @@ mod tests {
             compactions_remaining: None,
             compaction_at_tokens: None,
             doom_loop_recovery: None,
+            byok_compat: false,
             header_injector: None,
         }
     }

@@ -101,6 +101,14 @@ pub struct SamplerConfig {
     #[serde(default)]
     pub doom_loop_recovery: Option<DoomLoopRecoveryPolicy>,
 
+    /// Compatibility shims for third-party (BYOK) endpoints.
+    /// When true, the Responses path omits xAI-proprietary defaults (`store`, auto
+    /// `include`s) and strips request keys strict providers reject (`reasoning`
+    /// without an effort, `prompt_cache_key`). First-party routes keep them.
+    /// Set by the shell from its endpoint trusted-URL check; `false` preserves xAI behavior.
+    #[serde(default)]
+    pub byok_compat: bool,
+
     /// Per-request header injector (e.g. OTel traceparent). Called in `post()`.
     #[serde(skip)]
     pub header_injector: Option<SharedHeaderInjector>,
@@ -142,6 +150,7 @@ impl Default for SamplerConfig {
             compactions_remaining: None,
             compaction_at_tokens: None,
             doom_loop_recovery: None,
+            byok_compat: false,
             header_injector: None,
         }
     }

@@ -3801,6 +3801,10 @@ pub struct ConfigModelOverride {
     pub temperature: Option<f32>,
     pub top_p: Option<f32>,
     pub api_backend: Option<ApiBackend>,
+    /// Auth header scheme: `bearer` sends `Authorization: Bearer`, `x_api_key` sends `x-api-key`
+    /// (Anthropic Messages protocol). Unset + `messages` backend on a custom endpoint
+    /// auto-defaults to `x_api_key` in [`ConfigModelOverride::apply`].
+    pub auth_scheme: Option<AuthScheme>,
     #[serde(default)]
     pub extra_headers: IndexMap<String, String>,
     #[serde(default)]
@@ -3873,6 +3877,20 @@ impl ConfigModelOverride {
         }
         if let Some(ref v) = self.api_backend {
             entry.info.api_backend = v.clone();
+        }
+        if let Some(scheme) = self.auth_scheme {
+            entry.info.auth_scheme = scheme;
+        } else if matches!(entry.info.api_backend, ApiBackend::Messages)
+            && self
+                .base_url
+                .as_deref()
+                .is_some_and(byok_compat_for_base_url)
+        {
+            // Anthropic-protocol endpoints authenticate with `x-api-key`, not
+            // `Authorization: Bearer`. Auto-default only for custom endpoints so
+            // first-party proxy Messages routes keep Bearer session auth.
+            // An explicit `auth_scheme` above always wins.
+            entry.info.auth_scheme = AuthScheme::XApiKey;
         }
         if !self.extra_headers.is_empty() {
             entry.info.extra_headers = self.extra_headers.clone();
@@ -4908,6 +4926,16 @@ pub(crate) fn response_include_extensions(
         Vec::new()
     }
 }
+/// Whether `base_url` is a first-party route that understands xAI's Responses extensions.
+/// Anything else gets a clean standard-protocol payload (`SamplerConfig::byok_compat`).
+pub(crate) fn byok_compat_for_base_url(base_url: &str) -> bool {
+    !(crate::util::is_trusted_cli_chat_proxy_url(base_url)
+        || crate::util::is_trusted_xai_https_url(base_url))
+}
+/// Required request header for the Anthropic Messages API, sent when the model sets none.
+/// An explicit `[model.<id>].extra_headers` (or global `[models].extra_headers`) entry always wins.
+const ANTHROPIC_VERSION_HEADER: &str = "anthropic-version";
+const ANTHROPIC_DEFAULT_VERSION: &str = "2023-06-01";
 pub(crate) fn sampling_config_for_model(
     model: &ModelEntry,
     credentials: ResolvedCredentials,
@@ -4933,6 +4961,17 @@ pub(crate) fn sampling_config_for_model(
         &api_backend,
         &credentials.base_url,
     );
+    if matches!(api_backend, ApiBackend::Messages)
+        && !extra_headers
+            .keys()
+            .any(|k| k.eq_ignore_ascii_case(ANTHROPIC_VERSION_HEADER))
+    {
+        extra_headers.insert(
+            ANTHROPIC_VERSION_HEADER.to_string(),
+            ANTHROPIC_DEFAULT_VERSION.to_string(),
+        );
+    }
+    let byok_compat = byok_compat_for_base_url(&credentials.base_url);
     SamplerConfig {
         api_key: credentials.api_key,
         model: model_name,
@@ -4966,6 +5005,7 @@ pub(crate) fn sampling_config_for_model(
         compactions_remaining: info.compactions_remaining,
         compaction_at_tokens: info.compaction_at_tokens,
         doom_loop_recovery: None,
+        byok_compat,
         header_injector: None,
     }
 }

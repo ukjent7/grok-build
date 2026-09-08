@@ -180,6 +180,41 @@ fn splice_extra_tool_entries(
     }
 }
 
+/// Drop xAI-proprietary Responses keys a strict third-party implementation rejects.
+/// `reasoning` without an effort is an xAI default (`effort: null` 400s elsewhere);
+/// `prompt_cache_key` only warms the xAI prefix cache. Runs after the other
+/// post-serialization patches, so it sees the final body.
+fn strip_byok_response_extensions(body: &mut serde_json::Value) {
+    let Some(obj) = body.as_object_mut() else {
+        return;
+    };
+    let null_effort = obj
+        .get("reasoning")
+        .and_then(|v| v.get("effort"))
+        .is_some_and(serde_json::Value::is_null);
+    if null_effort {
+        obj.remove("reasoning");
+    }
+    obj.remove("prompt_cache_key");
+}
+
+/// Keep-alive / extension events a third-party Responses implementation may inject
+/// (e.g. `ping` from gateways/proxies during long reasoning turns).
+/// Unknown to async-openai's typed event enum, so skip them instead of failing the stream.
+/// Anything else still goes through strict deserialization, so a real protocol break stays loud.
+fn is_ignorable_response_event(event_name: &str, data: &str) -> bool {
+    if event_name == "ping" {
+        return true;
+    }
+    // Some gateways put the discriminator only in the payload.
+    if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
+        if value.get("type").and_then(|t| t.as_str()) == Some("ping") {
+            return true;
+        }
+    }
+    false
+}
+
 /// Parse `Retry-After` as integer seconds, capped at 120; HTTP-dates yield `None`.
 fn extract_retry_after(headers: &reqwest::header::HeaderMap) -> Option<u64> {
     headers
@@ -341,6 +376,8 @@ struct ClientDefaults {
     top_p: Option<f32>,
     api_backend: ApiBackend,
     auth_scheme: AuthScheme,
+    /// Strip xAI-proprietary Responses fields for third-party endpoints (see `SamplerConfig::byok_compat`).
+    byok_compat: bool,
     stream_tool_calls: bool,
     extra_response_includes: Vec<String>,
     doom_loop_recovery: Option<xai_grok_sampling_types::DoomLoopRecoveryPolicy>,
@@ -645,6 +682,7 @@ impl SamplingClient {
             top_p: config.top_p,
             api_backend: config.api_backend,
             auth_scheme: config.auth_scheme,
+            byok_compat: config.byok_compat,
             stream_tool_calls: config.stream_tool_calls,
             extra_response_includes: config.extra_response_includes,
             doom_loop_recovery: config.doom_loop_recovery,
@@ -1185,6 +1223,12 @@ impl SamplingClient {
             request.inner.max_output_tokens = self.defaults.max_completion_tokens;
         }
 
+        // xAI-proprietary defaults a strict third-party Responses implementation rejects.
+        // BYOK endpoints get a clean standard payload instead (see `strip_byok_response_extensions`).
+        if self.defaults.byok_compat {
+            return Ok(());
+        }
+
         // The API defaults `store` to true, which breaks ZDR compliance
         if request.inner.store.is_none() {
             request.inner.store = Some(false);
@@ -1245,6 +1289,9 @@ impl SamplingClient {
         // async-openai's ReasoningTextContent struct omits the `type` discriminator that the Responses API requires on input
         // Patch it in after serializing
         xai_grok_sampling_types::patch_reasoning_text_types(&mut request_body);
+        if self.defaults.byok_compat {
+            strip_byok_response_extensions(&mut request_body);
+        }
         self.prepare_bearer().await;
         let SentRequest {
             builder,
@@ -1389,6 +1436,9 @@ impl SamplingClient {
         splice_extra_tool_entries(&mut request_body, extra_tool_entries);
         append_response_includes(&mut request_body, &self.defaults.extra_response_includes);
         xai_grok_sampling_types::patch_reasoning_text_types(&mut request_body);
+        if self.defaults.byok_compat {
+            strip_byok_response_extensions(&mut request_body);
+        }
         // Fresh per attempt so signals never leak across retries; `None` (check disabled) sends no header and does no peek work per event
         let doom_loop = self
             .defaults
@@ -1520,6 +1570,9 @@ impl SamplingClient {
                             None => is_check_event(&event.event, data),
                         };
                         if swallow {
+                            Some(None)
+                        } else if is_ignorable_response_event(&event.event, data) {
+                            // Third-party keep-alive: skip without touching the stream.
                             Some(None)
                         } else if let Some(stream_error) = try_parse_stream_error(data) {
                             Some(Some(Err(stream_error)))
@@ -2199,6 +2252,51 @@ mod tests {
     }
 
     #[test]
+    fn strip_byok_response_extensions_drops_xai_only_keys() {
+        let mut body = serde_json::json!({
+            "model": "m",
+            "input": [],
+            "reasoning": { "effort": null, "summary": "concise" },
+            "prompt_cache_key": "conv-1",
+            "store": false,
+        });
+        strip_byok_response_extensions(&mut body);
+        assert!(body.get("reasoning").is_none());
+        assert!(body.get("prompt_cache_key").is_none());
+        // Standard keys pass through untouched.
+        assert_eq!(body["model"], "m");
+        assert_eq!(body["store"], false);
+    }
+
+    #[test]
+    fn ignorable_response_event_covers_both_ping_shapes() {
+        assert!(is_ignorable_response_event("ping", ""));
+        assert!(is_ignorable_response_event("ping", "{}"));
+        assert!(is_ignorable_response_event(
+            "message",
+            r#"{"type":"ping"}"#
+        ));
+        assert!(!is_ignorable_response_event(
+            "response.created",
+            r#"{"type":"response.created"}"#
+        ));
+        assert!(!is_ignorable_response_event(
+            "message",
+            r#"{"type":"response.completed"}"#
+        ));
+    }
+
+    #[test]
+    fn strip_byok_response_extensions_keeps_explicit_effort() {
+        let mut body = serde_json::json!({
+            "model": "m",
+            "reasoning": { "effort": "high", "summary": "concise" },
+        });
+        strip_byok_response_extensions(&mut body);
+        assert_eq!(body["reasoning"]["effort"], "high");
+    }
+
+    #[test]
     fn splice_extra_tool_entries_noop_when_empty() {
         let mut body = serde_json::json!({ "tools": [{ "type": "function" }] });
         splice_extra_tool_entries(&mut body, vec![]);
@@ -2287,6 +2385,7 @@ mod tests {
             compactions_remaining: None,
             compaction_at_tokens: None,
             doom_loop_recovery: None,
+            byok_compat: false,
             header_injector: None,
         }
     }
