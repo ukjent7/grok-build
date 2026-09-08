@@ -36,7 +36,7 @@ jobs:
   build:
     name: build (${{ matrix.os }})
     # Tags always build all platforms; manual runs default to linux+windows.
-    if: ${{ !matrix.full_only || github.event_name == 'push' || inputs.platforms == 'all' }}
+    if: ${{ matrix.full_only != true || github.event_name == 'push' || inputs.platforms == 'all' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
     strategy:
