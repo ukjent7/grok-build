@@ -48,11 +48,23 @@ $GrokDir = Join-Path $env:USERPROFILE '.grok'
 
 function Download-String([string]$Url) {
     try {
-        $response = Invoke-WebRequest -Uri $Url -UseBasicParsing
-        return $response.Content
+        $content = (Invoke-WebRequest -Uri $Url -UseBasicParsing).Content
     } catch {
         return $null
     }
+    if ($null -eq $content) { return $null }
+    if ($content -is [string]) { return $content }
+    # Extensionless files (e.g. checksums/latest) are served as
+    # application/octet-stream, and then .Content is raw bytes instead of
+    # text — calling .Trim() on that fails with
+    # "[System.Byte] does not contain a method named 'Trim'". Decode
+    # explicitly so callers always get a string.
+    try {
+        $text = [System.Text.Encoding]::UTF8.GetString([byte[]]$content)
+    } catch {
+        $text = "$content"
+    }
+    return $text.TrimStart([char]0xFEFF)
 }
 
 function Download-File([string]$Url, [string]$OutFile) {
