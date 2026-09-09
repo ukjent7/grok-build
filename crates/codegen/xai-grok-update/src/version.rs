@@ -355,6 +355,10 @@ async fn fetch_gcs_channel_pointer(channel: &str, base_url: &str) -> Result<Stri
 /// Use this when the caller needs to control when the cache is written.
 /// Auto-update, for example, should only cache after a successful install or when no update is needed.
 pub async fn fetch_latest_version(installer: &str, config: &UpdateConfig) -> Result<String> {
+    // FORK(byok): fork installs track byok-v* releases, never the official channel.
+    if crate::byok::is_byok_install(installer) {
+        return crate::byok::fetch_latest().await;
+    }
     match installer {
         "npm" => fetch_npm_version(&config.channel, config.npm_registry.as_deref()).await,
         "gh-release" => fetch_gh_release_version(&config.channel).await,

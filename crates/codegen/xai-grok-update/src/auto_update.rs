@@ -72,6 +72,8 @@ fn reinstall_hint(installer: &str, channel: &str) -> String {
     match installer {
         "npm" => "Please reinstall via npm:\n  npm i -g @xai-official/grok".to_string(),
         "gh-release" => "Please reinstall via GitHub Releases:\n  gh release download --repo xai-org-shared/grok-build --pattern 'grok-*' --output grok && chmod +x grok".to_string(),
+        // FORK(byok): point at the fork's installer, never the official one.
+        "byok" => "Please reinstall via:\n  irm https://cdn.jsdelivr.net/gh/ukjent7/grok-build@main/install.ps1 | iex".to_string(),
         _ => format!("Please reinstall via:\n  {}", manual_install_cmd(channel)),
     }
 }
@@ -219,7 +221,11 @@ pub fn print_update_status(status: &UpdateStatus, json: bool) -> anyhow::Result<
 
 pub async fn check_update_status(update_config: &UpdateConfig) -> UpdateStatus {
     let installer = get_installer().await.map(|value| value.to_string());
-    let current_version = get_installed_grok_version();
+    // FORK(byok): report the fork release on fork installs (see byok::installed_for).
+    let current_version = installer
+        .as_deref()
+        .map(crate::byok::installed_for)
+        .unwrap_or_else(get_installed_grok_version);
     let current_config = config::load_config().await;
     let auto_update = current_config.cli.auto_update;
     let channel = update_config.channel.clone();
@@ -348,7 +354,8 @@ async fn fetch_update_plan(
 /// Gates on the installer (via `installer_allows_downgrade`) so npm is never downgraded; the decision depends on the installer, never the caller.
 pub async fn auto_update_target(update_config: &UpdateConfig) -> Option<(&'static str, String)> {
     let installer = get_installer().await?;
-    let current = get_installed_grok_version();
+    // FORK(byok): compare on the fork axis (see byok::installed_for).
+    let current = crate::byok::installed_for(installer);
     let policy = config::VersionPolicy::resolve();
     let UpdatePlan::Install { target, .. } = fetch_update_plan(installer, update_config, &policy)
         .await
@@ -401,7 +408,9 @@ pub async fn ensure_latest_on_disk(update_config: &UpdateConfig) -> Result<Ensur
     };
 
     let effective_current =
-        disk_version_for_installer(installer).unwrap_or_else(get_installed_grok_version);
+        // FORK(byok): fall back to the fork axis (see byok::installed_for).
+        disk_version_for_installer(installer)
+            .unwrap_or_else(|| crate::byok::installed_for(installer));
     if needs_update(
         &effective_current,
         &target,
@@ -426,7 +435,8 @@ pub async fn ensure_latest_on_disk(update_config: &UpdateConfig) -> Result<Ensur
 
     // Relaunch when the running binary differs from what's on disk in the channel's update direction
     // This covers binaries installed by other processes, not just the install above
-    let running = get_installed_grok_version();
+    // FORK(byok): compare on the fork axis (see byok::installed_for).
+    let running = crate::byok::installed_for(installer);
     if let Some(disk_now) =
         disk_version_for_installer(installer).or_else(|| outcome.installed.clone())
     {
@@ -442,7 +452,8 @@ pub async fn ensure_latest_on_disk(update_config: &UpdateConfig) -> Result<Ensur
 /// symlink left over from a previous internal install would LIE about the npm install's version.
 fn disk_version_for_installer(installer: &str) -> Option<String> {
     match installer {
-        "internal" | "gh-release" => crate::version::installed_on_disk_version(),
+        // FORK(byok): same managed layout as internal/gh-release.
+        "internal" | "gh-release" | "byok" => crate::version::installed_on_disk_version(),
         _ => None,
     }
 }
@@ -453,6 +464,8 @@ fn env_installer() -> Option<&'static str> {
             "npm" => Some("npm"),
             "internal" => Some("internal"),
             "gh-release" | "gh" => Some("gh-release"),
+            // FORK(byok)
+            "byok" => Some("byok"),
             _ => None,
         };
     }
@@ -476,6 +489,8 @@ pub async fn get_installer() -> Option<&'static str> {
     match cfg.cli.installer.as_deref() {
         Some("npm") => Some("npm"),
         Some("gh-release") => Some("gh-release"),
+        // FORK(byok)
+        Some("byok") => Some("byok"),
         Some(_) => Some("internal"),
         // A wiped config must not reclassify an npm install as internal:
         // that re-enables downgrades and updates npm never sees.
@@ -530,7 +545,8 @@ fn needs_update(current: &str, target: &str, channel: &str, allow_downgrade: boo
 /// installed via `install.sh` are classified as `"internal"` by `get_installer()`, so they also get rollback support.
 fn installer_allows_downgrade(installer: &str) -> bool {
     match installer {
-        "internal" | "gh-release" => true,
+        // FORK(byok): fork releases are authoritative for fork installs.
+        "internal" | "gh-release" | "byok" => true,
         "npm" => false,
         _ => false,
     }
@@ -579,7 +595,8 @@ pub async fn check_update_background(update_config: &UpdateConfig) -> Background
         return BackgroundUpdateCheck::none();
     }
 
-    let current_version = get_installed_grok_version();
+    // FORK(byok): compare on the fork axis (see byok::installed_for).
+    let current_version = crate::byok::installed_for(installer);
     let policy = config::VersionPolicy::resolve();
     let target_version = match fetch_update_plan(installer, update_config, &policy).await {
         Ok(UpdatePlan::Install { target, .. }) => target,
@@ -680,7 +697,8 @@ pub async fn run_update_if_available(
         tracing::warn!("Failed to save auto-update setting: {}", e);
     }
 
-    let current_version = get_installed_grok_version();
+    // FORK(byok): compare on the fork axis (see byok::installed_for).
+    let current_version = crate::byok::installed_for(inst);
     let policy = config::VersionPolicy::resolve();
     // Don't write version.json here
     // Only cache after confirming no update is needed or after a successful install
@@ -876,8 +894,9 @@ pub async fn run_install_script(
     trigger: CliUpdateTrigger,
 ) -> Result<()> {
     // What's on disk is being replaced, not this (possibly stale) process's version; npm has no trustworthy disk version, so it falls back
-    let from_version =
-        disk_version_for_installer(installer).unwrap_or_else(get_installed_grok_version);
+    let from_version = disk_version_for_installer(installer)
+        // FORK(byok): fall back to the fork axis (see byok::installed_for).
+        .unwrap_or_else(|| crate::byok::installed_for(installer));
     let started = Instant::now();
     // Internal reports the version it actually activated; npm/gh-release resolve their own artifact, so the requested target stands in
     let result: Result<Option<String>> = match installer {
@@ -888,6 +907,8 @@ pub async fn run_install_script(
         )
         .map(|()| None),
         "gh-release" => install_gh_release(target).await.map(|()| None),
+        // FORK(byok)
+        "byok" => crate::byok::install(target, update_config).await.map(Some),
         _ => install_internal(target, update_config).await.map(Some),
     };
     // Measured before the success-only cache sweep, so the sweep cannot inflate success durations
@@ -1243,7 +1264,7 @@ async fn remove_stale_models_cache() {
 
 /// Remove the stale `grok-pager` symlink/binary from `~/.grok/bin/` left by
 /// older installations that shipped a separate pager binary.
-async fn remove_stale_pager(bin_dir: &std::path::Path) {
+pub(crate) async fn remove_stale_pager(bin_dir: &std::path::Path) {
     let name = if cfg!(windows) {
         "grok-pager.exe"
     } else {
@@ -1456,7 +1477,9 @@ fn nonzero_message(status: &str, stderr: &str) -> String {
     )
 }
 
-async fn smoke_test_binary(binary_path: &std::path::Path) -> Result<(), SmokeTestFailure> {
+pub(crate) async fn smoke_test_binary(
+    binary_path: &std::path::Path,
+) -> Result<(), SmokeTestFailure> {
     // ETXTBSY race: a concurrent updater's child in this process briefly holds every open fd between fork and exec pre_exec
     // in detach_command forces the fork/exec path. The held fds include the write side of a download just renamed onto
     // `binary_path`. So retry instead of failing the install (and deleting a racer's freshly installed binary)
@@ -1651,7 +1674,10 @@ async fn regenerate_completions(binary: &std::path::Path, grok_home: &std::path:
 /// returns a relative path like `../downloads/grok-0.1.203-linux-x86_64`. Relative symlinks survive Docker bind-mounts
 /// where `~/.grok/` is mapped into a container with a different `$HOME` (and thus a different absolute prefix).
 #[cfg(unix)]
-fn relative_symlink_target(target: &std::path::Path, link: &std::path::Path) -> std::path::PathBuf {
+pub(crate) fn relative_symlink_target(
+    target: &std::path::Path,
+    link: &std::path::Path,
+) -> std::path::PathBuf {
     let (Some(target_parent), Some(link_parent)) = (target.parent(), link.parent()) else {
         return target.to_path_buf();
     };
@@ -1674,7 +1700,7 @@ fn relative_symlink_target(target: &std::path::Path, link: &std::path::Path) -> 
 /// The bootstrap installers (`install.sh`, `install.ps1`, `install-enterprise.sh`) maintain `grok` and `agent` in
 /// lockstep, and so must the updater. Otherwise `grok update` leaves `agent` pinned at the previous version. Any earlier
 /// successful swaps are rolled back if a later one fails, including *removing* a link that didn't exist before.
-async fn swap_managed_bin_links(
+pub(crate) async fn swap_managed_bin_links(
     binary_path: &std::path::Path,
     bin_dir: &std::path::Path,
 ) -> Result<std::path::PathBuf> {
@@ -1888,7 +1914,10 @@ impl LinkRollback {
 /// remove-then-create race where the path briefly doesn't exist, and never deletes the old target file. On macOS
 /// (especially Apple Silicon), deleting a binary that a running process has mmap'd causes SIGKILL.
 #[cfg(unix)]
-async fn atomic_symlink_swap(target: &std::path::Path, link_path: &std::path::Path) -> Result<()> {
+pub(crate) async fn atomic_symlink_swap(
+    target: &std::path::Path,
+    link_path: &std::path::Path,
+) -> Result<()> {
     // Per-racer temp name: a shared one makes remove_file then symlink racy (EEXIST, or ENOENT when another racer renames the link away)
     sweep_stale_tmp_links(link_path, STALE_TMP_AGE).await;
     let tmp_link = unique_temp_sibling(link_path, "tmp-link");
@@ -2034,7 +2063,11 @@ async fn sweep_old_exe_backups(old: &std::path::Path) {
 /// A process may still be running the old binary without having loaded all its pages yet. Deleting it on macOS causes
 /// SIGKILL because the kernel can no longer verify the code signature. Files must match `{bin_prefix}-{digit}*` to be
 /// considered versioned binaries (this avoids `grok-*` matching `grok-pager-*` or `grok-latest`).
-async fn cleanup_old_downloads(dir: &std::path::Path, bin_prefix: &str, current_version: &str) {
+pub(crate) async fn cleanup_old_downloads(
+    dir: &std::path::Path,
+    bin_prefix: &str,
+    current_version: &str,
+) {
     let prefix = format!("{}-", bin_prefix);
     let current_semver = match semver::Version::parse(current_version) {
         Ok(v) => v,
@@ -2133,7 +2166,8 @@ async fn cleanup_old_downloads(dir: &std::path::Path, bin_prefix: &str, current_
 }
 
 fn installer_manages_bin_entrypoints(installer: &str) -> bool {
-    matches!(installer, "internal" | "gh-release")
+    // FORK(byok)
+    matches!(installer, "internal" | "gh-release" | "byok")
 }
 
 #[cfg_attr(not(any(unix, windows)), allow(clippy::unused_async))]
@@ -2536,10 +2570,20 @@ pub async fn run_update(
 
     heal_managed_install(installer).await;
 
-    let current_version = get_installed_grok_version();
+    // FORK(byok): compare on the fork axis (see byok::installed_for).
+    let current_version = crate::byok::installed_for(installer);
     let policy = config::VersionPolicy::resolve();
 
     // When --version is given, skip the latest-version check and install directly
+    // FORK(byok): accept byok-v tags as pins on fork installs.
+    let pinned_owned;
+    let pinned_version = match pinned_version {
+        Some(v) if crate::byok::is_byok_install(installer) => {
+            pinned_owned = crate::byok::normalize_pin(v);
+            Some(pinned_owned.as_str())
+        }
+        other => other,
+    };
     if let Some(version) = pinned_version {
         if let Err(e) = crate::version_policy::check_install_target(&policy, version) {
             anyhow::bail!("{e}");

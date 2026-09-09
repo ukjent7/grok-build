@@ -227,7 +227,8 @@ try {
 # --- Persist installer config ---
 
 $ConfigFile = Join-Path $GrokDir 'config.toml'
-$cliLines = @('installer = "internal"')
+# FORK(byok): fork installs track byok-v* releases, never the official channel.
+$cliLines = @('installer = "byok"')
 # No channels in this fork: only the installer marker is persisted.
 
 if (-not (Test-Path $ConfigFile)) {

@@ -1,4 +1,5 @@
 pub mod auto_update;
+pub mod byok;
 pub mod version;
 mod version_policy;
 

@@ -205,6 +205,8 @@ fn managed_layout() -> (tempfile::TempDir, std::path::PathBuf, std::path::PathBu
 fn test_installer_manages_bin_entrypoints_gate() {
     assert!(installer_manages_bin_entrypoints("internal"));
     assert!(installer_manages_bin_entrypoints("gh-release"));
+    // FORK(byok)
+    assert!(installer_manages_bin_entrypoints("byok"));
     assert!(!installer_manages_bin_entrypoints("npm"));
     assert!(!installer_manages_bin_entrypoints("unknown"));
 }
@@ -1386,6 +1388,12 @@ fn test_installer_allows_downgrade_gh_release() {
     assert!(installer_allows_downgrade("gh-release"));
 }
 
+// FORK(byok): fork releases are authoritative for fork installs.
+#[test]
+fn test_installer_allows_downgrade_byok() {
+    assert!(installer_allows_downgrade("byok"));
+}
+
 #[test]
 fn test_installer_allows_downgrade_npm_blocked() {
     // npm registries can return stale/misconfigured versions, so no downgrade is allowed
@@ -1702,6 +1710,15 @@ fn test_env_installer_explicit_gh_alias() {
     let _g = InstallerEnvGuard::isolate();
     unsafe { std::env::set_var("GROK_INSTALLER", "gh") };
     assert_eq!(env_installer(), Some("gh-release"));
+}
+
+// FORK(byok)
+#[test]
+#[serial_test::serial]
+fn test_env_installer_explicit_byok() {
+    let _g = InstallerEnvGuard::isolate();
+    unsafe { std::env::set_var("GROK_INSTALLER", "byok") };
+    assert_eq!(env_installer(), Some("byok"));
 }
 
 #[test]

@@ -66,6 +66,30 @@ Pinned version (replace `@main` with a tag):
 irm https://cdn.jsdelivr.net/gh/ukjent7/grok-build@byok-v0.1.2/install.ps1 | iex
 ```
 
+#### Updates (Ctrl+U / `grok update`)
+
+Fork installs (`installer = "byok"`) track this repo's `byok-v*` releases via
+the GitHub API — never the official channel, so `Ctrl+U` can no longer pull
+the official build over the fork build. The bare semver after `byok-v` is the
+comparable version, which means a new tag triggers an update even when the
+upstream Cargo version is unchanged. `grok update --version` accepts
+`byok-v0.1.4`, `v0.1.4` and `0.1.4` alike.
+
+One-time note: installs from before this change persist
+`installer = "internal"`. Reinstall once with the script above (it rewrites
+the marker to `"byok"`); tagged binaries also self-correct without it.
+
+#### Cutting a release
+
+Merging upstream into `main` never publishes anything (it only runs CI).
+To ship, tag the tested commit and push the tag — `BYOK Build` compiles and
+attaches the binaries automatically:
+
+```powershell
+git tag byok-v0.1.4
+git push origin byok-v0.1.4
+```
+
 ## Building from source
 
 Requirements:
