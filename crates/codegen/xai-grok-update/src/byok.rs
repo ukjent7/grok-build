@@ -81,7 +81,8 @@ pub fn normalize_pin(pin: &str) -> String {
     pin.to_string()
 }
 
-/// Latest fork release as bare semver, semver-max over non-draft `byok-v*` tags.
+/// Latest stable fork release as bare semver, semver-max over non-draft,
+/// non-prerelease `byok-v*` tags.
 /// Paginates (100 per page, up to 5 pages) so the max is not truncated once the
 /// repo holds more releases than fit on one page.
 pub async fn fetch_latest() -> Result<String> {
@@ -153,9 +154,18 @@ async fn fetch_tags_once(url: &str) -> Result<Vec<String>> {
         .collect())
 }
 
+/// Latest stable fork release as bare semver: semver-max over non-prerelease
+/// `byok-v*` tags. Prereleases never become the default update target; pinned
+/// installs can still target one explicitly via [`normalize_pin`].
 fn pick_latest(tags: &[String]) -> Option<String> {
     tags.iter()
-        .filter_map(|t| normalize_tag(t))
+        .filter_map(|t| {
+            let bare = normalize_tag(t)?;
+            semver::Version::parse(&bare)
+                .ok()
+                .filter(|v| !v.is_prerelease())
+                .map(|_| bare)
+        })
         .max_by(|a, b| {
             semver::Version::parse(a)
                 .unwrap()
@@ -208,7 +218,15 @@ pub async fn install(
     let binary_path = download_dir.join(format!("grok-{version}-{platform}"));
 
     eprintln!("  Downloading grok {tag} ({platform}) from {repo}...");
-    super::auto_update::download_with_progress(&url, &binary_path).await?;
+    // FORK(byok): point users whose network cannot reach GitHub at the
+    // jsDelivr-served installer, which carries its own mirror fallback.
+    super::auto_update::download_with_progress(&url, &binary_path).await.map_err(|e| {
+        anyhow::anyhow!(
+            "{e:#}\n  hint: if GitHub is unreachable, reinstall via install.ps1 instead:\n    irm https://cdn.jsdelivr.net/gh/{repo}@main/install.ps1 | iex"
+        )
+    })?;
+    // FORK(byok): install.ps1 verifies its download; the in-app path must not be weaker.
+    verify_sha256(&repo, &tag, &asset, &binary_path).await?;
     super::auto_update::smoke_test_binary(&binary_path)
         .await
         .map_err(|e| anyhow::anyhow!("{e:#}"))?;
@@ -235,6 +253,93 @@ pub async fn install(
     .await;
 
     Ok(version)
+}
+
+/// FORK(byok): verify the downloaded release binary against SHA256 before it is
+/// activated. Trust order mirrors `install.ps1`: the repo-tree copy over
+/// raw.githubusercontent.com is the anchor (a tampered release asset cannot forge
+/// it), then the release-asset copy next to the binary. A missing checksum aborts
+/// unless `GROK_ALLOW_UNVERIFIED=1` is set explicitly; a mismatch always aborts.
+async fn verify_sha256(
+    repo: &str,
+    tag: &str,
+    asset: &str,
+    binary_path: &std::path::Path,
+) -> Result<()> {
+    let checksum_urls = [
+        format!("https://raw.githubusercontent.com/{repo}/main/checksums/{tag}/{asset}.sha256"),
+        format!("https://github.com/{repo}/releases/download/{tag}/{asset}.sha256"),
+    ];
+    let mut expected: Option<String> = None;
+    for url in checksum_urls {
+        let Ok(text) = fetch_text(&url).await else {
+            continue;
+        };
+        // Both sources are plain `sha256sum` output; the per-asset `.sha256`
+        // is the bare hash, the tree also holds a combined SHA256SUMS.
+        let hash = text
+            .lines()
+            .next()
+            .unwrap_or_default()
+            .split_whitespace()
+            .next()
+            .unwrap_or_default()
+            .to_ascii_lowercase();
+        if is_sha256_hex(&hash) {
+            expected = Some(hash);
+            break;
+        }
+    }
+    let Some(expected) = expected else {
+        if std::env::var("GROK_ALLOW_UNVERIFIED").is_ok_and(|v| v.trim() == "1") {
+            tracing::warn!("GROK_ALLOW_UNVERIFIED=1: installing without a SHA256 checksum");
+            return Ok(());
+        }
+        let _ = tokio::fs::remove_file(binary_path).await;
+        anyhow::bail!(
+            "no SHA256 checksum found for {tag}/{asset}; refusing to install an unverified \
+             binary (set GROK_ALLOW_UNVERIFIED=1 to override)"
+        );
+    };
+    let bytes = tokio::fs::read(binary_path).await?;
+    let actual: String = sha2::Sha256::digest(&bytes)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    if actual != expected {
+        let _ = tokio::fs::remove_file(binary_path).await;
+        anyhow::bail!(
+            "SHA256 mismatch for {asset} (expected {expected}, got {actual}); \
+             the download may be corrupt or tampered"
+        );
+    }
+    Ok(())
+}
+
+fn is_sha256_hex(s: &str) -> bool {
+    s.len() == 64 && s.chars().all(|c| c.is_ascii_hexdigit())
+}
+
+/// Fetch a small text file (a checksum) with the same TLS/CA settings as the releases API.
+async fn fetch_text(url: &str) -> Result<String> {
+    let mut builder = xai_grok_extra_ca::build_reqwest_client(|b| {
+        b.timeout(std::time::Duration::from_secs(15))
+    })?
+    .get(url)
+    .header("User-Agent", "grok-build-byok-updater");
+    // raw.githubusercontent.com needs no token for public repos; private
+    // forks-of-fork do, so pass GITHUB_TOKEN through like fetch_tags_once.
+    if let Ok(token) = std::env::var("GITHUB_TOKEN") {
+        let token = token.trim().to_string();
+        if !token.is_empty() {
+            builder = builder.bearer_auth(token);
+        }
+    }
+    let resp = builder.send().await?;
+    if !resp.status().is_success() {
+        anyhow::bail!("checksum fetch failed: HTTP {}", resp.status());
+    }
+    Ok(resp.text().await?)
 }
 
 #[cfg(test)]
@@ -276,5 +381,29 @@ mod tests {
         assert_eq!(pick_latest(&tags).as_deref(), Some("0.1.10"));
         let none: Vec<String> = vec!["v1.0.0".to_string()];
         assert_eq!(pick_latest(&none), None);
+    }
+
+    #[test]
+    fn pick_latest_skips_prereleases() {
+        let tags = vec![
+            "byok-v0.1.8".to_string(),
+            "byok-v0.2.0-rc1".to_string(),
+            "byok-v0.2.0-alpha.1".to_string(),
+        ];
+        assert_eq!(pick_latest(&tags).as_deref(), Some("0.1.8"));
+        // No stable release at all: nothing to pick, never serve a prerelease.
+        let only_prerelease: Vec<String> = vec!["byok-v0.2.0-rc1".to_string()];
+        assert_eq!(pick_latest(&only_prerelease), None);
+    }
+
+    #[test]
+    fn is_sha256_hex_accepts_only_64_hex_chars() {
+        assert!(is_sha256_hex(&"a".repeat(64)));
+        assert!(is_sha256_hex(&"F".repeat(64)));
+        assert!(is_sha256_hex(&format!("{}9", "0".repeat(63))));
+        assert!(!is_sha256_hex(&"g".repeat(64)));
+        assert!(!is_sha256_hex(&"a".repeat(63)));
+        assert!(!is_sha256_hex(&"a".repeat(65)));
+        assert!(!is_sha256_hex(""));
     }
 }
