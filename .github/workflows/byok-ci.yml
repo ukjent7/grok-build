@@ -21,11 +21,6 @@ env:
   # Newer than rust-toolchain.toml on purpose (see that file's bump policy);
   # overrides it without touching the repo file.
   RUSTUP_TOOLCHAIN: 1.98.1
-  SCCACHE_GHA_ENABLED: "true"
-  RUSTC_WRAPPER: "sccache"
-  # sccache can't cache incremental builds; dev profile has it on.
-  # Also shrinks the target dir against the 10 GB cache quota.
-  CARGO_INCREMENTAL: 0
 
 jobs:
   verify:
@@ -50,16 +45,12 @@ jobs:
         with:
           toolchain: 1.98.1
 
-      # Content-addressed compile cache shared across branches/commits/jobs.
-      # Only wraps rustc (C builds pass through untouched).
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.11
-
-      # Registry-only (see byok-build.yml): target dir caching thrashed
-      # the 10 GB quota for zero hits; sccache carries compilation.
+      # Full target-dir cache (debug only). sccache was removed here on
+      # purpose: CI(debug) and Build(release x N OSes) use disjoint hash
+      # spaces but share one 10 GB pool, so concurrent writers evicted each
+      # other and every job stayed half-cold. CI runs alone most of the time
+      # and stays warm by recency; release compilation belongs to sccache.
       - uses: Swatinem/rust-cache@v2
-        with:
-          cache-targets: false
 
       # --all-targets also compiles the test/bench targets we edited.
       # Debug profile on purpose: the shell build script skips the
