@@ -411,11 +411,15 @@ if (-not (Test-Path $ConfigFile)) {
 
 # FORK(byok): secure-by-default for third-party endpoints. Server-side search
 # has no real executor on most BYOK gateways (the model answers from weights
-# and may still claim it searched), and telemetry/trace upload should be an
+# and may still claim it searched); media generation hits xAI-only endpoints
+# with your third-party key; telemetry/trace upload/feedback should be an
 # explicit opt-in on a fork. Missing keys only — explicit user values win.
 $cfgLines = Get-Content $ConfigFile
 $cfgLines = Add-TomlValueIfMissing $cfgLines '' 'disable_web_search = true'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'telemetry = false'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'image_gen = false'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'video_gen = false'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'feedback = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'telemetry' 'trace_upload = false'
 [System.IO.File]::WriteAllLines($ConfigFile, [string[]]$cfgLines, [System.Text.Encoding]::UTF8)
 
@@ -481,6 +485,18 @@ if ($pathEntries -notcontains $BinDir) {
     if ($env:Path -notlike "*$BinDir*") {
         $env:Path = "$BinDir;$env:Path"
     }
+}
+
+# FORK(byok): image_edit has no [features] key (only the GROK_IMAGE_EDIT env),
+# but it hits the same xAI-only endpoint as image_gen. Default it off the
+# same way as the TOML defaults above: only when the user has set nothing
+# (User-level or current process), never overwriting an explicit value.
+# Re-enable later with: [Environment]::SetEnvironmentVariable('GROK_IMAGE_EDIT', '1', 'User')
+$userImageEdit = [Environment]::GetEnvironmentVariable('GROK_IMAGE_EDIT', 'User')
+if ([string]::IsNullOrEmpty($userImageEdit) -and [string]::IsNullOrEmpty($env:GROK_IMAGE_EDIT)) {
+    [Environment]::SetEnvironmentVariable('GROK_IMAGE_EDIT', '0', 'User')
+    $env:GROK_IMAGE_EDIT = '0'
+    Write-Host '  Disabled image editing by default (GROK_IMAGE_EDIT=0, xAI-only endpoint).' -ForegroundColor DarkGray
 }
 
 Write-Host ''

@@ -79,6 +79,35 @@ One-time note: installs from before this change persist
 `installer = "internal"`. Reinstall once with the script above (it rewrites
 the marker to `"byok"`); tagged binaries also self-correct without it.
 
+#### Secure defaults for third-party endpoints
+
+The installer seeds these into `~/.grok/config.toml` on a fresh install
+(missing keys only — your explicit values always win):
+
+```toml
+disable_web_search = true   # no server-side executor on most BYOK gateways
+
+[features]
+telemetry = false           # product analytics: opt-in on a fork
+image_gen = false           # xAI-only Imagine endpoint
+video_gen = false           # xAI-only Imagine endpoint
+feedback = false            # feedback goes to xAI; useless on a fork
+
+[telemetry]
+trace_upload = false        # trace payload upload: opt-in on a fork
+```
+
+`image_edit` has no `[features]` key upstream (env-only), so the installer
+sets User-level `GROK_IMAGE_EDIT=0` instead — again only when you have not
+set it yourself. Re-enable later with:
+
+```powershell
+[Environment]::SetEnvironmentVariable('GROK_IMAGE_EDIT', '1', 'User')
+```
+
+`web_fetch` (real client-side fetching) keeps working; point `[models]
+web_search` / `session_summary` at a BYOK-catalog model if you need them.
+
 #### Cutting a release
 
 Merging upstream into `main` never publishes anything (it only runs CI).
