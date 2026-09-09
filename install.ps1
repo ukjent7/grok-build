@@ -4,9 +4,9 @@
 #
 # Auth: GROK_DEPLOYMENT_KEY env var (takes precedence) or ~/.grok/auth.json from `grok login`.
 # Env: GROK_VERSION (a byok-vX.Y.Z tag, default: latest), GROK_BIN_DIR, GROK_PROXY_URL,
-#      GROK_GH_PROXY (mirror prefix, default: https://gh-proxy.com), GROK_GH_MIRROR=off (disable mirror)
+#      GROK_GH_PROXY (mirror prefix, default: https://axisnow.gh-proxy.org), GROK_GH_MIRROR=off (disable mirror)
 #
-# Downloads go through the gh-proxy.com mirror first (fast in CN) with a direct
+# Downloads go through the axisnow.gh-proxy.org mirror first (fast in CN) with a direct
 # GitHub fallback; the SHA256 checksum comes from the repo tree over jsDelivr
 # (checksums/<tag>/, committed by the release workflow), falling back to the
 # release-asset copies. Verified with Get-FileHash before installing.
@@ -236,7 +236,7 @@ $asset = 'xai-grok-pager-windows-x64'
 
 # --- Resolve download URLs (our GitHub Releases) ---
 # No channels in this fork: GROK_CHANNEL is ignored.
-# FORK(byok): gh-proxy.com mirror first (fast in CN), direct GitHub fallback.
+# FORK(byok): axisnow.gh-proxy.org mirror first (fast in CN), direct GitHub fallback.
 # Set GROK_GH_MIRROR=off to skip the mirror, or GROK_GH_PROXY to use another
 # prefix-style mirror (format: <prefix>/<full-original-url>).
 
@@ -251,7 +251,7 @@ $BinDir = if ($env:GROK_BIN_DIR) { $env:GROK_BIN_DIR } else { Join-Path $GrokDir
 $GhMirror = ''
 if ($env:GROK_GH_MIRROR -ne 'off') {
     if ($env:GROK_GH_PROXY) { $GhMirror = $env:GROK_GH_PROXY.TrimEnd('/') }
-    else { $GhMirror = 'https://gh-proxy.com' }
+    else { $GhMirror = 'https://axisnow.gh-proxy.org' }
 }
 
 New-Item -ItemType Directory -Path $DownloadDir -Force | Out-Null
