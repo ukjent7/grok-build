@@ -3141,6 +3141,34 @@ fn byok_messages_model_defaults_to_x_api_key_and_version_header() {
     );
 }
 #[test]
+fn first_party_messages_routes_get_no_auto_version_header() {
+    // FORK(byok): the auto `anthropic-version` header is third-party-only,
+    // matching the auth_scheme auto-default gate — first-party Messages
+    // routes manage their own headers.
+    let (_, models) = resolve_models_from_toml(
+        r#"
+        [model."first-party-messages"]
+        model = "m"
+        base_url = "https://api.x.ai/v1"
+        api_backend = "messages"
+        context_window = 200000
+        api_key = "k"
+        "#,
+        None,
+    );
+    let model = models
+        .get("first-party-messages")
+        .expect("model should exist");
+    let sampling = resolve_sampling(model, None);
+    assert!(
+        !sampling
+            .extra_headers
+            .keys()
+            .any(|k| k.eq_ignore_ascii_case("anthropic-version")),
+        "first-party Messages routes manage their own headers"
+    );
+}
+#[test]
 fn explicit_auth_scheme_bearer_overrides_messages_auto_default() {
     let (_, models) = resolve_models_from_toml(
         r#"

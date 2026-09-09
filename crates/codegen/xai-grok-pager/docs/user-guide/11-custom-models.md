@@ -77,7 +77,7 @@ Grok supports three API backends. Set `api_backend` in your `[model.*]` config t
 
 When you omit `api_backend`, Grok uses `chat_completions`.
 
-Authentication follows `auth_scheme`: `bearer` sends `Authorization: Bearer`, `x_api_key` sends an `x-api-key` header. The `messages` backend defaults to `x_api_key` on custom endpoints, and Grok sends the required `anthropic-version` header automatically unless you set it yourself in `extra_headers`.
+Authentication follows `auth_scheme`: `bearer` sends `Authorization: Bearer`, `x_api_key` sends an `x-api-key` header. The `messages` backend defaults to `x_api_key` on custom endpoints, and Grok sends the required `anthropic-version` header automatically on custom endpoints unless you set it yourself in `extra_headers`.
 
 ---
 

@@ -4959,7 +4959,12 @@ pub(crate) fn sampling_config_for_model(
         &api_backend,
         &credentials.base_url,
     );
+    // FORK(byok): gate to third-party endpoints, matching the auth_scheme
+    // auto-default: first-party Messages routes manage their own headers.
     if matches!(api_backend, ApiBackend::Messages)
+        && xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
+            &credentials.base_url,
+        )
         && !extra_headers
             .keys()
             .any(|k| k.eq_ignore_ascii_case(ANTHROPIC_VERSION_HEADER))
