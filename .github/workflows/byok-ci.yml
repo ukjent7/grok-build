@@ -9,7 +9,39 @@ name: BYOK CI
 # Cargo.lock churns on each monorepo sync and the 10 GB cache quota thrashes).
 on:
   push:
+    # Tags carry no new code (process: tag only tested main commits, and the
+    # release build still compiles everything). Skipping here drops the
+    # redundant second run after main already went green.
+    tags-ignore:
+      - 'byok-v*'
+    # Pure metadata/data/installer files: nothing cargo compiles or tests
+    # reads them (verified: no include_str!/build-script references).
+    # A push touching ONLY these skips CI; mixed pushes still run it.
+    # NOTE: crates/**.md is deliberately NOT here — prompt templates and
+    # user-guide pages are compiled into binaries/tests via include_str!.
+    paths-ignore:
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'SECURITY.md'
+      - 'LICENSE'
+      - 'THIRD-PARTY-NOTICES'
+      - 'SOURCE_REV'
+      - 'checksums/**'
+      - 'install.ps1'
+      - 'scripts/byok.sh'
+      - '.github/workflows/byok-build.yml'
   pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'SECURITY.md'
+      - 'LICENSE'
+      - 'THIRD-PARTY-NOTICES'
+      - 'SOURCE_REV'
+      - 'checksums/**'
+      - 'install.ps1'
+      - 'scripts/byok.sh'
+      - '.github/workflows/byok-build.yml'
   workflow_dispatch:
 
 concurrency:
@@ -60,11 +92,18 @@ jobs:
       # --all-targets also compiles the test/bench targets we edited.
       # Debug profile on purpose: the shell build script skips the
       # ripgrep download outside release builds.
+      # FORK(byok): xai-grok-update is the fork's self-update channel
+      # (byok.rs/auto_update.rs) — covered here, not just sampler/shell.
       - name: Check (incl. test targets)
-        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types --all-targets
+        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update --all-targets
 
       - name: Test sampler
         run: cargo test -p xai-grok-sampler
+
+      # FORK(byok): unit tests for the fork update axis (tag/release
+      # parsing, latest picking, installer gating). Cheap: deps already built.
+      - name: Test update channel
+        run: cargo test -p xai-grok-update
 
       # Scoped on purpose: the full sampling-types suite is upstream's
       # responsibility; we only own the endpoint_trust module.
