@@ -38,7 +38,7 @@ use crate::config::{AuthScheme, OriginClientInfo, SamplerConfig};
 use crate::client_third_party::{
     backfill_usage_details, deserialize_chat_chunk, deserialize_chat_response,
     deserialize_response_body, is_ignorable_response_event, retain_byok_hosted_tool_entries,
-    strip_byok_response_extensions,
+    screen_message_payload, strip_byok_response_extensions, ScreenedMessagePayload,
 };
 use crate::events::SamplingErrorInfo;
 use crate::span_timing::{ERROR, STATUS_CODE, SUCCESS, StreamSpanTiming};
@@ -1825,10 +1825,16 @@ impl SamplingClient {
 
         let event_stream = byte_stream.eventsource();
 
+        // FORK(byok): third-party endpoints inject frames the tagged `MessageStreamEvent`
+        // enum can never parse (`event: error` + `data: {}` from opencode zen, typeless
+        // keep-alives from relays). Screen payloads before the strict parse; first-party
+        // requests skip screening entirely.
+        let byok_compat = self.defaults.byok_compat;
+
         // Map SSE events into MessageStreamEvent.
         // Uses `scan` so transport errors terminate the stream after the first error (same pattern as `chat_completion_stream`)
         let events = event_stream
-            .scan(false, |had_transport_error, event_res| {
+            .scan(false, move |had_transport_error, event_res| {
                 if *had_transport_error {
                     return std::future::ready(None);
                 }
@@ -1847,29 +1853,38 @@ impl SamplingClient {
                         );
 
                         if let Some(stream_error) = try_parse_stream_error(data) {
-                            Some(Err(stream_error))
+                            Some(Some(Err(stream_error)))
                         } else {
-                            Some(
-                                serde_json::from_str::<messages::MessageStreamEvent>(data).map_err(
-                                    |e| {
-                                        tracing::error!(
-                                            error = %e,
-                                            raw_data = %data,
-                                            "Failed to deserialize MessageStreamEvent from stream"
-                                        );
-                                        SamplingError::Serialization(e)
-                                    },
-                                ),
-                            )
+                            let screened = if byok_compat {
+                                screen_message_payload(&event.event, data)
+                            } else {
+                                ScreenedMessagePayload::Parse
+                            };
+                            match screened {
+                                ScreenedMessagePayload::Skip => Some(None),
+                                ScreenedMessagePayload::Error(err) => Some(Some(Err(err))),
+                                ScreenedMessagePayload::Parse => Some(Some(
+                                    serde_json::from_str::<messages::MessageStreamEvent>(data)
+                                        .map_err(|e| {
+                                            tracing::error!(
+                                                error = %e,
+                                                raw_data = %data,
+                                                "Failed to deserialize MessageStreamEvent from stream"
+                                            );
+                                            SamplingError::Serialization(e)
+                                        }),
+                                )),
+                            }
                         }
                     }
                     Err(e) => {
                         *had_transport_error = true;
-                        Some(Err(SamplingError::EventStreamError(e.to_string())))
+                        Some(Some(Err(SamplingError::EventStreamError(e.to_string()))))
                     }
                 };
                 std::future::ready(item)
             })
+            .filter_map(std::future::ready)
             .boxed();
 
         Ok((

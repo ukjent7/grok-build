@@ -77,6 +77,88 @@ pub(crate) fn deserialize_response_body(bytes: &[u8]) -> Result<rs::Response> {
     }
 }
 
+/// Outcome of screening a raw Messages SSE payload before typed deserialization.
+#[derive(Debug)]
+pub(crate) enum ScreenedMessagePayload {
+    /// Hand the payload to the strict `MessageStreamEvent` parse.
+    Parse,
+    /// Keep-alive / placeholder frame with no content: skip it without touching the stream.
+    Skip,
+    /// The upstream reported an error in a frame the tagged enum can never parse
+    /// (e.g. opencode zen/go's `event: error` + `data: {}`). Surface it as a retryable
+    /// `StreamError` instead of the turn-killing, non-retryable `Serialization` error.
+    Error(SamplingError),
+}
+
+/// Screen a raw Anthropic Messages SSE payload before typed deserialization.
+///
+/// The `MessageStreamEvent` enum is `#[serde(tag = "type")]`, so any data payload
+/// without a usable string `type` fails with `missing field 'type'`, which the client
+/// classifies as a non-retryable Serialization error and kills the whole turn.
+/// Third-party gateways do send such frames: opencode zen/go reports stream errors as
+/// `event: error` + `data: {}`, and relays inject typeless `{}` placeholder heartbeats.
+/// The old grok-gateway-proxy repaired exactly these frames with the same policy.
+/// Unknown-type and non-JSON payloads stay on the strict path so a real protocol
+/// break remains loud rather than being silently guessed away.
+pub(crate) fn screen_message_payload(event_name: &str, data: &str) -> ScreenedMessagePayload {
+    let trimmed = data.trim();
+    // An empty payload fails the strict parse with a fatal EOF error and can never carry content.
+    if trimmed.is_empty() {
+        tracing::debug!(backend = "messages", event = %event_name, "skipping empty Messages SSE payload");
+        return ScreenedMessagePayload::Skip;
+    }
+    let parsed = serde_json::from_str::<serde_json::Value>(trimmed).ok();
+    let Some(members) = parsed.as_ref().and_then(|v| v.as_object()) else {
+        // Not a JSON object (or invalid JSON): keep the strict path. Outside a `ping`
+        // frame nothing meaningful lives here, and the strict parse stays loud.
+        if event_name.eq_ignore_ascii_case("ping") {
+            tracing::debug!(backend = "messages", raw_data = %trimmed, "skipping non-JSON ping frame");
+            return ScreenedMessagePayload::Skip;
+        }
+        return ScreenedMessagePayload::Parse;
+    };
+    // The enum tag must be a non-empty string: null/number/empty tags fail the strict parse identically.
+    if members
+        .get("type")
+        .and_then(serde_json::Value::as_str)
+        .is_some_and(|t| !t.is_empty())
+    {
+        return ScreenedMessagePayload::Parse;
+    }
+    if event_name.eq_ignore_ascii_case("ping") {
+        tracing::debug!(backend = "messages", raw_data = %trimmed, "skipping typeless ping frame");
+        return ScreenedMessagePayload::Skip;
+    }
+    if members.is_empty() {
+        if event_name.eq_ignore_ascii_case("error") {
+            tracing::warn!(
+                backend = "messages",
+                raw_data = %trimmed,
+                "upstream sent an empty error event"
+            );
+            return ScreenedMessagePayload::Error(SamplingError::StreamError {
+                error_type: "api_error".into(),
+                message: "upstream sent an empty error event".into(),
+                code: None,
+            });
+        }
+        // An empty object on a non-error frame is most likely a placeholder heartbeat:
+        // drop it rather than fabricate an error that interrupts a healthy stream.
+        tracing::debug!(backend = "messages", event = %event_name, "skipping typeless empty Messages SSE event");
+        return ScreenedMessagePayload::Skip;
+    }
+    tracing::warn!(
+        backend = "messages",
+        raw_data = %trimmed,
+        "upstream sent a stream event without a type field"
+    );
+    ScreenedMessagePayload::Error(SamplingError::StreamError {
+        error_type: "api_error".into(),
+        message: "upstream sent a stream event without a type field".into(),
+        code: None,
+    })
+}
+
 /// Some third-party chat gateways emit `"finish_reason": ""` instead of `null`.
 /// Empty string carries no information (pi treats it as absent too), so null it
 /// before typed deserialization instead of failing the whole turn.
@@ -154,4 +236,132 @@ pub(crate) fn is_ignorable_response_event(event_name: &str, data: &str) -> bool 
         }
     }
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use xai_grok_sampling_types::messages::MessageStreamEvent;
+
+    /// Documents the exact failure this screener exists for: the tagged enum needs a
+    /// string `type`, so an empty object fails non-retryably at the payload's end.
+    #[test]
+    fn empty_object_fails_typed_parse_with_the_reported_error() {
+        let err = serde_json::from_str::<MessageStreamEvent>("{}").unwrap_err();
+        assert_eq!(err.to_string(), "missing field `type` at line 1 column 2");
+        assert!(!SamplingError::from(err).is_retryable());
+    }
+
+    fn assert_retryable_error(screened: ScreenedMessagePayload, expected_message: &str) {
+        match screened {
+            ScreenedMessagePayload::Error(err) => {
+                assert!(err.is_retryable(), "the repaired error must stay retryable");
+                let SamplingError::StreamError {
+                    error_type,
+                    message,
+                    code,
+                } = err
+                else {
+                    panic!("expected StreamError, got {err:?}");
+                };
+                assert_eq!(error_type, "api_error");
+                assert_eq!(message, expected_message);
+                assert_eq!(code, None);
+            }
+            other => panic!("expected Error, got {other:?}"),
+        }
+    }
+
+    /// opencode zen/go reports stream errors as `event: error` + `data: {}`; the old
+    /// gateway rewrote this into a legal error event so the client retries.
+    #[test]
+    fn empty_object_on_error_event_becomes_retryable_stream_error() {
+        assert_retryable_error(
+            screen_message_payload("error", "{}"),
+            "upstream sent an empty error event",
+        );
+        assert_retryable_error(
+            screen_message_payload("ERROR", "  {}  "),
+            "upstream sent an empty error event",
+        );
+    }
+
+    #[test]
+    fn typeless_payload_with_members_becomes_retryable_stream_error() {
+        assert_retryable_error(
+            screen_message_payload("", r#"{"message":"boom"}"#),
+            "upstream sent a stream event without a type field",
+        );
+        // The tag must be a usable string: null/number/empty fail the strict parse too.
+        assert_retryable_error(
+            screen_message_payload("", r#"{"type":null,"index":0}"#),
+            "upstream sent a stream event without a type field",
+        );
+        assert_retryable_error(
+            screen_message_payload("", r#"{"type":""}"#),
+            "upstream sent a stream event without a type field",
+        );
+    }
+
+    #[test]
+    fn empty_and_placeholder_payloads_are_skipped() {
+        assert!(matches!(
+            screen_message_payload("", ""),
+            ScreenedMessagePayload::Skip
+        ));
+        assert!(matches!(
+            screen_message_payload("ping", " \r\n"),
+            ScreenedMessagePayload::Skip
+        ));
+        // Placeholder heartbeats: empty object on a frame the upstream did not mark as error.
+        assert!(matches!(
+            screen_message_payload("ping", "{}"),
+            ScreenedMessagePayload::Skip
+        ));
+        assert!(matches!(
+            screen_message_payload("keepalive", "{}"),
+            ScreenedMessagePayload::Skip
+        ));
+    }
+
+    #[test]
+    fn typed_events_pass_through_to_the_strict_parse() {
+        for data in [
+            r#"{"type":"ping"}"#,
+            r#"{"type":"message_start","message":{}}"#,
+            r#"{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"hi"}}"#,
+            r#"{"type":"error","error":{"type":"overloaded_error","message":"slow down"}}"#,
+        ] {
+            assert!(matches!(
+                screen_message_payload("content_block_delta", data),
+                ScreenedMessagePayload::Parse
+            ));
+        }
+    }
+
+    #[test]
+    fn non_object_and_invalid_payloads_stay_strict_outside_ping() {
+        // A real protocol break must stay loud, not be guessed away.
+        assert!(matches!(
+            screen_message_payload("", "[1,2]"),
+            ScreenedMessagePayload::Parse
+        ));
+        assert!(matches!(
+            screen_message_payload("", "{oops"),
+            ScreenedMessagePayload::Parse
+        ));
+    }
+
+    #[test]
+    fn ping_frames_with_unparseable_payloads_are_skipped() {
+        // Keep-alives carry no content; never let one kill the stream.
+        assert!(matches!(
+            screen_message_payload("ping", "alive"),
+            ScreenedMessagePayload::Skip
+        ));
+        assert!(matches!(
+            screen_message_payload("ping", r#"{"error":"x"}"#),
+            ScreenedMessagePayload::Skip
+        ));
+    }
 }
