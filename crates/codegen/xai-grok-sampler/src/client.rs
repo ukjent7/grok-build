@@ -250,6 +250,68 @@ pub(crate) fn deserialize_response_body(bytes: &[u8]) -> Result<rs::Response> {
     }
 }
 
+/// Some third-party chat gateways emit `"finish_reason": ""` instead of `null`.
+/// Empty string carries no information (pi treats it as absent too), so null it
+/// before typed deserialization instead of failing the whole turn.
+/// Any other unknown reason stays loud: its semantics can't be guessed
+/// (e.g. mistaking a truncation marker for `stop` would silently cut the turn).
+fn null_out_empty_finish_reasons(value: &mut serde_json::Value) {
+    if let Some(choices) = value.get_mut("choices").and_then(|v| v.as_array_mut()) {
+        for choice in choices {
+            if choice.get("finish_reason").and_then(|v| v.as_str()) == Some("") {
+                choice["finish_reason"] = serde_json::Value::Null;
+            }
+        }
+    }
+}
+
+/// Deserialize a Chat stream chunk, tolerating `"finish_reason": ""`.
+pub(crate) fn deserialize_chat_chunk(data: &str) -> Result<ChatCompletionChunk> {
+    match serde_json::from_str::<ChatCompletionChunk>(data) {
+        Ok(chunk) => Ok(chunk),
+        Err(first_err) => {
+            if let Ok(mut value) = serde_json::from_str::<serde_json::Value>(data) {
+                null_out_empty_finish_reasons(&mut value);
+                if let Ok(chunk) = serde_json::from_value::<ChatCompletionChunk>(value) {
+                    return Ok(chunk);
+                }
+            }
+            tracing::error!(
+                error = %first_err,
+                raw_data = %data,
+                "Failed to deserialize ChatCompletionChunk from stream"
+            );
+            Err(SamplingError::Serialization(first_err))
+        }
+    }
+}
+
+/// Deserialize a unary Chat body, tolerating `"finish_reason": ""`.
+pub(crate) fn deserialize_chat_response(bytes: &[u8]) -> Result<ChatCompletionResponse> {
+    match serde_json::from_slice::<ChatCompletionResponse>(bytes) {
+        Ok(obj) => Ok(obj),
+        Err(first_err) => {
+            let raw_body = String::from_utf8_lossy(bytes);
+            tracing::error!(
+                error = %first_err,
+                raw_body = %raw_body,
+                "Failed to deserialize ChatCompletionResponse"
+            );
+            let mut value: serde_json::Value = serde_json::from_slice(bytes)
+                .map_err(|_| SamplingError::Serialization(first_err))?;
+            null_out_empty_finish_reasons(&mut value);
+            serde_json::from_value::<ChatCompletionResponse>(value).map_err(|retry_err| {
+                tracing::error!(
+                    error = %retry_err,
+                    raw_body = %raw_body,
+                    "Failed to deserialize ChatCompletionResponse after sanitize"
+                );
+                SamplingError::Serialization(retry_err)
+            })
+        }
+    }
+}
+
 /// Keep-alive / extension events a third-party Responses implementation may inject
 /// (e.g. `ping` from gateways/proxies during long reasoning turns).
 /// Unknown to async-openai's typed event enum, so skip them instead of failing the stream.
@@ -977,15 +1039,7 @@ impl SamplingClient {
             });
         }
 
-        let completion = serde_json::from_slice::<ChatCompletionResponse>(&bytes).map_err(|e| {
-            let raw_body = String::from_utf8_lossy(&bytes);
-            tracing::error!(
-                error = %e,
-                raw_body = %raw_body,
-                "Failed to deserialize ChatCompletionResponse"
-            );
-            SamplingError::Serialization(e)
-        })?;
+        let completion = deserialize_chat_response(bytes.as_ref())?;
         Ok(completion)
     }
 
@@ -1231,16 +1285,7 @@ impl SamplingClient {
                         if let Some(stream_error) = try_parse_stream_error(data) {
                             Some(Err(stream_error))
                         } else {
-                            Some(
-                                serde_json::from_str::<ChatCompletionChunk>(data).map_err(|e| {
-                                    tracing::error!(
-                                        error = %e,
-                                        raw_data = %data,
-                                        "Failed to deserialize ChatCompletionChunk from stream"
-                                    );
-                                    SamplingError::Serialization(e)
-                                }),
-                            )
+                            Some(deserialize_chat_chunk(data))
                         }
                     }
                     Err(e) => {
@@ -3465,5 +3510,30 @@ mod tests {
         assert_eq!(usage.input_tokens, 10);
         assert_eq!(usage.output_tokens, 5);
         assert_eq!(usage.total_tokens, 15);
+    }
+
+    #[test]
+    fn empty_string_finish_reason_parses_as_absent() {
+        // Third-party quirk: "" where the spec says null. Stream chunk...
+        let chunk = deserialize_chat_chunk(
+            r#"{"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"m","choices":[{"index":0,"delta":{"content":"Hi"},"finish_reason":""}]}"#,
+        )
+        .expect("empty finish_reason parses");
+        assert!(chunk.choices[0].finish_reason.is_none());
+        // ...and unary body.
+        let body = br#"{"id":"chatcmpl-123","object":"chat.completion","created":1694268190,"model":"m","choices":[{"index":0,"message":{"role":"assistant","content":"Hi"},"finish_reason":""}]}"#;
+        let response = deserialize_chat_response(body).expect("empty finish_reason parses");
+        assert!(response.choices[0].finish_reason.is_none());
+    }
+
+    #[test]
+    fn unknown_nonempty_finish_reason_stays_loud() {
+        // Anything but "" has unknown semantics; guessing risks truncating
+        // the turn, so it must still fail instead of parsing.
+        let err = deserialize_chat_chunk(
+            r#"{"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"m","choices":[{"index":0,"delta":{},"finish_reason":"eos"}]}"#,
+        )
+        .expect_err("unknown reason must fail");
+        assert!(matches!(err, SamplingError::Serialization(_)));
     }
 }
