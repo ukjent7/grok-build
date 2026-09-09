@@ -5,7 +5,7 @@
 //! NOTE: this file is covered by BYOK CI (`cargo test -p xai-grok-sampler`).
 
 use xai_grok_sampling_types::{
-    ChatCompletionChunk, ChatCompletionResponse, Result, SamplingError, rs,
+    ChatCompletionChunk, ChatCompletionResponse, Result, SamplingError, rs, truncate_bytes,
 };
 
 /// Drop hosted-tool entries a strict third-party Responses endpoint rejects.
@@ -279,9 +279,15 @@ pub(crate) fn screen_message_payload(event_name: &str, data: &str) -> ScreenedMe
         raw_data = %trimmed,
         "upstream sent a stream event without a type field"
     );
+    // Keep the raw frame in the surfaced error too: tracing output only helps
+    // with debug logging enabled, and this frame is the only diagnostic a
+    // misbehaving third-party gateway leaves behind.
     ScreenedMessagePayload::Error(SamplingError::StreamError {
         error_type: "api_error".into(),
-        message: "upstream sent a stream event without a type field".into(),
+        message: format!(
+            "upstream sent a stream event without a type field: {}",
+            truncate_bytes(trimmed, 200)
+        ),
         code: None,
     })
 }
@@ -494,16 +500,16 @@ mod tests {
     fn typeless_payload_with_members_becomes_retryable_stream_error() {
         assert_retryable_error(
             screen_message_payload("", r#"{"message":"boom"}"#),
-            "upstream sent a stream event without a type field",
+            r#"upstream sent a stream event without a type field: {"message":"boom"}"#,
         );
         // The tag must be a usable string: null/number/empty fail the strict parse too.
         assert_retryable_error(
             screen_message_payload("", r#"{"type":null,"index":0}"#),
-            "upstream sent a stream event without a type field",
+            r#"upstream sent a stream event without a type field: {"type":null,"index":0}"#,
         );
         assert_retryable_error(
             screen_message_payload("", r#"{"type":""}"#),
-            "upstream sent a stream event without a type field",
+            r#"upstream sent a stream event without a type field: {"type":""}"#,
         );
     }
 
