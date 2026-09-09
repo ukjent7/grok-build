@@ -1449,7 +1449,9 @@ fn truncate_err(s: &str, max: usize) -> String {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum SmokeTestFailure {
+// FORK(byok): `pub(crate)` to match `smoke_test_binary` (see below); variants
+// hold only Strings, so no further visibility cascade.
+pub(crate) enum SmokeTestFailure {
     #[error(
         "downloaded binary failed to run (--version timed out after {}s).\n\
          Your current version is unchanged.",
