@@ -1,0 +1,42 @@
+name: BYOK Purge jsDelivr
+
+# jsDelivr caches mutable `@main` URLs, so the documented installer URL can
+# keep serving a stale install.ps1 for hours after a push. Immutable
+# `@<tag>`/`@<sha>` URLs are unaffected and need no purge.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'install.ps1'
+  workflow_dispatch:
+
+jobs:
+  purge:
+    name: purge install.ps1
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The purge target is the @main CDN URL, so verify against main
+          # even for manual runs dispatched from another branch.
+          ref: main
+
+      - name: Purge jsDelivr cache
+        run: |
+          curl -fsSL --retry 3 "https://purge.jsdelivr.net/gh/${{ github.repository }}@main/install.ps1"
+
+      - name: Verify CDN serves the pushed file
+        run: |
+          expected=$(git show HEAD:install.ps1 | sha256sum | awk '{print $1}')
+          for i in 1 2 3 4 5 6; do
+            actual=$(curl -fsSL "https://cdn.jsdelivr.net/gh/${{ github.repository }}@main/install.ps1" | sha256sum | awk '{print $1}')
+            if [ "$actual" = "$expected" ]; then
+              echo "CDN is fresh."
+              exit 0
+            fi
+            echo "CDN still stale (attempt $i/6), retrying..."
+            sleep 10
+          done
+          echo "CDN still serves a stale install.ps1 after purge."
+          exit 1
