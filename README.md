@@ -73,7 +73,10 @@ the GitHub API — never the official channel, so `Ctrl+U` can no longer pull
 the official build over the fork build. The bare semver after `byok-v` is the
 comparable version, which means a new tag triggers an update even when the
 upstream Cargo version is unchanged. `grok update --version` accepts
-`byok-v0.1.4`, `v0.1.4` and `0.1.4` alike.
+`byok-v0.1.4`, `v0.1.4` and `0.1.4` alike. Updates download from GitHub
+Releases and verify the binary against the committed `checksums/<tag>/`
+SHA256 before activating it; prerelease tags are never picked automatically
+(pin one explicitly if you want it).
 
 One-time note: installs from before this change persist
 `installer = "internal"`. Reinstall once with the script above (it rewrites
@@ -128,10 +131,15 @@ git push origin byok-v0.1.4
 
 Each tag build publishes per-binary `.sha256` files to the Release and then
 commits copies into `checksums/<tag>/` on `main`, plus a `checksums/latest`
-pointer holding the newest tag. `install.ps1` reads the checksum from that
-tree over jsDelivr (reachable without direct GitHub access) and only falls
-back to the release-asset copies. The `latest` pointer advances on semver
-only, so backfilling an older tag never moves it backwards.
+pointer holding the newest stable tag. `install.ps1` reads the checksum from
+that tree over jsDelivr (reachable without direct GitHub access) and only
+falls back to the direct release-asset copy — never to a mirror-served hash,
+which the mirror serving the binary itself could forge. A wrong hash aborts;
+a missing checksum aborts too, unless you set `GROK_ALLOW_UNVERIFIED=1`
+explicitly. The `latest` pointer advances on semver only, so backfilling an
+older tag never moves it backwards, and prerelease tags never move it at
+all. The release flow purges the jsDelivr cache for the pointer right after
+it advances.
 
 #### Fork baseline (for the next upstream sync)
 

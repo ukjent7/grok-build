@@ -78,7 +78,7 @@ pub fn is_prod_cli_chat_proxy_url(url: &str) -> bool {
     xai_grok_sampling_types::endpoint_trust::is_prod_cli_chat_proxy_url(url)
 }
 /// True for configured first-party cli-chat-proxy routes, excluding arbitrary loopback URLs.
-/// Unlike [`is_cli_chat_proxy_url`], this only trusts the exact compiled or environment-selected route.
+/// Unlike [`is_cli_chat_proxy_url`], this only trusts the exact compiled route.
 /// It is suitable for xAI-only request extensions.
 pub fn is_trusted_cli_chat_proxy_url(url: &str) -> bool {
     xai_grok_sampling_types::endpoint_trust::is_trusted_cli_chat_proxy_url(url)

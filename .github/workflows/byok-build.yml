@@ -165,7 +165,12 @@ jobs:
         run: |
           files=$(find dist -type f -name 'xai-grok-pager-*' ! -name '*.sha256')
           echo "$files"
-          (cd dist && find . -type f -name 'xai-grok-pager-*' ! -name '*.sha256' -exec sha256sum {} + > SHA256SUMS)
+          # Flat basenames: each artifact lands in its own subdir under dist/,
+          # but release downloads are flat — emit `hash  <basename>` so
+          # `sha256sum -c SHA256SUMS` works in the download folder.
+          for f in $files; do
+            (cd "$(dirname "$f")" && sha256sum "$(basename "$f")")
+          done > dist/SHA256SUMS
           cat dist/SHA256SUMS
           for f in $files; do
             sha256sum "$f" | awk '{print $1}' > "$f.sha256"
@@ -197,10 +202,18 @@ jobs:
           cp dist/SHA256SUMS "checksums/$TAG/SHA256SUMS"
           # Advance the `latest` pointer only when the new tag is newer, so a
           # backfilled older tag cannot move it backwards.
+          # FORK(byok): prereleases never advance the pointer — GNU sort -V
+          # ranks `0.2.0-rc1` above `0.2.0`, so an rc tag would wedge the
+          # pointer past the eventual stable release. install.ps1 and the
+          # Rust updater skip prereleases for the same reason.
           strip() { echo "$1" | sed 's/^byok-v//'; }
+          is_prerelease() { case "$1" in *-*) return 0 ;; *) return 1 ;; esac; }
           cur=""
           if [ -f checksums/latest ]; then cur=$(tr -d ' \r\n' < checksums/latest); fi
-          if [ -z "$cur" ]; then
+          if is_prerelease "$(strip "$TAG")"; then
+            echo "prerelease $TAG: checksums committed; latest pointer stays at ${cur:-none}"
+          elif [ -z "$cur" ] || is_prerelease "$(strip "$cur")"; then
+            # Empty pointer, or a legacy prerelease pointer a stable tag always replaces.
             printf '%s' "$TAG" > checksums/latest
           else
             top=$(printf '%s\n%s\n' "$(strip "$cur")" "$(strip "$TAG")" | sort -V | tail -n 1)
@@ -217,3 +230,13 @@ jobs:
               commit -m "chore: checksums for $TAG"
             git push origin main
           fi
+
+      # FORK(byok): the checksums commit above is pushed with GITHUB_TOKEN,
+      # which never triggers other workflows — the purge workflow cannot
+      # react to it. Purge the CDN-cached pointer right here. The purge API
+      # is public (no token) and a failure only costs cache freshness until
+      # TTL expiry, not the release itself.
+      - name: Purge jsDelivr cache for checksums/latest
+        continue-on-error: true
+        run: |
+          curl -fsSL --retry 3 "https://purge.jsdelivr.net/gh/${{ github.repository }}@main/checksums/latest"
