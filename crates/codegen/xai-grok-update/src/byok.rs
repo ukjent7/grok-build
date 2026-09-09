@@ -302,6 +302,8 @@ async fn verify_sha256(
         );
     };
     let bytes = tokio::fs::read(binary_path).await?;
+    // Digest is a trait: its methods resolve only with the trait in scope.
+    use sha2::Digest;
     let actual: String = sha2::Sha256::digest(&bytes)
         .iter()
         .map(|b| format!("{b:02x}"))
