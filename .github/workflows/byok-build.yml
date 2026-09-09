@@ -106,6 +106,14 @@ jobs:
       - name: Build release binary
         run: cargo build -p xai-grok-pager-bin --profile ci-release
 
+      # Always print: when the cache backend is offline the build silently
+      # falls back to local compile (SCCACHE_IGNORE_SERVER_IO_ERROR) and just
+      # gets slow — this is how you tell that happened from the log.
+      - name: sccache stats
+        if: always()
+        shell: bash
+        run: sccache --show-stats || true
+
       # Rename to the platform-unique artifact name first: linux and macOS
       # binaries are both called xai-grok-pager and would collide as
       # release assets. The installer downloads these exact names.
