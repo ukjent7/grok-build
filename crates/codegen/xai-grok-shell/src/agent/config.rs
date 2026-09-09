@@ -3886,7 +3886,7 @@ impl ConfigModelOverride {
                 .as_deref()
                 .is_some_and(xai_grok_sampling_types::endpoint_trust::is_third_party_base_url)
         {
-            // Anthropic-protocol endpoints authenticate with `x-api-key`, not
+            // FORK(byok): Anthropic-protocol endpoints authenticate with `x-api-key`, not
             // `Authorization: Bearer`. Auto-default only for custom endpoints so
             // first-party proxy Messages routes keep Bearer session auth.
             // An explicit `auth_scheme` above always wins.
@@ -4928,6 +4928,7 @@ pub(crate) fn response_include_extensions(
 }
 /// Required request header for the Anthropic Messages API, sent when the model sets none.
 /// An explicit `[model.<id>].extra_headers` (or global `[models].extra_headers`) entry always wins.
+/// FORK(byok): auto-default below keeps third-party Messages endpoints working without manual headers.
 const ANTHROPIC_VERSION_HEADER: &str = "anthropic-version";
 const ANTHROPIC_DEFAULT_VERSION: &str = "2023-06-01";
 pub(crate) fn sampling_config_for_model(

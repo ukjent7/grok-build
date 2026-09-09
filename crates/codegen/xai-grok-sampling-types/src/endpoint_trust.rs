@@ -1,4 +1,4 @@
-//! Canonical first-party endpoint trust checks.
+//! FORK(byok): canonical first-party endpoint trust checks.
 //!
 //! Moved here from `xai-grok-shell-base::util` so the sampler crate can derive
 //! third-party (BYOK) compatibility from `base_url` itself instead of having a

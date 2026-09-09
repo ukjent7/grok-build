@@ -101,7 +101,6 @@ pub struct SamplerConfig {
     #[serde(default)]
     pub doom_loop_recovery: Option<DoomLoopRecoveryPolicy>,
 
-
     /// Per-request header injector (e.g. OTel traceparent). Called in `post()`.
     #[serde(skip)]
     pub header_injector: Option<SharedHeaderInjector>,

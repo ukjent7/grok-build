@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("cargo:rustc-check-cfg=cfg(bundle_rg)");
 
     // Bundle when a path override is set or this is a release build
-    // (`ci-release` is the CI-only profile inheriting `release`; PROFILE carries
+    // FORK(byok): `ci-release` is the CI-only profile inheriting `release`; PROFILE carries
     // the profile name, not the inheritance chain, so match it explicitly.)
     // Bail before touching the filesystem so debug `cargo check` needs no environment
     let path_override = env::var("GROK_SHELL_BUNDLE_RG_PATH").ok();

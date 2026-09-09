@@ -90,6 +90,15 @@ git tag byok-v0.1.4
 git push origin byok-v0.1.4
 ```
 
+#### Fork baseline (for the next upstream sync)
+
+Upstream does not accept PRs; this fork carries its patches on top of the
+last verified sync point. `SOURCE_REV` records the upstream monorepo SHA but
+that object is not in this clone's history — the verifiable base here is the
+newest `Synced from monorepo` commit (currently `75810042`). To sync: fetch
+the upstream tree read-only, rebase the fork commits above, resolve
+`auto_update` / `client` / `config` first, then tag a new `byok-v*`.
+
 ## Building from source
 
 Requirements:

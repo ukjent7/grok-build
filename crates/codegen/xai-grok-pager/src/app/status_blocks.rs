@@ -173,7 +173,7 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
     }
 }
 
-/// Cache hit rate as a percentage; no input tokens means 0 rather than NaN.
+/// FORK(byok): cache hit rate as a percentage; no input tokens means 0 rather than NaN.
 fn cache_hit_percent(input_tokens: u64, cached_read_tokens: u64) -> f64 {
     if input_tokens == 0 {
         return 0.0;

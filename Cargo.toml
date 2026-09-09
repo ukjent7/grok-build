@@ -387,7 +387,7 @@ zstd = "0.13"
 incremental = true
 panic = "abort"
 
-# CI-only release profile for cloud builds (see .github/workflows/byok-build.yml).
+# FORK(byok): CI-only release profile for cloud builds (see .github/workflows/byok-build.yml).
 # Same codegen as `release`, minus everything that slows one-shot CI builds or
 # bloats the shared 10 GB GitHub cache: no incremental artifacts, pinned
 # codegen-units, no debug info. Functionally identical binary (same opt-level,

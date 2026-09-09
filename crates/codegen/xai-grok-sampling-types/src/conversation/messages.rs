@@ -77,6 +77,8 @@ pub fn build_messages_request(req: &ConversationRequest) -> crate::messages::Mes
     let mut pending_assistant: Vec<ContentBlock> = Vec::new();
     let mut pending_tool_results: Vec<ContentBlock> = Vec::new();
 
+    // Both `ToolUse.id` and `ToolResult.tool_use_id` go through the same mapping,
+    // so the correlation survives even when the wire id differs from the source.
     let sanitize_tool_call_id = |id: &str| -> String {
         id.chars()
             .map(|c| {
@@ -280,7 +282,10 @@ pub fn build_messages_request(req: &ConversationRequest) -> crate::messages::Mes
         Some(SystemParam::Blocks(system_blocks))
     };
 
-    let tools: Option<Vec<ToolParam>> = if req.tools.is_empty() {
+    // FORK(byok): `None` disables tools per the standard protocol: omit `tools`
+    // entirely instead of sending them with a default choice.
+    let tool_choice_none = matches!(req.tool_choice, Some(ConversationToolChoice::None));
+    let tools: Option<Vec<ToolParam>> = if req.tools.is_empty() || tool_choice_none {
         None
     } else {
         Some(
@@ -295,12 +300,16 @@ pub fn build_messages_request(req: &ConversationRequest) -> crate::messages::Mes
         )
     };
 
-    let tool_choice: Option<ToolChoiceParam> = req.tool_choice.as_ref().map(|tc| match tc {
-        ConversationToolChoice::Auto => ToolChoiceParam::Auto,
-        ConversationToolChoice::Required => ToolChoiceParam::Any,
-        ConversationToolChoice::Function(name) => ToolChoiceParam::Tool { name: name.clone() },
-        ConversationToolChoice::None => ToolChoiceParam::Auto, // ToolChoiceParam has no none variant, so fall back to the default
-    });
+    let tool_choice: Option<ToolChoiceParam> = match req.tool_choice.as_ref() {
+        None => None,
+        Some(ConversationToolChoice::Auto) => Some(ToolChoiceParam::Auto),
+        Some(ConversationToolChoice::Required) => Some(ToolChoiceParam::Any),
+        Some(ConversationToolChoice::Function(name)) => {
+            Some(ToolChoiceParam::Tool { name: name.clone() })
+        }
+        // FORK(byok): standard `none` omits tools entirely (see above), so no wire choice.
+        Some(ConversationToolChoice::None) => None,
+    };
 
     let effort = req
         .reasoning_effort
@@ -331,12 +340,15 @@ pub fn build_messages_request(req: &ConversationRequest) -> crate::messages::Mes
     MessagesRequest {
         model: req.model.clone().unwrap_or_default(),
         messages,
+        // `0` is a sentinel, never the wire value: `SamplingClient::apply_message_defaults`
+        // replaces it with the model default or 128k before sending.
         max_tokens: req.max_output_tokens.unwrap_or(0),
         system,
         tools,
         tool_choice,
         temperature: req.temperature,
         top_p: req.top_p,
+        // `ConversationRequest` carries no `top_k`; omit rather than invent a value.
         top_k: None,
         stream: None, // The caller sets this
         stop_sequences: None,

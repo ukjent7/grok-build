@@ -1264,6 +1264,7 @@ async fn remove_stale_models_cache() {
 
 /// Remove the stale `grok-pager` symlink/binary from `~/.grok/bin/` left by
 /// older installations that shipped a separate pager binary.
+/// FORK(byok): `pub(crate)` so `byok::install` can reuse the managed-layout helper.
 pub(crate) async fn remove_stale_pager(bin_dir: &std::path::Path) {
     let name = if cfg!(windows) {
         "grok-pager.exe"
@@ -1480,6 +1481,7 @@ fn nonzero_message(status: &str, stderr: &str) -> String {
 pub(crate) async fn smoke_test_binary(
     binary_path: &std::path::Path,
 ) -> Result<(), SmokeTestFailure> {
+    // FORK(byok): `pub(crate)` so `byok::install` reuses the download smoke test.
     // ETXTBSY race: a concurrent updater's child in this process briefly holds every open fd between fork and exec pre_exec
     // in detach_command forces the fork/exec path. The held fds include the write side of a download just renamed onto
     // `binary_path`. So retry instead of failing the install (and deleting a racer's freshly installed binary)
@@ -1674,6 +1676,7 @@ async fn regenerate_completions(binary: &std::path::Path, grok_home: &std::path:
 /// returns a relative path like `../downloads/grok-0.1.203-linux-x86_64`. Relative symlinks survive Docker bind-mounts
 /// where `~/.grok/` is mapped into a container with a different `$HOME` (and thus a different absolute prefix).
 #[cfg(unix)]
+/// FORK(byok): `pub(crate)` so `byok::install` can maintain the `grok-latest` symlink.
 pub(crate) fn relative_symlink_target(
     target: &std::path::Path,
     link: &std::path::Path,
@@ -1700,6 +1703,7 @@ pub(crate) fn relative_symlink_target(
 /// The bootstrap installers (`install.sh`, `install.ps1`, `install-enterprise.sh`) maintain `grok` and `agent` in
 /// lockstep, and so must the updater. Otherwise `grok update` leaves `agent` pinned at the previous version. Any earlier
 /// successful swaps are rolled back if a later one fails, including *removing* a link that didn't exist before.
+/// FORK(byok): `pub(crate)` so `byok::install` reuses the managed-layout swap.
 pub(crate) async fn swap_managed_bin_links(
     binary_path: &std::path::Path,
     bin_dir: &std::path::Path,
@@ -1913,6 +1917,7 @@ impl LinkRollback {
 /// Creates a temporary symlink next to `link_path`, then renames it over the old symlink. This avoids the
 /// remove-then-create race where the path briefly doesn't exist, and never deletes the old target file. On macOS
 /// (especially Apple Silicon), deleting a binary that a running process has mmap'd causes SIGKILL.
+/// FORK(byok): `pub(crate)` so `byok::install` reuses the atomic swap.
 #[cfg(unix)]
 pub(crate) async fn atomic_symlink_swap(
     target: &std::path::Path,
@@ -2063,6 +2068,7 @@ async fn sweep_old_exe_backups(old: &std::path::Path) {
 /// A process may still be running the old binary without having loaded all its pages yet. Deleting it on macOS causes
 /// SIGKILL because the kernel can no longer verify the code signature. Files must match `{bin_prefix}-{digit}*` to be
 /// considered versioned binaries (this avoids `grok-*` matching `grok-pager-*` or `grok-latest`).
+/// FORK(byok): `pub(crate)` so `byok::install` reuses the download cleanup.
 pub(crate) async fn cleanup_old_downloads(
     dir: &std::path::Path,
     bin_prefix: &str,

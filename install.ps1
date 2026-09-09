@@ -53,6 +53,8 @@ function Download-File([string]$Url, [string]$OutFile) {
     # TODO: parallel byte-range download (matches install.sh download_file_parallel).
     # Skipped for now: requires Start-ThreadJob / RunspacePool for true parallelism on PS 5.1
     # and HEAD + Range request orchestration. Single-connection HttpWebRequest below remains.
+    # NOTE(FORK/byok): no checksum file yet; integrity rests on the post-download
+    # smoke test (`--version` run). Add SHA256SUMS verification if releases add them.
     # Stream via HttpWebRequest — faster than Invoke-WebRequest on PS 5.1 and supports progress.
     $request = [System.Net.HttpWebRequest]::Create($Url)
     $request.Timeout = 300000  # 5 min

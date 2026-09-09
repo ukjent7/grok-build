@@ -73,6 +73,7 @@ mod expand_home_tests {
 }
 /// Production cli-chat-proxy base only (compiled-in constant). Unlike [`is_cli_chat_proxy_url`], this rejects loopback and staging/dev hosts. Used for security-sensitive remote kill-switches.
 /// Those must not become env toggles via `GROK_CLI_CHAT_PROXY_BASE_URL` (or similar) pointing at an attacker-controlled origin.
+/// FORK(byok): thin delegate to `endpoint_trust`; that module is the single source of truth.
 pub fn is_prod_cli_chat_proxy_url(url: &str) -> bool {
     xai_grok_sampling_types::endpoint_trust::is_prod_cli_chat_proxy_url(url)
 }

@@ -12,6 +12,7 @@
 pub mod actor;
 pub mod attribution;
 pub mod client;
+pub(crate) mod client_third_party;
 pub mod commands;
 pub mod config;
 pub mod doom_loop;

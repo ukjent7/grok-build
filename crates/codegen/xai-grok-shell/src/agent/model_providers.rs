@@ -13,7 +13,7 @@ pub struct ModelProviderConfig {
     pub env_key: Option<EnvKeys>,
     pub api_key: Option<String>,
     pub api_backend: Option<ApiBackend>,
-    /// Auth header scheme inherited by models; a model-level `auth_scheme` always wins.
+    /// FORK(byok): auth header scheme inherited by models; a model-level `auth_scheme` always wins.
     pub auth_scheme: Option<AuthScheme>,
     pub extra_headers: IndexMap<String, String>,
     /// Query parameters folded into every request URL; inherited by models.

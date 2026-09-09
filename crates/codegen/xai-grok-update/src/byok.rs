@@ -80,6 +80,8 @@ pub fn normalize_pin(pin: &str) -> String {
 }
 
 /// Latest fork release as bare semver, semver-max over non-draft `byok-v*` tags.
+/// Paginates (100 per page, up to 5 pages) so the max is not truncated once the
+/// repo holds more releases than fit on one page.
 pub async fn fetch_latest() -> Result<String> {
     // Source builds carry no release tag; without a network-free answer the
     // updater would compare the Cargo version against the fork axis.
@@ -87,13 +89,12 @@ pub async fn fetch_latest() -> Result<String> {
         return Ok(crate::version::get_installed_grok_version());
     }
     let repo = env_repo();
-    let url = format!("https://api.github.com/repos/{repo}/releases?per_page=20");
     let mut last_err: Option<anyhow::Error> = None;
     for attempt in 0..=3 {
         if attempt > 0 {
             tokio::time::sleep(std::time::Duration::from_secs(1 << (attempt - 1))).await;
         }
-        match fetch_tags_once(&url).await.and_then(|tags| {
+        match fetch_all_tags(&repo).await.and_then(|tags| {
             pick_latest(&tags).ok_or_else(|| anyhow::anyhow!("no {TAG_PREFIX}* releases in {repo}"))
         }) {
             Ok(v) => return Ok(v),
@@ -108,6 +109,21 @@ struct GhRelease {
     tag_name: String,
     #[serde(default)]
     draft: bool,
+}
+
+async fn fetch_all_tags(repo: &str) -> Result<Vec<String>> {
+    let mut tags = Vec::new();
+    for page in 1..=5 {
+        let url =
+            format!("https://api.github.com/repos/{repo}/releases?per_page=100&page={page}");
+        let page_tags = fetch_tags_once(&url).await?;
+        let done = page_tags.len() < 100;
+        tags.extend(page_tags);
+        if done {
+            break;
+        }
+    }
+    Ok(tags)
 }
 
 async fn fetch_tags_once(url: &str) -> Result<Vec<String>> {

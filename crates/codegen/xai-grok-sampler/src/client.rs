@@ -35,6 +35,11 @@ use xai_grok_sampling_types::{
 };
 
 use crate::config::{AuthScheme, OriginClientInfo, SamplerConfig};
+use crate::client_third_party::{
+    backfill_usage_details, deserialize_chat_chunk, deserialize_chat_response,
+    deserialize_response_body, is_ignorable_response_event, retain_byok_hosted_tool_entries,
+    strip_byok_response_extensions,
+};
 use crate::events::SamplingErrorInfo;
 use crate::span_timing::{ERROR, STATUS_CODE, SUCCESS, StreamSpanTiming};
 use crate::stream_classify::{chat_chunk_class, message_event_class, responses_event_class};
@@ -164,13 +169,6 @@ fn extract_context_total(value: &serde_json::Value) -> Option<u32> {
     Some(i.saturating_add(o))
 }
 
-/// Drop hosted-tool entries a strict third-party Responses endpoint rejects.
-/// `web_search` is standard OpenAI; `x_search` is xAI-only and 400s elsewhere as an
-/// unknown tool `type`. Only applied in BYOK mode; first-party keeps everything.
-pub(crate) fn retain_byok_hosted_tool_entries(entries: &mut Vec<serde_json::Value>) {
-    entries.retain(|t| t.get("type").and_then(|t| t.as_str()) != Some("x_search"));
-}
-
 /// Splice the raw-JSON hosted-tool entries for `web_search` and `x_search` into a serialized Responses request body's `tools` array.
 /// `x_search` has no `rs::Tool` variant, and `web_search`'s typed filters cannot carry `excluded_domains`, so both travel as raw JSON.
 /// Neither may also be emitted as a typed `rs::Tool`; the API rejects the duplicate.
@@ -186,147 +184,6 @@ fn splice_extra_tool_entries(
     } else {
         request_body["tools"] = serde_json::Value::Array(entries);
     }
-}
-
-/// Drop xAI-proprietary Responses keys a strict third-party implementation rejects.
-/// `reasoning` without an effort is an xAI default (`effort: null` 400s elsewhere);
-/// `prompt_cache_key` only warms the xAI prefix cache. Runs after the other
-/// post-serialization patches, so it sees the final body.
-fn strip_byok_response_extensions(body: &mut serde_json::Value) {
-    let Some(obj) = body.as_object_mut() else {
-        return;
-    };
-    let null_effort = obj
-        .get("reasoning")
-        .and_then(|v| v.get("effort"))
-        .is_some_and(serde_json::Value::is_null);
-    if null_effort {
-        obj.remove("reasoning");
-    }
-    obj.remove("prompt_cache_key");
-}
-
-/// Backfill `usage` detail objects a standard third-party gateway omits.
-/// The fork's `ResponseUsage` requires `input_tokens_details` /
-/// `output_tokens_details`, but they are only token breakdowns — a missing
-/// object means zero, not a broken response.
-fn backfill_usage_details(value: &mut serde_json::Value) {
-    for pointer in ["/response/usage", "/usage"] {
-        if let Some(usage) = value.pointer_mut(pointer).and_then(|v| v.as_object_mut()) {
-            usage
-                .entry("input_tokens_details")
-                .or_insert_with(|| serde_json::json!({ "cached_tokens": 0 }));
-            usage
-                .entry("output_tokens_details")
-                .or_insert_with(|| serde_json::json!({ "reasoning_tokens": 0 }));
-        }
-    }
-}
-
-/// Deserialize a unary Responses body, tolerating standard third-party shapes
-/// the fork's types are stricter than (see `backfill_usage_details`).
-pub(crate) fn deserialize_response_body(bytes: &[u8]) -> Result<rs::Response> {
-    match serde_json::from_slice::<rs::Response>(bytes) {
-        Ok(obj) => Ok(obj),
-        Err(first_err) => {
-            let raw_body = String::from_utf8_lossy(bytes);
-            tracing::error!(
-                error = %first_err,
-                raw_body = %raw_body,
-                "Failed to deserialize rs::Response"
-            );
-            let mut value: serde_json::Value = serde_json::from_slice(bytes)
-                .map_err(|_| SamplingError::Serialization(first_err))?;
-            backfill_usage_details(&mut value);
-            serde_json::from_value::<rs::Response>(value).map_err(|retry_err| {
-                tracing::error!(
-                    error = %retry_err,
-                    raw_body = %raw_body,
-                    "Failed to deserialize rs::Response after sanitize"
-                );
-                SamplingError::Serialization(retry_err)
-            })
-        }
-    }
-}
-
-/// Some third-party chat gateways emit `"finish_reason": ""` instead of `null`.
-/// Empty string carries no information (pi treats it as absent too), so null it
-/// before typed deserialization instead of failing the whole turn.
-/// Any other unknown reason stays loud: its semantics can't be guessed
-/// (e.g. mistaking a truncation marker for `stop` would silently cut the turn).
-fn null_out_empty_finish_reasons(value: &mut serde_json::Value) {
-    if let Some(choices) = value.get_mut("choices").and_then(|v| v.as_array_mut()) {
-        for choice in choices {
-            if choice.get("finish_reason").and_then(|v| v.as_str()) == Some("") {
-                choice["finish_reason"] = serde_json::Value::Null;
-            }
-        }
-    }
-}
-
-/// Deserialize a Chat stream chunk, tolerating `"finish_reason": ""`.
-pub(crate) fn deserialize_chat_chunk(data: &str) -> Result<ChatCompletionChunk> {
-    match serde_json::from_str::<ChatCompletionChunk>(data) {
-        Ok(chunk) => Ok(chunk),
-        Err(first_err) => {
-            if let Ok(mut value) = serde_json::from_str::<serde_json::Value>(data) {
-                null_out_empty_finish_reasons(&mut value);
-                if let Ok(chunk) = serde_json::from_value::<ChatCompletionChunk>(value) {
-                    return Ok(chunk);
-                }
-            }
-            tracing::error!(
-                error = %first_err,
-                raw_data = %data,
-                "Failed to deserialize ChatCompletionChunk from stream"
-            );
-            Err(SamplingError::Serialization(first_err))
-        }
-    }
-}
-
-/// Deserialize a unary Chat body, tolerating `"finish_reason": ""`.
-pub(crate) fn deserialize_chat_response(bytes: &[u8]) -> Result<ChatCompletionResponse> {
-    match serde_json::from_slice::<ChatCompletionResponse>(bytes) {
-        Ok(obj) => Ok(obj),
-        Err(first_err) => {
-            let raw_body = String::from_utf8_lossy(bytes);
-            tracing::error!(
-                error = %first_err,
-                raw_body = %raw_body,
-                "Failed to deserialize ChatCompletionResponse"
-            );
-            let mut value: serde_json::Value = serde_json::from_slice(bytes)
-                .map_err(|_| SamplingError::Serialization(first_err))?;
-            null_out_empty_finish_reasons(&mut value);
-            serde_json::from_value::<ChatCompletionResponse>(value).map_err(|retry_err| {
-                tracing::error!(
-                    error = %retry_err,
-                    raw_body = %raw_body,
-                    "Failed to deserialize ChatCompletionResponse after sanitize"
-                );
-                SamplingError::Serialization(retry_err)
-            })
-        }
-    }
-}
-
-/// Keep-alive / extension events a third-party Responses implementation may inject
-/// (e.g. `ping` from gateways/proxies during long reasoning turns).
-/// Unknown to async-openai's typed event enum, so skip them instead of failing the stream.
-/// Anything else still goes through strict deserialization, so a real protocol break stays loud.
-fn is_ignorable_response_event(event_name: &str, data: &str) -> bool {
-    if event_name == "ping" {
-        return true;
-    }
-    // Some gateways put the discriminator only in the payload.
-    if let Ok(value) = serde_json::from_str::<serde_json::Value>(data) {
-        if value.get("type").and_then(|t| t.as_str()) == Some("ping") {
-            return true;
-        }
-    }
-    false
 }
 
 /// Parse `Retry-After` as integer seconds, capped at 120; HTTP-dates yield `None`.
@@ -490,7 +347,7 @@ struct ClientDefaults {
     top_p: Option<f32>,
     api_backend: ApiBackend,
     auth_scheme: AuthScheme,
-    /// Strip xAI-proprietary Responses fields for third-party endpoints.
+    /// FORK(byok): strip xAI-proprietary Responses fields for third-party endpoints.
     /// Derived once at construction from `base_url` (see `endpoint_trust`).
     byok_compat: bool,
     stream_tool_calls: bool,
@@ -797,7 +654,7 @@ impl SamplingClient {
             top_p: config.top_p,
             api_backend: config.api_backend,
             auth_scheme: config.auth_scheme,
-            // Derived here, not threaded through config: pure function of base_url.
+            // FORK(byok): derived here, not threaded through config: pure function of base_url.
             byok_compat: xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
                 &config.base_url,
             ),
@@ -1324,7 +1181,7 @@ impl SamplingClient {
             request.inner.max_output_tokens = self.defaults.max_completion_tokens;
         }
 
-        // xAI-proprietary defaults a strict third-party Responses implementation rejects.
+        // FORK(byok): xAI-proprietary defaults a strict third-party Responses implementation rejects.
         // BYOK endpoints get a clean standard payload instead (see `strip_byok_response_extensions`).
         if self.defaults.byok_compat {
             return Ok(());
@@ -1390,6 +1247,7 @@ impl SamplingClient {
         // async-openai's ReasoningTextContent struct omits the `type` discriminator that the Responses API requires on input
         // Patch it in after serializing
         xai_grok_sampling_types::patch_reasoning_text_types(&mut request_body);
+        // FORK(byok): third-party endpoints get a clean standard payload.
         if self.defaults.byok_compat {
             strip_byok_response_extensions(&mut request_body);
         }
@@ -1529,6 +1387,7 @@ impl SamplingClient {
         splice_extra_tool_entries(&mut request_body, extra_tool_entries);
         append_response_includes(&mut request_body, &self.defaults.extra_response_includes);
         xai_grok_sampling_types::patch_reasoning_text_types(&mut request_body);
+        // FORK(byok): third-party endpoints get a clean standard payload.
         if self.defaults.byok_compat {
             strip_byok_response_extensions(&mut request_body);
         }
@@ -1664,8 +1523,8 @@ impl SamplingClient {
                         };
                         if swallow {
                             Some(None)
+                        // FORK(byok): third-party keep-alive: skip without touching the stream.
                         } else if is_ignorable_response_event(&event.event, data) {
-                            // Third-party keep-alive: skip without touching the stream.
                             Some(None)
                         } else if let Some(stream_error) = try_parse_stream_error(data) {
                             Some(Some(Err(stream_error)))
@@ -2102,6 +1961,7 @@ impl SamplingClient {
 
         // The hosted tools travel as raw JSON, spliced in after serialization by `splice_extra_tool_entries`, whose doc explains why each one does
         let mut extra_tools = xai_grok_sampling_types::extra_tool_entries(&request.hosted_tools);
+        // FORK(byok): drop xAI-only tool types for third-party endpoints.
         if self.defaults.byok_compat {
             retain_byok_hosted_tool_entries(&mut extra_tools);
         }
@@ -2141,6 +2001,7 @@ impl SamplingClient {
 
         // The hosted tools travel as raw JSON, spliced in by `create_response` via `splice_extra_tool_entries`, whose doc explains why
         let mut extra_tools = xai_grok_sampling_types::extra_tool_entries(&request.hosted_tools);
+        // FORK(byok): drop xAI-only tool types for third-party endpoints.
         if self.defaults.byok_compat {
             retain_byok_hosted_tool_entries(&mut extra_tools);
         }
@@ -2326,6 +2187,11 @@ fn stream_collect_error(info: SamplingErrorInfo) -> SamplingError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::client_third_party::{
+        backfill_usage_details, deserialize_chat_chunk, deserialize_chat_response,
+        deserialize_response_body, is_ignorable_response_event, retain_byok_hosted_tool_entries,
+        strip_byok_response_extensions,
+    };
     use axum::{Router, body::Bytes, routing::post};
     use indexmap::IndexMap;
     use tokio::net::TcpListener;

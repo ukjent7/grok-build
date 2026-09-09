@@ -148,7 +148,7 @@ impl XaiProtoBuilder {
         // Can only process one input file when using --dependency_out=FILE.
         for proto in protos {
             let mut command = Command::new(protoc.unwrap_or(Path::new("protoc")));
-            // Windows has neither /dev/stdout nor /dev/null: NUL discards the
+            // FORK: Windows has neither /dev/stdout nor /dev/null: NUL discards the
             // descriptor set and a temp file carries the dependency list back.
             // (xai-proto-build runs on the build host, so cfg!(windows) is the host.)
             let dependency_out_file: Option<PathBuf> = if cfg!(windows) {
