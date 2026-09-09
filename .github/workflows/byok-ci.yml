@@ -97,8 +97,19 @@ jobs:
       # ripgrep download outside release builds.
       # FORK(byok): xai-grok-update is the fork's self-update channel
       # (byok.rs/auto_update.rs) — covered here, not just sampler/shell.
+      # xai-grok-pager carries the fork's /usage hit-rate panel;
+      # xai-proto-build carries the fork's Windows NUL fix.
       - name: Check (incl. test targets)
-        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update --all-targets
+        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets
+
+      # FORK(byok): install.ps1 is the most-edited fork file and nothing in
+      # cargo validates it; fail on syntax errors (ubuntu runners ship pwsh).
+      - name: Parse install.ps1
+        shell: pwsh
+        run: |
+          $errs = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile('install.ps1', [ref]$null, [ref]$errs)
+          if ($errs.Count -ne 0) { $errs | ForEach-Object { Write-Error $_.Message }; exit 1 }
 
       - name: Test sampler
         run: cargo test -p xai-grok-sampler
@@ -107,6 +118,14 @@ jobs:
       # parsing, latest picking, installer gating). Cheap: deps already built.
       - name: Test update channel
         run: cargo test -p xai-grok-update
+
+      # FORK(byok): /usage hit-rate panel lives here.
+      - name: Test usage status blocks
+        run: cargo test -p xai-grok-pager -- app::status_blocks
+
+      # FORK(byok): small build-tool crate; whole suite is cheap.
+      - name: Test proto build
+        run: cargo test -p xai-proto-build
 
       # Scoped on purpose: the full sampling-types suite is upstream's
       # responsibility; we only own the endpoint_trust module.

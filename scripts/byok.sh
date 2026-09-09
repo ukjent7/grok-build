@@ -39,18 +39,30 @@ if ! command -v protoc >/dev/null 2>&1 && [ -z "${PROTOC:-}" ]; then
     echo "warning: protoc not on PATH and \$PROTOC unset; the build may fall back to DotSlash (needs 'dotslash' on PATH)." >&2
 fi
 
-echo "==> cargo check (sampler + shell + sampling-types + update, incl. test targets)"
-cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update --all-targets
+echo "==> cargo check (sampler + shell + sampling-types + update + pager + proto-build, incl. test targets)"
+cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets
 
 if [ "$SKIP_TESTS" -eq 0 ]; then
     echo "==> cargo test -p xai-grok-sampler"
     cargo test -p xai-grok-sampler
     echo "==> cargo test -p xai-grok-update"
     cargo test -p xai-grok-update
+    echo "==> cargo test -p xai-grok-pager (usage status blocks)"
+    cargo test -p xai-grok-pager -- app::status_blocks
+    echo "==> cargo test -p xai-proto-build"
+    cargo test -p xai-proto-build
     echo "==> cargo test -p xai-grok-sampling-types (endpoint_trust only)"
     cargo test -p xai-grok-sampling-types -- endpoint_trust
     echo "==> cargo test -p xai-grok-shell (config/model layers)"
     cargo test -p xai-grok-shell -- agent::config agent::model_providers
+fi
+
+# install.ps1 is validated in CI (pwsh parse step); mirror it locally when pwsh exists.
+if command -v pwsh >/dev/null 2>&1; then
+    echo "==> pwsh parse install.ps1"
+    pwsh -NoProfile -Command '$errs=$null; [void][System.Management.Automation.Language.Parser]::ParseFile("install.ps1", [ref]$null, [ref]$errs); if ($errs.Count -ne 0) { $errs | ForEach-Object { Write-Error $_.Message }; exit 1 }'
+else
+    echo "==> skip install.ps1 parse (pwsh not on PATH)"
 fi
 
 if [ "$RELEASE" -eq 1 ]; then
