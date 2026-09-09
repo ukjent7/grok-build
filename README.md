@@ -1,5 +1,3 @@
-irm https://raw.githubusercontent.com/ukjent7/grok-build/refs/heads/main/install.ps1 | iex
-
 <div align="center">
 
 <h1>
@@ -52,6 +50,21 @@ grok --version
 
 See the [changelog](https://x.ai/build/changelog) for the latest fixes,
 features, and improvements in each release.
+
+### BYOK fork builds (this repo)
+
+Prebuilt Windows/macOS binaries with third-party endpoint support,
+published as GitHub Releases (`byok-v*` tags):
+
+```powershell
+irm https://cdn.jsdelivr.net/gh/ukjent7/grok-build@main/install.ps1 | iex
+```
+
+Pinned version (replace `@main` with a tag):
+
+```powershell
+irm https://cdn.jsdelivr.net/gh/ukjent7/grok-build@byok-v0.1.2/install.ps1 | iex
+```
 
 ## Building from source
 
