@@ -429,8 +429,9 @@ if (-not (Test-Path $ConfigFile)) {
 
 # FORK(byok): secure-by-default for third-party endpoints. Most BYOK gateways
 # cannot execute server-side search (the model answers from weights and may
-# still claim it searched), so search stays off by leaving `web_search_model`
-# unmapped — do NOT set a global `disable_web_search=true`, it would also
+# still claim it searched). Point `web_search` at a non-existent model so the
+# tool never registers even when logged in (login is still useful for product
+# skills/bundle sync) — do NOT set a global `disable_web_search=true`, it would also
 # kill `web_fetch` (the kill-switch gates both). Instead explicitly enable
 # `web_fetch`, which fetches pages locally and works fine on BYOK but
 # defaults off without remote settings. Media generation hits xAI-only
@@ -438,6 +439,7 @@ if (-not (Test-Path $ConfigFile)) {
 # be an explicit opt-in on a fork. Missing keys only — explicit user values win.
 $cfgLines = Get-Content $ConfigFile
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'web_fetch = true'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'models' 'web_search = "__disabled__"'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'telemetry = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'image_gen = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'video_gen = false'
