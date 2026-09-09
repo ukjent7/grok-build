@@ -2220,7 +2220,7 @@ fn stream_collect_error(info: SamplingErrorInfo) -> SamplingError {
 mod tests {
     use super::*;
     use crate::client_third_party::{
-        backfill_usage_details, deserialize_chat_chunk, deserialize_chat_response,
+        deserialize_chat_chunk, deserialize_chat_response,
         deserialize_response_body, is_ignorable_response_event, retain_byok_hosted_tool_entries,
         strip_byok_response_extensions,
     };
