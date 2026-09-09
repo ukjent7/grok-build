@@ -40,21 +40,21 @@ if ! command -v protoc >/dev/null 2>&1 && [ -z "${PROTOC:-}" ]; then
 fi
 
 echo "==> cargo check (sampler + shell + sampling-types + update + pager + proto-build, incl. test targets)"
-cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets
+cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets --keep-going
 
 if [ "$SKIP_TESTS" -eq 0 ]; then
     echo "==> cargo test -p xai-grok-sampler"
-    cargo test -p xai-grok-sampler
+    cargo test -p xai-grok-sampler --no-fail-fast
     echo "==> cargo test -p xai-grok-update"
-    cargo test -p xai-grok-update
+    cargo test -p xai-grok-update --no-fail-fast
     echo "==> cargo test -p xai-grok-pager (usage status blocks)"
-    cargo test -p xai-grok-pager -- app::status_blocks
+    cargo test -p xai-grok-pager --no-fail-fast -- app::status_blocks
     echo "==> cargo test -p xai-proto-build"
-    cargo test -p xai-proto-build
+    cargo test -p xai-proto-build --no-fail-fast
     echo "==> cargo test -p xai-grok-sampling-types (endpoint_trust only)"
-    cargo test -p xai-grok-sampling-types -- endpoint_trust
+    cargo test -p xai-grok-sampling-types --no-fail-fast -- endpoint_trust
     echo "==> cargo test -p xai-grok-shell (config/model layers)"
-    cargo test -p xai-grok-shell -- agent::config agent::model_providers
+    cargo test -p xai-grok-shell --no-fail-fast -- agent::config agent::model_providers
 fi
 
 # install.ps1 is validated in CI (pwsh parse step); mirror it locally when pwsh exists.

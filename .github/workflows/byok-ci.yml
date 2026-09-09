@@ -99,8 +99,12 @@ jobs:
       # (byok.rs/auto_update.rs) — covered here, not just sampler/shell.
       # xai-grok-pager carries the fork's /usage hit-rate panel;
       # xai-proto-build carries the fork's Windows NUL fix.
+      # --keep-going: report errors across all crates/targets in one run
+      # instead of stopping at the first failing unit (one CI cycle per
+      # error otherwise). rustc may still hide cascade errors behind the
+      # first one in the same function — that part is unavoidable.
       - name: Check (incl. test targets)
-        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets
+        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets --keep-going
 
       # FORK(byok): install.ps1 is the most-edited fork file and nothing in
       # cargo validates it; fail on syntax errors (ubuntu runners ship pwsh).
@@ -112,25 +116,25 @@ jobs:
           if ($errs.Count -ne 0) { $errs | ForEach-Object { Write-Error $_.Message }; exit 1 }
 
       - name: Test sampler
-        run: cargo test -p xai-grok-sampler
+        run: cargo test -p xai-grok-sampler --no-fail-fast
 
       # FORK(byok): unit tests for the fork update axis (tag/release
       # parsing, latest picking, installer gating). Cheap: deps already built.
       - name: Test update channel
-        run: cargo test -p xai-grok-update
+        run: cargo test -p xai-grok-update --no-fail-fast
 
       # FORK(byok): /usage hit-rate panel lives here.
       - name: Test usage status blocks
-        run: cargo test -p xai-grok-pager -- app::status_blocks
+        run: cargo test -p xai-grok-pager --no-fail-fast -- app::status_blocks
 
       # FORK(byok): small build-tool crate; whole suite is cheap.
       - name: Test proto build
-        run: cargo test -p xai-proto-build
+        run: cargo test -p xai-proto-build --no-fail-fast
 
       # Scoped on purpose: the full sampling-types suite is upstream's
       # responsibility; we only own the endpoint_trust module.
       - name: Test endpoint trust predicate
-        run: cargo test -p xai-grok-sampling-types -- endpoint_trust
+        run: cargo test -p xai-grok-sampling-types --no-fail-fast -- endpoint_trust
 
       # Substring filters: agent::config covers config.rs, config_tests and
       # config_model_override_parse; model_providers covers the provider layer.
@@ -138,4 +142,4 @@ jobs:
       # NOTE: this still compiles the whole shell test target; only execution
       # is filtered. That compile is the long pole of this workflow.
       - name: Test shell config layers
-        run: cargo test -p xai-grok-shell -- agent::config agent::model_providers
+        run: cargo test -p xai-grok-shell --no-fail-fast -- agent::config agent::model_providers
