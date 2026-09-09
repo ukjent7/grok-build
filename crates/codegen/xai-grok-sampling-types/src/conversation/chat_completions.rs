@@ -211,7 +211,47 @@ pub fn conversation_to_chat_messages(items: Vec<ConversationItem>) -> Vec<ChatRe
         }
     }
 
+    scrub_invalid_chat_messages(&mut out);
+
     out
+}
+
+/// Drop `tool_calls` with empty id/name/arguments and orphan `tool` results before send.
+/// The provider rejects the whole request for one malformed call, so filtering here
+/// keeps a single bad turn from breaking every turn after it. History on disk is untouched.
+fn scrub_invalid_chat_messages(msgs: &mut Vec<ChatRequestMessage>) {
+    for msg in msgs.iter_mut() {
+        if msg.role == Role::Assistant && !msg.tool_calls.is_empty() {
+            msg.tool_calls.retain(|tc| {
+                let keep = tc.id.as_deref().is_some_and(|s| !s.trim().is_empty())
+                    && !tc.function.name.trim().is_empty()
+                    && !tc.function.arguments.trim().is_empty();
+                if !keep {
+                    tracing::warn!("dropping invalid tool_call before chat_completions send");
+                }
+                keep
+            });
+        }
+    }
+
+    let valid: std::collections::HashSet<&str> = msgs
+        .iter()
+        .flat_map(|m| m.tool_calls.iter().filter_map(|tc| tc.id.as_deref()))
+        .collect();
+    msgs.retain(|m| {
+        if m.role == Role::Tool {
+            let ok = m
+                .tool_call_id
+                .as_deref()
+                .is_some_and(|id| valid.contains(id));
+            if !ok {
+                tracing::warn!("dropping orphan tool result before chat_completions send");
+            }
+            ok
+        } else {
+            true
+        }
+    });
 }
 
 impl From<ChatResponseMessage> for ConversationItem {
