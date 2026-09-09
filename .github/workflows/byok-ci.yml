@@ -9,11 +9,10 @@ name: BYOK CI
 # Cargo.lock churns on each monorepo sync and the 10 GB cache quota thrashes).
 on:
   push:
-    # Tags carry no new code (process: tag only tested main commits, and the
-    # release build still compiles everything). Skipping here drops the
-    # redundant second run after main already went green.
-    tags-ignore:
-      - 'byok-v*'
+    # NOTE: do NOT add tags/tags-ignore here. A tag filter narrows the whole
+    # push trigger to tag pushes only and branch pushes stop triggering at
+    # all. Tag pushes are skipped instead via the job-level `if` below: the
+    # run still appears (as skipped, seconds) instead of vanishing silently.
     # Pure metadata/data/installer files: nothing cargo compiles or tests
     # reads them (verified: no include_str!/build-script references).
     # A push touching ONLY these skips CI; mixed pushes still run it.
@@ -57,6 +56,10 @@ env:
 jobs:
   verify:
     name: check + targeted tests
+    # Tags carry no new code (process: tag only tested main commits, and the
+    # release build still compiles everything). Skip the suite fast; the run
+    # stays visible as skipped instead of burning a full build+test cycle.
+    if: github.ref_type != 'tag'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
