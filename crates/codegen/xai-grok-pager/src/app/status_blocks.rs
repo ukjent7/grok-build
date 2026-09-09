@@ -173,6 +173,14 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
     }
 }
 
+/// Cache hit rate as a percentage; no input tokens means 0 rather than NaN.
+fn cache_hit_percent(input_tokens: u64, cached_read_tokens: u64) -> f64 {
+    if input_tokens == 0 {
+        return 0.0;
+    }
+    cached_read_tokens as f64 / input_tokens as f64 * 100.0
+}
+
 /// `/usage` body: per-session token and cost totals, covering the ledger's lifetime (since session start, or since the last `/resume`).
 pub(crate) fn session_usage_block_text(
     usage: &xai_grok_shell::extensions::notification::PromptUsage,
@@ -189,9 +197,10 @@ pub(crate) fn session_usage_block_text(
 
     let mut rows = Vec::new();
     rows.push(format!(
-        "  Input tokens:   {} ({} cached)",
+        "  Input tokens:   {} ({} cached, {:.0}% hit)",
         group_thousands(t.input_tokens),
         group_thousands(t.cached_read_tokens),
+        cache_hit_percent(t.input_tokens, t.cached_read_tokens),
     ));
     rows.push(format!(
         "  Output tokens:  {} ({} reasoning)",
