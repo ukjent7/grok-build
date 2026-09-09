@@ -117,14 +117,6 @@ pub fn classify_error(
         return RetryDecision::RetryWithImageStrip;
     }
 
-    // FORK(byok): validators that only accept plain-string message content reject
-    // image-bearing payloads with a 400/422 "Input should be a valid string"
-    // (OpenCode zen "Console Go" GLM upstream; anomalyco/opencode#32821, #32613).
-    // The remedy is the same as an oversized body: strip images and retry.
-    if is_string_content_rejection(err) {
-        return RetryDecision::RetryWithImageStrip;
-    }
-
     if err.is_retry_vetoed() {
         return RetryDecision::Fatal(clone_error(err));
     }
@@ -294,19 +286,6 @@ pub fn format_sampling_error(err: &SamplingError, retry_count: Option<u32>) -> S
             )
         }
     }
-}
-
-/// FORK(byok): a third-party validator that types `messages[].content` as a plain
-/// string only rejects image-bearing payloads with a `400`/`422` validation error
-/// naming the string expectation (OpenCode zen "Console Go" GLM upstream;
-/// anomalyco/opencode#32821, #32613). Same remedy class as an oversized body.
-fn is_string_content_rejection(err: &SamplingError) -> bool {
-    matches!(
-        err,
-        SamplingError::Api { status, message, .. }
-            if matches!(status.as_u16(), 400 | 422)
-                && message.contains("Input should be a valid string")
-    )
 }
 
 pub(crate) fn clone_error(err: &SamplingError) -> SamplingError {
@@ -545,28 +524,6 @@ mod tests {
         assert!(matches!(
             classify_error(&err, 0, 5, RATE_LIMIT_RETRY_THRESHOLD),
             RetryDecision::RetryWithImageStrip
-        ));
-    }
-
-    #[test]
-    fn classify_string_content_rejection_strips_images() {
-        let err = api_err(
-            StatusCode::UNPROCESSABLE_ENTITY,
-            "invalid_request_error: Error from provider (Console Go): Upstream request \
-             failed: [invalid_request_error] Input should be a valid string",
-        );
-        assert!(matches!(
-            classify_error(&err, 0, 15, RATE_LIMIT_RETRY_THRESHOLD),
-            RetryDecision::RetryWithImageStrip
-        ));
-    }
-
-    #[test]
-    fn classify_unrelated_422_stays_fatal() {
-        let err = api_err(StatusCode::UNPROCESSABLE_ENTITY, "validation failed");
-        assert!(matches!(
-            classify_error(&err, 0, 15, RATE_LIMIT_RETRY_THRESHOLD),
-            RetryDecision::Fatal(_)
         ));
     }
 

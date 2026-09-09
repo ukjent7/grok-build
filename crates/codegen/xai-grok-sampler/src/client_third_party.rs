@@ -33,15 +33,21 @@ pub(crate) fn strip_byok_response_extensions(body: &mut serde_json::Value) {
     obj.remove("prompt_cache_key");
 }
 
-/// Flatten Chat Completions `messages[].content` text-only block arrays into plain
-/// strings. Some third-party validators type `messages[].content` as a string only
-/// and reject arrays with `invalid_request_error ... Input should be a valid
-/// string` (observed through the OpenCode zen relay's "Console Go" GLM upstream;
-/// same relay behavior as anomalyco/opencode#32613 and #32821). Messages that
-/// mix image and text parts keep their block array: those providers accept
-/// image blocks for vision, and flattening them would silently disable image
-/// input. An image-bearing request a provider rejects is degraded by the
-/// sampler's image-strip retry instead, which keeps the turn alive.
+/// Flatten Chat Completions `messages[].content` block arrays a strict
+/// third-party validator rejects with `invalid_request_error ... Input should be
+/// a valid string`. Observed through the OpenCode zen relay's "Console Go" GLM
+/// upstream, whose relay forwards list-type content to a model that only
+/// accepts plain strings (same relay behavior as anomalyco/opencode#32613 and
+/// #32821: tool-role `content` must be a string, not a ContentPart array).
+///
+/// Rules, applied only in BYOK mode:
+/// - `tool` messages: content becomes the joined text of its text parts. These
+///   providers have no tool-role image representation, so image parts are
+///   replaced by an omission note instead of being silently dropped.
+/// - any message whose blocks are all text is joined into one string.
+/// - a `user` message mixing image and text parts keeps its block array: those
+///   providers accept image blocks for vision, and flattening would silently
+///   disable image input.
 pub(crate) fn flatten_byok_chat_message_content(body: &mut serde_json::Value) {
     let Some(messages) = body.get_mut("messages").and_then(|v| v.as_array_mut()) else {
         return;
@@ -50,10 +56,11 @@ pub(crate) fn flatten_byok_chat_message_content(body: &mut serde_json::Value) {
         let Some(message) = message.as_object_mut() else {
             continue;
         };
+        let is_tool = message.get("role").and_then(|v| v.as_str()) == Some("tool");
         let replacement: Option<String> = match message.get("content").and_then(|v| v.as_array()) {
             Some(parts) => {
-                let mut has_image = false;
                 let mut text_parts: Vec<&str> = Vec::new();
+                let mut image_count = 0usize;
                 for part in parts {
                     match part.get("type").and_then(|v| v.as_str()) {
                         Some("text") => {
@@ -61,11 +68,26 @@ pub(crate) fn flatten_byok_chat_message_content(body: &mut serde_json::Value) {
                                 text_parts.push(text);
                             }
                         }
-                        Some("image_url") => has_image = true,
+                        Some("image_url") => image_count += 1,
                         _ => {}
                     }
                 }
-                (!has_image).then(|| text_parts.join("\n"))
+                // Image-bearing user content stays a block array (vision input);
+                // everything else is flattened to the plain string these providers require.
+                if !is_tool && image_count > 0 {
+                    None
+                } else {
+                    let mut joined = text_parts.join("\n");
+                    if is_tool && image_count > 0 {
+                        if !joined.is_empty() {
+                            joined.push('\n');
+                        }
+                        joined.push_str(&format!(
+                            "[{image_count} image(s) from this tool result were omitted: this provider accepts only plain-string tool output.]"
+                        ));
+                    }
+                    Some(joined)
+                }
             }
             None => None,
         };
@@ -286,6 +308,31 @@ mod tests {
     use xai_grok_sampling_types::messages::MessageStreamEvent;
 
     #[test]
+    fn tool_block_content_flattens_to_string_with_image_note() {
+        let mut body = serde_json::json!({
+            "model": "glm-5.3-flash",
+            "messages": [
+                {"role": "user", "content": "hi"},
+                {
+                    "role": "tool",
+                    "tool_call_id": "call-1",
+                    "content": [
+                        {"type": "text", "text": "file contents"},
+                        {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}},
+                        {"type": "image_url", "image_url": {"url": "data:image/png;base64,BBBB"}}
+                    ]
+                }
+            ]
+        });
+        flatten_byok_chat_message_content(&mut body);
+        let content = body["messages"][1]["content"].as_str().unwrap();
+        assert!(content.starts_with("file contents\n"));
+        assert!(content.contains("[2 image(s) from this tool result were omitted"));
+        // The upstream rejects list content; nothing may stay an array.
+        assert_eq!(body["messages"][1]["tool_call_id"], "call-1");
+    }
+
+    #[test]
     fn text_only_block_content_flattens_for_every_role() {
         let mut body = serde_json::json!({
             "messages": [
@@ -302,18 +349,12 @@ mod tests {
     }
 
     #[test]
-    fn image_bearing_block_content_is_left_untouched() {
-        // Vision input must reach the provider intact; a provider that rejects it
-        // is handled by the sampler's image-strip retry, not by silent flattening.
+    fn image_bearing_user_content_keeps_its_block_array() {
         let mut body = serde_json::json!({
             "messages": [
                 {"role": "user", "content": [
                     {"type": "text", "text": "look at this"},
                     {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}}
-                ]},
-                {"role": "tool", "tool_call_id": "call-1", "content": [
-                    {"type": "text", "text": "screenshot"},
-                    {"type": "image_url", "image_url": {"url": "data:image/png;base64,BBBB"}}
                 ]}
             ]
         });
