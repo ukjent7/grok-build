@@ -234,9 +234,10 @@ fn scrub_invalid_chat_messages(msgs: &mut Vec<ChatRequestMessage>) {
         }
     }
 
-    let valid: std::collections::HashSet<&str> = msgs
+    let valid: std::collections::HashSet<String> = msgs
         .iter()
         .flat_map(|m| m.tool_calls.iter().filter_map(|tc| tc.id.as_deref()))
+        .map(str::to_owned)
         .collect();
     msgs.retain(|m| {
         if m.role == Role::Tool {
