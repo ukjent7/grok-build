@@ -125,6 +125,62 @@ function Read-GrokToken([string]$Scope) {
     return $null
 }
 
+# FORK(byok): add a `key = value` line only when the key is absent — never
+# overwrites an explicit user setting (e.g. someone whose gateway really does
+# execute server-side search and re-enabled it).
+# Section = '' targets top-level keys: inserted before the first [section]
+# header so the key is not swallowed by another table. Section keys are added
+# right after their section header, or as a new trailing section.
+function Add-TomlValueIfMissing([string[]]$Lines, [string]$Section, [string]$Line) {
+    if ($null -eq $Lines) { $Lines = @() }
+    $key = ($Line -split '=', 2)[0].Trim()
+    $keyPattern = "^[\s]*$([regex]::Escape($key))[\s]*="
+    if ($Section -eq '') {
+        if ($Lines -match $keyPattern) { return $Lines }
+        $out = [System.Collections.ArrayList]::new()
+        $inserted = $false
+        foreach ($l in $Lines) {
+            if (-not $inserted -and $l -match '^\s*\[.+\]') {
+                [void]$out.Add($Line)
+                $inserted = $true
+            }
+            [void]$out.Add($l)
+        }
+        if (-not $inserted) { [void]$out.Add($Line) }
+        return [string[]]$out.ToArray()
+    }
+    $sectionPattern = "^[\s]*\[$([regex]::Escape($Section))\][\s]*(#.*)?$"
+    $sectionSeen = $false
+    $keySeen = $false
+    $inSection = $false
+    foreach ($l in $Lines) {
+        if ($l -match '^\s*\[.+\]') {
+            $inSection = $l -match $sectionPattern
+            if ($inSection) { $sectionSeen = $true }
+        } elseif ($inSection -and $l -match $keyPattern) {
+            $keySeen = $true
+        }
+    }
+    if ($sectionSeen -and $keySeen) { return $Lines }
+    $out = [System.Collections.ArrayList]::new()
+    if (-not $sectionSeen) {
+        foreach ($l in $Lines) { [void]$out.Add($l) }
+        [void]$out.Add('')
+        [void]$out.Add("[$Section]")
+        [void]$out.Add($Line)
+        return [string[]]$out.ToArray()
+    }
+    $inserted = $false
+    foreach ($l in $Lines) {
+        [void]$out.Add($l)
+        if (-not $inserted -and $l -match $sectionPattern) {
+            [void]$out.Add($Line)
+            $inserted = $true
+        }
+    }
+    return [string[]]$out.ToArray()
+}
+
 # --- Validate version ---
 
 if (-not $Version) {
@@ -352,6 +408,16 @@ if (-not (Test-Path $ConfigFile)) {
 } else {
     Add-Content -Path $ConfigFile -Value "`r`n[cli]`r`n$($cliLines -join "`r`n")`r`n"
 }
+
+# FORK(byok): secure-by-default for third-party endpoints. Server-side search
+# has no real executor on most BYOK gateways (the model answers from weights
+# and may still claim it searched), and telemetry/trace upload should be an
+# explicit opt-in on a fork. Missing keys only — explicit user values win.
+$cfgLines = Get-Content $ConfigFile
+$cfgLines = Add-TomlValueIfMissing $cfgLines '' 'disable_web_search = true'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'telemetry = false'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'telemetry' 'trace_upload = false'
+[System.IO.File]::WriteAllLines($ConfigFile, [string[]]$cfgLines, [System.Text.Encoding]::UTF8)
 
 # --- Fetch deployment config (deployment key only) ---
 
