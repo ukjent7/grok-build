@@ -178,7 +178,8 @@ fn cache_hit_percent(input_tokens: u64, cached_read_tokens: u64) -> f64 {
     if input_tokens == 0 {
         return 0.0;
     }
-    cached_read_tokens as f64 / input_tokens as f64 * 100.0
+    // Clamp: a gateway reporting cached > input is a data bug, not 400% hits.
+    (cached_read_tokens as f64 / input_tokens as f64 * 100.0).min(100.0)
 }
 
 /// `/usage` body: per-session token and cost totals, covering the ledger's lifetime (since session start, or since the last `/resume`).
