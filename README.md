@@ -90,6 +90,15 @@ git tag byok-v0.1.4
 git push origin byok-v0.1.4
 ```
 
+#### Checksums (`checksums/`)
+
+Each tag build publishes per-binary `.sha256` files to the Release and then
+commits copies into `checksums/<tag>/` on `main`, plus a `checksums/latest`
+pointer holding the newest tag. `install.ps1` reads the checksum from that
+tree over jsDelivr (reachable without direct GitHub access) and only falls
+back to the release-asset copies. The `latest` pointer advances on semver
+only, so backfilling an older tag never moves it backwards.
+
 #### Fork baseline (for the next upstream sync)
 
 Upstream does not accept PRs; this fork carries its patches on top of the

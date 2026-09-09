@@ -7,8 +7,9 @@
 #      GROK_GH_PROXY (mirror prefix, default: https://gh-proxy.com), GROK_GH_MIRROR=off (disable mirror)
 #
 # Downloads go through the gh-proxy.com mirror first (fast in CN) with a direct
-# GitHub fallback; the SHA256 checksum is fetched direct-first as the trust
-# anchor, then verified with Get-FileHash before installing.
+# GitHub fallback; the SHA256 checksum comes from the repo tree over jsDelivr
+# (checksums/<tag>/, committed by the release workflow), falling back to the
+# release-asset copies. Verified with Get-FileHash before installing.
 #
 # Usage:
 #   irm https://raw.githubusercontent.com/ukjent7/grok-build/main/install.ps1 | iex                                    # latest byok release
@@ -184,6 +185,10 @@ $asset = 'xai-grok-pager-windows-x64'
 # prefix-style mirror (format: <prefix>/<full-original-url>).
 
 $Repo = 'ukjent7/grok-build'
+# FORK(byok): checksums live in the repo tree (checksums/<tag>/) so they can
+# be fetched over jsDelivr where direct GitHub is unreachable. The release
+# workflow commits them right after publishing the binaries.
+$JsDelivr = 'https://cdn.jsdelivr.net/gh/ukjent7/grok-build@main'
 $DownloadDir = Join-Path $GrokDir 'downloads'
 $BinDir = if ($env:GROK_BIN_DIR) { $env:GROK_BIN_DIR } else { Join-Path $GrokDir 'bin' }
 
@@ -204,17 +209,29 @@ if ($Version -eq 'latest') {
     $directUrl = "https://github.com/$Repo/releases/download/$Version/$asset"
 }
 $directChecksumUrl = "$directUrl.sha256"
+# Checksum trust order: repo tree over jsDelivr first (owner-controlled, no
+# GitHub access needed), then the release-asset copies. The tree copy is the
+# anchor: a tampered binary mirror cannot forge it.
+$treeChecksumUrls = @()
+if ($Version -eq 'latest') {
+    $latestTag = Download-String "$JsDelivr/checksums/latest"
+    if ($latestTag) { $latestTag = $latestTag.Trim() }
+    if ($latestTag -match '^byok-v\d+\.\d+\.\d+(-\S+)?$') {
+        $treeChecksumUrls = @("$JsDelivr/checksums/$latestTag/$asset.sha256")
+    }
+} else {
+    $treeChecksumUrls = @("$JsDelivr/checksums/$Version/$asset.sha256")
+}
 if ($GhMirror) {
     # gh-proxy format: <mirror>/<full-original-url>
     $mirrorUrl = "$GhMirror/$directUrl"
     $mirrorChecksumUrl = "$GhMirror/$directChecksumUrl"
-    # Binary: mirror first for speed. Checksum: direct first as the trust
-    # anchor, so a tampered mirror cannot forge both consistently.
+    # Binary: mirror first for speed.
     $binaryUrls = @($mirrorUrl, $directUrl)
-    $checksumUrls = @($directChecksumUrl, $mirrorChecksumUrl)
+    $checksumUrls = @($treeChecksumUrls + @($mirrorChecksumUrl, $directChecksumUrl))
 } else {
     $binaryUrls = @($directUrl)
-    $checksumUrls = @($directChecksumUrl)
+    $checksumUrls = @($treeChecksumUrls + @($directChecksumUrl))
 }
 
 if ($AuthSource) {
@@ -236,7 +253,7 @@ try {
     exit 1
 }
 
-# --- Verify SHA256 (releases publish <asset>.sha256 alongside the binary) ---
+# --- Verify SHA256 (repo tree via jsDelivr, then the release-asset copies) ---
 
 $checksumFile = "$binaryPath.sha256"
 $expectedHash = $null
@@ -262,7 +279,7 @@ if ($expectedHash) {
     }
     Write-Host '  SHA256 verified.' -ForegroundColor DarkGray
 } else {
-    # Pre-checksum releases have no .sha256 asset; keep installing.
+    # Releases before checksums (or a tree commit that has not landed yet).
     Write-Host '  Warning: no SHA256 checksum found; skipping verification.' -ForegroundColor Yellow
 }
 
