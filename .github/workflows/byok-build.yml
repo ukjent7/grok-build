@@ -11,10 +11,10 @@ on:
   workflow_dispatch:
     inputs:
       platforms:
-        description: "Platforms to build (macOS is 2x slower; tags always build all)"
+        description: "Platforms to build (macOS is 2x slower; tags always build windows+macOS)"
         type: choice
-        options: [linux-windows, all]
-        default: linux-windows
+        options: [windows, windows-macos]
+        default: windows
   push:
     tags:
       - "byok-v*"
@@ -34,26 +34,15 @@ env:
 
 jobs:
   # Single source of steps for both build jobs below (YAML anchor).
-  # Per-platform names travel via ARTIFACT/BIN env, never matrix, so the
-  # macOS job can reuse them without a matrix of its own.
+  # Per-platform names travel via ARTIFACT/BIN env so the macOS job reuses
+  # them without a matrix of its own. Linux is intentionally not built.
   build:
-    name: build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: build (windows-latest)
+    runs-on: windows-latest
     timeout-minutes: 120
-    strategy:
-      # Windows is best-effort upstream; don't kill linux if it fails.
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            artifact: xai-grok-pager-linux-x64
-            bin: xai-grok-pager
-          - os: windows-latest
-            artifact: xai-grok-pager-windows-x64
-            bin: xai-grok-pager.exe
     env:
-      ARTIFACT: ${{ matrix.artifact }}
-      BIN: ${{ matrix.bin }}
+      ARTIFACT: xai-grok-pager-windows-x64
+      BIN: xai-grok-pager.exe
     steps: &build-steps
       - uses: actions/checkout@v7
 
@@ -120,7 +109,7 @@ jobs:
   # macOS is 2x slower: tags always build it, manual runs only on request.
   build-macos:
     name: build (macos-latest)
-    if: ${{ github.event_name == 'push' || inputs.platforms == 'all' }}
+    if: ${{ github.event_name == 'push' || inputs.platforms == 'windows-macos' }}
     runs-on: macos-latest
     timeout-minutes: 120
     env:
