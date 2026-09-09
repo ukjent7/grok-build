@@ -33,6 +33,133 @@ pub(crate) fn strip_byok_response_extensions(body: &mut serde_json::Value) {
     obj.remove("prompt_cache_key");
 }
 
+/// Caption of the user message that carries images relocated out of tool results.
+const TOOL_IMAGE_CAPTION: &str = "Attached image(s) from tool result:";
+
+/// FORK(byok): normalize Chat Completions message shapes for third-party
+/// validators. OpenAI-compatible relays route a stable base URL to upstreams
+/// that may type `messages[].content` as a plain string and reject block
+/// arrays with `invalid_request_error ... Input should be a valid string`
+/// (GLM via the OpenCode zen relay — anomalyco/opencode#32821, #32613; DeepSeek
+/// V3.2 via NVIDIA NIM; Xiaomi MiMo — pi-mono openai-completions conventions).
+/// The routing can change under a stable base URL, so the standard shapes are
+/// emitted unconditionally instead of relying on any one relay's tolerance:
+///
+/// - `tool` messages: content becomes the joined text of its text parts
+///   (`(see attached image)` when only images remain, `(no tool output)`
+///   when empty).
+/// - images taken out of tool messages are NOT dropped: they are re-attached
+///   as a following `user` message so a vision-capable model still sees what
+///   its tools produced.
+/// - text-only block arrays on other messages are joined into one string;
+///   image-bearing messages keep their block array.
+pub(crate) fn normalize_byok_chat_message_content(body: &mut serde_json::Value) {
+    fn flush_pending_images(
+        out: &mut Vec<serde_json::Value>,
+        pending: &mut Vec<serde_json::Value>,
+    ) {
+        if pending.is_empty() {
+            return;
+        }
+        let mut content = vec![serde_json::json!({ "type": "text", "text": TOOL_IMAGE_CAPTION })];
+        content.append(pending);
+        out.push(serde_json::json!({ "role": "user", "content": content }));
+    }
+
+    let Some(messages) = body.get_mut("messages").and_then(|v| v.as_array_mut()) else {
+        return;
+    };
+    let original = std::mem::take(messages);
+    let mut out: Vec<serde_json::Value> = Vec::with_capacity(original.len() + 1);
+    let mut pending_images: Vec<serde_json::Value> = Vec::new();
+
+    for msg in original {
+        let is_tool = msg.get("role").and_then(|v| v.as_str()) == Some("tool");
+        // Non-tool messages: text-only block arrays join into a plain string;
+        // image-bearing messages keep their block array.
+        let text_only_join: Option<String> = if is_tool {
+            None
+        } else if let Some(parts) = msg.get("content").and_then(|v| v.as_array()) {
+            let mut has_image = false;
+            let mut texts: Vec<&str> = Vec::new();
+            for part in parts {
+                match part.get("type").and_then(|v| v.as_str()) {
+                    Some("text") => {
+                        if let Some(text) = part.get("text").and_then(|v| v.as_str()) {
+                            texts.push(text);
+                        }
+                    }
+                    Some("image_url") => has_image = true,
+                    _ => {}
+                }
+            }
+            (!has_image).then(|| texts.join("\n"))
+        } else {
+            None
+        };
+
+        let mut msg = msg;
+        if let Some(joined) = text_only_join {
+            if let Some(obj) = msg.as_object_mut() {
+                obj.insert("content".to_string(), serde_json::Value::String(joined));
+            }
+        }
+
+        if is_tool {
+            if let Some(obj) = msg.as_object_mut() {
+                if let Some(content) = obj.remove("content") {
+                    match content {
+                        serde_json::Value::Array(parts) => {
+                            let mut texts: Vec<String> = Vec::new();
+                            let mut image_count = 0usize;
+                            for part in parts {
+                                match part.get("type").and_then(|v| v.as_str()) {
+                                    Some("text") => {
+                                        if let Some(text) =
+                                            part.get("text").and_then(|v| v.as_str())
+                                        {
+                                            texts.push(text.to_owned());
+                                        }
+                                    }
+                                    Some("image_url") => {
+                                        image_count += 1;
+                                        pending_images.push(part);
+                                    }
+                                    _ => {}
+                                }
+                            }
+                            let joined = texts.join("\n");
+                            let content = if !joined.is_empty() {
+                                joined
+                            } else if image_count > 0 {
+                                "(see attached image)".to_string()
+                            } else {
+                                "(no tool output)".to_string()
+                            };
+                            obj.insert(
+                                "content".to_string(),
+                                serde_json::Value::String(content),
+                            );
+                        }
+                        // String-content tool messages pass through unchanged.
+                        other => {
+                            obj.insert("content".to_string(), other);
+                        }
+                    }
+                }
+            }
+            out.push(msg);
+            continue;
+        }
+
+        flush_pending_images(&mut out, &mut pending_images);
+        out.push(msg);
+    }
+    // A conversation may end on its tool results; the relocated images still go out.
+    flush_pending_images(&mut out, &mut pending_images);
+    *messages = out;
+}
+
 /// Backfill `usage` detail objects a standard third-party gateway omits.
 /// The fork's `ResponseUsage` requires `input_tokens_details` /
 /// `output_tokens_details`, but they are only token breakdowns — a missing
@@ -242,6 +369,83 @@ pub(crate) fn is_ignorable_response_event(event_name: &str, data: &str) -> bool 
 mod tests {
     use super::*;
     use xai_grok_sampling_types::messages::MessageStreamEvent;
+
+    #[test]
+    fn tool_block_content_moves_images_to_a_following_user_message() {
+        let mut body = serde_json::json!({
+            "messages": [
+                {"role": "user", "content": "read the screenshot"},
+                {"role": "assistant", "content": "", "tool_calls": [
+                    {"id": "call-1", "type": "function", "function": {"name": "read_file", "arguments": "{}"}}
+                ]},
+                {"role": "tool", "tool_call_id": "call-1", "content": [
+                    {"type": "text", "text": "file contents"},
+                    {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}}
+                ]},
+                {"role": "assistant", "content": "here is what I saw"}
+            ]
+        });
+        normalize_byok_chat_message_content(&mut body);
+        assert_eq!(body["messages"][2]["content"], "file contents");
+        assert_eq!(body["messages"][3]["role"], "user");
+        let parts = body["messages"][3]["content"].as_array().unwrap();
+        assert_eq!(parts.len(), 2);
+        assert_eq!(parts[0]["text"], "Attached image(s) from tool result:");
+        assert_eq!(parts[1]["type"], "image_url");
+        assert_eq!(body["messages"][4]["role"], "assistant");
+    }
+
+    #[test]
+    fn image_only_tool_result_keeps_caption_text_and_relocates() {
+        let mut body = serde_json::json!({
+            "messages": [
+                {"role": "tool", "tool_call_id": "call-1", "content": [
+                    {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}}
+                ]}
+            ]
+        });
+        normalize_byok_chat_message_content(&mut body);
+        assert_eq!(body["messages"][0]["content"], "(see attached image)");
+        let parts = body["messages"][1]["content"].as_array().unwrap();
+        assert_eq!(parts[0]["text"], "Attached image(s) from tool result:");
+        assert_eq!(parts[1]["type"], "image_url");
+    }
+
+    #[test]
+    fn string_tool_results_and_image_bearing_user_messages_are_untouched() {
+        let mut body = serde_json::json!({
+            "messages": [
+                {"role": "tool", "tool_call_id": "call-1", "content": "plain result"},
+                {"role": "user", "content": [
+                    {"type": "text", "text": "look at this"},
+                    {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}}
+                ]}
+            ]
+        });
+        let before = body.clone();
+        normalize_byok_chat_message_content(&mut body);
+        assert_eq!(body, before);
+    }
+
+    #[test]
+    fn text_only_arrays_flatten_and_missing_messages_is_noop() {
+        let mut body = serde_json::json!({
+            "messages": [
+                {"role": "user", "content": [
+                    {"type": "text", "text": "part one"},
+                    {"type": "text", "text": "part two"}
+                ]},
+                {"role": "tool", "tool_call_id": "call-2", "content": []}
+            ]
+        });
+        normalize_byok_chat_message_content(&mut body);
+        assert_eq!(body["messages"][0]["content"], "part one\npart two");
+        assert_eq!(body["messages"][1]["content"], "(no tool output)");
+
+        let mut no_messages = serde_json::json!({"model": "glm-5.3-flash"});
+        normalize_byok_chat_message_content(&mut no_messages);
+        assert_eq!(no_messages, serde_json::json!({"model": "glm-5.3-flash"}));
+    }
 
     /// Documents the exact failure this screener exists for: the tagged enum needs a
     /// string `type`, so an empty object fails non-retryably at the payload's end.

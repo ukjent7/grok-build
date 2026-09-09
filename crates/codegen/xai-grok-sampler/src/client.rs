@@ -37,8 +37,9 @@ use xai_grok_sampling_types::{
 use crate::config::{AuthScheme, OriginClientInfo, SamplerConfig};
 use crate::client_third_party::{
     backfill_usage_details, deserialize_chat_chunk, deserialize_chat_response,
-    deserialize_response_body, is_ignorable_response_event, retain_byok_hosted_tool_entries,
-    screen_message_payload, strip_byok_response_extensions, ScreenedMessagePayload,
+    deserialize_response_body, is_ignorable_response_event, normalize_byok_chat_message_content,
+    retain_byok_hosted_tool_entries, screen_message_payload, strip_byok_response_extensions,
+    ScreenedMessagePayload,
 };
 use crate::events::SamplingErrorInfo;
 use crate::span_timing::{ERROR, STATUS_CODE, SUCCESS, StreamSpanTiming};
@@ -942,7 +943,15 @@ impl SamplingClient {
             builder,
             sent_bearer,
         } = self.post(self.endpoint("chat/completions"));
-        let http_request = grok_headers.apply(builder).json(&payload);
+        // FORK(byok): third-party validators may reject non-standard message shapes
+        let mut body = serde_json::to_value(&payload).map_err(|e| {
+            tracing::error!("Failed to serialize chat completion request: {}", e);
+            SamplingError::Serialization(e)
+        })?;
+        if self.defaults.byok_compat {
+            normalize_byok_chat_message_content(&mut body);
+        }
+        let http_request = grok_headers.apply(builder).json(&body);
 
         let response = http_request.send().await.map_err(|e| {
             // Debug level; the error is returned to the caller
@@ -1036,10 +1045,18 @@ impl SamplingClient {
             builder,
             sent_bearer,
         } = self.post(self.endpoint("chat/completions"));
+        // FORK(byok): third-party validators may reject non-standard message shapes
+        let mut body = serde_json::to_value(&streaming_request).map_err(|e| {
+            tracing::error!("Failed to serialize chat completion stream request: {}", e);
+            SamplingError::Serialization(e)
+        })?;
+        if self.defaults.byok_compat {
+            normalize_byok_chat_message_content(&mut body);
+        }
         let http_request = grok_headers
             .apply(builder)
             .header(ACCEPT, HeaderValue::from_static("text/event-stream"))
-            .json(&streaming_request);
+            .json(&body);
 
         let built_request = http_request.build().map_err(|e| {
             tracing::error!("Failed to build HTTP request: {}", e);
