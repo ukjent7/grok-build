@@ -4,12 +4,16 @@
 #
 # Auth: GROK_DEPLOYMENT_KEY env var (takes precedence) or ~/.grok/auth.json from `grok login`.
 # Env: GROK_VERSION (a byok-vX.Y.Z tag, default: latest), GROK_BIN_DIR, GROK_PROXY_URL,
-#      GROK_GH_PROXY (mirror prefix, default: https://axisnow.gh-proxy.org), GROK_GH_MIRROR=off (disable mirror)
+#      GROK_GH_PROXY (mirror prefix, default: https://axisnow.gh-proxy.org), GROK_GH_MIRROR=off (disable mirror),
+#      GROK_ALLOW_UNVERIFIED=1 (explicitly accept an install when no checksum is obtainable)
 #
 # Downloads go through the axisnow.gh-proxy.org mirror first (fast in CN) with a direct
 # GitHub fallback; the SHA256 checksum comes from the repo tree over jsDelivr
 # (checksums/<tag>/, committed by the release workflow), falling back to the
-# release-asset copies. Verified with Get-FileHash before installing.
+# release-asset copies. Mirror-served hashes are never trusted: when jsDelivr is
+# unreachable the same mirror supplies both binary and hash, so its hash anchors
+# nothing. A wrong hash always aborts; a missing checksum aborts unless
+# GROK_ALLOW_UNVERIFIED=1 is set explicitly.
 #
 # Usage:
 #   irm https://raw.githubusercontent.com/ukjent7/grok-build/main/install.ps1 | iex                                    # latest byok release
@@ -238,9 +242,9 @@ if (-not $arch) {
     exit 1
 }
 
-# CI only builds Windows x64 so far; ARM64 has no asset yet.
+# CI builds windows-x64 and macos-arm64; Windows ARM64 has no asset.
 if ($arch -ne 'x86_64') {
-    Write-Error "No prebuilt binary for Windows $arch yet (only windows-x86_64 is built by CI)."
+    Write-Error "No prebuilt binary for Windows $arch yet (CI builds windows-x86_64 and macos-arm64)."
     exit 1
 }
 $platform = 'windows-x86_64'
@@ -277,7 +281,9 @@ if ($Version -eq 'latest') {
     # aborting on a hash mismatch. Unresolvable tag falls back to live latest.
     $latestTag = Download-String "$JsDelivr/checksums/latest"
     if ($latestTag) { $latestTag = $latestTag.Trim() }
-    if ($latestTag -match '^byok-v\d+\.\d+\.\d+(-\S+)?$') {
+    # Stable tags only: a prerelease tag must not become the default install
+    # target (the Rust updater skips prereleases for the same reason).
+    if ($latestTag -match '^byok-v\d+\.\d+\.\d+$') {
         $resolvedVersion = $latestTag
         $directUrl = "https://github.com/$Repo/releases/download/$latestTag/$asset"
     } else {
@@ -290,8 +296,11 @@ if ($Version -eq 'latest') {
 }
 $directChecksumUrl = "$directUrl.sha256"
 # Checksum trust order: repo tree over jsDelivr first (owner-controlled, no
-# GitHub access needed), then the release-asset copies. The tree copy is the
-# anchor: a tampered binary mirror cannot forge it.
+# GitHub access needed), then the direct release asset. The tree copy is the
+# anchor: a tampered binary mirror cannot forge it. Mirror-served hashes are
+# never trusted — when jsDelivr is unreachable, the mirror that serves the
+# binary would also serve its hash, and a hash from the same channel anchors
+# nothing.
 $treeChecksumUrls = @()
 if ($resolvedVersion -ne 'latest') {
     $treeChecksumUrls = @("$JsDelivr/checksums/$resolvedVersion/$asset.sha256")
@@ -299,10 +308,9 @@ if ($resolvedVersion -ne 'latest') {
 if ($GhMirror) {
     # gh-proxy format: <mirror>/<full-original-url>
     $mirrorUrl = "$GhMirror/$directUrl"
-    $mirrorChecksumUrl = "$GhMirror/$directChecksumUrl"
     # Binary: mirror first for speed.
     $binaryUrls = @($mirrorUrl, $directUrl)
-    $checksumUrls = @($treeChecksumUrls + @($mirrorChecksumUrl, $directChecksumUrl))
+    $checksumUrls = @($treeChecksumUrls + @($directChecksumUrl))
 } else {
     $binaryUrls = @($directUrl)
     $checksumUrls = @($treeChecksumUrls + @($directChecksumUrl))
@@ -352,9 +360,13 @@ if ($expectedHash) {
         exit 1
     }
     Write-Host '  SHA256 verified.' -ForegroundColor DarkGray
+} elseif ($env:GROK_ALLOW_UNVERIFIED -eq '1') {
+    # Explicit opt-in: every checksum source was unreachable or malformed.
+    Write-Host '  Warning: no SHA256 checksum found; installing unverified (GROK_ALLOW_UNVERIFIED=1).' -ForegroundColor Yellow
 } else {
-    # Releases before checksums (or a tree commit that has not landed yet).
-    Write-Host '  Warning: no SHA256 checksum found; skipping verification.' -ForegroundColor Yellow
+    Remove-Item $binaryPath -Force -ErrorAction SilentlyContinue
+    Write-Error "No SHA256 checksum found for $asset (tried: $($checksumUrls -join ', ')). Refusing to install an unverified binary; set GROK_ALLOW_UNVERIFIED=1 to override."
+    exit 1
 }
 
 # --- Install binary (locked-file safe) ---
