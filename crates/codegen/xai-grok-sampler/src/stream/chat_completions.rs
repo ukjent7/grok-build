@@ -190,12 +190,12 @@ pub fn stream_chat_completions<'a>(
                     let mut name_for_event: Option<String> = None;
                     let mut args_for_event: Option<String> = None;
 
-                    if let Some(id) = tc_delta.id {
+                    if let Some(id) = tc_delta.id.filter(|s| !s.is_empty()) {
                         entry.0 = id.clone();
                         id_for_event = Some(id);
                     }
                     if let Some(func) = tc_delta.function {
-                        if let Some(name) = func.name {
+                        if let Some(name) = func.name.filter(|s| !s.is_empty()) {
                             entry.1 = name.clone();
                             name_for_event = Some(name);
                         }
@@ -650,6 +650,65 @@ mod tests {
                 assert_eq!(calls[0].name, "do_thing");
                 assert_eq!(calls[0].arguments.as_ref(), "{\"x\":1}");
                 assert_eq!(response.stop_reason, Some(StopReason::ToolCalls));
+            }
+            other => panic!("expected Completed, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn empty_string_id_and_name_do_not_clobber_first_chunk() {
+        // Some providers send "" instead of omitting id/name on continuation chunks.
+        let chunk1 = make_chunk(vec![ChatChunkDelta {
+            role: None,
+            content: None,
+            reasoning_content: None,
+            tool_calls: vec![ChunkToolCallDelta {
+                index: 0,
+                id: Some("call_abc".into()),
+                kind: Some("function".into()),
+                function: Some(ToolCallFunctionDelta {
+                    name: Some("do_thing".into()),
+                    arguments: Some("{\"x\":".into()),
+                }),
+            }],
+            tool_call_id: None,
+        }]);
+        let chunk2 = make_chunk(vec![ChatChunkDelta {
+            role: None,
+            content: None,
+            reasoning_content: None,
+            tool_calls: vec![ChunkToolCallDelta {
+                index: 0,
+                id: Some("".into()),
+                kind: Some("".into()),
+                function: Some(ToolCallFunctionDelta {
+                    name: Some("".into()),
+                    arguments: Some("1}".into()),
+                }),
+            }],
+            tool_call_id: None,
+        }]);
+
+        let raw = stream::iter::<Vec<Result<ChatCompletionChunk, SamplingError>>>(vec![
+            Ok(chunk1),
+            Ok(chunk2),
+        ])
+        .boxed();
+        let events = collect(stream_chat_completions(
+            raw,
+            None,
+            rid(),
+            Duration::from_secs(60),
+        ))
+        .await;
+
+        match events.last().unwrap() {
+            SamplingEvent::Completed { response, .. } => {
+                let calls = response.tool_calls();
+                assert_eq!(calls.len(), 1);
+                assert_eq!(calls[0].id.as_ref(), "call_abc");
+                assert_eq!(calls[0].name, "do_thing");
+                assert_eq!(calls[0].arguments.as_ref(), "{\"x\":1}");
             }
             other => panic!("expected Completed, got {other:?}"),
         }
