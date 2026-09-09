@@ -2,6 +2,7 @@
 //! `client.rs` keeps only the `byok_compat` flag derivation plus call sites,
 //! so upstream refactors of the request pipeline rarely conflict with the fork.
 //! First-party requests never enter these helpers.
+//! NOTE: this file is covered by BYOK CI (`cargo test -p xai-grok-sampler`).
 
 use xai_grok_sampling_types::{
     ChatCompletionChunk, ChatCompletionResponse, Result, SamplingError, rs,
