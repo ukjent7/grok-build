@@ -3,7 +3,12 @@
 # Downloads release binaries from ukjent7/grok-build GitHub Releases.
 #
 # Auth: GROK_DEPLOYMENT_KEY env var (takes precedence) or ~/.grok/auth.json from `grok login`.
-# Env: GROK_VERSION (a byok-vX.Y.Z tag, default: latest), GROK_BIN_DIR, GROK_PROXY_URL
+# Env: GROK_VERSION (a byok-vX.Y.Z tag, default: latest), GROK_BIN_DIR, GROK_PROXY_URL,
+#      GROK_GH_PROXY (mirror prefix, default: https://gh-proxy.com), GROK_GH_MIRROR=off (disable mirror)
+#
+# Downloads go through the gh-proxy.com mirror first (fast in CN) with a direct
+# GitHub fallback; the SHA256 checksum is fetched direct-first as the trust
+# anchor, then verified with Get-FileHash before installing.
 #
 # Usage:
 #   irm https://raw.githubusercontent.com/ukjent7/grok-build/main/install.ps1 | iex                                    # latest byok release
@@ -53,8 +58,6 @@ function Download-File([string]$Url, [string]$OutFile) {
     # TODO: parallel byte-range download (matches install.sh download_file_parallel).
     # Skipped for now: requires Start-ThreadJob / RunspacePool for true parallelism on PS 5.1
     # and HEAD + Range request orchestration. Single-connection HttpWebRequest below remains.
-    # NOTE(FORK/byok): no checksum file yet; integrity rests on the post-download
-    # smoke test (`--version` run). Add SHA256SUMS verification if releases add them.
     # Stream via HttpWebRequest — faster than Invoke-WebRequest on PS 5.1 and supports progress.
     $request = [System.Net.HttpWebRequest]::Create($Url)
     $request.Timeout = 300000  # 5 min
@@ -91,6 +94,23 @@ function Download-File([string]$Url, [string]$OutFile) {
         $stream.Close()
         $response.Close()
     }
+}
+
+# FORK(byok): try each URL in order, return the one that worked. Throws the
+# last error when all fail. Partial files are removed between attempts.
+function Try-Download-File([string[]]$Urls, [string]$OutFile) {
+    $lastErr = $null
+    foreach ($u in $Urls) {
+        try {
+            if (Test-Path $OutFile) { Remove-Item $OutFile -Force -ErrorAction SilentlyContinue }
+            Download-File $u $OutFile
+            return $u
+        } catch {
+            $lastErr = $_
+            Write-Host "  Download failed from $u, trying next..." -ForegroundColor Yellow
+        }
+    }
+    throw $lastErr
 }
 
 function Read-GrokToken([string]$Scope) {
@@ -157,22 +177,44 @@ if ($arch -ne 'x86_64') {
 $platform = 'windows-x86_64'
 $asset = 'xai-grok-pager-windows-x64'
 
-# --- Resolve download URL (our GitHub Releases) ---
+# --- Resolve download URLs (our GitHub Releases) ---
 # No channels in this fork: GROK_CHANNEL is ignored.
+# FORK(byok): gh-proxy.com mirror first (fast in CN), direct GitHub fallback.
+# Set GROK_GH_MIRROR=off to skip the mirror, or GROK_GH_PROXY to use another
+# prefix-style mirror (format: <prefix>/<full-original-url>).
 
 $Repo = 'ukjent7/grok-build'
 $DownloadDir = Join-Path $GrokDir 'downloads'
 $BinDir = if ($env:GROK_BIN_DIR) { $env:GROK_BIN_DIR } else { Join-Path $GrokDir 'bin' }
+
+$GhMirror = ''
+if ($env:GROK_GH_MIRROR -ne 'off') {
+    if ($env:GROK_GH_PROXY) { $GhMirror = $env:GROK_GH_PROXY.TrimEnd('/') }
+    else { $GhMirror = 'https://gh-proxy.com' }
+}
 
 New-Item -ItemType Directory -Path $DownloadDir -Force | Out-Null
 New-Item -ItemType Directory -Path $BinDir -Force | Out-Null
 
 if ($Version -eq 'latest') {
     $resolvedVersion = 'latest'
-    $downloadUrl = "https://github.com/$Repo/releases/latest/download/$asset"
+    $directUrl = "https://github.com/$Repo/releases/latest/download/$asset"
 } else {
     $resolvedVersion = $Version
-    $downloadUrl = "https://github.com/$Repo/releases/download/$Version/$asset"
+    $directUrl = "https://github.com/$Repo/releases/download/$Version/$asset"
+}
+$directChecksumUrl = "$directUrl.sha256"
+if ($GhMirror) {
+    # gh-proxy format: <mirror>/<full-original-url>
+    $mirrorUrl = "$GhMirror/$directUrl"
+    $mirrorChecksumUrl = "$GhMirror/$directChecksumUrl"
+    # Binary: mirror first for speed. Checksum: direct first as the trust
+    # anchor, so a tampered mirror cannot forge both consistently.
+    $binaryUrls = @($mirrorUrl, $directUrl)
+    $checksumUrls = @($directChecksumUrl, $mirrorChecksumUrl)
+} else {
+    $binaryUrls = @($directUrl)
+    $checksumUrls = @($directChecksumUrl)
 }
 
 if ($AuthSource) {
@@ -186,11 +228,42 @@ if ($AuthSource) {
 $binaryPath = Join-Path $DownloadDir "grok-$platform.exe"
 
 try {
-    Download-File $downloadUrl $binaryPath
+    $usedUrl = Try-Download-File $binaryUrls $binaryPath
+    Write-Host "  Downloaded from $usedUrl" -ForegroundColor DarkGray
 } catch {
     if (Test-Path $binaryPath) { Remove-Item $binaryPath -Force }
-    Write-Error "Binary download failed from $downloadUrl"
+    Write-Error "Binary download failed (tried: $($binaryUrls -join ', '))"
     exit 1
+}
+
+# --- Verify SHA256 (releases publish <asset>.sha256 alongside the binary) ---
+
+$checksumFile = "$binaryPath.sha256"
+$expectedHash = $null
+try {
+    $usedChecksumUrl = Try-Download-File $checksumUrls $checksumFile
+    $firstLine = (Get-Content $checksumFile | Select-Object -First 1)
+    if ($firstLine) { $expectedHash = ($firstLine -split '\s+')[0].Trim() }
+    if ($expectedHash -notmatch '^[0-9a-fA-F]{64}$') { $expectedHash = $null }
+    if ($expectedHash) {
+        Write-Host "  Checksum source: $usedChecksumUrl" -ForegroundColor DarkGray
+    }
+} catch {
+    $expectedHash = $null
+} finally {
+    if (Test-Path $checksumFile) { Remove-Item $checksumFile -Force -ErrorAction SilentlyContinue }
+}
+if ($expectedHash) {
+    $actualHash = (Get-FileHash -Path $binaryPath -Algorithm SHA256).Hash
+    if ($actualHash -ne $expectedHash) {
+        Remove-Item $binaryPath -Force -ErrorAction SilentlyContinue
+        Write-Error "SHA256 mismatch for $asset (expected $expectedHash, got $actualHash). The download may be corrupt or tampered; aborted."
+        exit 1
+    }
+    Write-Host '  SHA256 verified.' -ForegroundColor DarkGray
+} else {
+    # Pre-checksum releases have no .sha256 asset; keep installing.
+    Write-Host '  Warning: no SHA256 checksum found; skipping verification.' -ForegroundColor Yellow
 }
 
 # --- Install binary (locked-file safe) ---
