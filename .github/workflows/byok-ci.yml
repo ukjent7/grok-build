@@ -104,7 +104,16 @@ jobs:
       # error otherwise). rustc may still hide cascade errors behind the
       # first one in the same function — that part is unavoidable.
       - name: Check (incl. test targets)
-        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets --keep-going
+        run: |
+          # TEMP DEBUG: surface the failing unit's error lines as check-run
+          # annotations (log download needs auth; annotations are public).
+          cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets --keep-going 2>&1 \
+            | tee "$RUNNER_TEMP/check.log" \
+            | grep -E "^error|^error\[|--> crates/|cannot find|failed to resolve|configured out" \
+            | sed 's/^/##[error] /' | head -150 || true
+          rc=${PIPESTATUS[0]}
+          echo "cargo check exit=$rc"
+          exit $rc
 
       # FORK(byok): install.ps1 is the most-edited fork file and nothing in
       # cargo validates it; fail on syntax errors (ubuntu runners ship pwsh).
