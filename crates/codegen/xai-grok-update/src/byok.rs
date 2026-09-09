@@ -163,7 +163,7 @@ fn pick_latest(tags: &[String]) -> Option<String> {
             let bare = normalize_tag(t)?;
             semver::Version::parse(&bare)
                 .ok()
-                .filter(|v| !v.is_prerelease())
+                .filter(|v| v.pre.is_empty())
                 .map(|_| bare)
         })
         .max_by(|a, b| {
