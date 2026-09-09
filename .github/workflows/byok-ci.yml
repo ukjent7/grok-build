@@ -51,6 +51,11 @@ jobs:
       # other and every job stayed half-cold. CI runs alone most of the time
       # and stays warm by recency; release compilation belongs to sccache.
       - uses: Swatinem/rust-cache@v2
+        with:
+          # FORK(byok): mint full-target entries on main only. PRs/tags/
+          # dispatches restore without saving, so pushes stop adding GB
+          # entries per Cargo.lock churn.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       # --all-targets also compiles the test/bench targets we edited.
       # Debug profile on purpose: the shell build script skips the

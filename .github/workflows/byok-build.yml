@@ -35,6 +35,10 @@ env:
   # Fall back to local compilation instead of failing the whole build.
   SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
   CARGO_INCREMENTAL: 0
+  # FORK(byok): tag name baked into the binary as the update identity
+  # (xai-grok-update/src/byok.rs). Branch runs (dispatch) carry no tag and
+  # behave as source builds (no auto-update).
+  BYOK_RELEASE: ${{ github.ref_name }}
 
 jobs:
   # Single source of steps for both build jobs below (YAML anchor).
@@ -47,6 +51,11 @@ jobs:
     env:
       ARTIFACT: xai-grok-pager-windows-x64
       BIN: xai-grok-pager.exe
+      # FORK(byok): cap cargo parallelism on Windows only. The sccache
+      # server keeps dying under peak RAM on windows-latest (giant crates
+      # x codegen-units=16); fewer concurrent rustc processes lower the
+      # peak. macOS is healthy and stays uncapped.
+      CARGO_BUILD_JOBS: "2"
     steps: &build-steps
       - uses: actions/checkout@v7
 
@@ -75,6 +84,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-targets: false
+          # FORK(byok): one registry entry shared by win+mac (registry is
+          # platform-independent), minted on main only; tags/PRs restore.
+          shared-key: byok-registry
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       # Windows Defender scans every file cargo writes; excluding the workspace
       # and cargo home is worth 20-40% on Windows builders. Needs admin, which
