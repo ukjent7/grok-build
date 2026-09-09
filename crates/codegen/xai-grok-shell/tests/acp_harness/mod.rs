@@ -379,6 +379,10 @@ pub fn run_agent_test_with_models<F, Fut>(
     Fut: std::future::Future<Output = ()>,
 {
     let _env_guard = hold_global_env();
+    // This seam exists only when the library is built with test-support
+    // (mirrors the gate on the seam call in `reset` above); the integration
+    // test binaries that include this harness compile without the feature.
+    #[cfg(feature = "test-support")]
     xai_grok_shell::agent::remote_config::settings_get::reset_startup_settings_for_tests();
     xai_grok_extra_ca::ensure_default_crypto_provider();
 
