@@ -22,8 +22,9 @@ pub const DEFAULT_REPO: &str = "ukjent7/grok-build";
 fn env_repo() -> String {
     std::env::var("GROK_BYOK_REPO")
         .map(|v| v.trim().to_string())
+        .ok()
         .filter(|v| !v.is_empty())
-        .unwrap_or_else(|_| DEFAULT_REPO.to_string())
+        .unwrap_or_else(|| DEFAULT_REPO.to_string())
 }
 
 /// Release tag of the running binary, if it is a tagged fork build.
