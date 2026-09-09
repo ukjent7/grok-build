@@ -126,6 +126,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      # gh release create resolves the repo from git remotes; without this
+      # it fails with "not a git repository".
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
           path: dist
