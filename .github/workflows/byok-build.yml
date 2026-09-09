@@ -30,6 +30,10 @@ env:
   RUSTUP_TOOLCHAIN: 1.98.1
   SCCACHE_GHA_ENABLED: "true"
   RUSTC_WRAPPER: "sccache"
+  # The sccache server occasionally dies mid-build on huge crates
+  # (observed: connection reset while compiling xai-grok-shell lib).
+  # Fall back to local compilation instead of failing the whole build.
+  SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
   CARGO_INCREMENTAL: 0
 
 jobs:
