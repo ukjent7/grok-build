@@ -907,8 +907,12 @@ pub async fn run_install_script(
         )
         .map(|()| None),
         "gh-release" => install_gh_release(target).await.map(|()| None),
-        // FORK(byok)
-        "byok" => crate::byok::install(target, update_config).await.map(Some),
+        // FORK(byok): route by fork identity, not the raw string: a tagged
+        // fork binary without the config marker reports "internal" but must
+        // still install from fork releases, never official GCS.
+        i if crate::byok::is_byok_install(i) => {
+            crate::byok::install(target, update_config).await.map(Some)
+        }
         _ => install_internal(target, update_config).await.map(Some),
     };
     // Measured before the success-only cache sweep, so the sweep cannot inflate success durations

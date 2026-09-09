@@ -258,8 +258,20 @@ New-Item -ItemType Directory -Path $DownloadDir -Force | Out-Null
 New-Item -ItemType Directory -Path $BinDir -Force | Out-Null
 
 if ($Version -eq 'latest') {
-    $resolvedVersion = 'latest'
-    $directUrl = "https://github.com/$Repo/releases/latest/download/$asset"
+    # Single-pointer rule: the tag read from the repo tree is the only truth.
+    # The tree commit lands after the release publish (plus jsDelivr cache),
+    # so releases/latest may already serve N while the tree still says N-1;
+    # pinning both to the resolved tag installs N-1 correctly instead of
+    # aborting on a hash mismatch. Unresolvable tag falls back to live latest.
+    $latestTag = Download-String "$JsDelivr/checksums/latest"
+    if ($latestTag) { $latestTag = $latestTag.Trim() }
+    if ($latestTag -match '^byok-v\d+\.\d+\.\d+(-\S+)?$') {
+        $resolvedVersion = $latestTag
+        $directUrl = "https://github.com/$Repo/releases/download/$latestTag/$asset"
+    } else {
+        $resolvedVersion = 'latest'
+        $directUrl = "https://github.com/$Repo/releases/latest/download/$asset"
+    }
 } else {
     $resolvedVersion = $Version
     $directUrl = "https://github.com/$Repo/releases/download/$Version/$asset"
@@ -269,14 +281,8 @@ $directChecksumUrl = "$directUrl.sha256"
 # GitHub access needed), then the release-asset copies. The tree copy is the
 # anchor: a tampered binary mirror cannot forge it.
 $treeChecksumUrls = @()
-if ($Version -eq 'latest') {
-    $latestTag = Download-String "$JsDelivr/checksums/latest"
-    if ($latestTag) { $latestTag = $latestTag.Trim() }
-    if ($latestTag -match '^byok-v\d+\.\d+\.\d+(-\S+)?$') {
-        $treeChecksumUrls = @("$JsDelivr/checksums/$latestTag/$asset.sha256")
-    }
-} else {
-    $treeChecksumUrls = @("$JsDelivr/checksums/$Version/$asset.sha256")
+if ($resolvedVersion -ne 'latest') {
+    $treeChecksumUrls = @("$JsDelivr/checksums/$resolvedVersion/$asset.sha256")
 }
 if ($GhMirror) {
     # gh-proxy format: <mirror>/<full-original-url>

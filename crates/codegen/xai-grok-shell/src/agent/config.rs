@@ -3881,10 +3881,12 @@ impl ConfigModelOverride {
         if let Some(scheme) = self.auth_scheme {
             entry.info.auth_scheme = scheme;
         } else if matches!(entry.info.api_backend, ApiBackend::Messages)
-            && self
-                .base_url
-                .as_deref()
-                .is_some_and(xai_grok_sampling_types::endpoint_trust::is_third_party_base_url)
+            // FORK(byok): read the effective URL, not the user layer: base_url
+            // may come from the catalog while the user layer only sets
+            // api_backend, and then the old check silently missed third-party.
+            && xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
+                &entry.info.base_url,
+            )
         {
             // FORK(byok): Anthropic-protocol endpoints authenticate with `x-api-key`, not
             // `Authorization: Bearer`. Auto-default only for custom endpoints so
