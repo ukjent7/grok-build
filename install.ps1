@@ -409,13 +409,17 @@ if (-not (Test-Path $ConfigFile)) {
     Add-Content -Path $ConfigFile -Value "`r`n[cli]`r`n$($cliLines -join "`r`n")`r`n"
 }
 
-# FORK(byok): secure-by-default for third-party endpoints. Server-side search
-# has no real executor on most BYOK gateways (the model answers from weights
-# and may still claim it searched); media generation hits xAI-only endpoints
-# with your third-party key; telemetry/trace upload/feedback should be an
-# explicit opt-in on a fork. Missing keys only — explicit user values win.
+# FORK(byok): secure-by-default for third-party endpoints. Most BYOK gateways
+# cannot execute server-side search (the model answers from weights and may
+# still claim it searched), so search stays off by leaving `web_search_model`
+# unmapped — do NOT set a global `disable_web_search=true`, it would also
+# kill `web_fetch` (the kill-switch gates both). Instead explicitly enable
+# `web_fetch`, which fetches pages locally and works fine on BYOK but
+# defaults off without remote settings. Media generation hits xAI-only
+# endpoints with your third-party key; telemetry/trace upload/feedback should
+# be an explicit opt-in on a fork. Missing keys only — explicit user values win.
 $cfgLines = Get-Content $ConfigFile
-$cfgLines = Add-TomlValueIfMissing $cfgLines '' 'disable_web_search = true'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'web_fetch = true'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'telemetry = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'image_gen = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'video_gen = false'

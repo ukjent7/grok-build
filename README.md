@@ -85,9 +85,8 @@ The installer seeds these into `~/.grok/config.toml` on a fresh install
 (missing keys only — your explicit values always win):
 
 ```toml
-disable_web_search = true   # no server-side executor on most BYOK gateways
-
 [features]
+web_fetch = true            # real local fetching; the one web tool that works on BYOK
 telemetry = false           # product analytics: opt-in on a fork
 image_gen = false           # xAI-only Imagine endpoint
 video_gen = false           # xAI-only Imagine endpoint
@@ -96,6 +95,12 @@ feedback = false            # feedback goes to xAI; useless on a fork
 [telemetry]
 trace_upload = false        # trace payload upload: opt-in on a fork
 ```
+
+Search is left off by leaving `[models] web_search` unmapped (no key resolves,
+so the tool never registers). Do NOT set a global `disable_web_search = true`
+instead — that kill-switch also disables `web_fetch`. Likewise, only point
+`[models] web_search` at an endpoint that really executes server-side search;
+pointing it at a plain chat gateway gives confident ungrounded answers.
 
 `image_edit` has no `[features]` key upstream (env-only), so the installer
 sets User-level `GROK_IMAGE_EDIT=0` instead — again only when you have not
