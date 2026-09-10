@@ -95,6 +95,10 @@ jobs:
       - name: Exclude build paths from Windows Defender
         if: runner.os == 'Windows'
         shell: powershell
+        # Best-effort compile speedup only: 0x800106ba means the Defender
+        # service is not running on this runner image, in which case the
+        # exclusion is a no-op. Never fail the release build over it.
+        continue-on-error: true
         run: |
           Add-MpPreference -ExclusionPath '${{ github.workspace }}'
           if ($env:CARGO_HOME) { Add-MpPreference -ExclusionPath $env:CARGO_HOME }
