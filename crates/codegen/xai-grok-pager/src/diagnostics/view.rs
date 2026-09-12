@@ -382,121 +382,58 @@ fn clipboard_findings(
     ctx: &crate::terminal::TerminalContext,
     recovery: ClipboardRecovery,
 ) -> Vec<DiagnosticFinding> {
-    let locale = crate::locale::ctx();
     let mut findings = Vec::new();
     match recovery {
         ClipboardRecovery::Confirmed => {}
         ClipboardRecovery::UnverifiedSsh => findings.push(manual_finding(
             crate::diagnostics::CLIPBOARD_DELIVERY_UNVERIFIED_ID,
             FindingDisposition::Issue,
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unverified_remote.message",
-                    "Grok can't verify this clipboard route across the remote boundary",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unverified_remote.note",
-                    "When you copy, Grok sends OSC 52 but can't confirm that the outer terminal \
-                     accepted it. Each copy is also saved to a backup file; the copy message \
-                     shows the path. If paste fails, run `grok wrap ssh <host>` on your local \
-                     computer or use `/minimal`. For repeated SSH sessions, run `grok doctor fix \
-                     ssh-wrap` on your local computer.",
-                )
-                .into_owned(),
+            "Grok can't verify this clipboard route across the remote boundary",
+            "When you copy, Grok sends OSC 52 but can't confirm that the outer terminal accepted \
+             it. Each copy is also saved to a backup file; the copy message shows the path. If \
+             paste fails, run `grok wrap ssh <host>` on your local computer or use `/minimal`. \
+             For repeated SSH sessions, run `grok doctor fix ssh-wrap` on your local computer.",
         )),
         ClipboardRecovery::UnverifiedContainer => findings.push(manual_finding(
             crate::diagnostics::CLIPBOARD_DELIVERY_UNVERIFIED_ID,
             FindingDisposition::Issue,
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unverified_container.message",
-                    "Grok can't verify this clipboard route across the container boundary",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unverified_container.note",
-                    "When you copy, Grok sends OSC 52 but can't confirm that the outer terminal \
-                     accepted it. Each copy is also saved to a backup file; the copy message \
-                     shows the path. If paste fails, start the container command with local \
-                     `grok wrap <command>`, or use `/minimal`.",
-                )
-                .into_owned(),
+            "Grok can't verify this clipboard route across the container boundary",
+            "When you copy, Grok sends OSC 52 but can't confirm that the outer terminal accepted \
+             it. Each copy is also saved to a backup file; the copy message shows the path. If \
+             paste fails, start the container command with local `grok wrap <command>`, or use \
+             `/minimal`.",
         )),
         ClipboardRecovery::UnverifiedOther => findings.push(manual_finding(
             crate::diagnostics::CLIPBOARD_DELIVERY_UNVERIFIED_ID,
             FindingDisposition::Issue,
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unverified.message",
-                    "Grok can't verify this clipboard route",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unverified.note",
-                    "Each copy is also saved to a backup file; the copy message shows the path. \
-                     For a remote or container command, use local `grok wrap <command>`. You can \
-                     also use `/minimal` to select text in the terminal.",
-                )
-                .into_owned(),
+            "Grok can't verify this clipboard route",
+            "Each copy is also saved to a backup file; the copy message shows the path. For a \
+             remote or container command, use local `grok wrap <command>`. You can also use \
+             `/minimal` to select text in the terminal.",
         )),
         ClipboardRecovery::UnavailableSsh => findings.push(manual_finding(
             crate::diagnostics::CLIPBOARD_DELIVERY_UNAVAILABLE_ID,
             FindingDisposition::Issue,
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unavailable.message",
-                    "This clipboard route can't reach the target clipboard",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unavailable_ssh.note",
-                    "When you copy, Grok saves the text to the backup file shown in the copy \
-                     message. To copy directly, run `grok wrap ssh <host>` on your local \
-                     computer. For repeated SSH sessions, run `grok doctor fix ssh-wrap` there. \
-                     You can also use `/copy <file>` or `/minimal`.",
-                )
-                .into_owned(),
+            "This clipboard route can't reach the target clipboard",
+            "When you copy, Grok saves the text to the backup file shown in the copy message. To \
+             copy directly, run `grok wrap ssh <host>` on your local computer. For repeated SSH \
+             sessions, run `grok doctor fix ssh-wrap` there. You can also use `/copy <file>` or \
+             `/minimal`.",
         )),
         ClipboardRecovery::UnavailableContainer => findings.push(manual_finding(
             crate::diagnostics::CLIPBOARD_DELIVERY_UNAVAILABLE_ID,
             FindingDisposition::Issue,
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unavailable.message",
-                    "This clipboard route can't reach the target clipboard",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unavailable_container.note",
-                    "When you copy, Grok saves the text to the backup file shown in the copy \
-                     message. Start the container command with local `grok wrap <command>`, use \
-                     `/copy <file>`, or use `/minimal`.",
-                )
-                .into_owned(),
+            "This clipboard route can't reach the target clipboard",
+            "When you copy, Grok saves the text to the backup file shown in the copy message. \
+             Start the container command with local `grok wrap <command>`, use `/copy <file>`, or \
+             use `/minimal`.",
         )),
         ClipboardRecovery::UnavailableLocal => findings.push(manual_finding(
             crate::diagnostics::CLIPBOARD_DELIVERY_UNAVAILABLE_ID,
             FindingDisposition::Issue,
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unavailable.message",
-                    "This clipboard route can't reach the target clipboard",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.clipboard.unavailable_local.note",
-                    "When you copy, Grok saves the text to the backup file shown in the copy \
-                     message. Use `/copy <file>` or `/minimal`, then check the native clipboard \
-                     tool listed above.",
-                )
-                .into_owned(),
+            "This clipboard route can't reach the target clipboard",
+            "When you copy, Grok saves the text to the backup file shown in the copy message. Use \
+             `/copy <file>` or `/minimal`, then check the native clipboard tool listed above.",
         )),
     }
 
@@ -508,20 +445,9 @@ fn clipboard_findings(
         findings.push(manual_finding(
             crate::diagnostics::VSCODE_SSH_NON_ASCII_ID,
             FindingDisposition::Recommendation,
-            locale
-                .named_text(
-                    "diagnostics.clipboard.vscode_ssh_non_ascii.message",
-                    "This remote editor may change non-ASCII text copied with OSC 52",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.clipboard.vscode_ssh_non_ascii.note",
-                    "If pasted non-ASCII text is incorrect, use `/minimal` and select text in \
-                     the terminal. ASCII copy and the backup file shown after the copy remain \
-                     available.",
-                )
-                .into_owned(),
+            "This remote editor may change non-ASCII text copied with OSC 52",
+            "If pasted non-ASCII text is incorrect, use `/minimal` and select text in the \
+             terminal. ASCII copy and the backup file shown after the copy remain available.",
         ));
     }
 
@@ -535,20 +461,10 @@ fn clipboard_findings(
         findings.push(manual_finding(
             crate::diagnostics::ITERM2_CLIPBOARD_PERMISSION_ID,
             FindingDisposition::Recommendation,
-            locale
-                .named_text(
-                    "diagnostics.clipboard.iterm2_permission.message",
-                    "iTerm2 may block OSC 52 clipboard access",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.clipboard.iterm2_permission.note",
-                    "In iTerm2, open Settings → General → Selection and turn on “Applications \
-                     in terminal may access clipboard.” Grok can't read this setting, so check \
-                     it there if copies don't paste.",
-                )
-                .into_owned(),
+            "iTerm2 may block OSC 52 clipboard access",
+            "In iTerm2, open Settings → General → Selection and turn on “Applications in \
+             terminal may access clipboard.” Grok can't read this setting, so check it there if \
+             copies don't paste.",
         ));
     }
     findings
@@ -556,60 +472,31 @@ fn clipboard_findings(
 
 fn newline_finding(facts: &DiagnosticFacts) -> Option<DiagnosticFinding> {
     let newline = facts.newline.as_ref()?;
-    let locale = crate::locale::ctx();
     let (message, note) = match newline {
         NewlineFact::Vte { version } => (
-            locale
-                .named_text(
-                    "diagnostics.newline.vte.message",
-                    "Shift+Enter can't insert a newline in this VTE terminal",
-                )
-                .into_owned(),
+            "Shift+Enter can't insert a newline in this VTE terminal",
             match version {
-                Some(version) => locale.format_named(
-                    "diagnostics.newline.vte.note_version",
+                Some(version) => format!(
                     "Use Alt+Enter to insert a newline. This terminal reports VTE {version}. \
-                     Upgrade to VTE 0.82 or later to use Shift+Enter.",
-                    &[("version", version)],
+                     Upgrade to VTE 0.82 or later to use Shift+Enter."
                 ),
-                None => locale
-                    .named_text(
-                        "diagnostics.newline.vte.note",
-                        "Use Alt+Enter to insert a newline. Upgrade to VTE 0.82 or later to use \
-                         Shift+Enter.",
-                    )
-                    .into_owned(),
+                None => "Use Alt+Enter to insert a newline. Upgrade to VTE 0.82 or later to use \
+                         Shift+Enter."
+                    .to_owned(),
             },
         ),
         NewlineFact::XtermJs { terminal } => (
-            locale
-                .named_text(
-                    "diagnostics.newline.xterm_js.message",
-                    "Shift+Enter can't insert a newline in this xterm.js terminal",
-                )
-                .into_owned(),
-            locale.format_named(
-                "diagnostics.newline.xterm_js.note",
+            "Shift+Enter can't insert a newline in this xterm.js terminal",
+            format!(
                 "Use Alt+Enter to insert a newline in {terminal}. xterm.js sends Shift+Enter as \
-                 Enter in this setup.",
-                &[("terminal", &terminal.to_string())],
+                 Enter in this setup."
             ),
         ),
         NewlineFact::NoKittyKeyboardProtocol => (
-            locale
-                .named_text(
-                    "diagnostics.newline.no_kitty_protocol.message",
-                    "Shift+Enter can't insert a newline because the keyboard protocol is \
-                     unavailable",
-                )
-                .into_owned(),
-            locale
-                .named_text(
-                    "diagnostics.newline.no_kitty_protocol.note",
-                    "Use Alt+Enter to insert a newline. If your terminal supports the Kitty \
-                     keyboard protocol, enable it and restart Grok.",
-                )
-                .into_owned(),
+            "Shift+Enter can't insert a newline because the keyboard protocol is unavailable",
+            "Use Alt+Enter to insert a newline. If your terminal supports the Kitty keyboard \
+             protocol, enable it and restart Grok."
+                .to_owned(),
         ),
     };
     Some(manual_finding(
