@@ -23,13 +23,7 @@ pub fn run(args: ExportArgs) -> Result<()> {
     tracing::info!(session_id = %args.session_id, "export_cmd: starting session export");
 
     let updates = xai_grok_shell::session::storage::load_updates_for_replay(&args.session_id)?
-        .with_context(|| {
-            crate::locale::ctx().format_named(
-                "export.session_not_found",
-                "Session '{session_id}' not found.",
-                &[("session_id", &args.session_id)],
-            )
-        })?;
+        .with_context(|| format!("Session '{}' not found.", args.session_id))?;
 
     let mut tracker = AcpUpdateTracker::new();
     let mut scrollback = ScrollbackState::new();
@@ -49,47 +43,26 @@ pub fn run(args: ExportArgs) -> Result<()> {
 
     if md.is_empty() {
         anyhow::bail!(
-            "{}",
-            crate::locale::ctx().format_named(
-                "export.no_content",
-                "Session '{session_id}' has no conversation content to export",
-                &[("session_id", &args.session_id)],
-            )
+            "Session '{}' has no conversation content to export",
+            args.session_id
         );
     }
 
     if let Some(path) = args.output {
         let expanded = PathBuf::from(shellexpand::tilde(&path.to_string_lossy()).as_ref());
         if let Some(parent) = expanded.parent() {
-            std::fs::create_dir_all(parent).with_context(|| {
-                crate::locale::ctx().format_named(
-                    "export.create_dir_failed",
-                    "Failed to create {path}",
-                    &[("path", &parent.display().to_string())],
-                )
-            })?;
+            std::fs::create_dir_all(parent)
+                .with_context(|| format!("Failed to create {}", parent.display()))?;
         }
-        std::fs::write(&expanded, &md).with_context(|| {
-            crate::locale::ctx().format_named(
-                "export.write_failed",
-                "Failed to write {path}",
-                &[("path", &expanded.display().to_string())],
-            )
-        })?;
+        std::fs::write(&expanded, &md)
+            .with_context(|| format!("Failed to write {}", expanded.display()))?;
         tracing::info!(
             session_id = %args.session_id,
             path = %expanded.display(),
             bytes = md.len(),
             "export_cmd: wrote transcript to file"
         );
-        eprintln!(
-            "{}",
-            crate::locale::ctx().format_named(
-                "export.exported_to",
-                "Conversation exported to {path}",
-                &[("path", &expanded.display().to_string())],
-            )
-        );
+        eprintln!("Conversation exported to {}", expanded.display());
     } else if args.clipboard {
         let _ = crate::clipboard::copy_text(&md);
         let lines = md.lines().count();
@@ -100,15 +73,9 @@ pub fn run(args: ExportArgs) -> Result<()> {
             "export_cmd: copied transcript to clipboard"
         );
         eprintln!(
-            "{}",
-            crate::locale::ctx().format_named(
-                "export.copied_clipboard",
-                "Conversation copied to clipboard ({chars} chars, {lines} lines)",
-                &[
-                    ("chars", &md.len().to_string()),
-                    ("lines", &lines.to_string()),
-                ],
-            )
+            "Conversation copied to clipboard ({} chars, {} lines)",
+            md.len(),
+            lines
         );
     } else {
         std::io::stdout().write_all(md.as_bytes())?;

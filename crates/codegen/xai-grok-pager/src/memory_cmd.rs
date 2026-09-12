@@ -38,10 +38,7 @@ struct ClearTarget {
 
 fn workspace_target(storage: &MemoryStorage) -> ClearTarget {
     ClearTarget {
-        label: crate::locale::ctx().named_static_text(
-            "memory.cli.workspace_label",
-            "workspace memory",
-        ),
+        label: "workspace memory",
         path: storage.workspace_dir().to_path_buf(),
         clear: |s| s.clear_workspace(),
     }
@@ -50,11 +47,9 @@ fn workspace_target(storage: &MemoryStorage) -> ClearTarget {
 fn global_target(storage: &MemoryStorage) -> ClearTarget {
     ClearTarget {
         label: if storage.mode().is_v2() {
-            crate::locale::ctx()
-                .named_static_text("memory.cli.global_label_v2", "global memory")
+            "global memory"
         } else {
-            crate::locale::ctx()
-                .named_static_text("memory.cli.global_label", "global MEMORY.md")
+            "global MEMORY.md"
         },
         path: if storage.mode().is_v2() {
             storage.global_dir().to_path_buf()
@@ -91,38 +86,23 @@ fn run_clear(storage: &MemoryStorage, targets: &[ClearTarget], skip_confirm: boo
     let existing: Vec<_> = targets.iter().filter(|t| t.path.exists()).collect();
 
     if existing.is_empty() {
-        println!(
-            "{}",
-            crate::locale::ctx().named_text(
-                "memory.cli.nothing_to_clear",
-                "Nothing to clear: no memory files found."
-            )
-        );
+        println!("Nothing to clear: no memory files found.");
         return Ok(());
     }
 
-    println!(
-        "{}",
-        crate::locale::ctx().named_text("memory.cli.will_delete", "The following will be deleted:")
-    );
+    println!("The following will be deleted:");
     for t in &existing {
         println!("  {}: {}", t.label, t.path.display());
     }
 
     if !skip_confirm {
-        print!(
-            "\n{}",
-            crate::locale::ctx().named_text("memory.cli.confirm", "Are you sure? [y/N] ")
-        );
+        print!("\nAre you sure? [y/N] ");
         std::io::stdout().flush()?;
 
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
         if !matches!(input.trim().to_ascii_lowercase().as_str(), "y" | "yes") {
-            println!(
-                "{}",
-                crate::locale::ctx().named_text("memory.cli.cancelled", "Cancelled.")
-            );
+            println!("Cancelled.");
             return Ok(());
         }
     }
@@ -133,14 +113,7 @@ fn run_clear(storage: &MemoryStorage, targets: &[ClearTarget], skip_confirm: boo
         match (t.clear)(storage) {
             Ok(true) => {
                 cleared = true;
-                println!(
-                    "{}",
-                    crate::locale::ctx().format_named(
-                        "memory.cli.cleared_item",
-                        "  Cleared: {label}",
-                        &[("label", t.label)],
-                    )
-                );
+                println!("  Cleared: {}", t.label);
             }
             Ok(false) => {} // nothing to clear for this scope
             Err(e) => {
@@ -150,26 +123,14 @@ fn run_clear(storage: &MemoryStorage, targets: &[ClearTarget], skip_confirm: boo
     }
 
     if cleared && errors.is_empty() {
-        println!(
-            "{}",
-            crate::locale::ctx().named_text("memory.cli.cleared", "Memory cleared.")
-        );
+        println!("Memory cleared.");
     } else if cleared {
-        println!(
-            "{}",
-            crate::locale::ctx().named_text(
-                "memory.cli.partially_cleared",
-                "Memory partially cleared. Errors:"
-            )
-        );
+        println!("Memory partially cleared. Errors:");
         for e in &errors {
             eprintln!("  {e}");
         }
     } else if !errors.is_empty() {
-        eprintln!(
-            "{}",
-            crate::locale::ctx().named_text("memory.cli.failed", "Failed to clear memory:")
-        );
+        eprintln!("Failed to clear memory:");
         for e in &errors {
             eprintln!("  {e}");
         }

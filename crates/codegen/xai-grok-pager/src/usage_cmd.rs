@@ -22,33 +22,13 @@ pub fn run(args: UsageArgs) -> Result<()> {
 
 fn load_payload(session_id: &str, turn: Option<u32>) -> Result<serde_json::Value> {
     match SessionUsageFile::load_for_session(session_id)
-        .with_context(|| {
-            crate::locale::ctx().format_named(
-                "usage.cli.read_failed",
-                "Failed to read usage for session '{session_id}'",
-                &[("session_id", session_id)],
-            )
-        })?
+        .with_context(|| format!("Failed to read usage for session '{session_id}'"))?
     {
         UsageLoad::SessionNotFound => {
-            anyhow::bail!(
-                "{}",
-                crate::locale::ctx().format_named(
-                    "usage.cli.session_not_found",
-                    "Session '{session_id}' not found.",
-                    &[("session_id", session_id)],
-                )
-            )
+            anyhow::bail!("Session '{session_id}' not found.")
         }
         UsageLoad::NoUsage => {
-            anyhow::bail!(
-                "{}",
-                crate::locale::ctx().format_named(
-                    "usage.cli.no_usage",
-                    "No usage recorded for session '{session_id}'.",
-                    &[("session_id", session_id)],
-                )
-            )
+            anyhow::bail!("No usage recorded for session '{session_id}'.")
         }
         UsageLoad::Ready(file) => select_payload(&file, turn, session_id),
     }
@@ -63,14 +43,7 @@ fn select_payload(
         None => Ok(serde_json::to_value(file)?),
         Some(turn_number) => {
             let Some(row) = file.turn(turn_number) else {
-                anyhow::bail!(
-                    "{}",
-                    crate::locale::ctx().format_named(
-                        "usage.cli.turn_not_found",
-                        "Turn {turn_number} not found in session '{session_id}'.",
-                        &[("turn_number", &turn_number.to_string()), ("session_id", session_id)],
-                    )
-                );
+                anyhow::bail!("Turn {turn_number} not found in session '{session_id}'.");
             };
             Ok(serde_json::json!({
                 "sessionId": file.session_id,

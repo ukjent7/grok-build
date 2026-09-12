@@ -20,12 +20,10 @@ use crate::app::WrapArgs;
 /// Run the `grok wrap` command. Otherwise the command is executed directly (no wrapping).
 pub fn run(args: &WrapArgs) -> Result<()> {
     // `command` is `required` in clap, so it always has at least one element.
-    let program = args.command.first().ok_or_else(|| {
-        anyhow::anyhow!(crate::locale::ctx().named_text(
-            "wrap_cli.no_command",
-            "grok wrap: no command given"
-        ))
-    })?;
+    let program = args
+        .command
+        .first()
+        .ok_or_else(|| anyhow::anyhow!("grok wrap: no command given"))?;
 
     // Unix: derive both spawn plans up front from one env snapshot so the PTY attempt and its fallback route consistently
     // The wrapped run uses `$SHELL -i` when routing through the shell (rc files load, aliases expand; safe because it runs inside our PTY)
@@ -53,14 +51,7 @@ pub fn run(args: &WrapArgs) -> Result<()> {
             Ok(code) => std::process::exit(code),
             Err(e) => {
                 // PTY setup failed; keep the chosen route without our PTY so the command still works (just without clipboard forwarding)
-                eprintln!(
-                    "{}",
-                    crate::locale::ctx().format_named(
-                        "wrap_cli.wrapped_mode_failed",
-                        "grok wrap: wrapped mode failed, running without PTY wrapping: {error}",
-                        &[("error", &e.to_string())],
-                    )
-                );
+                eprintln!("grok wrap: wrapped mode failed, running without PTY wrapping: {e}");
                 exec_command(&fallback.program, &fallback.args)
             }
         }

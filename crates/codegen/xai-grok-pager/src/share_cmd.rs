@@ -9,11 +9,5 @@ pub struct ShareArgs {
 
 pub async fn run(args: &ShareArgs, agent_config: &AgentConfig) -> Result<()> {
     let _ = (args, agent_config);
-    anyhow::bail!(
-        "{}",
-        crate::locale::ctx().named_text(
-            "session.share_disabled",
-            "Session sharing is temporarily disabled"
-        )
-    );
+    anyhow::bail!("Session sharing is temporarily disabled");
 }

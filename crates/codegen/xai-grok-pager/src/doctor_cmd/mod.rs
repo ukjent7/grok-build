@@ -50,10 +50,7 @@ pub fn run(args: DoctorArgs) -> Result<()> {
 pub fn run_with_writer(args: DoctorArgs, writer: &mut impl Write) -> Result<()> {
     match args.command {
         None => run_report(args.json, writer),
-        Some(_) => anyhow::bail!("{}", crate::locale::ctx().named_text(
-            "doctor.cli.requires_tty",
-            "Doctor fixes require interactive input and output.",
-        )),
+        Some(_) => anyhow::bail!("Doctor fixes require interactive input and output."),
     }
 }
 
@@ -152,25 +149,16 @@ fn apply_fix_plan(
 
     if !args.yes {
         if !stdin_is_terminal {
-            anyhow::bail!("{}", crate::locale::ctx().named_text(
-                "doctor.cli.confirmation_required",
-                "Cannot apply this fix without confirmation. Run it in an interactive terminal or add `--yes`.",
-            ));
+            anyhow::bail!(
+                "Cannot apply this fix without confirmation. Run it in an interactive terminal or add `--yes`."
+            );
         }
-        write!(
-            writer,
-            "\n{}",
-            crate::locale::ctx().named_text("doctor.cli.apply_prompt", "Apply this fix? [y/N] ")
-        )?;
+        write!(writer, "\nApply this fix? [y/N] ")?;
         writer.flush()?;
         let mut answer = String::new();
         input.read_line(&mut answer)?;
         if !matches!(answer.trim().to_ascii_lowercase().as_str(), "y" | "yes") {
-            writeln!(
-                writer,
-                "{}",
-                crate::locale::ctx().named_text("doctor.cli.fix_cancelled", "Fix cancelled.")
-            )?;
+            writeln!(writer, "Fix cancelled.")?;
             return Ok(());
         }
     }
@@ -188,18 +176,16 @@ fn apply_fix_plan(
             .iter()
             .any(|finding| finding.id == outcome.id())
         {
-            anyhow::bail!("{}", crate::locale::ctx().format_named(
-                "doctor.cli.applied_but_still_reported",
-                "The change was applied, but Doctor still reports `{id}`.",
-                &[("id", &outcome.id().to_string())],
-            ));
+            anyhow::bail!(
+                "The change was applied, but Doctor still reports `{}`.",
+                outcome.id()
+            );
         }
     } else if !crate::diagnostics::verify_persistent_fix(&outcome) {
-        anyhow::bail!("{}", crate::locale::ctx().format_named(
-            "doctor.cli.applied_but_unverified",
-            "The change was applied, but Doctor could not verify `{id}` in persistent configuration.",
-            &[("id", &outcome.id().to_string())],
-        ));
+        anyhow::bail!(
+            "The change was applied, but Doctor could not verify `{}` in persistent configuration.",
+            outcome.id()
+        );
     }
 
     writeln!(

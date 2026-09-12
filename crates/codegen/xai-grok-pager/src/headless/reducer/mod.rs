@@ -127,39 +127,22 @@ impl Lifecycle {
                 format!("Auto-compacting conversation ({percentage}% full)...")
             }
             Lifecycle::CompactCompleted { .. } => "Conversation compacted.".to_string(),
-            Lifecycle::CompactFailed { error } if error.trim().is_empty() => crate::locale::ctx()
-                .named_text("headless.lifecycle.compact_failed_empty", "Auto-compact failed.")
-                .into_owned(),
+            Lifecycle::CompactFailed { error } if error.trim().is_empty() => {
+                "Auto-compact failed.".to_string()
+            }
             Lifecycle::CompactFailed { error } => {
                 // Plain output is line-oriented, so the two-line error message collapses to one; JSON carries the raw string
                 // The hyphen matches the TUI
                 let single_line = error.split_whitespace().collect::<Vec<_>>().join(" ");
-                crate::locale::ctx().format_named(
-                    "headless.lifecycle.compact_failed",
-                    "Auto-compact failed - {error}",
-                    &[("error", &single_line)],
-                )
+                format!("Auto-compact failed - {single_line}")
             }
             Lifecycle::CompactCancelled => "Auto-compact cancelled.".to_string(),
             Lifecycle::AutoContinue { .. } => "Resumed after compaction.".to_string(),
             Lifecycle::ImageCompressed { message } => message.clone(),
-            Lifecycle::MemoryFlushStarted => crate::locale::ctx()
-                .named_text(
-                    "headless.lifecycle.memory_flush.started",
-                    "Memory flush started.",
-                )
-                .into_owned(),
+            Lifecycle::MemoryFlushStarted => "Memory flush started.".to_string(),
             Lifecycle::MemoryFlushCompleted { result, path } => match path {
-                Some(path) => crate::locale::ctx().format_named(
-                    "headless.lifecycle.memory_flush.completed_path",
-                    "Memory flush {result}: {path}",
-                    &[("result", result), ("path", path)],
-                ),
-                None => crate::locale::ctx().format_named(
-                    "headless.lifecycle.memory_flush.completed",
-                    "Memory flush {result}.",
-                    &[("result", result)],
-                ),
+                Some(path) => format!("Memory flush {result}: {path}"),
+                None => format!("Memory flush {result}."),
             },
         }
     }

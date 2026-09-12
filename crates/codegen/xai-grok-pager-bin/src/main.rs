@@ -148,27 +148,13 @@ fn resolve_agent_profile_path(path: &std::path::Path) -> std::path::PathBuf {
         Ok(abs) if abs.is_file() => abs,
         Ok(abs) => {
             eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().format_named(
-                    "cli.agent_profile.not_file",
-                    "error: --agent-profile path is not a file: {path}",
-                    &[("path", &abs.display().to_string())],
-                )
+                "error: --agent-profile path is not a file: {}",
+                abs.display()
             );
             std::process::exit(1);
         }
         Err(e) => {
-            eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().format_named(
-                    "cli.agent_profile.resolve_failed",
-                    "error: --agent-profile path '{path}': {error}",
-                    &[
-                        ("path", &path.display().to_string()),
-                        ("error", &e.to_string()),
-                    ],
-                )
-            );
+            eprintln!("error: --agent-profile path '{}': {}", path.display(), e);
             std::process::exit(1);
         }
     }
@@ -242,24 +228,10 @@ fn init_tracing_simple(app_entrypoint: &'static str) {
 async fn run_setup_command(json: bool) {
     use xai_grok_shell::managed_config::{self, SetupOutcome};
     if !managed_config::has_principal() {
-        let ctx = xai_grok_pager::locale::ctx();
-        eprintln!(
-            "{}",
-            ctx.named_text("cli.setup.no_principal", "No deployment key or team sign-in found.")
-        );
+        eprintln!("No deployment key or team sign-in found.");
         eprintln!();
-        eprintln!(
-            "{}",
-            ctx.format_named(
-                "cli.setup.sign_in_hint",
-                "To install managed configuration, sign in with a team using `grok login`,",
-                &[("cli", "grok")],
-            )
-        );
-        eprintln!(
-            "{}",
-            ctx.named_text("cli.setup.deployment_key_hint", "or set a deployment key:")
-        );
+        eprintln!("To install managed configuration, sign in with a team using `grok login`,");
+        eprintln!("or set a deployment key:");
         eprintln!();
         if cfg!(unix) {
             eprintln!("  export GROK_DEPLOYMENT_KEY=<your-key>");
@@ -268,24 +240,13 @@ async fn run_setup_command(json: bool) {
         }
         eprintln!("  grok setup");
         eprintln!();
-        eprintln!(
-            "{}",
-            ctx.format_named(
-                "cli.setup.config_hint",
-                "Or add the key to ~/.grok/config.toml:",
-                &[("data_dir", "grok")],
-            )
-        );
+        eprintln!("Or add the key to ~/.grok/config.toml:");
         eprintln!();
         eprintln!("  [endpoints]");
         eprintln!("  deployment_key = \"<your-key>\"");
         eprintln!();
         eprintln!(
-            "{}",
-            ctx.named_text(
-                "cli.setup.admin_hint",
-                "If you don't have a deployment key, contact your organization's Grok administrator."
-            )
+            "If you don't have a deployment key, contact your organization's Grok administrator."
         );
         std::process::exit(1);
     }
@@ -297,70 +258,36 @@ async fn run_setup_command(json: bool) {
                 println!("{out}");
                 if !report.configured {
                     eprintln!(
-                        "{}",
-                        xai_grok_pager::locale::ctx().named_text(
-                            "cli.setup.not_configured",
-                            "Your team doesn't have a managed configuration yet. A team admin can set one up at console.x.ai."
-                        )
+                        "Your team doesn't have a managed configuration yet. A team admin can set one up at console.x.ai."
                     );
                 }
             }
             Err(e) => {
-                eprintln!(
-                    "{}",
-                    xai_grok_pager::locale::ctx().format_named(
-                        "cli.setup.fetch_failed",
-                        "Couldn't fetch managed configuration. {error}",
-                        &[("error", &e.to_string())],
-                    )
-                );
+                eprintln!("Couldn't fetch managed configuration. {e}");
                 std::process::exit(1);
             }
         }
         return;
     }
     match managed_config::run_setup().await {
-        SetupOutcome::Installed => eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().named_text("cli.setup.applied", "Applied managed configuration.")
-        ),
+        SetupOutcome::Installed => eprintln!("Applied managed configuration."),
         SetupOutcome::NothingConfigured => {
             eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().named_text(
-                    "cli.setup.not_configured",
-                    "Your team doesn't have a managed configuration yet. A team admin can set one up at console.x.ai."
-                )
+                "Your team doesn't have a managed configuration yet. A team admin can set one up at console.x.ai."
             );
         }
         SetupOutcome::Skipped => {
             eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().format_named(
-                    "cli.setup.skipped",
-                    "Managed configuration was not applied this run (another process held the apply lock, or the credential changed during the fetch). Run `grok setup` again.",
-                    &[("cli", "grok")],
-                )
+                "Managed configuration was not applied this run (another process held the apply lock, or the credential changed during the fetch). Run `grok setup` again."
             );
         }
         SetupOutcome::Staged => {
             eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().named_text(
-                    "cli.setup.staged",
-                    "Managed configuration update verified; it takes effect the next time Grok starts."
-                )
+                "Managed configuration update verified; it takes effect the next time Grok starts."
             );
         }
         SetupOutcome::Failed(e) => {
-            eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().format_named(
-                    "cli.setup.apply_failed",
-                    "Couldn't apply managed configuration. {error}",
-                    &[("error", &e.to_string())],
-                )
-            );
+            eprintln!("Couldn't apply managed configuration. {e}");
             std::process::exit(1);
         }
     }
@@ -378,10 +305,7 @@ async fn run_leader_mgmt(args: LeaderMgmtArgs) -> Result<()> {
                     serde_json::to_string(&serde_json::Value::Array(payload))?
                 );
             } else if leaders.is_empty() {
-                println!(
-                    "{}",
-                    xai_grok_pager::locale::ctx().named_text("cli.leader.none", "No leader candidates found.")
-                );
+                println!("No leader candidates found.");
             } else {
                 for d in &leaders {
                     print_leader_descriptor(d);
@@ -407,11 +331,7 @@ async fn run_leader_mgmt(args: LeaderMgmtArgs) -> Result<()> {
             } else {
                 print_leader_descriptor(&descriptor);
                 eprintln!(
-                    "{}",
-                    xai_grok_pager::locale::ctx().named_text(
-                        "cli.leader.info.unavailable",
-                        "  (detailed info unavailable — leader does not advertise control capabilities)"
-                    )
+                    "  (detailed info unavailable — leader does not advertise control capabilities)"
                 );
             }
             client.cancel();
@@ -423,10 +343,7 @@ async fn run_leader_mgmt(args: LeaderMgmtArgs) -> Result<()> {
 async fn kill_leaders() -> Result<()> {
     let leaders = xai_grok_shell::leader::discover_leaders().await;
     if leaders.is_empty() {
-        eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().named_text("cli.leader.none", "No leader candidates found.")
-        );
+        eprintln!("No leader candidates found.");
         return Ok(());
     }
     let mut killed = 0u32;
@@ -437,14 +354,7 @@ async fn kill_leaders() -> Result<()> {
         };
         if !xai_grok_shell::util::is_grok_process(pid) {
             if let Some(ref lock) = d.lock_path {
-                eprintln!(
-                    "{}",
-                    xai_grok_pager::locale::ctx().format_named(
-                        "cli.leader.kill.stale_lock",
-                        "  PID {pid} is not a grok process, removing stale lock",
-                        &[("pid", &pid.to_string())],
-                    )
-                );
+                eprintln!("  PID {pid} is not a grok process, removing stale lock");
                 let _ = std::fs::remove_file(lock);
                 cleaned += 1;
             }
@@ -453,53 +363,19 @@ async fn kill_leaders() -> Result<()> {
             }
             continue;
         }
-        eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.leader.kill.stopping",
-                "  Killing leader PID {pid}",
-                &[("pid", &pid.to_string())],
-            )
-        );
+        eprintln!("  Killing leader PID {pid}");
         if let Err(e) = xai_grok_shell::util::kill_process_by_pid(pid) {
-            eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().format_named(
-                    "cli.leader.kill.terminate_failed",
-                    "  warning: failed to terminate PID {pid}: {error}",
-                    &[("pid", &pid.to_string()), ("error", &e.to_string())],
-                )
-            );
+            eprintln!("  warning: failed to terminate PID {pid}: {e}");
             continue;
         }
         killed += 1;
     }
     if killed > 0 {
-        eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.leader.kill.completed",
-                "Killed {count} leader process(es).",
-                &[("count", &killed.to_string())],
-            )
-        );
+        eprintln!("Killed {killed} leader process(es).");
     } else if cleaned > 0 {
-        eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.leader.kill.none_cleaned",
-                "No live leader processes found (cleaned up {count} stale lock(s)).",
-                &[("count", &cleaned.to_string())],
-            )
-        );
+        eprintln!("No live leader processes found (cleaned up {cleaned} stale lock(s)).");
     } else {
-        eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().named_text(
-                "cli.leader.kill.none",
-                "No live leader processes found."
-            )
-        );
+        eprintln!("No live leader processes found.");
     }
     Ok(())
 }
@@ -543,14 +419,7 @@ fn print_leader_descriptor(d: &LeaderDescriptor) {
         .map(|p| p.display().to_string())
         .unwrap_or_else(|| "?".into());
     let state = format!("{:?}", d.classification);
-    eprintln!(
-        "{}",
-        xai_grok_pager::locale::ctx().format_named(
-            "cli.leader.descriptor",
-            "  PID {pid} ({state}) -- {sock}",
-            &[("pid", &pid), ("state", &state), ("sock", &sock)],
-        )
-    );
+    eprintln!("  PID {pid} ({state}) -- {sock}");
 }
 fn leader_descriptor_json(d: &LeaderDescriptor) -> serde_json::Value {
     serde_json::json!({
@@ -578,12 +447,7 @@ fn leader_info_json(
 fn ensure_control_caps(reg: &LeaderRegistration) -> Result<&LeaderCapabilities> {
     reg.leader_capabilities
         .as_ref()
-        .ok_or_else(|| {
-            anyhow::anyhow!(xai_grok_pager::locale::ctx().named_text(
-                "cli.leader.caps_missing",
-                "Leader does not advertise capabilities (legacy version)"
-            ))
-        })
+        .ok_or_else(|| anyhow::anyhow!("Leader does not advertise capabilities (legacy version)"))
 }
 /// Env override for the `grok workspace` gate: any truthy value enables the command locally, a falsy one disables it.
 /// Either way it bypasses the remote settings flag.
@@ -666,15 +530,10 @@ async fn run_workspace_mgmt(args: WorkspaceMgmtArgs) -> Result<()> {
     ) && let Some(profile) = xai_grok_sandbox::requested_confinement_profile()
     {
         anyhow::bail!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.workspace.sandbox_blocked",
-                "`grok workspace` start/restart/resume is unavailable under sandbox profile '{profile}': \
-                 those commands (re)activate shared-leader workspace exposure that this session cannot \
-                 prove is confined by that profile. Disable the profile at the source that selected it \
-                 (CLI, env, config, or a managed requirement).",
-                &[("profile", &profile)],
-            )
+            "`grok workspace` start/restart/resume is unavailable under sandbox profile '{profile}': \
+             those commands (re)activate shared-leader workspace exposure that this session cannot \
+             prove is confined by that profile. Disable the profile at the source that selected it \
+             (CLI, env, config, or a managed requirement)."
         );
     }
     let env_override = workspace_command_env_override();
@@ -688,23 +547,15 @@ async fn run_workspace_mgmt(args: WorkspaceMgmtArgs) -> Result<()> {
         WorkspaceGate::Enabled => {}
         WorkspaceGate::Disabled => {
             anyhow::bail!(
-                "{}",
-                xai_grok_pager::locale::ctx().named_text(
-                    "cli.workspace.gate.disabled",
-                    "`grok workspace` is not enabled for this account \
+                "`grok workspace` is not enabled for this account \
              (gated by a server-side feature flag that is currently off)."
-                )
             )
         }
         WorkspaceGate::Unknown => {
             anyhow::bail!(
-                "{}",
-                xai_grok_pager::locale::ctx().named_text(
-                    "cli.workspace.settings_unknown",
-                    "Could not load your settings for `grok workspace`. Check your \
+                "Could not load your settings for `grok workspace`. Check your \
              network connection (run `grok login` if you are signed out), then \
              try again."
-                )
             )
         }
     }
@@ -741,12 +592,8 @@ fn ensure_workspace_caps(reg: &LeaderRegistration) -> Result<()> {
     let caps = ensure_control_caps(reg)?;
     if !caps.workspace_exposure {
         anyhow::bail!(
-            "{}",
-            xai_grok_pager::locale::ctx().named_text(
-                "cli.workspace.capabilities_missing",
-                "the running leader does not support workspace exposure — stop the \
+            "the running leader does not support workspace exposure — stop the \
              leader process and re-run to pick up the new version"
-            )
         );
     }
     Ok(())
@@ -771,13 +618,8 @@ async fn connect_workspace_control(
     .await
     .map_err(|e| {
         anyhow::anyhow!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.workspace.leader_missing",
-                "no running leader for this environment ({error}). \
-             Start a grok session, or run `grok workspace start`.",
-                &[("error", &e.to_string())],
-            )
+            "no running leader for this environment ({e}). \
+             Start a grok session, or run `grok workspace start`."
         )
     })
 }
@@ -788,7 +630,7 @@ async fn workspace_control(
     command: ControlCommand,
 ) -> Result<()> {
     let agent_config = xai_grok_shell::config::load_agent_config_disk_only()
-        .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+        .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
     let client = connect_workspace_control(&agent_config, target).await?;
     ensure_workspace_caps(client.registration())?;
     let payload = client.send_control(command).await??;
@@ -805,9 +647,9 @@ async fn workspace_start(
     use xai_grok_login::ensure_authenticated;
     xai_grok_shell::util::config::set_remote_campaigns_from_settings(remote_settings.as_ref());
     let raw_config = xai_grok_shell::config::load_effective_config()
-        .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.load_failed", "Failed to load config: {error}", &[("error", &e.to_string())])))?;
+        .map_err(|e| anyhow::anyhow!("Failed to load config: {e}"))?;
     let agent_config = AgentConfig::new_from_toml_cfg(&raw_config)
-        .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+        .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
     let (use_leader, _) = resolve_use_leader(
         args.leader,
         args.no_leader,
@@ -818,12 +660,8 @@ async fn workspace_start(
     );
     if !use_leader {
         anyhow::bail!(
-            "{}",
-            xai_grok_pager::locale::ctx().named_text(
-                "cli.workspace.requires_leader",
-                "`grok workspace` requires leader mode (the workspace is shared via the leader).\n\
+            "`grok workspace` requires leader mode (the workspace is shared via the leader).\n\
              Enable it with `[cli] use_leader = true` in ~/.grok/config.toml, or pass --leader."
-            )
         );
     }
     ensure_authenticated(
@@ -831,10 +669,7 @@ async fn workspace_start(
         agent_config.login_device_flow,
         agent_config.endpoints.proxy_url(),
         false,
-        Some(&xai_grok_pager::locale::ctx().named_text(
-            "cli.workspace.auth.required",
-            "No cached credentials found. Run `grok login` first.",
-        )),
+        Some("No cached credentials found. Run `grok login` first."),
     )
     .await?;
     let env_urls = LeaderEnvUrls::from(&agent_config.grok_com_config);
@@ -849,16 +684,7 @@ async fn workspace_start(
         capabilities,
     )
     .await
-    .map_err(|e| {
-        anyhow::anyhow!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.workspace.leader.start_connect_failed",
-                "failed to start or connect to leader: {error}",
-                &[("error", &e.to_string())],
-            )
-        )
-    })?;
+    .map_err(|e| anyhow::anyhow!("failed to start or connect to leader: {e}"))?;
     drop(conn);
     let target = LeaderTargetArgs::default();
     let client = connect_workspace_control(&agent_config, &target).await?;
@@ -869,16 +695,7 @@ async fn workspace_start(
     let cwd = match args.cwd {
         Some(p) => p,
         None => std::env::current_dir()
-            .map_err(|e| {
-                anyhow::anyhow!(
-                    "{}",
-                    xai_grok_pager::locale::ctx().format_named(
-                        "cli.workspace.cwd.resolve_failed",
-                        "cannot determine current directory: {error}",
-                        &[("error", &e.to_string())],
-                    )
-                )
-            })?,
+            .map_err(|e| anyhow::anyhow!("cannot determine current directory: {e}"))?,
     };
     let cwd = std::path::absolute(&cwd).unwrap_or(cwd);
     let payload = client
@@ -902,14 +719,7 @@ fn render_workspace_payload(payload: &ControlPayload, json: bool) {
         pid,
     } = payload
     else {
-        eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.workspace.response.unexpected",
-                "unexpected control response: {payload}",
-                &[("payload", &format!("{payload:?}"))],
-            )
-        );
+        eprintln!("unexpected control response: {payload:?}");
         return;
     };
     if json {
@@ -926,89 +736,25 @@ fn render_workspace_payload(payload: &ControlPayload, json: bool) {
         return;
     }
     if state == "none" {
-        println!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.workspace.status.not_running",
-                "Workspace exposure: not running (leader PID {pid})",
-                &[("pid", &pid.to_string())],
-            )
-        );
+        println!("Workspace exposure: not running (leader PID {pid})");
         return;
     }
-    let state_label: std::borrow::Cow<str> = match state.as_str() {
-        "running" => xai_grok_pager::locale::ctx()
-            .named_text("cli.workspace.state.running", "running"),
-        "paused" => xai_grok_pager::locale::ctx()
-            .named_text("cli.workspace.state.paused", "paused"),
-        _ => std::borrow::Cow::Borrowed(state.as_str()),
-    };
-    println!(
-        "{}",
-        xai_grok_pager::locale::ctx().format_named(
-            "cli.workspace.status.state",
-            "Workspace exposure: {state}",
-            &[("state", &state_label)],
-        )
-    );
+    println!("Workspace exposure: {state}");
     if let Some(url) = hub_url {
-        println!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.workspace.status.hub",
-                "  hub:      {url}",
-                &[("url", &url)],
-            )
-        );
+        println!("  hub:      {url}");
     }
     if let Some(dir) = cwd {
-        println!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.workspace.status.cwd",
-                "  cwd:      {dir}",
-                &[("cwd", &dir)],
-            )
-        );
+        println!("  cwd:      {dir}");
     }
-    let uptime_seconds = uptime_ms / 1000;
-    println!(
-        "{}",
-        xai_grok_pager::locale::ctx().format_named(
-            "cli.workspace.status.uptime",
-            "  uptime:   {seconds}s",
-            &[("seconds", &uptime_seconds.to_string())],
-        )
-    );
-    println!(
-        "{}",
-        xai_grok_pager::locale::ctx().format_named(
-            "cli.workspace.status.active",
-            "  active:   {count} tool call(s)",
-            &[("count", &active_tool_calls.to_string())],
-        )
-    );
+    println!("  uptime:   {}s", uptime_ms / 1000);
+    println!("  active:   {active_tool_calls} tool call(s)");
     let session_list = if sessions.is_empty() {
         "-".to_string()
     } else {
         sessions.join(", ")
     };
-    println!(
-        "{}",
-        xai_grok_pager::locale::ctx().format_named(
-            "cli.workspace.status.sessions",
-            "  sessions: {count} ({sessions})",
-            &[("count", &sessions.len().to_string()), ("sessions", &session_list)],
-        )
-    );
-    println!(
-        "{}",
-        xai_grok_pager::locale::ctx().format_named(
-            "cli.workspace.status.leader",
-            "  leader:   PID {pid}",
-            &[("pid", &pid.to_string())],
-        )
-    );
+    println!("  sessions: {} ({session_list})", sessions.len());
+    println!("  leader:   PID {pid}");
 }
 /// How to rebuild one session's `session/load` after a leader reconnect.
 #[derive(Default, Clone)]
@@ -1401,13 +1147,8 @@ async fn forward_stdio_line_to_leader(
     }
 }
 /// Emitted by both leader guards (server mode and leader-connect) so the two sites can't drift.
-fn plugin_dir_leader_warning() -> &'static str {
-    xai_grok_pager::locale::ctx().named_static_text(
-        "cli.plugin_dir.leader_warning",
-        "grok: --plugin-dir is ignored in leader mode; run with --no-leader to \
-         load per-process plugins",
-    )
-}
+const PLUGIN_DIR_LEADER_WARNING: &str = "grok: --plugin-dir is ignored in leader mode; run with --no-leader to \
+     load per-process plugins";
 /// Run the `agent` subcommand, dispatching to the appropriate mode.
 #[tracing::instrument(level = "debug", skip_all)]
 async fn run_agent_command(
@@ -1452,12 +1193,7 @@ async fn run_agent_command(
                 tracing::warn!(error = %e, "--trust: failed to resolve cwd; folder not trusted");
                 let _ = writeln!(
                     std::io::stderr(),
-                    "{}",
-                    xai_grok_pager::locale::ctx().format_named(
-                        "cli.trust.cwd_resolve_failed",
-                        "error: --trust: failed to resolve cwd; folder not trusted: {error}",
-                        &[("error", &e.to_string())],
-                    )
+                    "error: --trust: failed to resolve cwd; folder not trusted: {e}"
                 );
             }
         }
@@ -1512,9 +1248,9 @@ async fn run_agent_command(
     };
     xai_grok_shell::util::config::set_remote_campaigns_from_settings(remote_settings.as_ref());
     let raw_config = xai_grok_shell::config::load_effective_config()
-        .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.load_failed", "Failed to load config: {error}", &[("error", &e.to_string())])))?;
+        .map_err(|e| anyhow::anyhow!("Failed to load config: {}", e))?;
     let mut agent_config = AgentConfig::new_from_toml_cfg(&raw_config)
-        .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+        .map_err(|e| anyhow::anyhow!("Failed to create agent config: {}", e))?;
     agent_config.default_model_override = agent_args.model.clone();
     agent_config.reasoning_effort_override = agent_args
         .reasoning_effort
@@ -1541,7 +1277,7 @@ async fn run_agent_command(
         .map(resolve_agent_profile_path);
     agent_config.client_version = Some(PAGER_CLIENT_VERSION.to_string());
     if is_leader && !agent_args.plugin_dirs.is_empty() {
-        eprintln!("{}", plugin_dir_leader_warning());
+        eprintln!("{PLUGIN_DIR_LEADER_WARNING}");
     } else {
         agent_config.plugins.cli_plugin_dirs = agent_args.canonical_plugin_dirs();
     }
@@ -1629,7 +1365,7 @@ async fn run_agent_command(
     }
     if use_leader {
         if !agent_args.plugin_dirs.is_empty() {
-            eprintln!("{}", plugin_dir_leader_warning());
+            eprintln!("{PLUGIN_DIR_LEADER_WARNING}");
         }
         use std::sync::Arc;
         use tokio::io::AsyncWriteExt;
@@ -1943,13 +1679,9 @@ fn flag_dashboard_at_startup_if_requested(args: &mut PagerArgs) -> Result<()> {
     }
     if !xai_grok_pager::views::dashboard::dashboard_enabled() {
         anyhow::bail!(
-            "{}",
-            xai_grok_pager::locale::ctx().named_text(
-                "cli.dashboard.disabled",
-                "the Agent Dashboard is disabled. Enable it by removing \
+            "the Agent Dashboard is disabled. Enable it by removing \
              `[dashboard] enabled = false` from ~/.grok/config.toml and \
              unsetting GROK_AGENT_DASHBOARD=0."
-            )
         );
     }
     args.command = None;
@@ -2027,24 +1759,12 @@ impl WorkerCount {
                 requested,
                 used,
                 cores,
-            } => Some(xai_grok_pager::locale::ctx().format_named(
-                "cli.worker_threads.clamped",
-                "grok: clamped {env}={requested} to {used} (valid range is 1..={cores})",
-                &[
-                    ("env", GROK_WORKER_THREADS_ENV),
-                    ("requested", &requested.to_string()),
-                    ("used", &used.to_string()),
-                    ("cores", &cores.to_string()),
-                ],
+            } => Some(format!(
+                "grok: clamped {GROK_WORKER_THREADS_ENV}={requested} to {used} (valid range is 1..={cores})"
             )),
-            Self::Ignored { value, .. } => {
-                let value_debug = format!("{value:?}");
-                Some(xai_grok_pager::locale::ctx().format_named(
-                    "cli.worker_threads.ignored",
-                    "grok: ignoring {env}={value} (not a valid integer)",
-                    &[("env", GROK_WORKER_THREADS_ENV), ("value", &value_debug)],
-                ))
-            }
+            Self::Ignored { value, .. } => Some(format!(
+                "grok: ignoring {GROK_WORKER_THREADS_ENV}={value:?} (not a valid integer)"
+            )),
         }
     }
 }
@@ -2262,7 +1982,6 @@ fn main() {
         xai_grok_update::channel_name().unwrap_or_default(),
     ));
     let args = PagerArgs::parse_cli();
-    xai_grok_pager::init_locale_from_config();
     if dispatch_version_if_requested(&args) || dispatch_doctor_if_requested(&args) {
         return;
     }
@@ -2286,22 +2005,11 @@ fn main() {
     xai_grok_pager::memory_trace::start(xai_grok_pager::memory_trace::default_dir());
     raise_fd_limit();
     if let Err(e) = xai_grok_config::validate_requirements() {
-        eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.start.validation_failed",
-                "Couldn't start Grok: {error}",
-                &[("error", &e.to_string())],
-            )
-        );
+        eprintln!("Couldn't start Grok: {e}");
         eprintln!();
         eprintln!(
-            "{}",
-            xai_grok_pager::locale::ctx().named_text(
-                "cli.start.version_policy_hint",
-                "Update Grok to a version the policy allows, or ask your administrator \
+            "Update Grok to a version the policy allows, or ask your administrator \
              to fix the managed requirements."
-            )
         );
         std::process::exit(2);
     }
@@ -2316,35 +2024,10 @@ fn main() {
     if xai_grok_shell::util::config::load_crash_handler_enabled_sync() {
         let crash_dir = xai_grok_shell::util::grok_home::grok_home().join("crash");
         if let Some(report) = xai_crash_handler::check_previous_crash(&crash_dir) {
-            let ctx = xai_grok_pager::locale::ctx();
-            eprintln!(
-                "{}",
-                ctx.named_text("cli.crash.last_session", "Grok crashed during your last session.")
-            );
-            eprintln!(
-                "{}",
-                ctx.format_named(
-                    "cli.crash.signal",
-                    "  Signal:  {signal}",
-                    &[("signal", &report.signal_name.to_string())],
-                )
-            );
-            eprintln!(
-                "{}",
-                ctx.format_named(
-                    "cli.crash.version",
-                    "  Version: {version}",
-                    &[("version", &report.app_version.to_string())],
-                )
-            );
-            eprintln!(
-                "{}",
-                ctx.format_named(
-                    "cli.crash.report",
-                    "  Report:  {path}",
-                    &[("path", &report.report_path.display().to_string())],
-                )
-            );
+            eprintln!("Grok crashed during your last session.");
+            eprintln!("  Signal:  {}", report.signal_name);
+            eprintln!("  Version: {}", report.app_version);
+            eprintln!("  Report:  {}", report.report_path.display());
             eprintln!();
         }
         if !xai_crash_handler::install(xai_crash_handler::CrashHandlerConfig {
@@ -2352,12 +2035,8 @@ fn main() {
             crash_dir: crash_dir.clone(),
         }) {
             eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().format_named(
-                    "cli.crash.handler_install_failed",
-                    "warning: crash handler enabled but failed to install (check permissions on {path})",
-                    &[("path", &crash_dir.display().to_string())],
-                )
+                "warning: crash handler enabled but failed to install (check permissions on {})",
+                crash_dir.display()
             );
         }
     }
@@ -2373,14 +2052,7 @@ fn main() {
     builder.worker_threads(workers.get()).enable_all();
     let runtime =
         xai_tty_utils::runtime::build_with_blocking_pool(&mut builder).unwrap_or_else(|e| {
-            eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().format_named(
-                    "cli.runtime.start_failed",
-                    "grok: failed to start tokio runtime: {error}",
-                    &[("error", &e.to_string())],
-                )
-            );
+            eprintln!("grok: failed to start tokio runtime: {e}");
             shutdown_and_flush_telemetry(1);
         });
     let result = run_and_shutdown(runtime, async_main(args), RUNTIME_SHUTDOWN_GRACE);
@@ -2423,17 +2095,10 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
     let sandbox_profile_arg = match args.startup_sandbox_profile(saved_profile.as_deref()) {
         xai_grok_pager::app::cli::SandboxStartup::Apply(profile) => profile,
         xai_grok_pager::app::cli::SandboxStartup::Conflict { requested, saved } => {
-            let requested = requested.to_string();
-            let saved = saved.to_string();
             eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().format_named(
-                    "cli.sandbox.resume_profile_conflict",
-                    "error: cannot resume this session under sandbox profile '{requested}' — \
+                "error: cannot resume this session under sandbox profile '{requested}' — \
                  it was created with '{saved}'. Omit --sandbox to resume with '{saved}', \
-                 or start a new session to use '{requested}'.",
-                    &[("requested", &requested), ("saved", &saved)],
-                )
+                 or start a new session to use '{requested}'."
             );
             std::process::exit(1);
         }
@@ -2446,12 +2111,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
                 tracing::warn!(error = %e, "--trust: failed to resolve cwd; folder not trusted");
                 let _ = writeln!(
                     std::io::stderr(),
-                    "{}",
-                    xai_grok_pager::locale::ctx().format_named(
-                        "cli.trust.cwd_resolve_failed",
-                        "error: --trust: failed to resolve cwd; folder not trusted: {error}",
-                        &[("error", &e.to_string())],
-                    )
+                    "error: --trust: failed to resolve cwd; folder not trusted: {e}"
                 );
             }
         }
@@ -2513,13 +2173,8 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
                         "--no-leader"
                     };
                     anyhow::bail!(
-                        "{}",
-                        xai_grok_pager::locale::ctx().format_named(
-                            "cli.agent.top_level_flag",
-                            "top-level {flag} applies to the pager TUI, not the agent subcommand. \
-                         Use `grok-pager agent {flag}` instead.",
-                            &[("flag", flag)],
-                        )
+                        "top-level {flag} applies to the pager TUI, not the agent subcommand. \
+                         Use `grok-pager agent {flag}` instead."
                     );
                 }
                 enforce_version_policy_or_exit();
@@ -2560,7 +2215,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
                 init_tracing_simple("cli");
                 let _otel_guard = xai_grok_telemetry::otel_layer::otel_guard();
                 let agent_config = xai_grok_shell::config::load_agent_config_disk_only()
-                    .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
                 return xai_grok_pager::models::list_available_models(&agent_config).await;
             }
             Command::Leader(leader_args) => {
@@ -2572,7 +2227,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
                 init_tracing_simple("cli");
                 let _otel_guard = xai_grok_telemetry::otel_layer::otel_guard();
                 let agent_config = xai_grok_shell::config::load_agent_config_disk_only()
-                    .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
                 return xai_grok_pager::worktree_cmd::run(worktree_args, &agent_config).await;
             }
             Command::DiskUsage(disk_usage_args) => {
@@ -2589,7 +2244,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
                 init_tracing_simple("cli");
                 let _otel_guard = xai_grok_telemetry::otel_layer::otel_guard();
                 let agent_config = xai_grok_shell::config::load_agent_config_disk_only()
-                    .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
                 return xai_grok_pager::sessions_cmd::run(sessions_args, &agent_config).await;
             }
             Command::Usage(usage_args) => {
@@ -2601,7 +2256,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
                 init_tracing_simple("cli");
                 let _otel_guard = xai_grok_telemetry::otel_layer::otel_guard();
                 let agent_config = xai_grok_shell::config::load_agent_config_disk_only()
-                    .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
                 return xai_grok_pager::share_cmd::run(share_args, &agent_config).await;
             }
             Command::Export(export_args) => {
@@ -2612,7 +2267,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
                 init_tracing_simple("cli");
                 let _otel_guard = xai_grok_telemetry::otel_layer::otel_guard();
                 let agent_config = xai_grok_shell::config::load_agent_config_disk_only()
-                    .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
                 return xai_grok_pager::trace_cmd::run(trace_args, &agent_config).await;
             }
             Command::Memory(memory_args) => {
@@ -2653,7 +2308,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
                 init_tracing_simple("cli");
                 let _otel_guard = xai_grok_telemetry::otel_layer::otel_guard();
                 let config = xai_grok_shell::config::load_agent_config_disk_only()
-                    .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
                 let authenticated = xai_grok_login::run_cli_login(
                     config.grok_com_config.clone(),
                     config.login_device_flow,
@@ -2673,7 +2328,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
             Command::Logout => {
                 init_tracing_simple("cli");
                 let config = xai_grok_shell::config::load_agent_config_disk_only()
-                    .map_err(|e| anyhow::anyhow!(xai_grok_pager::locale::ctx().format_named("cli.config.agent_failed", "Failed to create agent config: {error}", &[("error", &e.to_string())])))?;
+                    .map_err(|e| anyhow::anyhow!("Failed to create agent config: {e}"))?;
                 xai_grok_shell::agent::init::run_cli_logout(&config.grok_com_config)?;
                 xai_grok_shell::instrumentation::finalize_and_exit(0);
             }
@@ -2702,13 +2357,7 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
             && args.load_session.is_none()
             && !args.continue_last_session
         {
-            anyhow::bail!(
-                "{}",
-                xai_grok_pager::locale::ctx().named_text(
-                    "cli.memory_flush.requires_prompt",
-                    "--memory-flush without a prompt requires --resume/-r or --continue/-c"
-                )
-            );
+            anyhow::bail!("--memory-flush without a prompt requires --resume/-r or --continue/-c");
         }
         init_tracing_simple(HEADLESS_ENTRYPOINT);
         let _otel_guard = xai_grok_telemetry::otel_layer::otel_guard();
@@ -2801,21 +2450,9 @@ async fn async_main(mut args: PagerArgs) -> Result<()> {
         Ok(true) => {
             let adopted = bg_update_wait.lock().await.take();
             if finish_update_on_exit(adopted, &update_config).await {
-                eprintln!(
-                    "{}",
-                    xai_grok_pager::locale::ctx().named_text(
-                        "cli.update.installed",
-                        "Update installed. Run `grok` to start."
-                    )
-                );
+                eprintln!("Update installed. Run `grok` to start.");
             } else {
-                eprintln!(
-                    "{}",
-                    xai_grok_pager::locale::ctx().named_text(
-                        "cli.update.not_completed",
-                        "Update did not complete. Run `grok update` to retry."
-                    )
-                );
+                eprintln!("Update did not complete. Run `grok update` to retry.");
             }
             Ok(())
         }
@@ -2846,43 +2483,25 @@ async fn finish_update_on_exit(
     };
     match adopted {
         Some(handle) => {
-            eprintln!(
-                "{}",
-                xai_grok_pager::locale::ctx().named_text(
-                    "cli.update.waiting_download",
-                    "Waiting for the update download to finish..."
-                )
-            );
+            eprintln!("Waiting for the update download to finish...");
             match handle.await {
                 Ok(Ok(status)) if status.success() => true,
                 Ok(Ok(status)) => {
-                    run_blocking(Some(
-                        xai_grok_pager::locale::ctx().format_named(
-                            "cli.update.background_exited",
-                            "Background update exited with {status}; retrying...",
-                            &[("status", &status.to_string())],
-                        )
-                    ))
+                    run_blocking(Some(format!(
+                        "Background update exited with {status}; retrying..."
+                    )))
                     .await
                 }
                 Ok(Err(e)) => {
-                    run_blocking(Some(
-                        xai_grok_pager::locale::ctx().format_named(
-                            "cli.update.wait_failed",
-                            "Could not wait for the background update ({error}); retrying...",
-                            &[("error", &e.to_string())],
-                        )
-                    ))
+                    run_blocking(Some(format!(
+                        "Could not wait for the background update ({e}); retrying..."
+                    )))
                     .await
                 }
                 Err(join_err) => {
-                    run_blocking(Some(
-                        xai_grok_pager::locale::ctx().format_named(
-                            "cli.update.waiter_failed",
-                            "Background update waiter failed ({error}); retrying...",
-                            &[("error", &join_err.to_string())],
-                        )
-                    ))
+                    run_blocking(Some(format!(
+                        "Background update waiter failed ({join_err}); retrying..."
+                    )))
                     .await
                 }
             }
@@ -2987,21 +2606,12 @@ async fn run_update_command(
     base_update_config: &UpdateConfig,
 ) -> Result<()> {
     if json && !check {
-        anyhow::bail!(
-            "{}",
-            xai_grok_pager::locale::ctx().named_text("cli.update.json_requires_check", "--json requires --check")
-        );
+        anyhow::bail!("--json requires --check");
     }
     let mut update_config = base_update_config.clone();
     if check {
         if version.is_some() {
-            anyhow::bail!(
-                "{}",
-                xai_grok_pager::locale::ctx().named_text(
-                    "cli.update.version_with_check",
-                    "--version cannot be used with --check"
-                )
-            );
+            anyhow::bail!("--version cannot be used with --check");
         }
         auto_update::apply_channel_switch(channel_switch, &mut update_config).await;
         let status = auto_update::check_update_status(&update_config).await;
@@ -3012,12 +2622,8 @@ async fn run_update_command(
         && semver::Version::parse(v).is_err()
     {
         anyhow::bail!(
-            "{}",
-            xai_grok_pager::locale::ctx().format_named(
-                "cli.update.invalid_version",
-                "'{version}' is not a valid version. Expected semver like 0.1.150",
-                &[("version", v)],
-            )
+            "'{}' is not a valid version. Expected semver like 0.1.150",
+            v
         );
     }
     let telemetry_cfg = xai_grok_shell::config::load_agent_config_disk_only()
@@ -3094,14 +2700,7 @@ async fn signal_leaders_to_relaunch(installed_version: &str) {
                 to_version,
                 ..
             })) => {
-                eprintln!(
-                    "{}",
-                    xai_grok_pager::locale::ctx().format_named(
-                        "cli.update.relaunching_leader",
-                        "  ↻ Relaunching shared session (leader {from_version} → {to_version})…",
-                        &[("from_version", from_version), ("to_version", to_version)],
-                    )
-                );
+                eprintln!("  ↻ Relaunching shared session (leader {from_version} → {to_version})…");
             }
             Ok(Ok(xai_grok_shell::leader::ControlPayload::RelaunchDeclined { reason })) => {
                 tracing::debug!(%reason, "Leader declined relaunch");
