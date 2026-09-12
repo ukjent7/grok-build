@@ -768,7 +768,7 @@ impl ActiveModal {
                 ctx.named_static_text("palette.keyboard_shortcuts", "Keyboard Shortcuts")
             }
             ActiveModal::MemoryBrowser { .. } => ctx.named_static_text("palette.memory", "Memory"),
-            ActiveModal::Settings { .. } => crate::views::settings_modal::MODAL_TITLE,
+            ActiveModal::Settings { .. } => crate::views::settings_modal::localized_modal_title(),
             ActiveModal::ResetSettingsConfirm { .. } => {
                 ctx.named_static_text("settings.ui.reset_setting", "Reset setting?")
             }

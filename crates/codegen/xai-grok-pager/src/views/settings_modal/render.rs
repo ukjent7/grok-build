@@ -94,8 +94,9 @@ fn localized_restart_pill() -> String {
     )
 }
 
-/// Localized modal title ("Settings").
-fn localized_modal_title() -> &'static str {
+/// Localized modal title ("Settings"). Shared with `ActiveModal::Settings::message`,
+/// which renders the same title into the modal footer.
+pub(crate) fn localized_modal_title() -> &'static str {
     crate::locale::ctx().named_static_text("palette.settings", MODAL_TITLE)
 }
 

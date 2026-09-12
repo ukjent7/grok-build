@@ -1,13 +1,30 @@
 //! Centralized UI localization for Grok Build.
 //!
-//! Catalogs are embedded in the binary and addressed through semantic,
-//! typed keys. Consumers never hard-code translated text. The public API is
-//! intentionally backend-neutral so the embedded JSON catalog can later be
-//! replaced by Fluent without changing UI call sites.
+//! Two embedded catalogs back the fork's zh-CN interface:
+//!
+//! * `en-US.json` / `zh-CN.json` — a small typed catalog (`app.name`,
+//!   `trust.question`, `reconnect.*`, …) shared by both locales.
+//! * `zh-CN-metadata.json` — the large, upstream-owned metadata catalog
+//!   (settings labels, command metadata, picker choices). Its ids are the ones
+//!   the UI code already uses, so no parallel id space had to be invented.
+//!
+//! Consumers call [`LocaleContext::named_text`] / [`LocaleContext::named_static_text`]
+//! with the upstream English literal as an explicit fallback. A missing catalog
+//! entry therefore renders English instead of blank — which also means a dropped
+//! translation is invisible at runtime, so `scripts/i18n/wrap-check.py` gates both
+//! the wraps and the catalog coverage in CI.
+//!
+//! # Process-wide context
 //!
 //! The context is resolved once at the composition root and published through
 //! [`init`]; render paths read it via [`ctx`], which falls back to the English
 //! catalog when the process never initialized a locale.
+//!
+//! [`ctx`] is process-wide (a `OnceLock`), so a test in this process cannot switch
+//! the locale behind a call site's back. A call site whose *behavior* depends on the
+//! active locale must therefore take a `&LocaleContext` parameter instead of reaching
+//! for [`ctx`] itself — see `xai-grok-pager`'s `reconnect_success_hides_mismatch` —
+//! so the zh-CN path can be exercised with [`LocaleContext::new`] in a unit test.
 
 use std::borrow::Cow;
 use std::collections::BTreeMap;
@@ -76,6 +93,13 @@ impl fmt::Display for UiLocale {
 }
 
 /// Source that selected the effective locale, in descending precedence.
+///
+/// Only [`LocaleSource::Config`] and [`LocaleSource::ProductDefault`] are reached
+/// today: the composition root (`xai-grok-pager`'s `init_locale_from_config`) feeds
+/// [`LocalePreferences::config`] from `[ui].locale` and leaves every other layer
+/// unset. The remaining variants keep the reference implementation's precedence
+/// contract intact for a future `--locale` / environment / system-detection layer;
+/// the resolver tests below pin that ordering.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LocaleSource {
     Requirement,
@@ -132,252 +156,6 @@ impl ResolvedLocale {
     }
 }
 
-/// Stable semantic message keys used by UI code.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum TextKey {
-    AppName,
-    AuthConnecting,
-    AuthCopyConfirmed,
-    AuthCopyFailed,
-    AuthCopyFallback,
-    AuthCopyLink,
-    AuthCopyPrefix,
-    AuthCopySuffix,
-    AuthCopyUnverified,
-    AuthDeviceCaption,
-    AuthDeviceCodeLabel,
-    AuthDeviceHeader,
-    AuthGoBack,
-    AuthHeader,
-    AuthOpenUrl,
-    AuthOpeningBrowser,
-    AuthQuit,
-    AuthRawUrlHint,
-    AuthSignIn,
-    AuthSignInFailed,
-    AuthStartingSession,
-    AuthSubmit,
-    AuthTokenPlaceholder,
-    AuthWaitApproval,
-    AuthWaitLogin,
-    AuthWaitUrl,
-    CommonCancel,
-    CommonConfirm,
-    MinimalHelpHint,
-    MinimalModel,
-    PermissionRejectFeedback,
-    QuestionOtherPlaceholder,
-    ReconnectAttempt,
-    ReconnectConnected,
-    ReconnectReinitialize,
-    ReconnectReload,
-    ReconnectRestoreFailed,
-    ReconnectRestored,
-    ReconnectWait,
-    ScreenFullscreenEnabled,
-    ScreenMinimalEnabled,
-    SessionNewWorktree,
-    SessionResume,
-    SettingsCategoryAdvanced,
-    SettingsCategoryAgent,
-    SettingsCategoryAppearance,
-    SettingsCategoryEditor,
-    SettingsCategoryModels,
-    SettingsCategoryMouse,
-    SettingsCategoryPrivacy,
-    SettingsCategorySession,
-    SettingsDocsFooterLong,
-    SettingsDocsFooterShort,
-    SettingsNoMatches,
-    SettingsTitle,
-    ShortcutsTitle,
-    TrustFooter,
-    TrustNoQuit,
-    TrustQuestion,
-    TrustWarning1,
-    TrustWarning2,
-    TrustYesProceed,
-    WelcomeChangelog,
-    WelcomeImportClaudeSettings,
-    WelcomeLoginWith,
-    WelcomeLogout,
-    WelcomeApiKeyAuth,
-    WelcomeBeta,
-    WelcomeChannelAlpha,
-    WelcomeChannelStable,
-    WelcomePromptPlaceholder,
-    WelcomeProductName,
-    WelcomeQuit,
-    WelcomeSwitchAccount,
-    WelcomeTier,
-    WelcomeUnavailable,
-    WelcomeUpgradeSubscription,
-}
-
-impl TextKey {
-    pub const ALL: &[Self] = &[
-        Self::AppName,
-        Self::AuthConnecting,
-        Self::AuthCopyConfirmed,
-        Self::AuthCopyFailed,
-        Self::AuthCopyFallback,
-        Self::AuthCopyLink,
-        Self::AuthCopyPrefix,
-        Self::AuthCopySuffix,
-        Self::AuthCopyUnverified,
-        Self::AuthDeviceCaption,
-        Self::AuthDeviceCodeLabel,
-        Self::AuthDeviceHeader,
-        Self::AuthGoBack,
-        Self::AuthHeader,
-        Self::AuthOpenUrl,
-        Self::AuthOpeningBrowser,
-        Self::AuthQuit,
-        Self::AuthRawUrlHint,
-        Self::AuthSignIn,
-        Self::AuthSignInFailed,
-        Self::AuthStartingSession,
-        Self::AuthSubmit,
-        Self::AuthTokenPlaceholder,
-        Self::AuthWaitApproval,
-        Self::AuthWaitLogin,
-        Self::AuthWaitUrl,
-        Self::CommonCancel,
-        Self::CommonConfirm,
-        Self::MinimalHelpHint,
-        Self::MinimalModel,
-        Self::PermissionRejectFeedback,
-        Self::QuestionOtherPlaceholder,
-        Self::ReconnectAttempt,
-        Self::ReconnectConnected,
-        Self::ReconnectReinitialize,
-        Self::ReconnectReload,
-        Self::ReconnectRestoreFailed,
-        Self::ReconnectRestored,
-        Self::ReconnectWait,
-        Self::ScreenFullscreenEnabled,
-        Self::ScreenMinimalEnabled,
-        Self::SessionNewWorktree,
-        Self::SessionResume,
-        Self::SettingsCategoryAdvanced,
-        Self::SettingsCategoryAgent,
-        Self::SettingsCategoryAppearance,
-        Self::SettingsCategoryEditor,
-        Self::SettingsCategoryModels,
-        Self::SettingsCategoryMouse,
-        Self::SettingsCategoryPrivacy,
-        Self::SettingsCategorySession,
-        Self::SettingsDocsFooterLong,
-        Self::SettingsDocsFooterShort,
-        Self::SettingsNoMatches,
-        Self::SettingsTitle,
-        Self::ShortcutsTitle,
-        Self::TrustFooter,
-        Self::TrustNoQuit,
-        Self::TrustQuestion,
-        Self::TrustWarning1,
-        Self::TrustWarning2,
-        Self::TrustYesProceed,
-        Self::WelcomeChangelog,
-        Self::WelcomeImportClaudeSettings,
-        Self::WelcomeLoginWith,
-        Self::WelcomeLogout,
-        Self::WelcomeApiKeyAuth,
-        Self::WelcomeBeta,
-        Self::WelcomeChannelAlpha,
-        Self::WelcomeChannelStable,
-        Self::WelcomePromptPlaceholder,
-        Self::WelcomeProductName,
-        Self::WelcomeQuit,
-        Self::WelcomeSwitchAccount,
-        Self::WelcomeTier,
-        Self::WelcomeUnavailable,
-        Self::WelcomeUpgradeSubscription,
-    ];
-
-    pub const fn id(self) -> &'static str {
-        match self {
-            Self::AppName => "app.name",
-            Self::AuthConnecting => "auth.connecting",
-            Self::AuthCopyConfirmed => "auth.copy.confirmed",
-            Self::AuthCopyFailed => "auth.copy.failed",
-            Self::AuthCopyFallback => "auth.copy.fallback",
-            Self::AuthCopyLink => "auth.copy.link",
-            Self::AuthCopyPrefix => "auth.copy.prefix",
-            Self::AuthCopySuffix => "auth.copy.suffix",
-            Self::AuthCopyUnverified => "auth.copy.unverified",
-            Self::AuthDeviceCaption => "auth.device.caption",
-            Self::AuthDeviceCodeLabel => "auth.device.code_label",
-            Self::AuthDeviceHeader => "auth.device.header",
-            Self::AuthGoBack => "auth.go_back",
-            Self::AuthHeader => "auth.header",
-            Self::AuthOpenUrl => "auth.open_url",
-            Self::AuthOpeningBrowser => "auth.opening_browser",
-            Self::AuthQuit => "auth.quit",
-            Self::AuthRawUrlHint => "auth.raw_url_hint",
-            Self::AuthSignIn => "auth.sign_in",
-            Self::AuthSignInFailed => "auth.sign_in_failed",
-            Self::AuthStartingSession => "auth.starting_session",
-            Self::AuthSubmit => "auth.submit",
-            Self::AuthTokenPlaceholder => "auth.token_placeholder",
-            Self::AuthWaitApproval => "auth.wait_approval",
-            Self::AuthWaitLogin => "auth.wait_login",
-            Self::AuthWaitUrl => "auth.wait_url",
-            Self::CommonCancel => "common.cancel",
-            Self::CommonConfirm => "common.confirm",
-            Self::MinimalHelpHint => "minimal.help_hint",
-            Self::MinimalModel => "minimal.model",
-            Self::PermissionRejectFeedback => "permission.reject_feedback",
-            Self::QuestionOtherPlaceholder => "question.other_placeholder",
-            Self::ReconnectAttempt => "reconnect.attempt",
-            Self::ReconnectConnected => "reconnect.connected",
-            Self::ReconnectReinitialize => "reconnect.reinitialize",
-            Self::ReconnectReload => "reconnect.reload",
-            Self::ReconnectRestoreFailed => "reconnect.restore_failed",
-            Self::ReconnectRestored => "reconnect.restored",
-            Self::ReconnectWait => "reconnect.wait",
-            Self::ScreenFullscreenEnabled => "screen.fullscreen.enabled",
-            Self::ScreenMinimalEnabled => "screen.minimal.enabled",
-            Self::SessionNewWorktree => "session.new_worktree",
-            Self::SessionResume => "session.resume",
-            Self::SettingsCategoryAdvanced => "settings.category.advanced",
-            Self::SettingsCategoryAgent => "settings.category.agent",
-            Self::SettingsCategoryAppearance => "settings.category.appearance",
-            Self::SettingsCategoryEditor => "settings.category.editor",
-            Self::SettingsCategoryModels => "settings.category.models",
-            Self::SettingsCategoryMouse => "settings.category.mouse",
-            Self::SettingsCategoryPrivacy => "settings.category.privacy",
-            Self::SettingsCategorySession => "settings.category.session",
-            Self::SettingsDocsFooterLong => "settings.docs_footer.long",
-            Self::SettingsDocsFooterShort => "settings.docs_footer.short",
-            Self::SettingsNoMatches => "settings.no_matches",
-            Self::SettingsTitle => "settings.title",
-            Self::ShortcutsTitle => "shortcuts.title",
-            Self::TrustFooter => "trust.footer",
-            Self::TrustNoQuit => "trust.no_quit",
-            Self::TrustQuestion => "trust.question",
-            Self::TrustWarning1 => "trust.warning_1",
-            Self::TrustWarning2 => "trust.warning_2",
-            Self::TrustYesProceed => "trust.yes_proceed",
-            Self::WelcomeChangelog => "welcome.changelog",
-            Self::WelcomeImportClaudeSettings => "welcome.import_claude_settings",
-            Self::WelcomeLoginWith => "welcome.login_with",
-            Self::WelcomeLogout => "welcome.logout",
-            Self::WelcomeApiKeyAuth => "welcome.api_key_auth",
-            Self::WelcomeBeta => "welcome.beta",
-            Self::WelcomeChannelAlpha => "welcome.channel.alpha",
-            Self::WelcomeChannelStable => "welcome.channel.stable",
-            Self::WelcomePromptPlaceholder => "welcome.prompt_placeholder",
-            Self::WelcomeProductName => "welcome.product_name",
-            Self::WelcomeQuit => "welcome.quit",
-            Self::WelcomeSwitchAccount => "welcome.switch_account",
-            Self::WelcomeTier => "welcome.tier",
-            Self::WelcomeUnavailable => "welcome.unavailable",
-            Self::WelcomeUpgradeSubscription => "welcome.upgrade_subscription",
-        }
-    }
-}
-
 /// Immutable localization context resolved once at the composition root.
 #[derive(Clone, Debug)]
 pub struct LocaleContext {
@@ -411,54 +189,26 @@ impl LocaleContext {
         matches!(self.resolved.locale, UiLocale::ZhCn)
     }
 
-    /// Get a static message, falling back to the complete English catalog.
-    pub fn text(&self, key: TextKey) -> &'static str {
-        let id = key.id();
-        selected_catalog(self.locale())
-            .get(id)
-            .or_else(|| EN_US.get(id))
-            .map(String::as_str)
-            .unwrap_or(id)
-    }
-
-    /// Look up a structured catalog entry while retaining an explicit English
-    /// fallback at the call site.
+    /// Catalog value for `id` in the active locale, if any.
     ///
-    /// Stable, shared UI messages should keep using [`TextKey`]. This method is
-    /// for large upstream-owned metadata catalogs (settings, command metadata,
-    /// picker choices) where adding two enum variants for every label and
-    /// description would make upstream merges unnecessarily noisy.
-    pub fn named_text<'a>(&self, id: &str, english: &'a str) -> Cow<'a, str> {
-        if self.is_zh_cn()
-            && let Some(value) = ZH_CN_METADATA.get(id)
-        {
-            return Cow::Borrowed(value.as_str());
+    /// zh-CN consults the metadata catalog first (it is the large upstream-owned
+    /// surface); both typed catalogs carry the same key set, pinned by
+    /// `catalogs_have_matching_keys_and_placeholders`, so the zh-CN path needs no
+    /// extra English lookup.
+    fn lookup(&self, id: &str) -> Option<&'static String> {
+        if self.is_zh_cn() {
+            ZH_CN_METADATA.get(id).or_else(|| ZH_CN.get(id))
+        } else {
+            EN_US.get(id)
         }
-        selected_catalog(self.locale())
-            .get(id)
-            .or_else(|| EN_US.get(id))
-            .map(|value| Cow::Borrowed(value.as_str()))
-            .unwrap_or_else(|| Cow::Borrowed(english))
-    }
-
-    /// Static variant for UI metadata stored in structures that borrow their
-    /// labels (for example modal shortcut rows). Both built-in catalogs and
-    /// the English fallback live for the duration of the process.
-    pub fn named_static_text(&self, id: &str, english: &'static str) -> &'static str {
-        if self.is_zh_cn()
-            && let Some(value) = ZH_CN_METADATA.get(id)
-        {
-            return value.as_str();
-        }
-        selected_catalog(self.locale())
-            .get(id)
-            .or_else(|| EN_US.get(id))
-            .map(String::as_str)
-            .unwrap_or(english)
     }
 
     /// Localized display label for a stable setting key. The key itself remains
     /// the canonical config/TOML identifier and is never translated.
+    ///
+    /// The per-call `format!` is deliberate: the catalogs are flat, and rebuilding
+    /// ~3.5k entries into a nested index to save one short `String` per rendered
+    /// settings row would cost more code (and memory) than the allocation.
     pub fn setting_label<'a>(&self, setting_key: &str, english: &'a str) -> Cow<'a, str> {
         self.named_text(&format!("settings.setting.{setting_key}.label"), english)
     }
@@ -511,21 +261,29 @@ impl LocaleContext {
         )
     }
 
-    /// Format a message using named placeholders such as `{provider}`.
-    ///
-    /// Unknown arguments are ignored. Missing arguments intentionally remain
-    /// visible in the returned string so catalog mistakes cannot silently erase
-    /// user-visible context.
-    pub fn format(&self, key: TextKey, arguments: &[(&str, &str)]) -> String {
-        let mut output = self.text(key).to_owned();
-        for (name, value) in arguments {
-            output = output.replace(&format!("{{{name}}}"), value);
-        }
-        output
+    /// Look up a catalog entry while retaining an explicit English fallback at the
+    /// call site; falls back to `english` when the id is absent from every catalog.
+    pub fn named_text<'a>(&self, id: &str, english: &'a str) -> Cow<'a, str> {
+        self.lookup(id)
+            .map(|value| Cow::Borrowed(value.as_str()))
+            .unwrap_or_else(|| Cow::Borrowed(english))
+    }
+
+    /// Static variant for UI metadata stored in structures that borrow their
+    /// labels (for example modal shortcut rows). Both built-in catalogs and
+    /// the English fallback live for the duration of the process.
+    pub fn named_static_text(&self, id: &str, english: &'static str) -> &'static str {
+        self.lookup(id).map(String::as_str).unwrap_or(english)
     }
 
     /// Format a metadata-backed template using named placeholders such as
-    /// `{provider}`. Same missing-argument semantics as [`Self::format`].
+    /// `{provider}`.
+    ///
+    /// Unknown arguments are ignored. Missing arguments intentionally remain
+    /// visible in the returned string so catalog mistakes cannot silently erase
+    /// user-visible context. The `english` fallback is never run through positional
+    /// formatting, so a bare `{}` in it stays literal — `scripts/i18n/wrap-check.py`
+    /// rejects that in CI.
     pub fn format_named(&self, id: &str, english: &str, arguments: &[(&str, &str)]) -> String {
         let mut output = self.named_text(id, english).into_owned();
         for (name, value) in arguments {
@@ -540,13 +298,6 @@ fn setting_choice_catalog_key(setting_key: &str) -> &str {
         "auto_dark_theme" | "auto_light_theme" => "theme",
         "fork_secondary_model" => "default_model",
         other => other,
-    }
-}
-
-fn selected_catalog(locale: UiLocale) -> &'static BTreeMap<String, String> {
-    match locale {
-        UiLocale::EnUs => &EN_US,
-        UiLocale::ZhCn => &ZH_CN,
     }
 }
 
@@ -594,6 +345,12 @@ fn placeholders(template: &str) -> BTreeSet<&str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The one catalog value that is blank on purpose: English pluralizes a count
+    /// noun with a trailing `s`, Chinese does not, so the zh-CN dictionary carries
+    /// an empty suffix (`views/turn_status.rs` appends it verbatim). Every other
+    /// blank value is a translation that failed to load, not a decision.
+    const INTENTIONALLY_BLANK_METADATA_IDS: &[&str] = &["turn.watcher.plural"];
 
     #[test]
     fn canonicalizes_supported_bcp47_and_posix_forms() {
@@ -690,15 +447,10 @@ mod tests {
     }
 
     #[test]
-    fn catalogs_have_matching_keys_and_placeholders_and_include_all_typed_keys() {
-        let expected: BTreeSet<&str> = TextKey::ALL.iter().map(|key| key.id()).collect();
+    fn catalogs_have_matching_keys_and_placeholders() {
         let english: BTreeSet<&str> = EN_US.keys().map(String::as_str).collect();
         let chinese: BTreeSet<&str> = ZH_CN.keys().map(String::as_str).collect();
         assert_eq!(english, chinese, "locale catalog key drift");
-        assert!(
-            expected.is_subset(&english),
-            "typed keys must all exist in both catalogs"
-        );
         for id in english {
             assert_eq!(
                 placeholders(EN_US.get(id).unwrap()),
@@ -735,10 +487,17 @@ mod tests {
     }
 
     #[test]
-    fn structured_metadata_ids_and_values_are_non_empty() {
+    fn structured_metadata_ids_are_non_empty_and_blank_only_by_design() {
         assert!(!ZH_CN_METADATA.is_empty());
         for (id, value) in ZH_CN_METADATA.iter() {
             assert!(!id.trim().is_empty(), "blank metadata id");
+            if INTENTIONALLY_BLANK_METADATA_IDS.contains(&id.as_str()) {
+                assert!(
+                    value.is_empty(),
+                    "{id} suppresses an English plural suffix and must stay blank"
+                );
+                continue;
+            }
             assert!(!value.trim().is_empty(), "blank metadata value for {id}");
         }
     }
@@ -750,8 +509,28 @@ mod tests {
             source: LocaleSource::Cli,
         });
         assert_eq!(
-            context.format(TextKey::WelcomeLoginWith, &[("provider", "grok.com")]),
+            context.format_named(
+                "welcome.login_with",
+                "Sign in with {provider}",
+                &[("provider", "grok.com")],
+            ),
             "使用 grok.com 登录"
+        );
+    }
+
+    #[test]
+    fn english_fallback_survives_an_unknown_id_verbatim() {
+        let context = LocaleContext::default();
+        assert_eq!(
+            context.named_static_text("no.such.id", "Fallback copy"),
+            "Fallback copy"
+        );
+        // The fallback is never positionally formatted: a bare `{}` inside it is
+        // literal text (wrap-check rejects it in CI) and named arguments that the
+        // catalog template does not consume leave the template untouched.
+        assert_eq!(
+            context.format_named("no.such.id", "No agents in state `{}`", &[("state", "paused")]),
+            "No agents in state `{}`"
         );
     }
 

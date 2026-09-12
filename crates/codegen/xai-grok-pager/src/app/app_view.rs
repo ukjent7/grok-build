@@ -257,9 +257,39 @@ pub enum TickDemand {
 pub const SLOW_TICK_INTERVAL: Duration = Duration::from_millis(83);
 /// Welcome toast lifetime (wall clock, so the duration holds whether the event loop is ticking Slow or Fast).
 const WELCOME_TOAST_DURATION: Duration = Duration::from_secs(2);
-fn reconnect_success_hides_mismatch(current: Option<&str>, incoming: &str) -> bool {
-    current.is_some_and(crate::acp::is_version_mismatch_banner)
-        && (incoming.starts_with("Reconnected.") || incoming.starts_with("Session restored."))
+/// Reconnect-success toasts, as `(catalog id, English anchor)` pairs. The anchors are
+/// the literals the emitters in `event_loop.rs` pass, so the ids resolve to whatever
+/// text those emitters actually show.
+const RECONNECT_SUCCESS_TOASTS: &[(&str, &str)] = &[
+    ("reconnect.connected", "Reconnected."),
+    ("reconnect.reinitialize", "Reconnected. Re-initializing..."),
+    ("reconnect.reload", "Reconnected. Reloading session..."),
+    (
+        "reconnect.restored",
+        "Session restored. In-progress tools and terminals were lost.",
+    ),
+];
+/// Whether a reconnect-success toast must *not* replace `current`.
+///
+/// `show_toast` only ever sees the already-rendered text, so the prefixes have to be
+/// resolved through `context` instead of compared against English literals: a
+/// hard-coded `"Reconnected."` silently disabled the guard (letting the stale
+/// version-mismatch banner be replaced) as soon as the interface was Chinese.
+fn reconnect_success_hides_mismatch(
+    context: &crate::locale::LocaleContext,
+    current: Option<&str>,
+    incoming: &str,
+) -> bool {
+    if !current.is_some_and(crate::acp::is_version_mismatch_banner) {
+        return false;
+    }
+    RECONNECT_SUCCESS_TOASTS.iter().any(|&(id, english)| {
+        // An empty catalog value would make `starts_with` match every toast; a
+        // suppressed plural is the only blank value we ship, but this guard is
+        // cheap insurance for the rest.
+        let toast = context.named_static_text(id, english);
+        !toast.is_empty() && incoming.starts_with(toast)
+    })
 }
 /// Which prompt box in-flight voice dictation appends its finalized text to.
 /// Captured when recording **starts** so a trailing STT final still lands where the user was dictating.
@@ -1995,7 +2025,9 @@ impl AppView {
     /// Show a toast on the currently active view.
     /// Registration (and thus the mismatch notif) finishes during reconnect.
     /// The later "Reconnected." / "Session restored…" line would hide a still-true skew.
+    /// The guard resolves those toasts through the active locale, so it holds in any language.
     pub fn show_toast(&mut self, msg: &str) {
+        let locale = crate::locale::ctx();
         match self.active_view {
             ActiveView::Agent(id) => {
                 if let Some(agent) = self.agents.get_mut(&id) {
@@ -2003,6 +2035,7 @@ impl AppView {
                         && let Some(child) = agent.subagent_views.get_mut(&child_sid)
                     {
                         if reconnect_success_hides_mismatch(
+                            locale,
                             child.toast.as_ref().map(|(m, _)| m.as_str()),
                             msg,
                         ) {
@@ -2011,6 +2044,7 @@ impl AppView {
                         child.show_toast(msg);
                     } else {
                         if reconnect_success_hides_mismatch(
+                            locale,
                             agent.toast.as_ref().map(|(m, _)| m.as_str()),
                             msg,
                         ) {
@@ -2022,7 +2056,7 @@ impl AppView {
             }
             ActiveView::AgentDashboard => {
                 if let Some(d) = self.dashboard.as_mut() {
-                    if reconnect_success_hides_mismatch(d.error_toast.as_deref(), msg) {
+                    if reconnect_success_hides_mismatch(locale, d.error_toast.as_deref(), msg) {
                         return;
                     }
                     d.error_toast = Some(crate::glyphs::sanitize_toast_message(msg).into_owned());
@@ -2030,6 +2064,7 @@ impl AppView {
             }
             ActiveView::Welcome => {
                 if reconnect_success_hides_mismatch(
+                    locale,
                     self.welcome_toast.as_ref().map(|(m, _)| m.as_str()),
                     msg,
                 ) {

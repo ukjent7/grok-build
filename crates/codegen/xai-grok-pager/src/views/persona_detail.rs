@@ -541,7 +541,7 @@ pub fn render_persona_detail(
                             let count = (total - max_collapsed).to_string();
                             let hint = crate::locale::ctx().format_named(
                                 "persona.instructions.collapsed_hint",
-                                "  ... ({} more lines: e to expand, j/k to scroll)",
+                                "  ... ({count} more lines: e to expand, j/k to scroll)",
                                 &[("count", &count)],
                             );
                             buf.set_string(
@@ -583,7 +583,7 @@ pub fn render_persona_detail(
                         };
                         let hint = crate::locale::ctx().format_named(
                             "persona.instructions.expanded_hint",
-                            "  (e to collapse, j/k to scroll{})",
+                            "  (e to collapse, j/k to scroll{position})",
                             &[("position", &pos_hint)],
                         );
                         buf.set_string(

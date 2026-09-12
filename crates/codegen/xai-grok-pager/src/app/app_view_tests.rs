@@ -6954,3 +6954,53 @@ fn welcome_ctrl_e_ignored_when_zdr_blocked() {
         "Ctrl+E must not cycle mode on ZDR-blocked welcome"
     );
 }
+/// `show_toast` resolves the process-wide context, so the localized half of the
+/// mismatch guard is only reachable by calling the guard directly — which is why it
+/// takes a `&LocaleContext`. Hard-coded English prefixes let every reconnect-success
+/// toast replace a still-true mismatch banner as soon as the interface was Chinese.
+#[test]
+fn reconnect_guard_holds_for_chinese_success_toasts() {
+    use crate::locale::{LocaleContext, LocaleSource, ResolvedLocale, UiLocale};
+    let zh = LocaleContext::new(ResolvedLocale {
+        locale: UiLocale::ZhCn,
+        source: LocaleSource::Config,
+    });
+    let banner = zh.format_named(
+        "acp.version_mismatch",
+        "⚠ Version mismatch",
+        &[("client_version", "0.1.157"), ("leader_version", "0.1.150")],
+    );
+    assert!(
+        crate::acp::is_version_mismatch_banner(&banner),
+        "fixture must be a detectable banner: {banner:?}"
+    );
+
+    for &(id, english) in RECONNECT_SUCCESS_TOASTS {
+        let toast = zh.named_static_text(id, english);
+        assert!(
+            reconnect_success_hides_mismatch(&zh, Some(banner.as_str()), toast),
+            "{id} must not replace a still-true mismatch banner under zh-CN"
+        );
+        assert!(
+            !reconnect_success_hides_mismatch(&zh, None, toast),
+            "{id} is only suppressed while a mismatch banner is on screen"
+        );
+    }
+
+    // The failure toast stays visible: a failed restore is news even next to a skew.
+    let restore_failed = zh.named_static_text(
+        "reconnect.restore_failed",
+        "Session restore failed. Kept the existing transcript.",
+    );
+    assert!(!reconnect_success_hides_mismatch(
+        &zh,
+        Some(banner.as_str()),
+        restore_failed
+    ));
+    // An unrelated toast is never suppressed while the banner is up.
+    assert!(!reconnect_success_hides_mismatch(
+        &zh,
+        Some(banner.as_str()),
+        "连接失败：boom"
+    ));
+}

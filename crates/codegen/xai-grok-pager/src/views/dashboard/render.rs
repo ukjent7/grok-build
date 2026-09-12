@@ -2254,7 +2254,7 @@ fn render_no_match(buf: &mut Buffer, area: Rect, theme: &Theme, filter: &Filter)
             let label = s.group_label();
             crate::locale::ctx().format_named(
                 "dashboard.filter.state",
-                "No agents in state `{}`: press Esc to clear the filter.",
+                "No agents in state `{state}`: press Esc to clear the filter.",
                 &[("state", label)],
             )
         }

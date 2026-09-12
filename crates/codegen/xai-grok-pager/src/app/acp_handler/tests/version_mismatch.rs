@@ -72,6 +72,17 @@
         assert!(app.agents.is_empty());
     }
 
+    /// The text `event_loop.rs` actually shows for a reconnect toast: the same catalog id
+    /// and English anchor, resolved through the active locale.
+    ///
+    /// Feeding a raw literal instead would assert on a string the UI never renders —
+    /// `reconnect.reload`'s en-US copy deliberately reads "Reloading session after
+    /// reconnect..." rather than its anchor, which is exactly how the guard below once
+    /// stopped suppressing that toast without anyone noticing.
+    fn reconnect_toast(id: &str, english: &str) -> String {
+        crate::locale::ctx().named_text(id, english).into_owned()
+    }
+
     #[test]
     fn version_mismatch_survives_reconnect_success_toasts() {
         let mut app = make_app_with_agent("sess-1");
@@ -79,18 +90,29 @@
         let mismatch = toast_157_150();
         assert_eq!(agent_toast(&app, AgentId(0)), Some(mismatch.as_str()));
 
-        app.show_toast("Reconnected. Reloading session...");
-        assert_eq!(agent_toast(&app, AgentId(0)), Some(mismatch.as_str()));
-        app.show_toast("Reconnected.");
-        assert_eq!(agent_toast(&app, AgentId(0)), Some(mismatch.as_str()));
-        app.show_toast("Session restored. In-progress tools and terminals were lost.");
-        assert_eq!(agent_toast(&app, AgentId(0)), Some(mismatch.as_str()));
+        for (id, english) in [
+            ("reconnect.connected", "Reconnected."),
+            ("reconnect.reinitialize", "Reconnected. Re-initializing..."),
+            ("reconnect.reload", "Reconnected. Reloading session..."),
+            (
+                "reconnect.restored",
+                "Session restored. In-progress tools and terminals were lost.",
+            ),
+        ] {
+            app.show_toast(&reconnect_toast(id, english));
+            assert_eq!(
+                agent_toast(&app, AgentId(0)),
+                Some(mismatch.as_str()),
+                "{id} must not replace a still-true mismatch banner"
+            );
+        }
 
-        app.show_toast("Session restore failed. Kept the existing transcript.");
-        assert_eq!(
-            agent_toast(&app, AgentId(0)),
-            Some("Session restore failed. Kept the existing transcript.")
+        let restore_failed = reconnect_toast(
+            "reconnect.restore_failed",
+            "Session restore failed. Kept the existing transcript.",
         );
+        app.show_toast(&restore_failed);
+        assert_eq!(agent_toast(&app, AgentId(0)), Some(restore_failed.as_str()));
     }
 
     #[test]
