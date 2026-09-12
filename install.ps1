@@ -457,6 +457,16 @@ $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'image_gen = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'video_gen = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'feedback = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'telemetry' 'trace_upload = false'
+# Side-call features (turn summary, auto title refresh, session recap) each spend an
+# extra model call per turn — on a metered third-party endpoint that is pure overhead,
+# so they default off here. `prompt_suggestions` is a `[ui]` key, not `[features]`
+# (the shell reads `ui.prompt_suggestions`); memory defaults to the V2 filesystem mode.
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'ui' 'prompt_suggestions = false'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'turn_summary = false'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'title_refresh = false'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'session_recap = false'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'memory' 'enabled = true'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'memory' 'mode = "v2"'
 [System.IO.File]::WriteAllLines($ConfigFile, [string[]]$cfgLines, [System.Text.Encoding]::UTF8)
 
 # --- Fetch deployment config (deployment key only) ---

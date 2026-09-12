@@ -508,9 +508,16 @@ impl SessionActor {
             ConversationItem::user(user_msg),
         ];
 
+        // FORK(byok): fall back to the session's own model rather than the compiled-in
+        // default; third-party endpoints may not serve the xAI-only slug.
         let model = match model_override {
             Some(m) => m.to_owned(),
-            None => "grok-4.6".to_owned(),
+            None => self
+                .chat_state_handle
+                .get_sampling_config()
+                .await
+                .map(|c| c.model)
+                .unwrap_or_default(),
         };
 
         let request = ConversationRequest {
