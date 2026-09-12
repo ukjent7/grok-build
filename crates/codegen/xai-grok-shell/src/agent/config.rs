@@ -1463,8 +1463,8 @@ pub struct Config {
     pub web_search_model: String,
     /// Session title model.
     /// FORK(byok): stays `None` when unset instead of the compiled default — third-party
-    /// endpoints reject the xAI-only slug, so consumers fall back to the session model.
-    /// See `ModelOverrideConfig::resolve`.
+    /// endpoints reject the xAI-only slug, so the consumer picks the fallback per endpoint.
+    /// See `ModelOverrideConfig::resolve` and `AgentOps::build_summary_client`.
     #[serde(skip)]
     pub session_summary_model: Option<String>,
     /// Image describe model (`grok-4.6` default via `ModelOverrideConfig::resolve`).

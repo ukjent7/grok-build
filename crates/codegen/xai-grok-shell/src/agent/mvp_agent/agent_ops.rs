@@ -91,8 +91,8 @@ impl MvpAgent {
             .unwrap_or(crate::models::default_image_description_model())
             .to_owned()
     }
-    /// FORK(byok): `None` when unset, so [`Self::build_summary_client`] keeps the session's
-    /// own model instead of sending a slug third-party endpoints reject.
+    /// FORK(byok): `None` when unset, so [`Self::build_summary_client`] picks the fallback
+    /// itself instead of inheriting a slug third-party endpoints reject.
     fn resolve_session_summary_model(&self) -> Option<String> {
         self.cfg.borrow().session_summary_model.clone()
     }
@@ -100,9 +100,21 @@ impl MvpAgent {
         &self,
         primary: &SamplingConfig,
     ) -> Result<(OaiCompatClient, String), acp::Error> {
-        let slug = self
-            .resolve_session_summary_model()
-            .unwrap_or_else(|| primary.model.clone());
+        // FORK(byok): third-party endpoints may not serve the compiled-in default slug,
+        // so they fall back to the session's own model; first-party keeps the upstream
+        // default. Same endpoint split as `ClientDefaults::byok_compat`.
+        let slug = match self.resolve_session_summary_model() {
+            Some(slug) => slug,
+            None => {
+                if xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
+                    &primary.base_url,
+                ) {
+                    primary.model.clone()
+                } else {
+                    crate::models::default_session_summary_model().to_owned()
+                }
+            }
+        };
         let session_key = self.auth_manager.current_or_expired().map(|a| a.key.clone());
         let models = self.models_manager.models();
         let endpoints = self.models_manager.endpoints();
