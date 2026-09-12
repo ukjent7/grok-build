@@ -90,7 +90,9 @@ pub fn clamp_activity_subject(s: &str) -> String {
 pub fn format_waiting_for_subject(subject: &str) -> String {
     let clamped = clamp_activity_subject(subject);
     if clamped.is_empty() {
-        "Waiting on task output…".to_string()
+        crate::locale::ctx()
+            .named_static_text("turn.waiting.task_output", "Waiting on task output…")
+            .to_string()
     } else {
         format!("{clamped}…")
     }
@@ -120,7 +122,9 @@ impl WaitingReason {
                 subject: Some(subject),
                 ..
             } => format_waiting_for_subject(subject),
-            Self::TaskOutput { .. } => "Waiting on task output…".to_string(),
+            Self::TaskOutput { .. } => crate::locale::ctx()
+                .named_static_text("turn.waiting.task_output", "Waiting on task output…")
+                .to_string(),
             Self::TasksComplete => "Waiting on tasks…".to_string(),
             Self::Sleep => "Sleeping…".to_string(),
             Self::Hooks { event_name, count } if *count > 1 => {

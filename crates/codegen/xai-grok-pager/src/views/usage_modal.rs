@@ -923,7 +923,7 @@ fn usage_limit_lines(
             crate::locale::ctx().format_named(
                 "status.usage.redirect",
                 "Please check your usage on {url}",
-                &[("url", url)],
+                &[("url", url.as_str())],
             ),
         ));
     } else if let Some(bal) = balance {

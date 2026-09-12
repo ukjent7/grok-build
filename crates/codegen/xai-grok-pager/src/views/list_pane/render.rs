@@ -534,7 +534,7 @@ fn render_bottom_bar(
         let label_style = Style::default()
             .fg(style.input_bar_prompt_fg)
             .bg(style.input_bar_bg);
-        let label_line = Line::from(Span::styled(label, label_style));
+        let label_line = Line::from(Span::styled(&label, label_style));
         let label_w = label.len() as u16;
         buf.set_line_safe(area.x, area.y, &label_line, label_w);
 

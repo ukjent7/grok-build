@@ -3267,15 +3267,13 @@ pub fn render_extensions_modal(
                         for &hi in indices {
                             let hook = &data.hooks[hi];
                             entry_labels.push(hook_row_label(hook));
+                            let no_command = crate::locale::ctx()
+                                .named_text("extensions.hook.no_command", "(no command)")
+                                .into_owned();
                             let cmd = hook
                                 .command
                                 .as_deref()
-                                .unwrap_or(
-                                    hook.url.as_deref().unwrap_or(
-                                        crate::locale::ctx().named_text("extensions.hook.no_command", "(no command)")
-                                            .as_ref(),
-                                    ),
-                                );
+                                .unwrap_or(hook.url.as_deref().unwrap_or(no_command.as_str()));
                             entry_right_labels.push(String::new());
                             entry_desc_lines.push(vec![format!("\u{2192} {}", cmd)]);
                             entry_summary_lines.push(vec![]);
@@ -4170,9 +4168,10 @@ pub fn render_extensions_modal(
             popup_rect.y + popup_rect.height.saturating_sub(1),
         )
     {
-        let label = state.pending_action.as_deref().unwrap_or(
-            crate::locale::ctx().named_text("extensions.pending.processing", "Processing...").as_ref(),
-        );
+        let processing = crate::locale::ctx()
+            .named_text("extensions.pending.processing", "Processing...")
+            .into_owned();
+        let label = state.pending_action.as_deref().unwrap_or(processing.as_str());
         let frames = crate::glyphs::braille_spinner_frames();
         let frame_idx = (tick / SPINNER_DIVISOR) as usize % frames.len();
         let display = format!("{} {label}", frames[frame_idx]);
@@ -5543,7 +5542,7 @@ mod tests {
         render_extensions_modal(&mut buf, area, &mut state, None, false, 0);
         assert_eq!(
             state.entry_labels_cache,
-            [workflows_picker_rows::workflows_empty_placeholder]
+            [workflows_picker_rows::workflows_empty_placeholder()]
         );
         assert_eq!(
             buffer_count(&buf, "No workflows available"),

@@ -47,8 +47,14 @@ pub enum ConversationsPartial {
 impl ConversationsPartial {
     pub(crate) fn picker_notice(self) -> &'static str {
         match self {
-            Self::NoOauth => "Couldn't load your chats: log in with /login",
-            Self::Timeout | Self::Error => "Couldn't load conversations: retry",
+            Self::NoOauth => crate::locale::ctx().named_static_text(
+                "session_picker.partial.no_oauth",
+                "Couldn't load your chats: log in with /login",
+            ),
+            Self::Timeout | Self::Error => crate::locale::ctx().named_static_text(
+                "session_picker.partial.retry",
+                "Couldn't load conversations: retry",
+            ),
         }
     }
 }

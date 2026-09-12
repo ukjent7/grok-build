@@ -192,7 +192,7 @@ pub struct Shortcut<'a> {
 pub fn push_vim_nav_search_hint<'a>(shortcuts: &mut Vec<Shortcut<'a>>, search_active: bool) {
     if !search_active && crate::appearance::cache::load_vim_mode() {
         shortcuts.push(Shortcut {
-            label: "i search",
+            label: crate::locale::ctx().named_static_text("picker.shortcut.search_vim", "i search"),
             clickable: false,
             id: 0,
         });

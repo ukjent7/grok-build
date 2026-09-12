@@ -139,7 +139,7 @@ mod tests {
         let loading = build_workflows_picker_rows(&TabDataState::Loading, "");
         assert!(loading.is_empty());
         let empty = build_workflows_picker_rows(&TabDataState::Loaded(vec![]), "");
-        assert_eq!(labels(&empty), [WORKFLOWS_EMPTY_PLACEHOLDER]);
+        assert_eq!(labels(&empty), [workflows_empty_placeholder()]);
         assert!(empty[0].dimmed);
     }
 }

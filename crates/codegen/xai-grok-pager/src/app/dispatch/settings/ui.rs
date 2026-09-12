@@ -1146,7 +1146,10 @@ pub(in crate::app::dispatch) fn apply_setting_rollback(
                 "rollback path has no arm for this setting key; in-memory cache is now \
                  inconsistent with the on-disk state (which already failed to write)"
             );
-            app.show_toast(ROLLBACK_NO_ARM_TOAST);
+            app.show_toast(crate::locale::ctx().named_static_text(
+                "settings.toast.rollback_out_of_sync",
+                ROLLBACK_NO_ARM_TOAST,
+            ));
             return companion_effects;
         }
     }

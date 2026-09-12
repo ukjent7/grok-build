@@ -816,8 +816,15 @@ pub async fn run(
         let cwd = std::env::current_dir().unwrap_or_default();
         if session_startup::chat_mode_refuses_local_build_load(true, false, session_id, &cwd) {
             anyhow::bail!(
-                "{} (session id: {session_id})",
-                session_startup::CHAT_MODE_LOCAL_BUILD_REFUSAL
+                "{}",
+                crate::locale::ctx().format_named(
+                    "session.chat.local_build_refusal_with_id",
+                    "{message} (session id: {session_id})",
+                    &[
+                        ("message", session_startup::chat_mode_local_build_refusal().as_str()),
+                        ("session_id", session_id),
+                    ],
+                )
             );
         }
     }

@@ -275,7 +275,13 @@ pub(super) fn maybe_show_x11_primary_paste_hint(
     if !eligible || completion != ClipboardPasteCompletion::FullMiss {
         return;
     }
-    show_clipboard_toast(target, X11_PRIMARY_PASTE_HINT, app);
+    show_clipboard_toast(
+        target,
+        &crate::locale::ctx()
+            .named_text("clipboard.x11_primary_paste_hint", X11_PRIMARY_PASTE_HINT)
+            .into_owned(),
+        app,
+    );
 }
 /// A clean `FullMiss` always qualifies; a remote read *error* (`AttachmentRead`) qualifies too.
 /// Inside `grok wrap` the authoritative pasteboard is the local host's, not the (absent) remote one.
@@ -904,9 +910,10 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
         }
         TaskResult::ConsentPersistFailed { error } => {
             tracing::warn!(%error, "consent answer not persisted; the notice re-arms next launch");
-            app.show_toast(
+            app.show_toast(&crate::locale::ctx().named_static_text(
+                "consent.toast.persist_failed",
                 "\u{2717} Could not save your answer, so this notice returns next launch",
-            );
+            ));
             vec![]
         }
         TaskResult::ConsentRecorded { notice_id, version } => match app.account_email.clone() {
@@ -1038,8 +1045,12 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
                 deliver_doctor_message(
                     app,
                     target.agent_id,
-                    "This fix was cancelled because the session changed. Run `/doctor fix` again."
-                        .to_owned(),
+                    crate::locale::ctx()
+                        .named_text(
+                            "doctor.fix.cancelled_session_changed",
+                            "This fix was cancelled because the session changed. Run `/doctor fix` again.",
+                        )
+                        .into_owned(),
                 );
                 return vec![];
             };
@@ -1456,7 +1467,7 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
             let delete_notice = if membership_removal_failed {
                 "Session deleted, but dashboard membership could not be removed"
             } else {
-                "Session deleted"
+                crate::locale::ctx().named_static_text("session.delete.success", "Session deleted")
             };
             if after == AfterSessionDelete::Stay {
                 app.dashboard_local_sessions
@@ -1603,7 +1614,11 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
             app,
             agent_id,
             &session_id,
-            format!("Couldn't load session usage: {error}"),
+            crate::locale::ctx().format_named(
+                "status.usage.load_failed",
+                "Couldn't load session usage: {error}",
+                &[("error", error.as_str())],
+            ),
             nonce,
         ),
         TaskResult::FeedbackComplete {

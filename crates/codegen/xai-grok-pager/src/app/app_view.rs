@@ -4008,7 +4008,9 @@ fn handle_welcome_input(ev: &Event, ctx: &mut WelcomeInputCtx<'_>) -> InputOutco
                     && let Some(md) = ctx.changelog_markdown.as_deref()
                 {
                     return InputOutcome::Action(Action::ShowReleaseNotes {
-                        title: "Release Notes".to_string(),
+                        title: crate::locale::ctx()
+                            .named_text("docs.release_notes.title", "Release Notes")
+                            .into_owned(),
                         content: md.trim().to_string(),
                     });
                 }
@@ -4235,7 +4237,9 @@ fn dispatch_menu_action(
     if Some(index) == changelog_idx {
         if let Some(md) = changelog_md {
             return InputOutcome::Action(Action::ShowReleaseNotes {
-                title: "Release Notes".to_string(),
+                title: crate::locale::ctx()
+                    .named_text("docs.release_notes.title", "Release Notes")
+                    .into_owned(),
                 content: md.trim().to_string(),
             });
         }
@@ -4521,7 +4525,10 @@ impl AppView {
                             }
                             Some((false, true, _)) => {
                                 flags_vec.push(crate::views::prompt_widget::PromptFlag {
-                                    text: "always-approve",
+                                    text: crate::locale::ctx().named_static_text(
+                                        "mode.always_approve.label",
+                                        "always-approve",
+                                    ),
                                     color: None,
                                     bold: false,
                                 });
@@ -4535,7 +4542,10 @@ impl AppView {
                             }
                             None if welcome_default_yolo => {
                                 flags_vec.push(crate::views::prompt_widget::PromptFlag {
-                                    text: "always-approve",
+                                    text: crate::locale::ctx().named_static_text(
+                                        "mode.always_approve.label",
+                                        "always-approve",
+                                    ),
                                     color: None,
                                     bold: false,
                                 });

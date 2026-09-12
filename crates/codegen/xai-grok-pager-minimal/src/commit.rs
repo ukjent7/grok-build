@@ -284,7 +284,12 @@ fn paint_committed(
         let style = footer_style.bg(Color::Reset);
         // Clear any clipped content that landed on the footer row first.
         buf.set_style(row, style);
-        let text = format!("\u{2026} {hidden} more lines \u{00b7} /transcript to view");
+        let hidden_count = hidden.to_string();
+        let text = xai_grok_locale::ctx().format_named(
+            "minimal.commit.more_lines",
+            "\u{2026} {hidden} more lines \u{00b7} /transcript to view",
+            &[("hidden", &hidden_count)],
+        );
         buf.set_span(buf.area.x, y, &Span::styled(text, style), width);
     }
 }

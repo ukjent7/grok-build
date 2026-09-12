@@ -46,12 +46,17 @@ fn plan_header(has_plan: bool) -> &'static str {
     }
 }
 
+/// Localized empty-plan notice; falls back to [`EMPTY_PLAN_SCROLLBACK`].
+fn empty_plan_scrollback() -> &'static str {
+    xai_grok_locale::ctx().named_static_text("plan.empty", EMPTY_PLAN_SCROLLBACK)
+}
+
 /// Body committed into native scrollback for a parked plan approval.
 fn plan_scrollback_body(plan_content: Option<&str>) -> String {
     plan_content
         .filter(|s| !s.trim().is_empty())
         .map(str::to_owned)
-        .unwrap_or_else(|| EMPTY_PLAN_SCROLLBACK.to_owned())
+        .unwrap_or_else(|| empty_plan_scrollback().to_owned())
 }
 
 /// Commit each plan (and revision) once, anchored above the still-running `exit_plan_mode` row so the clipped live tail cannot hide its head.

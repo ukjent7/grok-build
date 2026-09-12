@@ -562,11 +562,26 @@ pub(super) fn render_version_badge(
         spans.push(sep);
     }
 
-    let channel = xai_grok_update::channel_label();
+    // Channel label localized for display only ("alpha"/"stable" remain the
+    // canonical channel names used by the updater).
+    let channel = match xai_grok_update::channel_name() {
+        Some("alpha") => format!(
+            " [{}]",
+            crate::locale::ctx().named_text("welcome.channel.alpha", "alpha")
+        ),
+        Some("stable") => format!(
+            " [{}]",
+            crate::locale::ctx().named_text("welcome.channel.stable", "stable")
+        ),
+        _ => xai_grok_update::channel_label().to_string(),
+    };
     match &mode {
         VersionBadgeMode::Full { .. } => {
             spans.push(Span::styled(
-                "Grok Build  ",
+                format!(
+                    "{}  ",
+                    crate::locale::ctx().named_static_text("welcome.product_name", "Grok Build")
+                ),
                 Style::default()
                     .fg(theme.text_primary)
                     .add_modifier(Modifier::BOLD),
@@ -579,14 +594,17 @@ pub(super) fn render_version_badge(
         VersionBadgeMode::HeroFooter => {
             if !channel.is_empty() {
                 spans.push(Span::styled(
-                    channel.trim(),
+                    channel.trim().to_string(),
                     Style::default().fg(theme.gray),
                 ));
             }
         }
         VersionBadgeMode::HeroInline => {
             spans.push(Span::styled(
-                "Grok Build  ",
+                format!(
+                    "{}  ",
+                    crate::locale::ctx().named_static_text("welcome.product_name", "Grok Build")
+                ),
                 Style::default()
                     .fg(theme.text_primary)
                     .add_modifier(Modifier::BOLD),

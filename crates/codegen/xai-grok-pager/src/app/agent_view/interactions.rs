@@ -1024,7 +1024,12 @@ impl AgentView {
                 Some(crate::views::question_view::LocalQuestionKind::PromptBlocked { .. })
             )
         }) {
-            self.show_toast("Your prompt is blocked — choose Edit, Resend, or Discard");
+            self.show_toast(
+                &crate::locale::ctx().named_text(
+                    "prompt.blocked.toast.choose_action",
+                    "Your prompt is blocked — choose Edit, Resend, or Discard",
+                ),
+            );
             return InputOutcome::Changed;
         }
         let follows_skip_submit = self.question_view.as_ref().is_some_and(|qv| {
@@ -1151,7 +1156,12 @@ impl AgentView {
                 (true, kind @ LocalQuestionKind::PromptBlocked { .. }) => {
                     qv.local_kind = Some(kind);
                     self.question_view = Some(qv);
-                    self.show_toast("Your prompt is blocked — choose Edit, Resend, or Discard");
+                    self.show_toast(
+                        &crate::locale::ctx().named_text(
+                            "prompt.blocked.toast.choose_action",
+                            "Your prompt is blocked — choose Edit, Resend, or Discard",
+                        ),
+                    );
                     return InputOutcome::Changed;
                 }
                 (true, LocalQuestionKind::DoctorFix { target, .. }) => {

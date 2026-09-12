@@ -291,7 +291,7 @@ async fn run_add(args: AddArgs) -> Result<()> {
         McpServerTransportConfig::StreamableHttp { url, .. } => crate::locale::ctx().format_named(
             "mcp.add.summary_url",
             "{kind} MCP server '{name}' with URL: {url}",
-            &[("kind", kind), ("name", name), ("url", url)],
+            &[("kind", kind), ("name", name), ("url", url.as_str())],
         ),
     };
 

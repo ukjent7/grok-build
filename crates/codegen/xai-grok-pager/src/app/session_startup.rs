@@ -294,6 +294,15 @@ impl PagerArgs {
 /// User-facing refusal when process-wide `--chat` would open a local Build disk row.
 pub const CHAT_MODE_LOCAL_BUILD_REFUSAL: &str = "cannot open a local Build session while --chat is active; \
 resume a conversation or start a new chat (/chat)";
+/// Localized [`CHAT_MODE_LOCAL_BUILD_REFUSAL`] for UI surfaces (toasts, startup warnings).
+pub fn chat_mode_local_build_refusal() -> String {
+    crate::locale::ctx()
+        .named_text(
+            "session.chat.local_build_refusal",
+            CHAT_MODE_LOCAL_BUILD_REFUSAL,
+        )
+        .into_owned()
+}
 /// User-facing error when `--chat` is combined with leader mode.
 pub const CHAT_MODE_LEADER_CONFLICT: &str = "gateway chat mode (--chat) cannot run with leader mode; \
 pass --no-leader or disable [cli] use_leader in config";
@@ -786,10 +795,10 @@ async fn most_recent_session_id(
         .iter()
         .find(|summary| selection.admits(summary) && !summary.is_unused_optimistic_husk())
         .ok_or_else(|| {
-            anyhow::anyhow!(
-                "No session found for current directory. \
-                 Use 'grok' to start a new session."
-            )
+            anyhow::anyhow!(crate::locale::ctx().named_static_text(
+                "session.startup.no_session_for_cwd",
+                "No session found for current directory. Use 'grok' to start a new session.",
+            ))
         })?;
     Ok((first.info.id.to_string(), first.display_title_opt()))
 }
@@ -973,7 +982,13 @@ async fn resolve_existing_session(
         tracing::info!(session_id = %session_id, local_id = %local_id, "Session found locally");
         if !in_place_restore_code_allowed(ctx.restore_code, ctx.has_worktree, session_id, &local_id)
         {
-            anyhow::bail!("{REMOTE_RESTORE_NEEDS_WORKTREE}");
+            anyhow::bail!(
+                "{}",
+                crate::locale::ctx().named_text(
+                    "session.startup.remote_restore.needs_worktree",
+                    REMOTE_RESTORE_NEEDS_WORKTREE,
+                )
+            );
         }
         return Ok(ResolvedExisting {
             id: local_id,
@@ -1023,7 +1038,13 @@ async fn resolve_existing_session(
                 session_id
             );
             if !ctx.restore_code {
-                eprintln!("{WORKTREE_NO_RESTORE_CODE_NOTICE}");
+                eprintln!(
+                    "{}",
+                    crate::locale::ctx().named_text(
+                        "session.startup.remote_restore.worktree_no_code",
+                        WORKTREE_NO_RESTORE_CODE_NOTICE,
+                    )
+                );
             }
             Ok(ResolvedExisting {
                 id: session_id.to_string(),
@@ -1036,20 +1057,39 @@ async fn resolve_existing_session(
         RemoteMissPlan::RejectInPlaceCodeRestore { title_miss_hint } => {
             if title_miss_hint {
                 anyhow::bail!(
-                    "{REMOTE_RESTORE_NEEDS_WORKTREE}; {}",
+                    "{}; {}",
+                    crate::locale::ctx().named_text(
+                        "session.startup.remote_restore.needs_worktree",
+                        REMOTE_RESTORE_NEEDS_WORKTREE,
+                    ),
                     super::session_title_resolve::title_miss_hint(session_id)
                 );
             }
-            anyhow::bail!("{REMOTE_RESTORE_NEEDS_WORKTREE}")
+            anyhow::bail!(
+                "{}",
+                crate::locale::ctx().named_text(
+                    "session.startup.remote_restore.needs_worktree",
+                    REMOTE_RESTORE_NEEDS_WORKTREE,
+                )
+            )
         }
         RemoteMissPlan::NotFound { title_miss_hint } => {
             if title_miss_hint {
+                let hint = super::session_title_resolve::title_miss_hint(session_id);
                 anyhow::bail!(
-                    "Session does not exist: {}",
-                    super::session_title_resolve::title_miss_hint(session_id)
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "session.startup.not_found_with_hint",
+                        "Session does not exist: {hint}",
+                        &[("hint", hint.as_str())],
+                    )
                 );
             }
-            anyhow::bail!("Session does not exist")
+            anyhow::bail!(
+                "{}",
+                crate::locale::ctx()
+                    .named_static_text("session.startup.not_found", "Session does not exist")
+            )
         }
         RemoteMissPlan::RestoreConversation => {
             let restored =
@@ -1291,7 +1331,12 @@ pub(crate) fn classify_remote_restore(
         return RemoteRestoreOutcome::Failed(format!("Failed to restore session from remote: {e}"));
     }
     RemoteRestoreOutcome::Failed(
-        "Failed to restore session from remote: conversation history was unavailable.".to_string(),
+        crate::locale::ctx()
+            .named_static_text(
+                "session.startup.remote_restore.history_unavailable",
+                "Failed to restore session from remote: conversation history was unavailable.",
+            )
+            .to_string(),
     )
 }
 /// Resolve a non-id resume arg as a session title among local sessions for `cwd`.

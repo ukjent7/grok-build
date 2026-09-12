@@ -264,7 +264,7 @@ struct Classified {
 }
 
 fn classify(status: Option<u16>, wire: WireErrorType) -> Classified {
-    if status.is_some() {
+    if let Some(code) = status {
         let (prefix, action, default_why) = match code {
             400 | 422 => (
                 fixed("error.request.headline.bad_request", "Bad request"),

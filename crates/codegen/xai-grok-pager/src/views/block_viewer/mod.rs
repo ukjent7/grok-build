@@ -518,7 +518,9 @@ impl BlockViewerPane {
                 Style::default().fg(theme.gray_dim),
             )));
             lines.push(Line::from(Span::styled(
-                format!("Sources ({})", ws.citations.len()),
+                crate::locale::ctx()
+                    .named_text("block_viewer.sources", "Sources ({count})")
+                    .replace("{count}", &ws.citations.len().to_string()),
                 Style::default().fg(theme.text_secondary),
             )));
             let url_style = Style::default().fg(theme.gray);
@@ -556,13 +558,19 @@ impl BlockViewerPane {
         // Metadata
         if let Some(limit) = st.limit {
             lines.push(Line::from(vec![
-                Span::styled("limit: ", label),
+                Span::styled(
+                    crate::locale::ctx().named_static_text("block_viewer.limit", "limit: "),
+                    label,
+                ),
                 Span::styled(limit.to_string(), value),
             ]));
         }
         let s = if st.result_count == 1 { "" } else { "s" };
         lines.push(Line::from(Span::styled(
-            format!("{} result{s}", st.result_count),
+            crate::locale::ctx()
+                .named_text("block_viewer.results", "{count} result{s}")
+                .replace("{count}", &st.result_count.to_string())
+                .replace("{s}", s),
             label,
         )));
 

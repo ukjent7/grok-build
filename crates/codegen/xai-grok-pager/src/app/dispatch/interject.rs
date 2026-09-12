@@ -61,7 +61,10 @@ pub(super) fn dispatch_interject_on(
 
     // The composer is NOT touched here: the producer that consumed composer text (the InterjectPrompt registry arm) clears it at the call site
     // Every other producer (Send now, edit-interject, plan review comments) carries non-composer text and must keep the user's draft/stash
-    agent.show_toast("Interjection sent");
+    agent.show_toast(crate::locale::ctx().named_static_text(
+        "interject.sent",
+        "Interjection sent",
+    ));
 
     // Image-bearing interjection: build text and image content blocks via the same helper as the queued-prompt drain path
     // The helper covers orphan-placeholder recovery, the allowlist, and the size cap. Text-only stays on the legacy wire.
@@ -122,7 +125,10 @@ pub(super) fn dispatch_send_prompt_now(
                     crate::app::agent::QueueEntryKind::Prompt,
                 )
             });
-        agent.show_toast("Reconnecting, please wait...");
+        agent.show_toast(crate::locale::ctx().named_static_text(
+            "reconnect.wait",
+            "Reconnecting, please wait...",
+        ));
         return vec![];
     }
 

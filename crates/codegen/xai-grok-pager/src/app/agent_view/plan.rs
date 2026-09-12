@@ -115,7 +115,12 @@ impl AgentView {
         } else if approval_empty {
             LineViewerState::open_markdown_content(
                 "plan.md",
-                crate::views::plan_approval_view::EMPTY_PLAN_PLACEHOLDER.to_owned(),
+                crate::locale::ctx()
+                    .named_text(
+                        "plan.approval.empty_placeholder",
+                        crate::views::plan_approval_view::EMPTY_PLAN_PLACEHOLDER,
+                    )
+                    .into_owned(),
                 None,
             )
         } else if let Some(plan_path) = self.plan_file_path() {
@@ -123,12 +128,16 @@ impl AgentView {
         } else {
             None
         }) else {
-            self.show_toast("No plan written yet.");
+            self.show_toast(
+                &crate::locale::ctx().named_text("plan.approval.no_plan", "No plan written yet."),
+            );
             return;
         };
         viewer.kind = crate::views::file_search::line_viewer::LineViewerKind::PlanPreview;
         viewer.title_override = Some(if approval_empty {
-            "plan.md (empty)".to_string()
+            crate::locale::ctx()
+                .named_static_text("plan.approval.empty_title", "plan.md (empty)")
+                .to_string()
         } else {
             "plan.md".to_string()
         });

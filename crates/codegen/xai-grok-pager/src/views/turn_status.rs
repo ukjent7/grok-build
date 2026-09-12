@@ -257,16 +257,15 @@ pub fn render_turn_status(
     if drain_blocked && state.is_idle() {
         // Pulsing diamond in accent_user, blending toward bg.
         let diamond_color = pending_diamond_color(&theme, theme.accent_user, tick);
+        let idle_label = crate::locale::ctx()
+            .named_text("turn.idle_waiting_edit", "agent idle ~ waiting on your edit")
+            .into_owned();
         let spans = vec![
             Span::styled(
                 format!("{} ", crate::glyphs::diamond_filled()),
                 Style::default().fg(diamond_color),
             ),
-            Span::styled(
-                &*crate::locale::ctx()
-                    .named_text("turn.idle_waiting_edit", "agent idle ~ waiting on your edit"),
-                Style::default().fg(theme.gray),
-            ),
+            Span::styled(idle_label, Style::default().fg(theme.gray)),
         ];
         buf.set_line(area.x, area.y, &Line::from(spans), area.width);
         return TurnStatusOutput::default();

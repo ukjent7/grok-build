@@ -86,20 +86,33 @@ impl SlashCommand for UsageCommand {
 
     fn run(&self, ctx: &mut CommandExecCtx, args: &str) -> CommandResult {
         if !ctx.usage_command_visible {
-            return CommandResult::Error("/usage is not available.".into());
+            return CommandResult::Error(
+                crate::locale::ctx()
+                    .named_text(
+                        "slash.command.usage.error.unavailable",
+                        "/usage is not available.",
+                    )
+                    .into_owned(),
+            );
         }
         let arg = args.trim();
         if !ctx.billing_surface_visible {
             return match arg {
                 "" => CommandResult::Action(Action::ShowUsage),
-                _ => CommandResult::Error(format!("Unknown argument: {arg}. Use /usage")),
+                _ => CommandResult::Error(crate::locale::ctx().format_named(
+                    "slash.command.usage.error.unknown_argument",
+                    "Unknown argument: {argument}. Use {hint}",
+                    &[("argument", arg), ("hint", "/usage")],
+                )),
             };
         }
         match arg {
             "" | "show" => CommandResult::Action(Action::ShowUsage),
             "manage" => CommandResult::Action(Action::ManageBilling),
-            _ => CommandResult::Error(format!(
-                "Unknown argument: {arg}. Use /usage show or /usage manage"
+            _ => CommandResult::Error(crate::locale::ctx().format_named(
+                "slash.command.usage.error.unknown_argument",
+                "Unknown argument: {argument}. Use {hint}",
+                &[("argument", arg), ("hint", "/usage show or /usage manage")],
             )),
         }
     }

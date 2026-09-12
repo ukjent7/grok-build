@@ -154,6 +154,34 @@ fn localized_arg_placeholder(placeholder: String) -> String {
     crate::locale::ctx().named_text(key, &placeholder).into_owned()
 }
 
+/// Localized description for an arg-suggestion row. Only fixed, pager-owned
+/// arg texts are mapped; anything else (including dynamic doc titles) passes
+/// through unchanged.
+fn localized_arg_description(english: &str) -> String {
+    // `/docs` arg rows: `Open "{title}"`. The doc title itself stays in
+    // English (1.0.24 has no localized doc catalog); only the template is
+    // translated.
+    if let Some(title) = english
+        .strip_prefix("Open \"")
+        .and_then(|rest| rest.strip_suffix('"'))
+    {
+        return crate::locale::ctx()
+            .named_text("slash.command.docs.arg.open_template", "Open \"{title}\"")
+            .replace("{title}", title);
+    }
+    // `/theme` auto row; keep any trailing " (active)" marker.
+    if let Some(active_suffix) = english.strip_prefix("auto (follow system)") {
+        return format!(
+            "{}{active_suffix}",
+            crate::locale::ctx().named_text(
+                "slash.arg.theme.auto.description",
+                "auto (follow system)"
+            )
+        );
+    }
+    english.to_string()
+}
+
 impl SuggestionRow {
     fn from_command(
         trigger: &CommandTrigger,
@@ -181,7 +209,7 @@ impl SuggestionRow {
     fn from_arg(item: &ArgItem) -> Self {
         Self {
             display: item.display.clone(),
-            description: item.description.clone(),
+            description: localized_arg_description(&item.description),
             insert_text: item.insert_text.clone(),
             indices: Vec::new(),
             tag: None,

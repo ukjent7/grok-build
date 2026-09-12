@@ -1004,14 +1004,26 @@ pub(crate) fn format_activity_label(activity: &crate::acp::tracker::TurnActivity
                 let max_len = crate::acp::tracker::MAX_ACTIVITY_SUBJECT_CHARS;
                 // Byte length is the char count for ASCII, so this skips the char walk for the common title
                 if first_line.len() <= max_len {
-                    format!("Running: {first_line}")
+                    crate::locale::ctx().format_named(
+                        "turn.activity.running",
+                        "Running: {subject}",
+                        &[("subject", first_line)],
+                    )
                 } else {
                     let char_count = first_line.chars().count();
                     if char_count <= max_len {
-                        format!("Running: {first_line}")
+                        crate::locale::ctx().format_named(
+                            "turn.activity.running",
+                            "Running: {subject}",
+                            &[("subject", first_line)],
+                        )
                     } else {
                         let truncated: String = first_line.chars().take(max_len).collect();
-                        format!("Running: {truncated}\u{2026}")
+                        crate::locale::ctx().format_named(
+                            "turn.activity.running",
+                            "Running: {subject}",
+                            &[("subject", &format!("{truncated}\u{2026}"))],
+                        )
                     }
                 }
             }

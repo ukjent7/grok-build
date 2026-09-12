@@ -44,9 +44,16 @@ pub(super) fn ensure_login_method(app: &mut AppView) {
 /// When the list is empty, prefer the shell's `PREFERRED_API_KEY_UNAVAILABLE` copy.
 fn no_login_method_error(app: &AppView) -> String {
     if app.auth_methods.is_empty() {
-        xai_grok_shell::agent::auth_method::PREFERRED_API_KEY_UNAVAILABLE.to_string()
+        crate::locale::ctx()
+            .named_text(
+                "auth.preferred_api_key_unavailable",
+                xai_grok_shell::agent::auth_method::PREFERRED_API_KEY_UNAVAILABLE,
+            )
+            .into_owned()
     } else {
-        "No login method available".to_string()
+        crate::locale::ctx()
+            .named_text("auth.no_login_method", "No login method available")
+            .into_owned()
     }
 }
 
@@ -337,7 +344,12 @@ pub(super) fn handle_auth_complete(
                 // The user couldn't have queued another prompt during the auth detour, so a plain front-enqueue and drain is safe
                 if let Some(prompt) = agent.reauth_stashed_prompt.take() {
                     agent.scrollback.push_block(RenderBlock::system(
-                        "Re-authenticated. Retrying\u{2026}".to_string(),
+                        crate::locale::ctx()
+                            .named_text(
+                                "auth.reauthenticated_retrying",
+                                "Re-authenticated. Retrying\u{2026}",
+                            )
+                            .into_owned(),
                     ));
                     agent.session.enqueue_in_flight_prompt_front(prompt);
                     let drain = maybe_drain_queue(agent);

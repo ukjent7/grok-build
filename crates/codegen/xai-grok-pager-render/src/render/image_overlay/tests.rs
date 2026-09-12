@@ -44,6 +44,7 @@ fn render_to_string(image: &PastedImage, area: Rect) -> (Option<ImageOverlayRend
         Color::Black,
         Color::White,
         Color::Gray,
+        ImageOverlayLabels::default(),
     );
     let rendered = (area.y..area.y + area.height)
         .map(|y| {

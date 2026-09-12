@@ -23,20 +23,34 @@ pub(crate) enum EffortTokenError {
 impl EffortTokenError {
     pub(crate) fn message(&self) -> String {
         match self {
-            Self::Unsupported => "current model does not support reasoning effort".to_string(),
+            Self::Unsupported => crate::locale::ctx()
+                .named_text(
+                    "reasoning.error.unsupported",
+                    "current model does not support reasoning effort",
+                )
+                .into_owned(),
             Self::UnknownToken { token, offered } => {
                 if offered.is_empty() {
-                    format!(
-                        "unknown effort level '{token}'; this model has no selectable effort levels"
+                    crate::locale::ctx().format_named(
+                        "reasoning.error.unknown_no_options",
+                        "unknown effort level '{token}'; this model has no selectable effort levels",
+                        &[("token", token)],
                     )
                 } else {
-                    format!(
-                        "unknown effort level '{token}'; use one of: {}",
-                        offered.join(", ")
+                    let options = offered.join(", ");
+                    crate::locale::ctx().format_named(
+                        "reasoning.error.unknown_options",
+                        "unknown effort level '{token}'; use one of: {options}",
+                        &[("token", token), ("options", options.as_str())],
                     )
                 }
             }
-            Self::NoActiveModel => "no active model to apply effort to".to_string(),
+            Self::NoActiveModel => crate::locale::ctx()
+                .named_text(
+                    "reasoning.error.no_active_model",
+                    "no active model to apply effort to",
+                )
+                .into_owned(),
         }
     }
 }

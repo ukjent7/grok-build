@@ -446,12 +446,11 @@ fn cmd_install(source: &str, trust: bool) -> Result<()> {
     if !trust {
         use xai_grok_agent::plugins::git_install::{self, InstallSource};
         let subject = match git_install::parse_install_source(source, &cwd) {
-            InstallSource::Git { url, .. } => crate::locale::ctx()
-                .format_named(
-                    "plugin_cli.subject_git",
-                    "from git repo {url}",
-                    &[("url", url)],
-                ),
+            InstallSource::Git { url, .. } => crate::locale::ctx().format_named(
+                "plugin_cli.subject_git",
+                "from git repo {url}",
+                &[("url", url.as_str())],
+            ),
             InstallSource::Local { path, .. } => crate::locale::ctx()
                 .format_named(
                     "plugin_cli.subject_local",
@@ -820,9 +819,8 @@ fn cmd_details(name: &str) -> Result<()> {
             ctx.format_named(
                 "plugin_cli.field.source",
                 "\n  source: {value}",
-                &[("value", &mp.source_display_name)],
+                &[("value", mp.source_display_name.as_str())],
             )
-            .into_owned()
         })
         .unwrap_or_default();
     let mp = mp.as_str();
@@ -872,10 +870,7 @@ fn cmd_details(name: &str) -> Result<()> {
         let ver = p
             .version
             .as_deref()
-            .map(|v| {
-                ctx.format_named("plugin_cli.field.version_suffix", " v{value}", &[("value", v)])
-                    .into_owned()
-            })
+            .map(|v| ctx.format_named("plugin_cli.field.version_suffix", " v{value}", &[("value", v)]))
             .unwrap_or_default();
         let sub = p
             .subdir
@@ -886,7 +881,6 @@ fn cmd_details(name: &str) -> Result<()> {
                     " (subdir: {value})",
                     &[("value", s)],
                 )
-                .into_owned()
             })
             .unwrap_or_default();
         println!("    {pname}{ver}{sub}");
@@ -1258,7 +1252,7 @@ fn marketplace_add(url: &str, force: bool) -> Result<()> {
                 crate::locale::ctx().format_named(
                     "plugin_cli.mp.unreachable",
                     "{error}\nNot adding \"{url}\": it doesn't look like a reachable git repository. Re-run with --force to add it anyway (e.g. a host only reachable on VPN).",
-                    &[("error", &e.to_string()), ("url", url)],
+                    &[("error", &e.to_string()), ("url", git_url.as_str())],
                 )
             )
         })?;

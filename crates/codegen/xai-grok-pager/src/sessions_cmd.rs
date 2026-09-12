@@ -313,9 +313,21 @@ fn print_sessions_grouped(sessions: &[MergedSession]) {
             let truncated: String = summary.chars().take(50).collect();
             let created = &s.created_at[..s.created_at.len().min(10)];
             let updated = &s.updated_at[..s.updated_at.len().min(10)];
+            let source: String = match s.source.as_str() {
+                "local" => crate::locale::ctx()
+                    .named_text("sessions.source.local", "local")
+                    .into_owned(),
+                "remote" => crate::locale::ctx()
+                    .named_text("sessions.source.remote", "remote")
+                    .into_owned(),
+                "both" => crate::locale::ctx()
+                    .named_text("sessions.source.both", "both")
+                    .into_owned(),
+                other => other.to_string(),
+            };
             println!(
                 "{}  {}  {}  {}  {}",
-                s.session_id, created, updated, s.source, truncated
+                s.session_id, created, updated, source, truncated
             );
         }
     };

@@ -93,7 +93,12 @@ fn finish_transcript(app: &mut AppView, id: xai_grok_pager::app::agent::AgentId,
             agent
                 .scrollback
                 .push_block(xai_grok_pager::scrollback::block::RenderBlock::system(
-                    "No conversation transcript to view yet",
+                    xai_grok_locale::ctx()
+                        .named_text(
+                            "transcript.empty",
+                            "No conversation transcript to view yet",
+                        )
+                        .into_owned(),
                 ));
         }
         return;
@@ -106,10 +111,15 @@ fn finish_transcript(app: &mut AppView, id: xai_grok_pager::app::agent::AgentId,
         }
         Err(e) => {
             if let Some(agent) = app.agents.get_mut(&id) {
+                let error = e.to_string();
                 agent.scrollback.push_block(
-                    xai_grok_pager::scrollback::block::RenderBlock::system(format!(
-                        "Failed to write transcript: {e}"
-                    )),
+                    xai_grok_pager::scrollback::block::RenderBlock::system(
+                        xai_grok_locale::ctx().format_named(
+                            "transcript.write_failed",
+                            "Failed to write transcript: {error}",
+                            &[("error", &error)],
+                        ),
+                    ),
                 );
             }
         }

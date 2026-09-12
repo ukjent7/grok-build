@@ -69,9 +69,14 @@ impl SlashCommand for ScreenModeSwitchCommand {
 
     fn run(&self, ctx: &mut CommandExecCtx, _args: &str) -> CommandResult {
         if ctx.session_id.is_none() {
-            return CommandResult::Error(format!(
-                "No active session to reopen in {} mode",
-                self.target_label(),
+            let mode = self.target_label();
+            let mode_text = crate::locale::ctx()
+                .setting_choice_label("screen_mode", mode, mode)
+                .into_owned();
+            return CommandResult::Error(crate::locale::ctx().format_named(
+                "slash.command.screen_mode.error.no_session",
+                "No active session to reopen in {mode} mode",
+                &[("mode", mode_text.as_str())],
             ));
         }
         CommandResult::Action(Action::RelaunchInScreenMode {

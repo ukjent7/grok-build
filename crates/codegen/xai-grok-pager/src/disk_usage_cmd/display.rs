@@ -6,7 +6,7 @@ use std::io::Write;
 use std::path::Path;
 
 use unicode_width::UnicodeWidthStr;
-use xai_fast_worktree::WorktreeStatus;
+use xai_fast_worktree::{WorktreeKind, WorktreeStatus};
 
 use super::{DiskUsageReport, Registration, RegistryState, WorktreeUsage};
 use crate::util::{format_age, format_bytes, pad_to_width, truncate_to_width};
@@ -338,25 +338,17 @@ fn count_verb(n: u64) -> &'static str {
 fn kind_cell(wt: &WorktreeUsage) -> Cow<'static, str> {
     let ctx = crate::locale::ctx();
     match &wt.registration {
-        Registration::Untracked => Cow::Owned(
-            ctx.format_named(
-                "du.kind.untracked",
-                "untracked ({kind})",
-                &[("kind", kind_text(wt.kind))],
-            )
-            .into_owned()
-            .into(),
-        ),
+        Registration::Untracked => Cow::Owned(ctx.format_named(
+            "du.kind.untracked",
+            "untracked ({kind})",
+            &[("kind", kind_text(wt.kind))],
+        )),
         Registration::Tracked(rec) => match rec.status {
-            WorktreeStatus::Dead => Cow::Owned(
-                ctx.format_named(
-                    "du.kind.dead",
-                    "{kind} (dead)",
-                    &[("kind", kind_text(wt.kind))],
-                )
-                .into_owned()
-                .into(),
-            ),
+            WorktreeStatus::Dead => Cow::Owned(ctx.format_named(
+                "du.kind.dead",
+                "{kind} (dead)",
+                &[("kind", kind_text(wt.kind))],
+            )),
             WorktreeStatus::Alive => Cow::Borrowed(kind_text(wt.kind)),
         },
     }

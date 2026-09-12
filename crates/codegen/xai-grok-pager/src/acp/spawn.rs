@@ -222,7 +222,10 @@ fn join_agent_thread(handle: thread::JoinHandle<Result<()>>, timeout: Duration) 
 /// A slow session end is often *because* the pane just closed, and on macOS `is_terminal()` still
 /// says yes for a pty whose master is gone, so the write may fail. `true` when the notice landed.
 fn write_join_notice(w: &mut impl Write) -> bool {
-    crate::best_effort_stderr::write_line(w, JOIN_NOTICE)
+    crate::best_effort_stderr::write_line(
+        w,
+        crate::locale::ctx().named_static_text("session.finishing", JOIN_NOTICE),
+    )
 }
 
 fn classify_join(result: thread::Result<Result<()>>) -> JoinOutcome {

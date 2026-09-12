@@ -2395,7 +2395,7 @@ fn delete_dashboard_row(
                 return vec![];
             };
             let cwd = agent.session.cwd.display().to_string();
-            app.show_toast(&crate::locale::ctx().named_text("dashboard.toast.deleting_session", "Deleting session\u{{2026}}"));
+            app.show_toast(&crate::locale::ctx().named_text("dashboard.toast.deleting_session", "Deleting session\u{2026}"));
             vec![Effect::DeleteSession {
                 source: "current".into(),
                 session_id: session_id.to_string(),
@@ -2426,7 +2426,7 @@ fn delete_dashboard_row(
                 app.show_toast(&crate::locale::ctx().named_text("dashboard.toast.stop_before_delete", "Stop the session before deleting"));
                 return vec![];
             }
-            app.show_toast(&crate::locale::ctx().named_text("dashboard.toast.deleting_session", "Deleting session\u{{2026}}"));
+            app.show_toast(&crate::locale::ctx().named_text("dashboard.toast.deleting_session", "Deleting session\u{2026}"));
             vec![Effect::DeleteSession {
                 source: "local".into(),
                 session_id,

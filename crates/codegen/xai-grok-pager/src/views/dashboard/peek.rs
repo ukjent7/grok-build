@@ -259,7 +259,12 @@ pub fn compute_peek_fields(
                     let reject = if qv.no_freeform {
                         None
                     } else {
-                        opts.push(("__other__".to_string(), "Other".to_string()));
+                        opts.push((
+                            "__other__".to_string(),
+                            crate::locale::ctx()
+                                .named_static_text("dashboard.peek.other", "Other")
+                                .to_string(),
+                        ));
                         Some(opts.len() - 1)
                     };
                     // Prefix a `(i/N)` position marker for multi-question forms so the user knows how many remain
@@ -786,7 +791,7 @@ pub(crate) fn localize_status_word(word: &str) -> String {
         "Credit limit" => "dashboard.peek.status.credit_limit",
         _ => return word.to_string(),
     };
-    crate::locale::ctx().named_static_text(id, word).to_string()
+    crate::locale::ctx().named_text(id, word).into_owned()
 }
 
 /// It mirrors the agent view's turn-status line so the peek never dwells on a stale completed

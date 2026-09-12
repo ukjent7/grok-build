@@ -567,9 +567,9 @@ fn build_entries_includes_paste() {
             .is_some_and(|d| d.to_lowercase().contains("image")),
         "description should mention image for search"
     );
-    assert_eq!(*long_help, Some(PASTE_LONG_HELP));
+    assert_eq!(*long_help, Some(paste_long_help()));
     assert!(
-        PASTE_LONG_HELP.contains('\n'),
+        paste_long_help().contains('\n'),
         "paste long_help should be multi-line man-style"
     );
     #[cfg(target_os = "windows")]
@@ -586,13 +586,13 @@ fn build_entries_lists_undo_and_redo() {
 
     let (undo_keys, undo_help) = pseudo_hint(&entries, "undo").expect("undo row");
     assert!(undo_keys.contains(&key!('z', CONTROL)));
-    assert_eq!(undo_help, Some(UNDO_LONG_HELP));
+    assert_eq!(undo_help, Some(undo_long_help()));
 
     let (redo_keys, redo_help) = pseudo_hint(&entries, "redo").expect("redo row");
     assert!(redo_keys.contains(&key!('z', CONTROL | SHIFT)));
     // Some terminals collapse Ctrl+Shift+Z into plain Ctrl+Z, so redo needs a fallback key.
     assert!(redo_keys.contains(&key!('z', ALT)));
-    assert_eq!(redo_help, Some(REDO_LONG_HELP));
+    assert_eq!(redo_help, Some(redo_long_help()));
 }
 
 fn pseudo_hint<'a>(
@@ -1360,7 +1360,7 @@ fn enter_on_search_pseudo_row_opens_detail() {
                 _ => None,
             })
             .as_deref(),
-        Some(SCROLLBACK_SEARCH_LONG_HELP)
+        Some(scrollback_search_long_help())
     );
     let mut state = build_initial_picker_state(&entries);
     state.selected = idx;
@@ -1403,7 +1403,7 @@ fn enter_on_paste_pseudo_row_opens_detail() {
                 _ => None,
             })
             .as_deref(),
-        Some(PASTE_LONG_HELP)
+        Some(paste_long_help())
     );
     let mut state = build_initial_picker_state(&entries);
     state.selected = idx;
@@ -1422,7 +1422,7 @@ fn enter_on_paste_pseudo_row_opens_detail() {
         ShortcutsHelpMode::Detail {
             body, keys_line, ..
         } => {
-            assert_eq!(body, PASTE_LONG_HELP);
+            assert_eq!(body, paste_long_help());
             assert!(
                 keys_line.to_ascii_lowercase().contains("ctrl+v"),
                 "detail keys should list Ctrl+V, got {keys_line:?}"

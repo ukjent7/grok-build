@@ -360,7 +360,10 @@ pub fn render_btw_panel(
             let loading_style = Style::default().fg(theme.gray).bg(bg);
             let line = Line::from(vec![
                 Span::styled(format!("{spinner} "), loading_style),
-                Span::styled("Answering\u{2026}", loading_style),
+                Span::styled(
+                    crate::locale::ctx().named_static_text("btw.status.answering", "Answering\u{2026}"),
+                    loading_style,
+                ),
             ]);
             buf.set_line(content_x, body_y, &line, content_width as u16);
         }

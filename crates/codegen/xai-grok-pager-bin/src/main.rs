@@ -936,12 +936,19 @@ fn render_workspace_payload(payload: &ControlPayload, json: bool) {
         );
         return;
     }
+    let state_label: std::borrow::Cow<str> = match state.as_str() {
+        "running" => xai_grok_pager::locale::ctx()
+            .named_text("cli.workspace.state.running", "running"),
+        "paused" => xai_grok_pager::locale::ctx()
+            .named_text("cli.workspace.state.paused", "paused"),
+        _ => std::borrow::Cow::Borrowed(state.as_str()),
+    };
     println!(
         "{}",
         xai_grok_pager::locale::ctx().format_named(
             "cli.workspace.status.state",
             "Workspace exposure: {state}",
-            &[("state", &state)],
+            &[("state", &state_label)],
         )
     );
     if let Some(url) = hub_url {

@@ -1760,7 +1760,7 @@ fn rename_viewport_handles_long_unicode_in_wide_and_narrow_rows() {
             .find(|(row_id, _)| row_id == &id)
             .map(|(_, rect)| *rect)
             .expect("rename row rect");
-        let editor_x = prefix_x + RENAME_PREFIX.len() as u16;
+        let editor_x = prefix_x + rename_prefix().len() as u16;
         let editor_width = row_rect
             .x
             .saturating_add(row_rect.width)

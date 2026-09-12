@@ -351,14 +351,20 @@ impl ContextInfoBlock {
                 .named_text("context.tool_definitions", "Tool definitions")
                 .into_owned(),
             tokens: tool_tokens,
-            detail: Some(count_detail(tool_count, "tool")),
+            detail: Some(localized_existing_count_detail(
+                &count_detail(tool_count, "tool"),
+                "context.detail.tools",
+            )),
         })
-        .chain(snapshot.usage_categories.iter().map(|c| LegendRow {
-            glyph: tools_glyph,
-            color: tools_color,
-            label: c.label.clone(),
-            tokens: c.tokens,
-            detail: c.detail.clone(),
+        .chain(snapshot.usage_categories.iter().map(|c| {
+            let (label, detail) = localized_usage_category(&c.label, c.detail.as_deref());
+            LegendRow {
+                glyph: tools_glyph,
+                color: tools_color,
+                label,
+                tokens: c.tokens,
+                detail,
+            }
         }))
         .collect();
         let layout = RowLayout::measure(legend_rows.iter().chain(info_rows.iter()), total);
@@ -476,6 +482,35 @@ impl ContextInfoBlock {
 
 /// Format a token count compactly (`123`, `1.2k`, `999k`). The cutover from `{.1}k` to plain `{}k` happens at
 /// 99_500 (not 100_000) to avoid a precision discontinuity.
+/// Display-only localization for legend labels/details that arrive pre-formatted
+/// from the shell's `TokenUsageCategory`. Unknown labels pass through untouched.
+fn localized_usage_category(label: &str, detail: Option<&str>) -> (String, Option<String>) {
+    let ctx = crate::locale::ctx();
+    match label {
+        "Skills" => (
+            ctx.named_text("context.skills", "Skills").into_owned(),
+            detail.map(|value| localized_existing_count_detail(value, "context.detail.skills")),
+        ),
+        "MCP servers" => (
+            ctx.named_text("context.mcp_servers", "MCP servers")
+                .into_owned(),
+            detail.map(|value| localized_existing_count_detail(value, "context.detail.servers")),
+        ),
+        _ => (label.to_string(), detail.map(str::to_string)),
+    }
+}
+
+/// Localize a shell-formatted `"{count} {noun}"` detail via a `{count}` template,
+/// keeping the count from the original so catalog wording cannot drift the number.
+fn localized_existing_count_detail(detail: &str, id: &str) -> String {
+    let Some((count, _)) = detail.split_once(' ') else {
+        return detail.to_string();
+    };
+    crate::locale::ctx()
+        .named_text(id, detail)
+        .replace("{count}", count)
+}
+
 fn fmt_tok(n: u64) -> String {
     if n >= 99_500 {
         // Round half-up to the nearest 1k; equivalent to `(n + 500) / 1000` for u64, which avoids the f64 rounding artifact described above

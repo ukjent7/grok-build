@@ -3413,6 +3413,11 @@ impl PromptWidget {
             let preview_style = PreviewStyle::new(theme.paste_bg, theme.paste_fg, theme.paste_dim);
             let config = PreviewConfig {
                 hint: Some(self.paste_preview_hint(&theme)),
+                omitted_lines: Some(
+                    crate::locale::ctx()
+                        .named_text("prompt.paste.omitted_lines", "⋮ ({count} more lines)")
+                        .into_owned(),
+                ),
                 ..Default::default()
             };
             render_preview_overlay(buf, overlay, paste_text, preview_style, config);
@@ -3432,13 +3437,30 @@ impl PromptWidget {
                     post_flush_escapes: None,
                 };
             };
-            post_flush_escapes = crate::render::render_image_overlay(
+            let labels = crate::render::ImageOverlayLabels {
+                image: crate::locale::ctx()
+                    .named_static_text("prompt.image.title", "Image"),
+                format: crate::locale::ctx()
+                    .named_static_text("prompt.image.format", "Format:"),
+                dimensions: crate::locale::ctx()
+                    .named_static_text("prompt.image.dimensions", "Dimensions:"),
+                preview_unavailable: crate::locale::ctx()
+                    .named_static_text("prompt.image.preview_unavailable", "Preview unavailable"),
+                preview_pending: crate::locale::ctx()
+                    .named_static_text("prompt.image.preview_pending", "Preview pending"),
+                size: crate::locale::ctx().named_static_text("prompt.image.size", "Size:"),
+                path: crate::locale::ctx().named_static_text("prompt.image.path", "Path:"),
+                loading: crate::locale::ctx()
+                    .named_static_text("prompt.image.loading", "Loading..."),
+            };
+            post_flush_escapes = crate::render::render_image_overlay_with_labels(
                 buf,
                 overlay,
                 image,
                 theme.paste_bg,
                 theme.paste_fg,
                 theme.paste_dim,
+                labels,
             );
         }
 
@@ -3549,7 +3571,10 @@ impl PromptWidget {
         // Build right-side spans: "multiline" indicator.
         let mut right_spans: Vec<Span<'static>> = Vec::new();
         if info.multiline {
-            right_spans.push(Span::styled("multiline", flag_style));
+            right_spans.push(Span::styled(
+                crate::locale::ctx().named_static_text("prompt.mode.multiline", "multiline"),
+                flag_style,
+            ));
         }
 
         if !right_spans.is_empty() {

@@ -123,7 +123,10 @@ pub(super) fn drain_prompt_state_to_last_queued(agent: &mut AgentView) {
 
     // wire_blocks policy: skill-injected prompts do not carry prompt images.
     if entry.wire_blocks.is_some() {
-        agent.show_toast("Images removed (skill prompt)");
+        agent.show_toast(crate::locale::ctx().named_static_text(
+            "queue.images_removed_skill",
+            "Images removed (skill prompt)",
+        ));
         return;
     }
 
@@ -1112,7 +1115,10 @@ pub(super) fn dispatch_run_edited_queued_command(
 ) -> Vec<Effect> {
     if app.reconnect_pending {
         // Nothing runs and nothing drains while reconnecting (see `dispatch_drain_queue`), so the row just stays put
-        app.show_toast(super::prompt::RECONNECTING_NOTICE);
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "reconnect.wait",
+            super::prompt::RECONNECTING_NOTICE,
+        ));
         preserve_queued_image_paths(app, &mut submission);
         return vec![];
     }

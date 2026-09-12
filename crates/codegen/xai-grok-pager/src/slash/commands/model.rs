@@ -43,7 +43,13 @@ impl SlashCommand for ModelCommand {
     fn run(&self, ctx: &mut CommandExecCtx, args: &str) -> CommandResult {
         let trimmed = args.trim();
         if trimmed.is_empty() {
-            return CommandResult::Error("Usage: /model <name> [effort]".into());
+            return CommandResult::Error(
+                format!(
+                    "{}{}",
+                    crate::locale::ctx().named_text("slash.error.usage", "Usage: "),
+                    "/model <name> [effort]"
+                ),
+            );
         }
 
         // Prefer an exact full-string catalog match first. Model display names often contain spaces ("Grok 4.5").
@@ -73,7 +79,11 @@ impl SlashCommand for ModelCommand {
             };
         }
 
-        CommandResult::Error(format!("Unknown model: {trimmed}"))
+        CommandResult::Error(crate::locale::ctx().format_named(
+            "slash.command.model.error.unknown",
+            "Unknown model: {model}",
+            &[("model", trimmed)],
+        ))
     }
 }
 

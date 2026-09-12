@@ -246,7 +246,11 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 }
                 Err(err) => {
                     tracing::warn!("welcome local-workspace ack: {err}");
-                    app.show_toast(&format!("Local workspace: {err}"));
+                    app.show_toast(&crate::locale::ctx().format_named(
+                        "local_workspace.error",
+                        "Local workspace: {error}",
+                        &[("error", &err.to_string())],
+                    ));
                     vec![]
                 }
             }
@@ -1258,11 +1262,17 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 return vec![];
             }
             if crate::app::foreign_sessions::is_foreign_picker_source(&source) {
-                app.show_toast("External sessions can't be deleted");
+                app.show_toast(crate::locale::ctx().named_static_text(
+                    "session.delete_external_unsupported",
+                    "External sessions can't be deleted",
+                ));
                 return vec![];
             }
             if source == "conversation" {
-                app.show_toast("Deleting chat conversations isn't supported yet");
+                app.show_toast(crate::locale::ctx().named_static_text(
+                    "session.delete_chat_unsupported",
+                    "Deleting chat conversations isn't supported yet",
+                ));
                 return vec![];
             }
             if !matches!(source.as_str(), "local" | "remote" | "both")
@@ -1274,7 +1284,8 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 app.show_toast("Cannot delete session: dashboard workspace is read-only");
                 return vec![];
             }
-            app.show_toast("Deleting session\u{2026}");
+            app.show_toast(crate::locale::ctx()
+                .named_static_text("session.deleting", "Deleting session\u{2026}"));
             vec![Effect::DeleteSession {
                 source,
                 session_id,
@@ -1319,18 +1330,26 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 super::task_result::deliver_doctor_message(
                     app,
                     target.agent_id,
-                    "This fix was cancelled because the session changed. Run `/doctor fix` again."
-                        .to_owned(),
+                    crate::locale::ctx()
+                        .named_text(
+                            "doctor.fix.session_changed",
+                            "This fix was cancelled because the session changed. Run `/doctor fix` again.",
+                        )
+                        .into_owned(),
                 );
                 return vec![];
             };
             if let Some(agent) = app.agents.get_mut(&target.agent_id) {
+                let fix_label = plan.id().to_string();
                 agent
                     .scrollback
-                    .push_block(crate::scrollback::block::RenderBlock::system(format!(
-                        "Applying {}…",
-                        plan.id()
-                    )));
+                    .push_block(crate::scrollback::block::RenderBlock::system(
+                        crate::locale::ctx().format_named(
+                            "doctor.fix.applying",
+                            "Applying {fix}…",
+                            &[("fix", fix_label.as_str())],
+                        ),
+                    ));
             }
             vec![Effect::ApplyDoctorFix { target, plan }]
         }
@@ -1338,7 +1357,9 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
             super::task_result::deliver_doctor_message(
                 app,
                 target.agent_id,
-                "Fix cancelled.".to_owned(),
+                crate::locale::ctx()
+                    .named_text("doctor.fix.cancelled", "Fix cancelled.")
+                    .into_owned(),
             );
             vec![]
         }

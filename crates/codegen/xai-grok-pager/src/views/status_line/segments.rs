@@ -95,7 +95,9 @@ pub fn compose_builtin(
                 } else {
                     SegmentTone::Dim
                 };
-                Some(StatusSegment::toned(format!("{pct}% ctx"), tone))
+                let label =
+                    crate::locale::ctx().named_text("status_line.segment.context", "ctx");
+                Some(StatusSegment::toned(format!("{pct}% {label}"), tone))
             }
             StatusLineItem::Cost => ctx
                 .cost
@@ -104,10 +106,12 @@ pub fn compose_builtin(
                 .map(|usd| StatusSegment::dim(format!("${usd:.2}"))),
             StatusLineItem::TurnTimer => {
                 let secs = turn_elapsed?.as_secs();
+                let seconds = crate::locale::ctx().named_text("status_line.unit.seconds", "s");
+                let minutes = crate::locale::ctx().named_text("status_line.unit.minutes", "m");
                 let text = match secs {
                     0 => return None,
-                    s if s < 60 => format!("{s}s"),
-                    s => format!("{}m{:02}s", s / 60, s % 60),
+                    s if s < 60 => format!("{s}{seconds}"),
+                    s => format!("{}{minutes}{:02}{seconds}", s / 60, s % 60),
                 };
                 Some(StatusSegment::dim(text))
             }

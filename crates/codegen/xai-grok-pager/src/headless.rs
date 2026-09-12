@@ -1553,8 +1553,15 @@ async fn run_headless_memory_flush(
     yolo: bool,
 ) -> Result<()> {
     let params = serde_json::json!({ "session_id": session_id.0.to_string() });
-    let raw = serde_json::value::to_raw_value(&params)
-        .map_err(|e| anyhow::anyhow!("serialize memory flush params: {e}"))?;
+    let raw = serde_json::value::to_raw_value(&params).map_err(|e| {
+        anyhow::anyhow!(
+            crate::locale::ctx().format_named(
+                "headless.memory_flush.error.serialize_params",
+                "serialize memory flush params: {error}",
+                &[("error", &e.to_string())],
+            )
+        )
+    })?;
     let request = acp::ExtRequest::new("x.ai/memory/flush", raw.into());
     let mut flush_fut = Box::pin(acp_send(request, acp_tx));
     let t0 = Instant::now();
@@ -1566,7 +1573,14 @@ async fn run_headless_memory_flush(
             biased;
             msg = acp_rx.recv() => {
                 let Some(msg) = msg else {
-                    anyhow::bail!("connection closed while waiting for memory flush");
+                    anyhow::bail!(
+                        crate::locale::ctx()
+                            .named_text(
+                                "headless.memory_flush.error.connection_closed",
+                                "connection closed while waiting for memory flush",
+                            )
+                            .into_owned()
+                    );
                 };
                 handle_headless_acp_message(
                     msg.boxed(),
@@ -1590,13 +1604,28 @@ async fn run_headless_memory_flush(
         &mut pending_bg,
         &mut background_lifecycle,
     );
-    let response = response.map_err(|e| anyhow::anyhow!("memory flush failed: {e}"))?;
+    let response = response.map_err(|e| {
+        anyhow::anyhow!(
+            crate::locale::ctx().format_named(
+                "headless.memory_flush.error.failed",
+                "memory flush failed: {error}",
+                &[("error", &e.to_string())],
+            )
+        )
+    })?;
     let flushed = serde_json::from_str::<serde_json::Value>(response.0.get())
         .ok()
         .and_then(|v| v.get("flushed")?.as_bool())
         .unwrap_or(false);
     if !flushed {
-        anyhow::bail!("memory flush skipped (already in progress or not started)");
+        anyhow::bail!(
+            crate::locale::ctx()
+                .named_text(
+                    "headless.memory_flush.error.skipped",
+                    "memory flush skipped (already in progress or not started)",
+                )
+                .into_owned()
+        );
     }
     Ok(())
 }

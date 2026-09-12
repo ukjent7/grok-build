@@ -1062,7 +1062,10 @@ fn run_pending_mode_switch(
                     crate::app::mode_switch::push_block_behind_live_stream(
                         &mut agent.scrollback,
                         crate::scrollback::block::RenderBlock::system(
-                            "Switched to minimal mode · /fullscreen to go back",
+                            crate::locale::ctx().named_text(
+                                "mode.switch.to_minimal",
+                                "Switched to minimal mode · /fullscreen to go back",
+                            ),
                         ),
                     );
                 }
@@ -1077,7 +1080,10 @@ fn run_pending_mode_switch(
                 if let ActiveView::Agent(id) = app.active_view
                     && let Some(agent) = app.agents.get_mut(&id)
                 {
-                    agent.show_toast("Switched to fullscreen mode · /minimal to go back");
+                    agent.show_toast(&crate::locale::ctx().named_text(
+                        "mode.switch.to_fullscreen",
+                        "Switched to fullscreen mode · /minimal to go back",
+                    ));
                 }
             }
             tracing::info!(
@@ -1096,10 +1102,13 @@ fn run_pending_mode_switch(
                 // An abort can land mid-turn in minimal too; same stream hazard.
                 crate::app::mode_switch::push_block_behind_live_stream(
                     &mut agent.scrollback,
-                    crate::scrollback::block::RenderBlock::system(format!(
-                        "Couldn't switch to {} mode: {reason}",
-                        target.meta_label()
-                    )),
+                    crate::scrollback::block::RenderBlock::system(
+                        crate::locale::ctx().format_named(
+                            "mode.switch.error",
+                            "Couldn't switch to {mode} mode: {reason}",
+                            &[("mode", target.meta_label()), ("reason", reason.as_str())],
+                        ),
+                    ),
                 );
             }
             presenter.request_presentation(app, terminal, true);
@@ -3069,8 +3078,10 @@ pub(crate) async fn run(
                             None,
                             Some(serde_json::json!({ "attempt": attempt })),
                         );
-                        app.show_toast(&format!(
-                            "Disconnected. Reconnecting... (attempt {attempt})"
+                        app.show_toast(&crate::locale::ctx().format_named(
+                            "reconnect.attempt",
+                            "Disconnected. Reconnecting... (attempt {attempt})",
+                            &[("attempt", &attempt.to_string())],
                         ));
                         presenter.request(false);
                     }
@@ -3251,9 +3262,13 @@ pub(crate) async fn run(
                         reconnect_abort_handle = Some(join_handle.abort_handle());
 
                         app.show_toast(if any_reload {
-                            "Reconnected. Reloading session..."
+                            crate::locale::ctx()
+                                .named_text("reconnect.reload", "Reconnected. Reloading session...")
+                                .into_owned()
                         } else {
-                            "Reconnected. Re-initializing..."
+                            crate::locale::ctx()
+                                .named_text("reconnect.reinitialize", "Reconnected. Re-initializing...")
+                                .into_owned()
                         });
                         presenter.request(false);
                     }
@@ -3332,11 +3347,20 @@ pub(crate) async fn run(
 
                 if pending.agent_ids.is_empty() {
                     // Nothing was reloaded (no open sessions at reconnect).
-                    app.show_toast("Reconnected.");
+                    app.show_toast(crate::locale::ctx().named_static_text(
+                        "reconnect.connected",
+                        "Reconnected.",
+                    ));
                 } else if restored {
-                    app.show_toast("Session restored. In-progress tools and terminals were lost.");
+                    app.show_toast(crate::locale::ctx().named_static_text(
+                        "reconnect.restored",
+                        "Session restored. In-progress tools and terminals were lost.",
+                    ));
                 } else {
-                    app.show_toast("Session restore failed. Kept the existing transcript.");
+                    app.show_toast(crate::locale::ctx().named_static_text(
+                        "reconnect.restore_failed",
+                        "Session restore failed. Kept the existing transcript.",
+                    ));
                 }
 
                 // Re-trigger the queue drain suppressed during the outage

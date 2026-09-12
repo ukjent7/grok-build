@@ -187,7 +187,10 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 area,
                 y,
                 bottom,
-                Line::from(Span::styled("Sign in to Grok", bold)),
+                Line::from(Span::styled(
+                    xai_grok_locale::ctx().named_text("auth.sign_in", "Sign in to Grok"),
+                    bold,
+                )),
             );
             y = put_line(buf, area, y, bottom, Line::default());
             match url {
@@ -198,7 +201,10 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         y,
                         bottom,
                         Line::from(Span::styled(
-                            "Open this URL in your browser to approve:",
+                            xai_grok_locale::ctx().named_text(
+                                "auth.open_url",
+                                "Open this URL in your browser to approve:",
+                            ),
                             gray,
                         )),
                     );
@@ -218,7 +224,11 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                             y,
                             bottom,
                             Line::from(vec![
-                                Span::styled("Code: ", gray),
+                                Span::styled(
+                                    xai_grok_locale::ctx()
+                                        .named_text("auth.device.code_label", "Code: "),
+                                    gray,
+                                ),
                                 Span::styled(code.clone(), bold),
                             ]),
                         );
@@ -239,7 +249,10 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         y,
                         bottom,
                         Line::from(Span::styled(
-                            "Opening your browser to sign in\u{2026}",
+                            xai_grok_locale::ctx().named_text(
+                                "auth.opening_browser",
+                                "Opening your browser to sign in\u{2026}",
+                            ),
                             gray,
                         )),
                     );
@@ -256,7 +269,10 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 area,
                 y,
                 bottom,
-                Line::from(Span::styled("Sign-in failed", warn)),
+                Line::from(Span::styled(
+                    xai_grok_locale::ctx().named_text("auth.sign_in_failed", "Sign-in failed"),
+                    warn,
+                )),
             );
             y = put_line(buf, area, y, bottom, Line::default());
             let _ = put_line(
@@ -333,7 +349,10 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    "Enter or y to trust \u{00b7} n or Esc to quit",
+                    xai_grok_locale::ctx().named_text(
+                        "trust.footer",
+                        "Enter or y to trust \u{00b7} n or Esc to quit",
+                    ),
                     gray,
                 )),
             );
@@ -345,7 +364,10 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    "Signing in\u{2026} starting your session.",
+                    xai_grok_locale::ctx().named_text(
+                        "auth.starting_session",
+                        "Signing in\u{2026} starting your session.",
+                    ),
                     gray,
                 )),
             );

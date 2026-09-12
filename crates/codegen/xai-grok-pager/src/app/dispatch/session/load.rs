@@ -153,7 +153,7 @@ fn dispatch_load_session_ungated(
         {
             app.welcome_history_load_as_build = false;
         }
-        app.show_toast(crate::app::session_startup::CHAT_MODE_LOCAL_BUILD_REFUSAL);
+        app.show_toast(&crate::app::session_startup::chat_mode_local_build_refusal());
         return vec![];
     }
     invalidate_picker_fetch_on_dismiss(app);
@@ -430,14 +430,20 @@ pub(in crate::app::dispatch) fn dispatch_pick_session(
             }
             return vec![];
         }
-        app.show_toast("Restoring session from remote...");
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "session.toast.restoring_remote",
+            "Restoring session from remote...",
+        ));
         dispatch_load_session_with_restore(app, session_id, cwd)
     } else {
         #[cfg(feature = "local-workspace")]
         {
             app.welcome_history_load_as_build = false;
         }
-        app.show_toast("Session not found locally");
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "session.toast.not_found_local",
+            "Session not found locally",
+        ));
         vec![]
     }
 }
@@ -465,7 +471,10 @@ pub(in crate::app::dispatch) fn dispatch_pick_session_in_worktree(
         })
         .is_some_and(|entry| crate::app::foreign_sessions::is_foreign_picker_source(&entry.source));
     if is_foreign {
-        app.show_toast("External sessions can't be resumed in a worktree");
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "session.toast.external_worktree_forbidden",
+            "External sessions can't be resumed in a worktree",
+        ));
         return vec![];
     }
     let mut picker_dismissed = false;
@@ -510,7 +519,10 @@ pub(in crate::app::dispatch) fn dispatch_pick_session_in_worktree(
         }
     };
     if source == "conversation" {
-        app.show_toast("Chat conversations can't be resumed in a worktree");
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "session.toast.conversation_worktree_forbidden",
+            "Chat conversations can't be resumed in a worktree",
+        ));
         return vec![];
     }
     #[cfg(feature = "local-workspace")]
@@ -1044,7 +1056,10 @@ pub(in crate::app::dispatch) fn dispatch_pick_content_session(
     if focus_if_session_already_open(app, &session_id, false).is_some() {
         return vec![];
     }
-    app.show_toast("Restoring session from remote...");
+    app.show_toast(crate::locale::ctx().named_static_text(
+        "session.toast.restoring_remote",
+        "Restoring session from remote...",
+    ));
     dispatch_load_session_with_restore(app, session_id, cwd)
 }
 /// Create a placeholder agent and restore a remote session before loading.
@@ -1070,7 +1085,7 @@ pub(in crate::app::dispatch) fn dispatch_load_session_with_restore(
         {
             app.welcome_history_load_as_build = false;
         }
-        app.show_toast(crate::app::session_startup::CHAT_MODE_LOCAL_BUILD_REFUSAL);
+        app.show_toast(&crate::app::session_startup::chat_mode_local_build_refusal());
         return vec![];
     }
     if focus_if_session_already_open(app, &session_id, false).is_some() {
@@ -1238,14 +1253,22 @@ pub(in crate::app::dispatch) fn handle_session_loaded(
         );
         match (code_restored, restore_summary.as_deref()) {
             (true, Some(s)) => {
-                agent
-                    .scrollback
-                    .push_block(RenderBlock::system(format!("\u{2713} Code restored: {s}")));
+                agent.scrollback.push_block(RenderBlock::system(
+                    crate::locale::ctx().format_named(
+                        "session.load.code_restored",
+                        "\u{2713} Code restored: {summary}",
+                        &[("summary", s)],
+                    ),
+                ));
             }
             (false, Some(s)) => {
-                agent.scrollback.push_block(RenderBlock::system(format!(
-                    "\u{26A0} Code restore failed: {s}"
-                )));
+                agent.scrollback.push_block(RenderBlock::system(
+                    crate::locale::ctx().format_named(
+                        "session.load.code_restore_failed",
+                        "\u{26A0} Code restore failed: {summary}",
+                        &[("summary", s)],
+                    ),
+                ));
             }
             _ => {}
         }
@@ -1598,7 +1621,10 @@ pub(in crate::app::dispatch) fn dispatch_pick_content_session_in_worktree(
         return vec![];
     }
     if session_picker_entry_is_conversation(app, &session_id) {
-        app.show_toast("Chat conversations can't be resumed in a worktree");
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "session.toast.conversation_worktree_forbidden",
+            "Chat conversations can't be resumed in a worktree",
+        ));
         return vec![];
     }
     app.session_picker_entries = None;

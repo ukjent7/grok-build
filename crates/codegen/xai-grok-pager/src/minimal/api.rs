@@ -191,7 +191,12 @@ pub fn request_minimal_transcript(app: &mut AppView) {
         agent
             .scrollback
             .push_block(crate::scrollback::block::RenderBlock::system(
-                "No conversation transcript to view yet",
+                crate::locale::ctx()
+                    .named_text(
+                        "transcript.view.no_content",
+                        "No conversation transcript to view yet",
+                    )
+                    .into_owned(),
             ));
         return;
     }

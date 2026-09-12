@@ -1121,8 +1121,12 @@ impl AgentView {
         })?;
         if running.len() > 1 {
             let n = running.len();
+            let subagents = crate::locale::ctx().named_static_text(
+                "turn.waiting.subagent.subject_multiple",
+                "subagents: ",
+            );
             return Some(budgeted_subject(
-                &format!("{n} subagents: "),
+                &format!("{n} {subagents}"),
                 &description,
                 &format!(" +{}", n - 1),
             ));
@@ -1134,25 +1138,41 @@ impl AgentView {
             .filter(|label| !label.is_empty());
         match activity {
             Some(activity) => {
-                const PREFIX: &str = "Subagent (";
-                const SUFFIX_HEAD: &str = "): ";
-                const SUBAGENT_AFFIX_CHARS: usize = PREFIX.len() + SUFFIX_HEAD.len();
+                let prefix = crate::locale::ctx().named_static_text(
+                    "turn.waiting.subagent.subject_activity_prefix",
+                    "Subagent (",
+                );
+                let suffix_head = crate::locale::ctx().named_static_text(
+                    "turn.waiting.subagent.subject_activity_separator",
+                    "): ",
+                );
+                let subagent_affix_chars = prefix.chars().count() + suffix_head.chars().count();
                 const ACTIVITY_FLOOR: usize = 8;
-                let desc_claim = description
-                    .chars()
-                    .count()
-                    .min(MAX_ACTIVITY_SUBJECT_CHARS - SUBAGENT_AFFIX_CHARS - ACTIVITY_FLOOR);
+                let desc_claim = description.chars().count().min(
+                    MAX_ACTIVITY_SUBJECT_CHARS
+                        .saturating_sub(subagent_affix_chars + ACTIVITY_FLOOR),
+                );
                 let activity: String = activity
                     .chars()
-                    .take(MAX_ACTIVITY_SUBJECT_CHARS - SUBAGENT_AFFIX_CHARS - desc_claim)
+                    .take(
+                        MAX_ACTIVITY_SUBJECT_CHARS
+                            .saturating_sub(subagent_affix_chars + desc_claim),
+                    )
                     .collect();
                 Some(budgeted_subject(
-                    PREFIX,
+                    prefix,
                     &description,
-                    &format!("{SUFFIX_HEAD}{activity}"),
+                    &format!("{suffix_head}{activity}"),
                 ))
             }
-            None => Some(budgeted_subject("Subagent: ", &description, "")),
+            None => Some(budgeted_subject(
+                crate::locale::ctx().named_static_text(
+                    "turn.waiting.subagent.subject_prefix",
+                    "Subagent: ",
+                ),
+                &description,
+                "",
+            )),
         }
     }
     /// Update context state with a full snapshot from live callers.

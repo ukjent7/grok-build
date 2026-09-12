@@ -61,7 +61,7 @@ pub fn maybe_commit_welcome(app: &mut AppView, terminal: &mut PagerTerminal) {
     let mut info: Vec<Line<'static>> = Vec::new();
     info.push(Line::from(vec![
         Span::styled(
-            "Grok Build",
+            xai_grok_locale::ctx().named_text("app.name", "Grok Build"),
             Style::default()
                 .fg(theme.accent_user)
                 .add_modifier(Modifier::BOLD),
@@ -73,11 +73,14 @@ pub fn maybe_commit_welcome(app: &mut AppView, terminal: &mut PagerTerminal) {
     }
     if let Some(model) = model {
         info.push(Line::from(Span::styled(
-            format!("Model · {model}"),
+            xai_grok_locale::ctx().format_named("minimal.model", "Model · {model}", &[("model", &model)]),
             theme.muted(),
         )));
     }
-    info.push(Line::from(Span::styled("/help for commands", theme.dim())));
+    info.push(Line::from(Span::styled(
+        xai_grok_locale::ctx().named_text("minimal.help_hint", "/help for commands"),
+        theme.dim(),
+    )));
 
     let logo_lines = minimal_api::compact_logo_line_count();
     // The card stacks the logo (plus a blank separator row) when present, then the info lines

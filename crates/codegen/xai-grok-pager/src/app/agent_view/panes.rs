@@ -361,7 +361,9 @@ impl AgentView {
                 (
                     t.task_id.clone(),
                     crate::views::dock::DockRow {
-                        kind: "Run".into(),
+                        kind: crate::locale::ctx()
+                            .named_static_text("dock.kind.run", "Run")
+                            .into(),
                         description,
                         activity: None,
                         meta: crate::views::dock::fmt_elapsed(elapsed),
@@ -394,7 +396,9 @@ impl AgentView {
                 (
                     DockWatcherId::Monitor(t.task_id.clone()),
                     crate::views::dock::DockRow {
-                        kind: "Monitor".into(),
+                        kind: crate::locale::ctx()
+                            .named_static_text("dock.kind.monitor", "Monitor")
+                            .into(),
                         description,
                         activity: None,
                         meta: crate::views::dock::fmt_elapsed(elapsed),
@@ -412,7 +416,9 @@ impl AgentView {
             (
                 DockWatcherId::Loop(s.task_id.clone()),
                 crate::views::dock::DockRow {
-                    kind: "Loop".into(),
+                    kind: crate::locale::ctx()
+                        .named_static_text("dock.kind.loop", "Loop")
+                        .into(),
                     description: s.prompt.clone(),
                     activity: None,
                     meta: s.human_schedule.clone(),

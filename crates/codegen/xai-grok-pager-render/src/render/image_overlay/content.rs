@@ -14,12 +14,14 @@ pub(super) fn paint_path_line(
     y: u16,
     width: u16,
     path: &Path,
+    path_label: &str,
     text_fg: Color,
     bg: Color,
 ) {
     let raw = path.display().to_string();
     let label = format!(
-        "Path: {}",
+        "{} {}",
+        path_label,
         truncate_path_for_overlay(&raw, width.saturating_sub(6) as usize)
     );
     let clipped = crate::render::line_utils::truncate_str(&label, width as usize);

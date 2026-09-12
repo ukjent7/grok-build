@@ -20,6 +20,8 @@ struct VersionMismatchParams<'a> {
 
 /// ASCII marker that survives `sanitize_toast_message` glyph fallback (legacy ConHost turns `⚠` into `!`).
 const VERSION_MISMATCH_MARKER: &str = "Version mismatch:";
+/// Chinese counterpart of the marker so a translated banner is still detectable by [`is_version_mismatch_banner`].
+const VERSION_MISMATCH_MARKER_ZH: &str = "版本不一致：";
 
 pub(crate) fn version_mismatch_banner(params: &str) -> Option<String> {
     let parsed: VersionMismatchParams<'_> = serde_json::from_str(params).ok()?;
@@ -28,16 +30,18 @@ pub(crate) fn version_mismatch_banner(params: &str) -> Option<String> {
     if client.chars().all(char::is_whitespace) || leader.chars().all(char::is_whitespace) {
         return None;
     }
-    Some(
-        sanitize_toast_message(&format!(
-            "⚠ {VERSION_MISMATCH_MARKER} client {client}, leader {leader}. Restart grok to match"
-        ))
-        .into_owned(),
-    )
+    let banner = crate::locale::ctx().format_named(
+        "acp.version_mismatch",
+        "⚠ {VERSION_MISMATCH_MARKER} client {client_version}, leader {leader_version}. Restart grok to match"
+            .replace("{VERSION_MISMATCH_MARKER}", VERSION_MISMATCH_MARKER)
+            .as_str(),
+        &[("client_version", &client), ("leader_version", &leader)],
+    );
+    Some(sanitize_toast_message(&banner).into_owned())
 }
 
 pub(crate) fn is_version_mismatch_banner(msg: &str) -> bool {
-    msg.contains(VERSION_MISMATCH_MARKER)
+    msg.contains(VERSION_MISMATCH_MARKER) || msg.contains(VERSION_MISMATCH_MARKER_ZH)
 }
 
 #[cfg(test)]

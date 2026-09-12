@@ -35,9 +35,9 @@ pub(crate) const GROUP_HEADER_RANGE_ID: u16 = u16::MAX;
 /// Graphics terminals use a shorter overlay `[Open]` instead.
 pub fn media_open_button_label(is_video: bool) -> &'static str {
     if is_video {
-        "[Open Video]"
+        crate::locale::ctx().named_static_text("media.open_video", "[Open Video]")
     } else {
-        "[Open Image]"
+        crate::locale::ctx().named_static_text("media.open_image", "[Open Image]")
     }
 }
 

@@ -38,7 +38,10 @@ pub(super) fn dispatch_enter_plan_mode(
 
     let in_plan = agent.plan_mode_pending.unwrap_or(agent.plan_mode_active);
     if in_plan {
-        app.show_toast("Already in plan mode. Use /view-plan to view the current plan.");
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "plan.already_active",
+            "Already in plan mode. Use /view-plan to view the current plan.",
+        ));
         return vec![];
     }
 
@@ -371,7 +374,10 @@ pub(super) fn set_yolo_mode(app: &mut AppView, new: bool) -> Vec<Effect> {
     // YOLO ON gets a weightier visual; under an active plan mode, say the plan edit gate stays binding
     // "All tool actions auto-run" would overpromise while the shell rejects non-plan-file edits
     if new && effective_plan {
-        app.show_toast(YOLO_ON_UNDER_PLAN_TOAST);
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "toast.permission.always_approve_on_under_plan",
+            YOLO_ON_UNDER_PLAN_TOAST,
+        ));
     } else {
         app.show_toast(&yolo_toast(new));
     }
@@ -440,7 +446,10 @@ pub(super) fn set_permission_mode(
 
     // Toast on every save (plan-aware for AlwaysApprove, mirroring `set_yolo_mode`; the plan edit gate stays binding under yolo)
     if kind.is_always_approve() && effective_plan {
-        app.show_toast(YOLO_ON_UNDER_PLAN_TOAST);
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "toast.permission.always_approve_on_under_plan",
+            YOLO_ON_UNDER_PLAN_TOAST,
+        ));
     } else {
         app.show_toast(&permission_mode_toast(kind));
     }
@@ -475,10 +484,20 @@ pub(super) const YOLO_ON_UNDER_PLAN_TOAST: &str =
 fn yolo_toast(new: bool) -> String {
     if new {
         // Warning glyph and consequence; only post-commit feedback
-        "\u{26A0} Always-approve ON: all tool actions auto-run".to_string()
+        crate::locale::ctx()
+            .named_text(
+                "toast.permission.always_approve_on",
+                "\u{26A0} Always-approve ON: all tool actions auto-run",
+            )
+            .into_owned()
     } else {
         // OFF restores safe default: uniform ✓ glyph
-        save_success_toast("Always-approve", false)
+        crate::locale::ctx()
+            .named_text(
+                "toast.permission.always_approve_off",
+                &save_success_toast("Always-approve", false),
+            )
+            .into_owned()
     }
 }
 

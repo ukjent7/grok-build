@@ -196,7 +196,10 @@ pub(super) fn note_hook_blocked_turn(
             open_prompt_blocked_card(agent, &blocked, text);
         }
         // A hold with no requeued row (foreign turn, or no stash) has no card; the toast keeps the parked queue from being silent
-        None => agent.show_toast("A hook blocked the last prompt — the queue is paused"),
+        None => agent.show_toast(&crate::locale::ctx().named_text(
+            "prompt.blocked.toast.queue_paused",
+            "A hook blocked the last prompt — the queue is paused",
+        )),
     }
 }
 
@@ -242,7 +245,10 @@ fn open_prompt_blocked_card(
         // Modal collision or a composer busy with a queue edit
         // The hold, the requeued row, and the stored context (for a later reopen) already protect the queue
         // Leave a plain toast so the parked state isn't silent
-        agent.show_toast("Prompt blocked by a hook — it is held at the front of the queue");
+        agent.show_toast(&crate::locale::ctx().named_text(
+            "prompt.blocked.toast.held_front",
+            "Prompt blocked by a hook — it is held at the front of the queue",
+        ));
         return;
     }
 
@@ -258,7 +264,12 @@ fn open_prompt_blocked_card(
 
     // `\n\n` splits the card header into a bold label plus dimmed description lines (one per paragraph)
     // The paragraphs: framing, hook reason verbatim, queue context
-    let mut question = format!("Prompt blocked by {short_hook_name}");
+    let hook_label = short_hook_name.to_string();
+    let mut question = crate::locale::ctx().format_named(
+        "prompt.blocked.title",
+        "Prompt blocked by {hook}",
+        &[("hook", hook_label.as_str())],
+    );
     if !reason.is_empty() {
         question.push_str("\n\n");
         question.push_str(reason);
@@ -266,32 +277,65 @@ fn open_prompt_blocked_card(
     // Waiting rows sit BEHIND the requeued blocked prompt.
     let waiting = agent.session.pending_prompts.len().saturating_sub(1);
     if was_combined {
-        question.push_str("\n\nThis was a combined submission.");
+        question.push_str("\n\n");
+        question.push_str(crate::locale::ctx().named_static_text(
+            "prompt.blocked.combined_submission",
+            "This was a combined submission.",
+        ));
     }
     if waiting > 0 {
-        question.push_str(&format!(
-            "\n\n{waiting} more prompt{} waiting (queue paused).",
-            if waiting == 1 { "" } else { "s" }
-        ));
+        let waiting_text = if waiting == 1 {
+            crate::locale::ctx().format_named(
+                "prompt.blocked.waiting.one",
+                "1 more prompt waiting (queue paused).",
+                &[],
+            )
+        } else {
+            crate::locale::ctx().format_named(
+                "prompt.blocked.waiting.many",
+                "{count} more prompts waiting (queue paused).",
+                &[("count", &waiting.to_string())],
+            )
+        };
+        question.push_str("\n\n");
+        question.push_str(&waiting_text);
     }
 
     let preview = Some(prompt_text);
     let options = vec![
         QuestionOption {
-            label: "Edit".into(),
-            description: "Fix your prompt".into(),
+            label: crate::locale::ctx()
+                .named_static_text("prompt.blocked.option.edit.label", "Edit")
+                .into(),
+            description: crate::locale::ctx()
+                .named_static_text("prompt.blocked.option.edit.description", "Fix your prompt")
+                .into(),
             preview: preview.clone(),
             id: None,
         },
         QuestionOption {
-            label: "Resend".into(),
-            description: "Send it unchanged. The hook may block it again.".into(),
+            label: crate::locale::ctx()
+                .named_static_text("prompt.blocked.option.resend.label", "Resend")
+                .into(),
+            description: crate::locale::ctx()
+                .named_static_text(
+                    "prompt.blocked.option.resend.description",
+                    "Send it unchanged. The hook may block it again.",
+                )
+                .into(),
             preview: preview.clone(),
             id: None,
         },
         QuestionOption {
-            label: "Discard".into(),
-            description: "Remove it from the queue".into(),
+            label: crate::locale::ctx()
+                .named_static_text("prompt.blocked.option.discard.label", "Discard")
+                .into(),
+            description: crate::locale::ctx()
+                .named_static_text(
+                    "prompt.blocked.option.discard.description",
+                    "Remove it from the queue",
+                )
+                .into(),
             preview,
             id: None,
         },

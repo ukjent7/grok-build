@@ -456,13 +456,14 @@ pub(super) fn dispatch_rewind_success(
     // An inline resubmit skips the confirmation; the edited prompt re-appearing at the same spot is self-explanatory
     if inline_resubmit.is_none() {
         const MSG: &str = "Reverted conversation";
+        let msg = crate::locale::ctx().named_static_text("rewind.reverted.conversation", MSG);
         if app.screen_mode.is_minimal() {
             // Minimal has no toast area and can't erase committed lines, so the confirmation stays in scrollback there
             agent
                 .scrollback
-                .push_block(RenderBlock::system(MSG.to_string()));
+                .push_block(RenderBlock::system(msg.to_string()));
         } else {
-            agent.show_toast(MSG);
+            agent.show_toast(msg);
         }
     }
 
@@ -527,7 +528,10 @@ pub(super) fn handle_rewind_points_loaded(
         if let Some(stashed) = stashed {
             agent.prompt.restore(stashed);
         }
-        app.show_toast("No undoable prompts");
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "rewind.no_undoable_prompts",
+            "No undoable prompts",
+        ));
         return vec![];
     }
 

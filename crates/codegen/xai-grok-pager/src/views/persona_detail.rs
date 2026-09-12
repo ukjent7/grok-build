@@ -337,7 +337,7 @@ impl PersonaDetailState {
                 &[("error", &e.to_string())],
             )
         })?;
-        let mut doc: toml_edit::DocumentMut = content.parse().map_err(|e| {
+        let mut doc: toml_edit::DocumentMut = content.parse().map_err(|e: toml_edit::TomlError| {
             crate::locale::ctx().format_named(
                 "persona.error.parse_toml",
                 "Failed to parse TOML: {error}",

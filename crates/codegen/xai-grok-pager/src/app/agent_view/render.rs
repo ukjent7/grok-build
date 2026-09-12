@@ -2439,7 +2439,7 @@ impl AgentView {
             buf.set_string(
                 content_x + 2,
                 rec_area.y,
-                "Recording",
+                crate::locale::ctx().named_static_text("voice.recording.label", "Recording"),
                 Style::default().fg(theme.accent_error).bg(bg),
             );
             let stop_str = "[stop]";
@@ -2494,11 +2494,19 @@ impl AgentView {
                 None
             };
             Some(if approval_is_commenting || casual_commenting {
-                commenting_label = match commenting_range {
-                    Some(r) if r.len() == 1 => format!("commenting L{}", r.start),
-                    Some(r) => format!("commenting L{}-{}", r.start, r.end - 1),
-                    None => "commenting".to_string(),
-                };
+            commenting_label = match commenting_range {
+                Some(r) if r.len() == 1 => crate::locale::ctx().format_named(
+                    "mode.commenting.line",
+                    "commenting L{line}",
+                    &[("line", &r.start.to_string())],
+                ),
+                Some(r) => crate::locale::ctx().format_named(
+                    "mode.commenting.range",
+                    "commenting L{start}-{end}",
+                    &[("start", &r.start.to_string()), ("end", &(r.end - 1).to_string())],
+                ),
+                None => "commenting".to_string(),
+            };
                 commenting_label.as_str()
             } else if self.plan_approval_view.is_some() {
                 "plan approval"
@@ -2536,7 +2544,11 @@ impl AgentView {
             },
             PromptMode::EditingQueued { id, .. } => {
                 let pos = self.session.queue_position(*id).map(|i| i + 1).unwrap_or(1);
-                editing_label = format!("editing queued #{pos}");
+                editing_label = crate::locale::ctx().format_named(
+                    "prompt.editing_queued",
+                    "editing queued #{position}",
+                    &[("position", &pos.to_string())],
+                );
                 PromptInfo {
                     model_name: &editing_label,
                     flags: &flags,

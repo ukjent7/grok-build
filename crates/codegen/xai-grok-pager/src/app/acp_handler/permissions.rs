@@ -338,9 +338,30 @@ fn permission_description_lines(
         lines.insert(0, desc);
     }
     if let Some(ask) = hook_ask {
-        lines.insert(0, ask.ask_line());
+        lines.insert(0, localized_hook_ask_line(ask));
     }
     lines
+}
+
+/// Display-only localization of [`xai_grok_workspace::permission::HookAsk::ask_line`];
+/// the workspace crate stays locale-agnostic.
+fn localized_hook_ask_line(ask: &xai_grok_workspace::permission::HookAsk) -> String {
+    let ctx = crate::locale::ctx();
+    let reason = ask.reason.as_deref().unwrap_or_default();
+    let reason = reason.split_whitespace().collect::<Vec<_>>().join(" ");
+    if reason.is_empty() {
+        ctx.format_named(
+            "permission.hook_ask.confirmation",
+            "hook '{hook_name}' asks for confirmation",
+            &[("hook_name", &ask.hook_name)],
+        )
+    } else {
+        ctx.format_named(
+            "permission.hook_ask.reason",
+            "hook '{hook_name}' asks: {reason}",
+            &[("hook_name", &ask.hook_name), ("reason", &reason)],
+        )
+    }
 }
 
 fn hook_ask(

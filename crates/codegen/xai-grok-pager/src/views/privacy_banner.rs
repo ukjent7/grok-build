@@ -7,6 +7,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
+use unicode_width::UnicodeWidthStr;
 
 /// Shares its row with the buttons.
 const PRIVACY_BANNER_TITLE: &str = "Help improve Grok";
@@ -268,7 +269,7 @@ pub(crate) fn render(
         let mut x = area.x;
         let mut spans = Vec::with_capacity(variant.len());
         for (text, url) in variant {
-            let w = text.len() as u16;
+            let w = text.width() as u16;
             let style = match url {
                 None => gray,
                 Some(url) => {
@@ -278,7 +279,7 @@ pub(crate) fn render(
                         width: w,
                         height: 1,
                     };
-                    if *url == PRIVACY_BANNER_TERMS_URL {
+                    if url == PRIVACY_BANNER_TERMS_URL {
                         terms_rect = rect;
                     } else {
                         policy_rect = rect;
@@ -291,7 +292,7 @@ pub(crate) fn render(
                     Style::default().fg(fg).add_modifier(Modifier::UNDERLINED)
                 }
             };
-            spans.push(Span::styled(*text, style));
+            spans.push(Span::styled(text, style));
             x += w;
         }
         Paragraph::new(Line::from(spans)).render(

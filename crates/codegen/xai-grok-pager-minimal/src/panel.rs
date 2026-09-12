@@ -130,10 +130,20 @@ fn render_dim_line(buf: &mut Buffer, row: Rect, theme: &Theme, text: &str) {
 }
 
 /// `/resume` session picker: Enter picks a session.
-const RESUME_FOOTER: &str = "\u{2191}/\u{2193} navigate \u{00b7} enter confirm \u{00b7} esc cancel";
+fn resume_footer() -> &'static str {
+    xai_grok_locale::ctx().named_static_text(
+        "panel.resume_footer",
+        "\u{2191}/\u{2193} navigate \u{00b7} enter confirm \u{00b7} esc cancel",
+    )
+}
 
 /// `/mcps` list: Enter expands tools; reconnect is space (off then on); `r` re-lists status.
-const MCPS_FOOTER: &str = "\u{2191}/\u{2193} navigate \u{00b7} space enable/disable \u{00b7} r refresh \u{00b7} enter expand \u{00b7} esc cancel";
+fn mcps_footer() -> &'static str {
+    xai_grok_locale::ctx().named_static_text(
+        "panel.mcps_footer",
+        "\u{2191}/\u{2193} navigate \u{00b7} space enable/disable \u{00b7} r refresh \u{00b7} enter expand \u{00b7} esc cancel",
+    )
+}
 
 fn render_footer(buf: &mut Buffer, row: Rect, theme: &Theme, text: &str) {
     render_dim_line(buf, row, theme, text);
@@ -235,7 +245,12 @@ fn render_resume(
         .then(|| minimal_api::hidden_external_hint(entries.as_deref(), *source_filter))
         .flatten();
 
-    render_title(buf, title_row, theme, "Resume session");
+    render_title(
+        buf,
+        title_row,
+        theme,
+        &xai_grok_locale::ctx().named_text("panel.resume_title", "Resume session"),
+    );
     // Focus-aware search bar (cursor only when search is focused).
     minimal_api::render_picker_search_bar(
         buf,
@@ -288,7 +303,7 @@ fn render_resume(
         filter_rect: None,
     });
 
-    render_footer(buf, footer_row, theme, RESUME_FOOTER);
+    render_footer(buf, footer_row, theme, resume_footer());
     None
 }
 
@@ -320,7 +335,12 @@ fn render_mcps(
     theme: &Theme,
 ) -> Option<(u16, u16)> {
     let (title_row, subtitle_row, divider_row, list_area, footer_row) = chrome_layout(area);
-    render_title(buf, title_row, theme, "Manage MCP servers");
+    render_title(
+        buf,
+        title_row,
+        theme,
+        &xai_grok_locale::ctx().named_text("panel.mcps_title", "Manage MCP servers"),
+    );
 
     // Phase 1 (immutable): build the row mapping and owned per-row render data
     let labels: Vec<String>;
@@ -374,11 +394,12 @@ fn render_mcps(
                                     // Policy-blocked rows also carry `enabled = false`; the verdict outranks
                                     // the personal-disable badge, as in the full modal
                                     b[i] = if srv.blocked_reason.is_some() {
-                                        "blocked by policy"
+                                        "blocked by policy".to_string()
                                     } else {
-                                        "disabled"
-                                    }
-                                    .to_string();
+                                        xai_grok_locale::ctx()
+                                            .named_text("panel.disabled", "disabled")
+                                            .into_owned()
+                                    };
                                     bc[i] = Some(theme.accent_error);
                                 } else {
                                     b[i] = minimal_api::mcp_status_label(&srv.status).to_string();
@@ -414,7 +435,9 @@ fn render_mcps(
                 expandeds = exp;
             }
             TabDataState::Loading => {
-                subtitle = "loading\u{2026}".to_string();
+                subtitle = xai_grok_locale::ctx()
+                    .named_text("panel.loading", "loading\u{2026}")
+                    .into_owned();
                 labels = vec![];
                 group_keys = vec![];
                 data_indices = vec![];
@@ -426,7 +449,11 @@ fn render_mcps(
                 expandeds = vec![];
             }
             TabDataState::Error(msg) => {
-                subtitle = format!("error: {msg}");
+                subtitle = xai_grok_locale::ctx().format_named(
+                    "panel.error",
+                    "error: {message}",
+                    &[("message", msg.as_str())],
+                );
                 labels = vec![];
                 group_keys = vec![];
                 data_indices = vec![];
@@ -505,7 +532,7 @@ fn render_mcps(
         filter_rect: None,
     });
 
-    render_footer(buf, footer_row, theme, MCPS_FOOTER);
+    render_footer(buf, footer_row, theme, mcps_footer());
     None
 }
 

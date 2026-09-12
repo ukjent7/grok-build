@@ -872,11 +872,11 @@ pub fn toggle_agent(name: &str, enabled: bool) -> Result<(), String> {
 pub fn format_agent_detail(entry: &AgentListEntry) -> Vec<String> {
     let def = &entry.definition;
     let mut lines = Vec::new();
-    let model = def.model.clone();
+    let model = def.model.to_string();
     lines.push(crate::locale::ctx().format_named(
         "agents.detail.model_line",
         "  Model: {value}",
-        &[("value", &model)],
+        &[("value", model.as_str())],
     ));
     let mode_label = match def.prompt_mode {
         xai_grok_agent::config::PromptMode::Extend => {
@@ -2120,7 +2120,7 @@ fn render_persona_create_form(
     } else {
         Style::default().fg(theme.gray)
     };
-    buf.set_string(content_area.x, y, scope_label, label_style);
+    buf.set_string(content_area.x, y, &scope_label, label_style);
     let scope_text = format!("[{}]", input.scope.label());
     buf.set_string(
         content_area.x + scope_label.len() as u16,

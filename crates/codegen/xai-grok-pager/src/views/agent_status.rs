@@ -155,8 +155,10 @@ pub(crate) fn task_status_line(
     }
     if counts.paused_workflows > 0 {
         let prefix = if counts.running > 0 { "  " } else { "" };
+        let paused =
+            crate::locale::ctx().named_static_text("tasks.status.paused_prefix", "P");
         spans.push(Span::styled(
-            format!("{prefix}P {}", counts.paused_workflows),
+            format!("{prefix}{paused} {}", counts.paused_workflows),
             paused_style,
         ));
     }

@@ -39,7 +39,10 @@ pub(in crate::app::dispatch) fn dispatch_sessions_confirm_close(
         return vec![];
     }
     if app.agents.len() == 1 {
-        app.show_toast("Cannot close the only session -- use /home to exit");
+        app.show_toast(crate::locale::ctx().named_static_text(
+            "session.close_only_refused",
+            "Cannot close the only session -- use /home to exit",
+        ));
         return vec![];
     }
     if matches!(app.active_view, ActiveView::Agent(id) if id == closed_id) {

@@ -121,10 +121,11 @@ impl SlashCommand for ThemeCommand {
                     .iter()
                     .map(|k| k.display_name())
                     .collect();
-                CommandResult::Error(format!(
-                    "Unknown theme: {}. Available: auto, {}",
-                    trimmed,
-                    all_names.join(", ")
+                let available = all_names.join(", ");
+                CommandResult::Error(crate::locale::ctx().format_named(
+                    "slash.command.theme.error.unknown",
+                    "Unknown theme: {theme}. Available: auto, {available}",
+                    &[("theme", trimmed), ("available", available.as_str())],
                 ))
             }
         }

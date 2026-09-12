@@ -7,7 +7,8 @@ use super::actions::{PermissionModePersist, SubagentKillOutcome, TaskResult};
 use super::agent::AgentId;
 use crate::unified_log as ulog;
 use xai_grok_shell::sampling::error::{
-    RATE_LIMITED_ERROR_CODE, error_detail_from_data, error_kind_str_from_error,
+    FREE_USAGE_USER_MESSAGE, RATE_LIMITED_ERROR_CODE, RATE_LIMITED_USER_MESSAGE_API_KEY,
+    RATE_LIMITED_USER_MESSAGE_OAUTH, error_detail_from_data, error_kind_str_from_error,
     format_rate_limited_user_message, http_status_from_error,
 };
 use xai_grok_shell::session::ExtMethodResult;
@@ -109,7 +110,11 @@ pub(super) async fn fetch_plugin_cta_mcps(
                 crate::views::mcps_modal::McpsListResponse,
             >(inner.clone())
                 .map(crate::views::mcps_modal::convert_list_response)
-                .map_err(|_| "couldn't load server list".to_string())
+                .map_err(|_| {
+                    crate::locale::ctx()
+                        .named_text("extensions.error.server_list", "couldn't load server list")
+                        .into_owned()
+                })
         }
         Err(e) => Err(sanitize_user_error(&format!(
             "couldn't load server list: {e}"
@@ -127,9 +132,20 @@ pub(super) async fn fetch_plugin_cta_mcps(
 pub(super) fn format_acp_error(err: &acp::Error, is_api_key_auth: bool) -> String {
     if i32::from(err.code) == RATE_LIMITED_ERROR_CODE {
         let detail = error_data_detail(err);
-        return sanitize_user_error(
-            &format_rate_limited_user_message(detail.as_deref(), is_api_key_auth),
-        );
+        let message = format_rate_limited_user_message(detail.as_deref(), is_api_key_auth);
+        let localized = match message.as_str() {
+            RATE_LIMITED_USER_MESSAGE_OAUTH => crate::locale::ctx()
+                .named_text("session.rate_limit.oauth", RATE_LIMITED_USER_MESSAGE_OAUTH)
+                .into_owned(),
+            RATE_LIMITED_USER_MESSAGE_API_KEY => crate::locale::ctx()
+                .named_text("session.rate_limit.api_key", RATE_LIMITED_USER_MESSAGE_API_KEY)
+                .into_owned(),
+            FREE_USAGE_USER_MESSAGE => crate::locale::ctx()
+                .named_text("session.rate_limit.free_usage", FREE_USAGE_USER_MESSAGE)
+                .into_owned(),
+            _ => message,
+        };
+        return sanitize_user_error(&localized);
     }
     if err.code == acp::ErrorCode::InvalidParams && let Some(data) = &err.data
         && let Some(msg) = error_detail_from_data(data) && !msg.is_empty()
