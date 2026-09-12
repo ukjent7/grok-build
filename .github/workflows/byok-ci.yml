@@ -115,6 +115,16 @@ jobs:
           [void][System.Management.Automation.Language.Parser]::ParseFile('install.ps1', [ref]$null, [ref]$errs)
           if ($errs.Count -ne 0) { $errs | ForEach-Object { Write-Error $_.Message }; exit 1 }
 
+      # FORK(i18n): the zh-CN localization wraps ~1400 string literals in
+      # place across 148 upstream files. Upstream syncs rewrite some of them
+      # and taking the upstream side of a conflict silently unwraps a string
+      # (it falls back to English, so nothing crashes and nobody notices).
+      # This compares the tree against scripts/i18n/wraps.jsonl and fails on
+      # missing wraps or upstream-edited English. Rerun
+      # `python3 scripts/i18n/wrap-check.py baseline` after intentional edits.
+      - name: Check i18n wraps
+        run: python3 scripts/i18n/wrap-check.py check
+
       - name: Test sampler
         run: cargo test -p xai-grok-sampler --no-fail-fast
 
