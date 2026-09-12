@@ -326,7 +326,7 @@ fn resolve_runtime_fields_propagates_disable_web_search() {
     assert!(cfg.disable_web_search);
 }
 #[test]
-fn new_from_toml_cfg_restores_web_search_and_session_summary_models() {
+fn new_from_toml_cfg_restores_web_search_model_and_leaves_session_summary_unset() {
     let empty: toml::Value = toml::Value::Table(toml::map::Map::new());
     let cfg = Config::new_from_toml_cfg(&empty).expect("empty config should parse");
     assert_eq!(
@@ -334,11 +334,8 @@ fn new_from_toml_cfg_restores_web_search_and_session_summary_models() {
         crate::models::default_web_search_model(),
         "empty config should produce the compiled-in default web_search model"
     );
-    assert_eq!(
-        cfg.session_summary_model,
-        Some(crate::models::default_session_summary_model().to_owned()),
-        "empty config should produce compiled default session_summary model"
-    );
+    // FORK(byok): unset stays `None`; see `ModelOverrideConfig::resolve`.
+    assert_eq!(cfg.session_summary_model, None);
     assert_eq!(
         cfg.image_description_model,
         Some(crate::models::default_image_description_model().to_owned()),
@@ -7001,10 +6998,7 @@ fn resolve_runtime_fields_interactive_defaults() {
         cfg.web_search_model,
         crate::models::default_web_search_model()
     );
-    assert_eq!(
-        cfg.session_summary_model,
-        Some(crate::models::default_session_summary_model().to_owned())
-    );
+    assert_eq!(cfg.session_summary_model, None);
     assert!(!cfg.path_not_found_hints);
 }
 #[test]

@@ -91,19 +91,18 @@ impl MvpAgent {
             .unwrap_or(crate::models::default_image_description_model())
             .to_owned()
     }
-    fn resolve_session_summary_model(&self) -> String {
-        self.cfg
-            .borrow()
-            .session_summary_model
-            .as_deref()
-            .unwrap_or(crate::models::default_session_summary_model())
-            .to_owned()
+    /// FORK(byok): `None` when unset, so [`Self::build_summary_client`] keeps the session's
+    /// own model instead of sending a slug third-party endpoints reject.
+    fn resolve_session_summary_model(&self) -> Option<String> {
+        self.cfg.borrow().session_summary_model.clone()
     }
     pub(super) fn build_summary_client(
         &self,
         primary: &SamplingConfig,
     ) -> Result<(OaiCompatClient, String), acp::Error> {
-        let slug = self.resolve_session_summary_model();
+        let slug = self
+            .resolve_session_summary_model()
+            .unwrap_or_else(|| primary.model.clone());
         let session_key = self.auth_manager.current_or_expired().map(|a| a.key.clone());
         let models = self.models_manager.models();
         let endpoints = self.models_manager.endpoints();

@@ -505,7 +505,9 @@ fn non_empty_model_override(value: Option<&str>) -> Option<String> {
     })
 }
 impl ModelOverrideConfig {
-    /// CLI flag > env var > config.toml > remote settings > compiled default. `image_description` and `session_summary` always resolve to `Some(_)` (default `grok-4.6`), never the session model.
+    /// CLI flag > env var > config.toml > remote settings > compiled default. `image_description` always resolves to `Some(_)` (default `grok-4.6`).
+    /// FORK(byok): `session_summary` instead resolves to `None` when unset — third-party endpoints reject the xAI-only
+    /// slug — so consumers fall back to the session model rather than an unknown one.
     /// `prompt_suggestion` resolves to a [`PromptSuggestModelPin`] instead of a model string. It has no CLI flag; the default and the catalog guard live at the consumer, `handle_suggest_prompt`.
     pub(crate) fn resolve(
         cli_web_search_model: Option<&str>,
@@ -575,10 +577,9 @@ impl ModelOverrideConfig {
         if let Some(v) = cli_session_summary_model {
             result.session_summary = non_empty_model_override(Some(v));
         }
-        if result.session_summary.is_none() {
-            result.session_summary =
-                Some(crate::models::default_session_summary_model().to_owned());
-        }
+        // FORK(byok): no compiled-in default for `session_summary`. Third-party
+        // endpoints reject the xAI-only slug, so unset stays `None` and consumers
+        // fall back to the session's own model instead of sending an unknown one.
         if result.image_description.is_none() {
             result.image_description =
                 Some(crate::models::default_image_description_model().to_owned());

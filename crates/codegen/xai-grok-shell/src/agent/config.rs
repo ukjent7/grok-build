@@ -1462,7 +1462,9 @@ pub struct Config {
     #[serde(skip)]
     pub web_search_model: String,
     /// Session title model.
-    /// Resolved to the compiled default (`default_session_summary_model`) when unset; see `ModelOverrideConfig::resolve`.
+    /// FORK(byok): stays `None` when unset instead of the compiled default — third-party
+    /// endpoints reject the xAI-only slug, so consumers fall back to the session model.
+    /// See `ModelOverrideConfig::resolve`.
     #[serde(skip)]
     pub session_summary_model: Option<String>,
     /// Image describe model (`grok-4.6` default via `ModelOverrideConfig::resolve`).

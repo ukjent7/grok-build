@@ -1760,8 +1760,10 @@ fn model_overrides_default_image_description_is_grok_build() {
         },
     );
 }
+/// FORK(byok): unset stays `None` instead of the compiled-in xAI slug; third-party
+/// endpoints reject it and the consumer falls back to the session model.
 #[test]
-fn model_overrides_default_session_summary_is_grok_build() {
+fn model_overrides_default_session_summary_is_unset() {
     with_model_overrides_env(
         None,
         None,
@@ -1769,10 +1771,7 @@ fn model_overrides_default_session_summary_is_grok_build() {
         || {
             let empty = toml::Value::Table(toml::map::Map::new());
             let cfg = ModelOverrideConfig::resolve(None, None, &empty, None);
-            assert_eq!(
-                cfg.session_summary,
-                Some(crate::models::default_session_summary_model().to_owned())
-            );
+            assert_eq!(cfg.session_summary, None);
         },
     );
 }
@@ -1836,7 +1835,7 @@ fn model_overrides_env_session_summary_overrides_local() {
     );
 }
 #[test]
-fn model_overrides_empty_session_summary_toml_uses_default() {
+fn model_overrides_empty_session_summary_toml_is_unset() {
     with_model_overrides_env(
         None,
         None,
@@ -1850,15 +1849,12 @@ fn model_overrides_empty_session_summary_toml_uses_default() {
                 )
                 .unwrap();
             let cfg = ModelOverrideConfig::resolve(None, None, &config, None);
-            assert_eq!(
-                cfg.session_summary,
-                Some(crate::models::default_session_summary_model().to_owned())
-            );
+            assert_eq!(cfg.session_summary, None);
         },
     );
 }
 #[test]
-fn model_overrides_empty_session_summary_remote_uses_default() {
+fn model_overrides_empty_session_summary_remote_is_unset() {
     with_model_overrides_env(
         None,
         None,
@@ -1870,10 +1866,7 @@ fn model_overrides_empty_session_summary_remote_uses_default() {
                 ..Default::default()
             };
             let cfg = ModelOverrideConfig::resolve(None, None, &empty, Some(&remote));
-            assert_eq!(
-                cfg.session_summary,
-                Some(crate::models::default_session_summary_model().to_owned())
-            );
+            assert_eq!(cfg.session_summary, None);
         },
     );
 }
@@ -1906,7 +1899,7 @@ fn model_overrides_cli_session_summary_overrides_everything() {
     );
 }
 #[test]
-fn model_overrides_empty_cli_session_summary_uses_default() {
+fn model_overrides_empty_cli_session_summary_is_unset() {
     with_model_overrides_env(
         None,
         None,
@@ -1914,10 +1907,7 @@ fn model_overrides_empty_cli_session_summary_uses_default() {
         || {
             let empty = toml::Value::Table(toml::map::Map::new());
             let cfg = ModelOverrideConfig::resolve(None, Some(""), &empty, None);
-            assert_eq!(
-                cfg.session_summary,
-                Some(crate::models::default_session_summary_model().to_owned())
-            );
+            assert_eq!(cfg.session_summary, None);
         },
     );
 }
