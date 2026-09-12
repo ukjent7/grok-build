@@ -545,5 +545,10 @@ if ([string]::IsNullOrEmpty($userImageEdit) -and [string]::IsNullOrEmpty($env:GR
     Write-Host '  Disabled image editing by default (GROK_IMAGE_EDIT=0, xAI-only endpoint).' -ForegroundColor DarkGray
 }
 
+# FORK(i18n): the zh-CN interface is opt-in and the pager reads [ui] locale from
+# config.toml at startup. Point the user at it rather than writing a value they
+# did not ask for: a BYOK install that was English stays English.
+Write-Host '  Chinese interface: set [ui] locale = "zh-CN" in ~/.grok/config.toml' -ForegroundColor DarkGray
+
 Write-Host ''
 Write-Host "Run 'grok' or 'agent' to get started!" -ForegroundColor Cyan

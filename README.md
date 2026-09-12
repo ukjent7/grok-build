@@ -116,6 +116,22 @@ set it yourself. Re-enable later with:
 `web_fetch` (real client-side fetching) keeps working; point `[models]
 web_search` / `session_summary` at a BYOK-catalog model if you need them.
 
+#### Chinese interface (zh-CN)
+
+The build ships a Simplified Chinese interface. It is opt-in and stays off
+until you ask for it, so an existing install keeps the upstream English UI:
+
+```toml
+[ui]
+locale = "zh-CN"      # "en-US" for English; unset = English
+```
+
+`~/.grok/config.toml` is read once at startup. The `en` and `zh` language
+families are accepted (`zh-Hans-CN`, `zh_CN.UTF-8`, … work too); any other
+value falls back to English. Command-line and headless output, diagnostics,
+logs and error payloads stay English on purpose — only the interactive
+interface is translated.
+
 #### Cutting a release
 
 Merging upstream into `main` never publishes anything (it only runs CI).
