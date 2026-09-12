@@ -95,16 +95,22 @@ jobs:
       # --all-targets also compiles the test/bench targets we edited.
       # Debug profile on purpose: the shell build script skips the
       # ripgrep download outside release builds.
+      # --locked: the fork adds workspace members (xai-grok-locale) and the lock
+      # file is committed, so a stale one has to fail here rather than be
+      # silently rewritten on a runner (the tree must be reproducible).
       # FORK(byok): xai-grok-update is the fork's self-update channel
       # (byok.rs/auto_update.rs) — covered here, not just sampler/shell.
       # xai-grok-pager carries the fork's /usage hit-rate panel;
       # xai-proto-build carries the fork's Windows NUL fix.
+      # FORK(i18n): xai-grok-locale is the fork's catalog crate; without it here
+      # its own unit tests never even compile (`--all-targets` is per selected
+      # package), which is how a blank-value/assertion conflict survived.
       # --keep-going: report errors across all crates/targets in one run
       # instead of stopping at the first failing unit (one CI cycle per
       # error otherwise). rustc may still hide cascade errors behind the
       # first one in the same function — that part is unavoidable.
       - name: Check (incl. test targets)
-        run: cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets --keep-going
+        run: cargo check --locked -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-grok-locale -p xai-proto-build --all-targets --keep-going
 
       # FORK(byok): install.ps1 is the most-edited fork file and nothing in
       # cargo validates it; fail on syntax errors (ubuntu runners ship pwsh).
@@ -115,36 +121,49 @@ jobs:
           [void][System.Management.Automation.Language.Parser]::ParseFile('install.ps1', [ref]$null, [ref]$errs)
           if ($errs.Count -ne 0) { $errs | ForEach-Object { Write-Error $_.Message }; exit 1 }
 
-      # FORK(i18n): the zh-CN localization wraps ~1400 string literals in
+      # FORK(i18n): the zh-CN localization wraps ~1500 string literals in
       # place across 148 upstream files. Upstream syncs rewrite some of them
       # and taking the upstream side of a conflict silently unwraps a string
       # (it falls back to English, so nothing crashes and nobody notices).
-      # This compares the tree against scripts/i18n/wraps.jsonl and fails on
-      # missing wraps or upstream-edited English. Rerun
-      # `python3 scripts/i18n/wrap-check.py baseline` after intentional edits.
+      # This compares the tree against scripts/i18n/wraps.jsonl and fails on a
+      # missing wrap, an upstream-edited English anchor, an unbaselined new
+      # wrap, a wrap whose id has no zh-CN translation, or a bare `{}` in an
+      # English anchor. Rerun `python3 scripts/i18n/wrap-check.py baseline`
+      # after intentional edits.
       - name: Check i18n wraps
         run: python3 scripts/i18n/wrap-check.py check
 
+      # FORK(i18n): catalog resolution, the blank-value invariant, the
+      # intentional-blank plural sentinel, and locale precedence.
+      - name: Test locale catalogs
+        run: cargo test --locked -p xai-grok-locale --no-fail-fast
+
       - name: Test sampler
-        run: cargo test -p xai-grok-sampler --no-fail-fast
+        run: cargo test --locked -p xai-grok-sampler --no-fail-fast
 
       # FORK(byok): unit tests for the fork update axis (tag/release
       # parsing, latest picking, installer gating). Cheap: deps already built.
       - name: Test update channel
-        run: cargo test -p xai-grok-update --no-fail-fast
+        run: cargo test --locked -p xai-grok-update --no-fail-fast
 
       # FORK(byok): /usage hit-rate panel lives here.
       - name: Test usage status blocks
-        run: cargo test -p xai-grok-pager --no-fail-fast -- app::status_blocks
+        run: cargo test --locked -p xai-grok-pager --no-fail-fast -- app::status_blocks
+
+      # FORK(i18n): the version-mismatch banner and the reconnect guard that reads
+      # the already-rendered toast text. The guard takes its `&LocaleContext` as a
+      # parameter precisely so the zh-CN path is executable here.
+      - name: Test localized mismatch guard
+        run: cargo test --locked -p xai-grok-pager --no-fail-fast -- version_mismatch reconnect_guard
 
       # FORK(byok): small build-tool crate; whole suite is cheap.
       - name: Test proto build
-        run: cargo test -p xai-proto-build --no-fail-fast
+        run: cargo test --locked -p xai-proto-build --no-fail-fast
 
       # Scoped on purpose: the full sampling-types suite is upstream's
       # responsibility; we only own the endpoint_trust module.
       - name: Test endpoint trust predicate
-        run: cargo test -p xai-grok-sampling-types --no-fail-fast -- endpoint_trust
+        run: cargo test --locked -p xai-grok-sampling-types --no-fail-fast -- endpoint_trust
 
       # Substring filters: agent::config covers config.rs, config_tests and
       # config_model_override_parse; model_providers covers the provider layer.
@@ -152,4 +171,4 @@ jobs:
       # NOTE: this still compiles the whole shell test target; only execution
       # is filtered. That compile is the long pole of this workflow.
       - name: Test shell config layers
-        run: cargo test -p xai-grok-shell --no-fail-fast -- agent::config agent::model_providers
+        run: cargo test --locked -p xai-grok-shell --no-fail-fast -- agent::config agent::model_providers
