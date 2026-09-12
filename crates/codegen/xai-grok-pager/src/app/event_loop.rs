@@ -3261,7 +3261,7 @@ pub(crate) async fn run(
                         });
                         reconnect_abort_handle = Some(join_handle.abort_handle());
 
-                        app.show_toast(if any_reload {
+                        let reconnect_msg = if any_reload {
                             crate::locale::ctx()
                                 .named_text("reconnect.reload", "Reconnected. Reloading session...")
                                 .into_owned()
@@ -3269,7 +3269,8 @@ pub(crate) async fn run(
                             crate::locale::ctx()
                                 .named_text("reconnect.reinitialize", "Reconnected. Re-initializing...")
                                 .into_owned()
-                        });
+                        };
+                        app.show_toast(&reconnect_msg);
                         presenter.request(false);
                     }
                     ConnectionStatus::Failed { ref error } => {
