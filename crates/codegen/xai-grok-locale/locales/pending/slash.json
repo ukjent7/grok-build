@@ -1,5 +1,0 @@
-{
-  "slash.mode.error.switch": "当前会话的 {current} 模式下无法使用 /{token}（{why}）。请运行 {switch} 切换本会话。",
-  "slash.mode.error.use_instead": "当前会话的 {current} 模式下无法使用 /{token}：{instead}。",
-  "slash.mode.error.already_in_mode": "你已处于 {current} 模式。"
-}
