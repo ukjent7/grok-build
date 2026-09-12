@@ -110,6 +110,7 @@ pub(crate) fn format_still_running<'a>(
     kinds: impl IntoIterator<Item = (usize, &'a str)>,
 ) -> Option<String> {
     use std::fmt::Write as _;
+    let ctx = crate::locale::ctx();
     let mut label = String::with_capacity(48);
     for (count, noun) in kinds {
         if count == 0 {
@@ -118,25 +119,45 @@ pub(crate) fn format_still_running<'a>(
         if !label.is_empty() {
             label.push_str(" \u{00b7} ");
         }
-        let plural = if count == 1 { "" } else { "s" };
+        // English pluralizes with a trailing `s`; the zh dictionary returns an empty plural so
+        // count nouns like `监视器` stay unpluralized.
+        let plural = if count == 1 {
+            ""
+        } else {
+            ctx.named_static_text("turn.watcher.plural", "s")
+        };
         let _ = write!(label, "{count} {noun}{plural}");
     }
     if label.is_empty() {
         return None;
     }
-    label.push_str(" still running");
+    label.push(' ');
+    label.push_str(&ctx.named_text("turn.watcher.still_running", "still running"));
     Some(label)
 }
 
 /// The idle watcher cue's label, e.g. `"1 command · 2 monitors · 1 loop · 1 subagent still running"`; `None` when no watchers are live.
 /// It leads with the counts (not an ambient "watching") so a glance under a "Worked for X" marker still reads as unfinished work.
 fn still_running_label(watchers: Watchers) -> Option<String> {
+    let ctx = crate::locale::ctx();
     format_still_running([
-        (watchers.commands, "command"),
-        (watchers.monitors, "monitor"),
-        (watchers.loops, "loop"),
-        (watchers.subagents, "subagent"),
-        (watchers.workflows, "workflow"),
+        (
+            watchers.commands,
+            ctx.named_static_text("turn.watcher.command", "command"),
+        ),
+        (
+            watchers.monitors,
+            ctx.named_static_text("turn.watcher.monitor", "monitor"),
+        ),
+        (watchers.loops, ctx.named_static_text("turn.watcher.loop", "loop")),
+        (
+            watchers.subagents,
+            ctx.named_static_text("turn.watcher.subagent", "subagent"),
+        ),
+        (
+            watchers.workflows,
+            ctx.named_static_text("turn.watcher.workflow", "workflow"),
+        ),
     ])
 }
 
@@ -242,7 +263,8 @@ pub fn render_turn_status(
                 Style::default().fg(diamond_color),
             ),
             Span::styled(
-                "agent idle ~ waiting on your edit",
+                &*crate::locale::ctx()
+                    .named_text("turn.idle_waiting_edit", "agent idle ~ waiting on your edit"),
                 Style::default().fg(theme.gray),
             ),
         ];
@@ -256,16 +278,31 @@ pub fn render_turn_status(
     if state.is_idle() || parked {
         // Parked with held queued rows: the queued hint says what Enter does (act on the queue now), so it replaces the generic interrupt copy
         let parked_suffix = if held_queue > 0 && held_queue_top_sendable {
-            format!(" \u{00b7} {held_queue} queued, Enter to send now")
+            let count = held_queue.to_string();
+            crate::locale::ctx().format_named(
+                "turn.queue.send_now",
+                " \u{00b7} {count} queued, Enter to send now",
+                &[("count", &count)],
+            )
         } else if held_queue > 0 {
-            format!(" \u{00b7} {held_queue} queued")
+            let count = held_queue.to_string();
+            crate::locale::ctx().format_named(
+                "turn.queue.queued",
+                " \u{00b7} {count} queued",
+                &[("count", &count)],
+            )
         } else {
-            " \u{00b7} send a message to interrupt".to_string()
+            crate::locale::ctx()
+                .named_text("turn.send_message_interrupt", " \u{00b7} send a message to interrupt")
+                .into_owned()
         };
         let cue = match (still_running_label(watchers), parked) {
             (Some(label), true) => Some(format!("{label}{parked_suffix}")),
             (Some(label), false) => Some(label),
-            (None, true) => Some(format!("waiting{parked_suffix}")),
+            (None, true) => Some(format!(
+                "{}{parked_suffix}",
+                crate::locale::ctx().named_text("turn.waiting", "waiting")
+            )),
             (None, false) => None,
         };
         if let Some(cue) = cue {
@@ -341,7 +378,8 @@ pub fn render_turn_status(
         );
     let bg_str = if show_bg {
         if bg_hovered {
-            " [send to bg]"
+            crate::locale::ctx()
+                .named_static_text("turn.button.send_to_background", " [send to bg]")
         } else {
             " [\u{2193}]"
         }
@@ -355,8 +393,14 @@ pub fn render_turn_status(
     // Hover state is conveyed by color (red on hover, see `cancel_style`), not by swapping the label
     let cancel_str: &str = match (show_cancel, show_bg) {
         (false, _) => "",
-        (true, true) => "[stop]",
-        (true, false) => " [stop]",
+        (true, true) => {
+            crate::locale::ctx()
+                .named_static_text("turn.button.stop", "[stop]")
+        }
+        (true, false) => {
+            crate::locale::ctx()
+                .named_static_text("turn.button.stop_spaced", " [stop]")
+        }
     };
     let cancel_width = cancel_str.width();
 
@@ -439,7 +483,11 @@ pub fn render_turn_status(
                     .strip_prefix("Ask: ")
                     .or_else(|| title.strip_prefix("Ask "))
                     .unwrap_or(title.as_str());
-                let msg = format!("Waiting on answers for {detail}");
+                let msg = crate::locale::ctx().format_named(
+                    "turn.waiting_answers",
+                    "Waiting on answers for {detail}",
+                    &[("detail", detail)],
+                );
                 let display = truncate_str(&msg, available_for_label);
                 left_spans.push(Span::styled(display, activity_style));
             } else if let Some(desc) = description
@@ -454,7 +502,7 @@ pub fn render_turn_status(
                 left_spans.push(Span::styled(display, activity_style));
             } else if let Some(query) = title.strip_prefix("Web search: ") {
                 // Web search renders "Search " (muted) then the query (yellow)
-                let prefix = "Search ";
+                let prefix = crate::locale::ctx().named_static_text("turn.prefix.search", "Search ");
                 let prefix_width = prefix.width();
                 let query = query.trim_matches('"');
                 let max_query = available_for_label.saturating_sub(prefix_width).max(5);
@@ -463,7 +511,7 @@ pub fn render_turn_status(
                 left_spans.push(Span::styled(display, Style::default().fg(theme.command)));
             } else if let Some(url) = title.strip_prefix("Fetch: ") {
                 // Fetch tools render "Fetch " (muted) then the URL (yellow)
-                let prefix = "Fetch ";
+                let prefix = crate::locale::ctx().named_static_text("turn.prefix.fetch", "Fetch ");
                 let prefix_width = prefix.width();
                 let max_url = available_for_label.saturating_sub(prefix_width).max(5);
                 let display = truncate_str(url, max_url);
@@ -472,7 +520,7 @@ pub fn render_turn_status(
             } else {
                 // Normal tools render "Run " (muted) then the command (syntax-highlighted). Prettify it to
                 // `(Server) Action` so the spinner doesn't show the raw delimiter form.
-                let prefix = "Run ";
+                let prefix = crate::locale::ctx().named_static_text("turn.prefix.run", "Run ");
                 let pretty = mcp_pretty_name_if_qualified(title.as_str());
                 let detail = pretty.as_str();
                 let prefix_width = prefix.width();
@@ -486,10 +534,19 @@ pub fn render_turn_status(
     } else {
         // "Enter to send now" is advertised only when Enter would actually send the top row.
         let suffix = if held_queue > 0 && is_sendable_wait(activity) {
+            let count = held_queue.to_string();
             if held_queue_top_sendable {
-                format!(" · {held_queue} queued, Enter to send now")
+                crate::locale::ctx().format_named(
+                    "turn.queue.send_now",
+                    " · {count} queued, Enter to send now",
+                    &[("count", &count)],
+                )
             } else {
-                format!(" · {held_queue} queued")
+                crate::locale::ctx().format_named(
+                    "turn.queue.queued",
+                    " · {count} queued",
+                    &[("count", &count)],
+                )
             }
         } else {
             String::new()
@@ -585,7 +642,9 @@ fn compute_activity(
     match (state, activity) {
         (AgentState::TurnCancelling | AgentState::CommandCancelling { .. }, _) => (
             Style::default().fg(theme.accent_error),
-            "Cancelling…".to_string(),
+            crate::locale::ctx()
+                .named_text("turn.cancelling", "Cancelling…")
+                .into_owned(),
             false,
         ),
         // Goal-mode completion verification runs in-turn after the model stops streaming
@@ -593,17 +652,23 @@ fn compute_activity(
         // Label the whole window "Verifying…" so the multi-minute panel isn't mislabelled as the model responding (or a hung "Waiting…")
         (AgentState::TurnRunning, _) if goal_verifying => (
             Style::default().fg(theme.text_secondary),
-            "Verifying…".to_string(),
+            crate::locale::ctx()
+                .named_text("turn.verifying", "Verifying…")
+                .into_owned(),
             false,
         ),
         (AgentState::TurnRunning, Some(TurnActivity::Thinking)) => (
             Style::default().fg(theme.text_secondary),
-            "Thinking…".to_string(),
+            crate::locale::ctx()
+                .named_text("turn.thinking", "Thinking…")
+                .into_owned(),
             false,
         ),
         (AgentState::TurnRunning, Some(TurnActivity::Responding)) => (
             Style::default().fg(theme.text_secondary),
-            "Responding…".to_string(),
+            crate::locale::ctx()
+                .named_text("turn.responding", "Responding…")
+                .into_owned(),
             false,
         ),
         (AgentState::TurnRunning, Some(TurnActivity::ToolRunning { title, description })) => {
@@ -624,7 +689,9 @@ fn compute_activity(
         }
         (AgentState::TurnRunning, Some(TurnActivity::AutoCompacting)) => (
             Style::default().fg(theme.text_secondary),
-            "Compacting…".to_string(),
+            crate::locale::ctx()
+                .named_text("turn.compacting", "Compacting…")
+                .into_owned(),
             false,
         ),
         (
@@ -661,14 +728,18 @@ fn compute_activity(
         (AgentState::TurnRunning, None) if is_bash_turn => (
             // Bash turn: not inference, show generic "Running…".
             Style::default().fg(theme.text_secondary),
-            "Running…".to_string(),
+            crate::locale::ctx()
+                .named_text("turn.running", "Running…")
+                .into_owned(),
             false,
         ),
         (AgentState::TurnRunning, None) => (
             // Fallback: a running inference turn with no resolved activity
             // The view resolves this gap into Waiting(Model/Subagent) before render, so this is a rarely-hit safety net
             Style::default().fg(theme.text_secondary),
-            "Waiting…".to_string(),
+            crate::locale::ctx()
+                .named_text("turn.waiting_generic", "Waiting…")
+                .into_owned(),
             false,
         ),
         (
@@ -717,7 +788,11 @@ fn render_starting_session(
     let style = Style::default().fg(theme.gray_dim);
     let spans = vec![
         Span::styled(format!("{} ", frames[frame_idx]), style),
-        Span::styled("Starting session…", style),
+        Span::styled(
+            crate::locale::ctx()
+                .named_static_text("turn.starting_session", "Starting session…"),
+            style,
+        ),
         Span::styled(timer_str, style),
     ];
     buf.set_line(area.x, area.y, &Line::from(spans), area.width);

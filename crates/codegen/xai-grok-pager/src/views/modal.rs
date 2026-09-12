@@ -46,13 +46,22 @@ pub enum EditConfirmResult {
 impl EditConfirmResult {
     /// Dynamic label based on whether the agent is waiting to drain.
     pub fn label(&self, drain_blocked: bool) -> &'static str {
+        let ctx = crate::locale::ctx();
         match (self, drain_blocked) {
-            (Self::Save, false) => "save",
-            (Self::Save, true) => "save & send",
-            (Self::Discard, false) => "discard changes",
-            (Self::Discard, true) => "discard & send",
-            (Self::Delete, _) => "delete prompt",
-            (Self::Cancel, _) => "cancel",
+            (Self::Save, false) => ctx.named_static_text("prompt_edit.label.save", "save"),
+            (Self::Save, true) => {
+                ctx.named_static_text("prompt_edit.label.save_send", "save & send")
+            }
+            (Self::Discard, false) => {
+                ctx.named_static_text("prompt_edit.label.discard", "discard changes")
+            }
+            (Self::Discard, true) => {
+                ctx.named_static_text("prompt_edit.label.discard_send", "discard & send")
+            }
+            (Self::Delete, _) => {
+                ctx.named_static_text("prompt_edit.label.delete", "delete prompt")
+            }
+            (Self::Cancel, _) => ctx.named_static_text("shortcut.cancel", "cancel"),
         }
     }
 }
@@ -90,9 +99,10 @@ pub enum ResetSettingsResult {
 impl ResetSettingsResult {
     /// Label for the y/n buttons rendered in the modal footer.
     pub fn label(self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Self::Reset => "reset",
-            Self::Cancel => "cancel",
+            Self::Reset => ctx.named_static_text("settings.ui.reset", "reset"),
+            Self::Cancel => ctx.named_static_text("shortcut.cancel", "cancel"),
         }
     }
 }
@@ -131,11 +141,18 @@ impl CancelTurnChoice {
         CancelTurnChoice::AlwaysContinue,
     ];
     pub fn label(&self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Self::StopRunning => "Stop running",
-            Self::ContinueToRun => "Continue to run",
-            Self::AlwaysStop => "Always stop",
-            Self::AlwaysContinue => "Always continue",
+            Self::StopRunning => {
+                ctx.named_static_text("cancel_turn.stop_running", "Stop running")
+            }
+            Self::ContinueToRun => {
+                ctx.named_static_text("cancel_turn.continue_running", "Continue to run")
+            }
+            Self::AlwaysStop => ctx.named_static_text("cancel_turn.always_stop", "Always stop"),
+            Self::AlwaysContinue => {
+                ctx.named_static_text("cancel_turn.always_continue", "Always continue")
+            }
         }
     }
 }
@@ -383,57 +400,68 @@ pub(crate) fn default_palette_entries(
     let mut entries = vec![
         // ── Session ──
         PaletteEntry {
-            label: "Session".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.section.session", "Session").into(),
             shortcut: String::new(),
             command: PaletteCommand::SectionHeader("Session".into()),
         },
         PaletteEntry {
-            label: "New Session".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.new_session", "New Session").into(),
             shortcut: "Ctrl+N".into(),
             command: PaletteCommand::NewSession,
         },
         PaletteEntry {
-            label: "New Session in Worktree".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.new_session_worktree", "New Session in Worktree").into(),
             shortcut: "Ctrl+P → worktree".into(),
             command: PaletteCommand::NewSessionInWorktree,
         },
         PaletteEntry {
-            label: "Agent Dashboard".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.agent_dashboard", "Agent Dashboard").into(),
             shortcut: "/dashboard".into(),
             command: PaletteCommand::SlashCommand("/dashboard".into()),
         },
         PaletteEntry {
-            label: "Back to Home".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.back_home", "Back to Home").into(),
             shortcut: "/home".into(),
             command: PaletteCommand::Home,
         },
         PaletteEntry {
-            label: "Delete This Session".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.delete_session", "Delete This Session").into(),
             shortcut: "/delete".into(),
             command: PaletteCommand::SlashCommand("/delete".into()),
         },
         PaletteEntry {
-            label: "Resume Session".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.resume_session", "Resume Session").into(),
             shortcut: "/resume".into(),
             command: PaletteCommand::SlashCommand("/resume".into()),
         },
         PaletteEntry {
-            label: "Share Session".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.share_session", "Share Session").into(),
             shortcut: "/share".into(),
             command: PaletteCommand::SlashCommand("/share".into()),
         },
         PaletteEntry {
-            label: "Rename Session".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.rename_session", "Rename Session").into(),
             shortcut: "/rename ".into(),
             command: PaletteCommand::SlashCommand("/rename ".into()),
         },
         PaletteEntry {
-            label: "Session Info".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.session_info", "Session Info").into(),
             shortcut: "/session-info".into(),
             command: PaletteCommand::SlashCommand("/session-info".into()),
         },
         PaletteEntry {
-            label: "Send Feedback".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.send_feedback", "Send Feedback").into(),
             shortcut: "/feedback".into(),
             command: if screen_mode.is_minimal() {
                 PaletteCommand::InsertFeedbackSlash
@@ -443,127 +471,149 @@ pub(crate) fn default_palette_entries(
         },
         // ── Context ──
         PaletteEntry {
-            label: "Context".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.section.context", "Context").into(),
             shortcut: String::new(),
             command: PaletteCommand::SectionHeader("Context".into()),
         },
         PaletteEntry {
-            label: "Compact History".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.compact_history", "Compact History").into(),
             shortcut: "/compact".into(),
             command: PaletteCommand::SlashCommand("/compact".into()),
         },
         PaletteEntry {
-            label: "Context Usage".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.context_usage", "Context Usage").into(),
             shortcut: "/context".into(),
             command: PaletteCommand::SlashCommand("/context".into()),
         },
         PaletteEntry {
-            label: "View Plan".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.view_plan", "View Plan").into(),
             shortcut: "/view-plan".into(),
             command: PaletteCommand::SlashCommand("/view-plan".into()),
         },
         PaletteEntry {
-            label: "Memory".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.memory", "Memory").into(),
             shortcut: "/memory".into(),
             command: PaletteCommand::Memory,
         },
         // ── Model & Input ──
         PaletteEntry {
-            label: "Model & Input".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.section.model_input", "Model & Input").into(),
             shortcut: String::new(),
             command: PaletteCommand::SectionHeader("Model & Input".into()),
         },
         PaletteEntry {
-            label: "Switch Model".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.switch_model", "Switch Model").into(),
             shortcut: "/model".into(),
             command: PaletteCommand::SlashCommand("/model ".into()),
         },
         PaletteEntry {
-            label: "Always Approve Mode".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.always_approve", "Always Approve Mode").into(),
             shortcut: "/always-approve".into(),
             command: PaletteCommand::SlashCommand("/always-approve".into()),
         },
         PaletteEntry {
-            label: "Multiline Input".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.multiline", "Multiline Input").into(),
             shortcut: "/multiline".into(),
             command: PaletteCommand::SlashCommand("/multiline".into()),
         },
         PaletteEntry {
-            label: "Edit Prompt in External Editor".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.edit_external", "Edit Prompt in External Editor").into(),
             shortcut: "Ctrl+G".into(),
             command: PaletteCommand::EditPromptExternal,
         },
         // ── Tools ──
         PaletteEntry {
-            label: "Tools".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.section.tools", "Tools").into(),
             shortcut: String::new(),
             command: PaletteCommand::SectionHeader("Tools".into()),
         },
         PaletteEntry {
-            label: "Hooks".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.hooks", "Hooks").into(),
             shortcut: "/hooks".into(),
             command: PaletteCommand::OpenExtensionsTab(
                 crate::views::extensions_modal::ExtensionsTab::Hooks,
             ),
         },
         PaletteEntry {
-            label: "Plugins".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.plugins", "Plugins").into(),
             shortcut: "/plugins".into(),
             command: PaletteCommand::OpenExtensionsTab(
                 crate::views::extensions_modal::ExtensionsTab::Plugins,
             ),
         },
         PaletteEntry {
-            label: "Marketplace".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.marketplace", "Marketplace").into(),
             shortcut: "/marketplace".into(),
             command: PaletteCommand::OpenExtensionsTab(
                 crate::views::extensions_modal::ExtensionsTab::Marketplace,
             ),
         },
         PaletteEntry {
-            label: "Skills".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.skills", "Skills").into(),
             shortcut: "/skills".into(),
             command: PaletteCommand::OpenExtensionsTab(
                 crate::views::extensions_modal::ExtensionsTab::Skills,
             ),
         },
         PaletteEntry {
-            label: "Workflows".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.workflows", "Workflows").into(),
             shortcut: "/workflows".into(),
             command: PaletteCommand::OpenExtensionsTab(
                 crate::views::extensions_modal::ExtensionsTab::Workflows,
             ),
         },
         PaletteEntry {
-            label: "MCP Servers".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.mcp_servers", "MCP Servers").into(),
             shortcut: "/mcps".into(),
             command: PaletteCommand::OpenExtensionsTab(
                 crate::views::extensions_modal::ExtensionsTab::McpServers,
             ),
         },
         PaletteEntry {
-            label: "Manage Agents".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.manage_agents", "Manage Agents").into(),
             shortcut: "/config-agents".into(),
             command: PaletteCommand::OpenAgentsModal,
         },
         // ── Other ──
         PaletteEntry {
-            label: "Other".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.section.other", "Other").into(),
             shortcut: String::new(),
             command: PaletteCommand::SectionHeader("Other".into()),
         },
         PaletteEntry {
-            label: "Switch Theme".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.switch_theme", "Switch Theme").into(),
             shortcut: "/theme".into(),
             command: PaletteCommand::SlashCommand("/theme ".into()),
         },
         PaletteEntry {
-            label: "Settings".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.settings", "Settings").into(),
             shortcut: "F2".into(),
             command: PaletteCommand::OpenSettings,
         },
         PaletteEntry {
-            label: "Keyboard Shortcuts".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.keyboard_shortcuts", "Keyboard Shortcuts").into(),
             shortcut: if crate::actions::ctrl_dot_unreliable() {
                 "Ctrl+X".into()
             } else {
@@ -572,17 +622,20 @@ pub(crate) fn default_palette_entries(
             command: PaletteCommand::KeyboardShortcuts,
         },
         PaletteEntry {
-            label: "How-to Guides".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.howto", "How-to Guides").into(),
             shortcut: "/docs".into(),
             command: PaletteCommand::HowTo,
         },
         PaletteEntry {
-            label: "Tutorial".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.tutorial", "Tutorial").into(),
             shortcut: "/tutorial".into(),
             command: PaletteCommand::SlashCommand("/tutorial".into()),
         },
         PaletteEntry {
-            label: "Quit".into(),
+            label: crate::locale::ctx()
+                .named_static_text("palette.quit", "Quit").into(),
             shortcut: "Ctrl+Q".into(),
             command: PaletteCommand::Quit,
         },
@@ -682,34 +735,47 @@ impl ActiveModal {
         }
     }
     pub fn message(&self, drain_blocked: bool) -> &str {
+        let ctx = crate::locale::ctx();
         match self {
             ActiveModal::EditConfirm { .. } => {
                 if drain_blocked {
-                    "Save and send?"
+                    ctx.named_static_text("prompt_edit.confirm_save_send", "Save and send?")
                 } else {
-                    "Save changes?"
+                    ctx.named_static_text("prompt_edit.confirm_save", "Save changes?")
                 }
             }
-            ActiveModal::CommandPalette { .. } => "Commands",
-            ActiveModal::SessionPicker { .. } => "Resume session",
+            ActiveModal::CommandPalette { .. } => {
+                ctx.named_static_text("palette.title", "Commands")
+            }
+            ActiveModal::SessionPicker { .. } => {
+                ctx.named_static_text("session_picker.title", "Resume session")
+            }
             ActiveModal::ArgPicker {
                 command,
                 args_query,
                 ..
             } => match command.as_str() {
-                "model" | "m" if !args_query.is_empty() => "Pick reasoning effort",
-                "model" | "m" => "Pick model",
-                "theme" | "t" => "Pick theme",
-                _ => "Pick option",
+                "model" | "m" if !args_query.is_empty() => {
+                    ctx.named_static_text("arg_picker.reasoning_effort", "Pick reasoning effort")
+                }
+                "model" | "m" => ctx.named_static_text("arg_picker.model", "Pick model"),
+                "theme" | "t" => ctx.named_static_text("arg_picker.theme", "Pick theme"),
+                _ => ctx.named_static_text("arg_picker.option", "Pick option"),
             },
-            ActiveModal::DocPicker { .. } => "How-to Guides",
+            ActiveModal::DocPicker { .. } => ctx.named_static_text("docs.title", "How-to Guides"),
             ActiveModal::DocViewer { title, .. } => title.as_str(),
-            ActiveModal::ShortcutsHelp { .. } => "Keyboard Shortcuts",
-            ActiveModal::MemoryBrowser { .. } => "Memory",
+            ActiveModal::ShortcutsHelp { .. } => {
+                ctx.named_static_text("palette.keyboard_shortcuts", "Keyboard Shortcuts")
+            }
+            ActiveModal::MemoryBrowser { .. } => ctx.named_static_text("palette.memory", "Memory"),
             ActiveModal::Settings { .. } => crate::views::settings_modal::MODAL_TITLE,
-            ActiveModal::ResetSettingsConfirm { .. } => "Reset setting?",
-            ActiveModal::RememberNoteReview { .. } => "Memory Note",
-            ActiveModal::UsageInfo { .. } => "Usage",
+            ActiveModal::ResetSettingsConfirm { .. } => {
+                ctx.named_static_text("settings.ui.reset_setting", "Reset setting?")
+            }
+            ActiveModal::RememberNoteReview { .. } => {
+                ctx.named_static_text("memory.note.title", "Memory Note")
+            }
+            ActiveModal::UsageInfo { .. } => ctx.named_static_text("usage.title", "Usage"),
         }
     }
 }
@@ -726,10 +792,11 @@ pub fn reset_confirm_prompt(modal: &ActiveModal) -> Option<String> {
     };
     let meta = settings_state.registry.find(key)?;
     let default = crate::settings::default_value_for(meta);
-    Some(format!(
-        "Reset '{}' to default ({})?",
-        meta.label,
-        format_default_for_prompt(&meta.kind, &default),
+    let default_display = format_default_for_prompt(&meta.kind, &default);
+    Some(crate::locale::ctx().format_named(
+        "settings.ui.reset_prompt",
+        "Reset '{label}' to default ({default})?",
+        &[("label", meta.label), ("default", &default_display)],
     ))
 }
 /// Abbreviated title breadcrumb for the reset-confirm dialog, e.g. "Reset 'Compact mode'".
@@ -743,7 +810,11 @@ pub fn reset_confirm_breadcrumb(modal: &ActiveModal) -> Option<String> {
         return None;
     };
     let meta = settings_state.registry.find(key)?;
-    Some(format!("Reset '{}'", meta.label))
+    Some(crate::locale::ctx().format_named(
+        "settings.ui.reset_breadcrumb",
+        "Reset '{label}'",
+        &[("label", meta.label)],
+    ))
 }
 /// Format a `SettingValue` for the prompt's `(<default>)` display.
 fn format_default_for_prompt(
@@ -751,9 +822,14 @@ fn format_default_for_prompt(
     value: &crate::settings::SettingValue,
 ) -> String {
     use crate::settings::{SettingKind, SettingValue};
+    let ctx = crate::locale::ctx();
     match value {
-        SettingValue::Bool(true) => "on".to_owned(),
-        SettingValue::Bool(false) => "off".to_owned(),
+        SettingValue::Bool(true) => ctx
+            .named_static_text("settings.ui.value.on", "on")
+            .to_owned(),
+        SettingValue::Bool(false) => ctx
+            .named_static_text("settings.ui.value.off", "off")
+            .to_owned(),
         SettingValue::Enum(canonical) => {
             if let SettingKind::Enum { choices, .. } = kind {
                 for c in *choices {
@@ -905,16 +981,26 @@ pub fn render_cancel_turn_panel(
         content_x,
         y,
         &Line::from(Span::styled(
-            "Subagents are still running. Stop them?",
+            crate::locale::ctx().named_static_text(
+                "cancel_turn.title",
+                "Subagents are still running. Stop them?",
+            ),
             title_style,
         )),
         content_w as u16,
     );
     y += 1;
+    let ctx = crate::locale::ctx();
     let count_text = if state.running_count == 1 {
-        "1 subagent running".to_string()
+        ctx.named_static_text("cancel_turn.one_running", "1 subagent running")
+            .to_string()
     } else {
-        format!("{} subagents running", state.running_count)
+        let count = state.running_count.to_string();
+        ctx.format_named(
+            "cancel_turn.many_running",
+            "{count} subagents running",
+            &[("count", &count)],
+        )
     };
     buf.set_line(
         content_x,
@@ -1035,28 +1121,36 @@ const DOCS_USER_GUIDE_REL: &str = "docs/user-guide";
 /// Prefer keeping the on-disk path when width is tight.
 fn fit_docs_ask_grok_tip(docs_path: &str, width: usize) -> String {
     use crate::render::line_utils::truncate_str;
+    let ctx = crate::locale::ctx();
     if width == 0 {
         return String::new();
     }
-    let long =
-        format!("Tip · Ask Grok about the docs ({docs_path}), e.g. \"how do I set up MCP?\"");
+    let long = ctx.format_named(
+        "docs.tip.long",
+        "Tip · Ask Grok about the docs ({path}), e.g. \"how do I set up MCP?\"",
+        &[("path", docs_path)],
+    );
     if long.width() <= width {
         return long;
     }
-    let short = format!("Tip · Ask Grok about the docs · {docs_path}");
+    let short = ctx.format_named(
+        "docs.tip.short",
+        "Tip · Ask Grok about the docs · {path}",
+        &[("path", docs_path)],
+    );
     if short.width() <= width {
         return short;
     }
-    let path_only = format!("Tip · {docs_path}");
+    let path_only = ctx.format_named("docs.tip.path", "Tip · {path}", &[("path", docs_path)]);
     if path_only.width() <= width {
         return path_only;
     }
-    const PREFIX: &str = "Tip · ";
-    let budget = width.saturating_sub(PREFIX.width());
+    let prefix = ctx.named_text("docs.tip.prefix", "Tip · ").into_owned();
+    let budget = width.saturating_sub(prefix.width());
     if budget == 0 {
-        return truncate_str("Tip", width);
+        return ctx.named_text("docs.tip.word", "Tip").into_owned();
     }
-    format!("{PREFIX}{}", truncate_str(docs_path, budget))
+    format!("{prefix}{}", truncate_str(docs_path, budget))
 }
 pub fn render_doc_picker_overlay(
     buf: &mut ratatui::buffer::Buffer,
@@ -1085,19 +1179,20 @@ pub fn render_doc_picker_overlay(
             .collect()
     };
     let non_sel = vec![false; filtered.len()];
+    let ctx = crate::locale::ctx();
     let mut picker_shortcuts: Vec<Shortcut<'_>> = vec![
         Shortcut {
-            label: "\u{2191}/\u{2193} nav",
+            label: ctx.named_static_text("docs.shortcut.navigate", "\u{2191}/\u{2193} nav"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "Enter select",
+            label: ctx.named_static_text("docs.shortcut.select", "Enter select"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "Esc close",
+            label: ctx.named_static_text("docs.shortcut.close", "Esc close"),
             clickable: false,
             id: 0,
         },
@@ -1118,7 +1213,7 @@ pub fn render_doc_picker_overlay(
         ..base_sizing
     };
     let modal_config = ModalWindowConfig {
-        title: "How-to Guides",
+        title: crate::locale::ctx().named_static_text("docs.title", "How-to Guides"),
         tabs: None,
         shortcuts: &picker_shortcuts,
         sizing,
@@ -1195,12 +1290,13 @@ pub fn render_doc_viewer_overlay(
 ) {
     let doc_shortcuts = [
         super::modal_window::Shortcut {
-            label: "\u{2191}/\u{2193} scroll",
+            label: crate::locale::ctx()
+                .named_static_text("docs.shortcut.scroll", "\u{2191}/\u{2193} scroll"),
             clickable: false,
             id: 0,
         },
         super::modal_window::Shortcut {
-            label: "Esc back",
+            label: crate::locale::ctx().named_static_text("docs.shortcut.back", "Esc back"),
             clickable: false,
             id: 0,
         },

@@ -350,7 +350,9 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 content_x,
                 y,
                 &Line::from(Span::styled(
-                    "Loading rewind points...",
+                    crate::locale::ctx()
+                        .named_text("rewind.loading_points", "Loading rewind points...")
+                        .into_owned(),
                     Style::default().fg(theme.gray),
                 )),
                 content_w,
@@ -359,15 +361,27 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
         RewindPhase::Picker { points, selected } => {
             // Shared list-overlay frame and row geometry (also used by /jump)
             // It applies the unfocus dim itself, so return before the shared blend at the bottom of this function
+            let title = crate::locale::ctx()
+                .named_text("rewind.picker.title", "Rewind to which turn?")
+                .into_owned();
             crate::views::overlay_list::ListOverlay {
                 len: points.len(),
                 selected: *selected,
             }
-            .render(buf, area, "Rewind to which turn?", focused, |i, ctx| {
+            .render(
+                buf,
+                area,
+                &title,
+                focused,
+                |i, ctx| {
                 let point = &points[i];
                 let dot_style = Style::default().fg(theme.gray).bg(ctx.row_bg);
                 let preview: String = crate::render::line_utils::truncate_str(
-                    point.prompt_preview.as_deref().unwrap_or("(no preview)"),
+                    point.prompt_preview.as_deref().unwrap_or(
+                        crate::locale::ctx()
+                            .named_text("rewind.no_preview", "(no preview)")
+                            .as_ref(),
+                    ),
                     ctx.content_width.saturating_sub(8) as usize,
                 );
                 let text_style = Style::default()
@@ -387,11 +401,19 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
             return;
         }
         RewindPhase::CancelOffer { active_idx } => {
+            let cancel_label = crate::locale::ctx()
+                .named_text("rewind.cancel_and_rewind", "Cancel turn and rewind")
+                .into_owned();
             let mut y = area.y + 1;
             buf.set_line(
                 content_x,
                 y,
-                &Line::from(Span::styled("A turn is currently running.", title_style)),
+                &Line::from(Span::styled(
+                    crate::locale::ctx()
+                        .named_text("rewind.turn_running", "A turn is currently running.")
+                        .into_owned(),
+                    title_style,
+                )),
                 content_w,
             );
             y += 1;
@@ -399,7 +421,12 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 content_x,
                 y,
                 &Line::from(Span::styled(
-                    "Would you like to cancel it before rewinding?",
+                    crate::locale::ctx()
+                        .named_text(
+                            "rewind.cancel_question",
+                            "Would you like to cancel it before rewinding?",
+                        )
+                        .into_owned(),
                     Style::default().fg(theme.gray),
                 )),
                 content_w,
@@ -411,7 +438,7 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 y,
                 content_w,
                 'y',
-                "Cancel turn and rewind",
+                &cancel_label,
                 *active_idx == 0,
                 focused,
                 &theme,
@@ -423,7 +450,7 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 y,
                 content_w,
                 'n',
-                "Let it finish",
+                &crate::locale::ctx().named_text("rewind.let_finish", "Let it finish"),
                 *active_idx == 1,
                 focused,
                 &theme,
@@ -435,7 +462,9 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 content_x,
                 y,
                 &Line::from(Span::styled(
-                    "Rewinding...",
+                    crate::locale::ctx()
+                        .named_text("rewind.executing", "Rewinding...")
+                        .into_owned(),
                     Style::default().fg(theme.gray),
                 )),
                 content_w,
@@ -448,8 +477,12 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
         } => {
             let mut y = area.y + 1;
             let preview_text = prompt_preview.as_deref().unwrap_or("this turn");
-            let prefix = "Rewind conversation to \u{201C}";
-            let suffix = "\u{201D}?";
+            let prefix = crate::locale::ctx()
+                .named_text("rewind.confirm.title_prefix", "Rewind conversation to \u{201C}")
+                .into_owned();
+            let suffix = crate::locale::ctx()
+                .named_text("rewind.confirm.suffix", "\u{201D}?")
+                .into_owned();
             let chrome = prefix.chars().count() + suffix.chars().count();
             let max_preview = (content_w as usize).saturating_sub(chrome + 1);
             let preview_trunc: String = if preview_text.chars().count() > max_preview {
@@ -475,7 +508,7 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 y,
                 content_w,
                 'y',
-                "Yes",
+                &crate::locale::ctx().named_text("rewind.confirm.yes", "Yes"),
                 *active_idx == 0,
                 focused,
                 &theme,
@@ -487,7 +520,8 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 y,
                 content_w,
                 'a',
-                "Yes, and don't ask again",
+                &crate::locale::ctx()
+                    .named_text("rewind.confirm.yes_and_dont_ask", "Yes, and don't ask again"),
                 *active_idx == 1,
                 focused,
                 &theme,
@@ -499,19 +533,24 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 y,
                 content_w,
                 'n',
-                "No",
+                &crate::locale::ctx().named_text("rewind.confirm.no", "No"),
                 *active_idx == 2,
                 focused,
                 &theme,
             );
         }
         RewindPhase::Error { message } => {
+            let dismiss_label = crate::locale::ctx()
+                .named_text("rewind.dismiss", "Dismiss")
+                .into_owned();
             let mut y = area.y + 1;
             buf.set_line(
                 content_x,
                 y,
                 &Line::from(Span::styled(
-                    "Rewind failed",
+                    crate::locale::ctx()
+                        .named_text("rewind.failed", "Rewind failed")
+                        .into_owned(),
                     Style::default()
                         .fg(theme.accent_error)
                         .add_modifier(Modifier::BOLD),
@@ -531,7 +570,15 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
             );
             y += 1;
             render_radio_row(
-                buf, content_x, y, content_w, '\x1b', "Dismiss", true, focused, &theme,
+                buf,
+                content_x,
+                y,
+                content_w,
+                '\x1b',
+                &dismiss_label,
+                true,
+                focused,
+                &theme,
             );
         }
     }

@@ -197,23 +197,23 @@ fn skill_group(skill: &SkillInfo) -> SkillGroup {
         return match cs {
             ConfigSource::Project { .. } => SkillGroup {
                 rank: 0,
-                label: "Project".into(),
+                label: crate::locale::ctx().named_text("extensions.source.project", "Project").into_owned(),
             },
             ConfigSource::User { .. } => SkillGroup {
                 rank: 1,
-                label: "User".into(),
+                label: crate::locale::ctx().named_text("extensions.source.user", "User").into_owned(),
             },
             ConfigSource::Plugin { plugin_name, .. } => SkillGroup {
                 rank: 2,
-                label: format!("Plugin: {plugin_name}"),
+                label: crate::locale::ctx().format_named("extensions.source.plugin", "Plugin: {name}", &[("name", plugin_name)]),
             },
             ConfigSource::Bundled { .. } => SkillGroup {
                 rank: 3,
-                label: "Bundled".into(),
+                label: crate::locale::ctx().named_text("extensions.source.bundled", "Bundled").into_owned(),
             },
             ConfigSource::Server { .. } => SkillGroup {
                 rank: 4,
-                label: "Server".into(),
+                label: crate::locale::ctx().named_text("extensions.source.server", "Server").into_owned(),
             },
             ConfigSource::Builtin
             | ConfigSource::ConfigToml { .. }
@@ -222,18 +222,18 @@ fn skill_group(skill: &SkillInfo) -> SkillGroup {
             | ConfigSource::Cli { .. }
             | ConfigSource::Managed { .. } => SkillGroup {
                 rank: 5,
-                label: "Config".into(),
+                label: crate::locale::ctx().named_text("extensions.source.config", "Config").into_owned(),
             },
         };
     }
     match skill.scope {
         SkillScope::Local | SkillScope::Repo => SkillGroup {
             rank: 0,
-            label: "Project".into(),
+            label: crate::locale::ctx().named_text("extensions.source.project", "Project").into_owned(),
         },
         SkillScope::User => SkillGroup {
             rank: 1,
-            label: "User".into(),
+            label: crate::locale::ctx().named_text("extensions.source.user", "User").into_owned(),
         },
         SkillScope::Plugin => SkillGroup {
             rank: 2,
@@ -244,11 +244,11 @@ fn skill_group(skill: &SkillInfo) -> SkillGroup {
         },
         SkillScope::Bundled => SkillGroup {
             rank: 3,
-            label: "Bundled".into(),
+            label: crate::locale::ctx().named_text("extensions.source.bundled", "Bundled").into_owned(),
         },
         SkillScope::Server => SkillGroup {
             rank: 4,
-            label: "Server".into(),
+            label: crate::locale::ctx().named_text("extensions.source.server", "Server").into_owned(),
         },
     }
 }
@@ -329,10 +329,11 @@ type GroupedPlugins<'a> = std::collections::BTreeMap<
 
 /// Header count suffix: `1 plugin`, `2 plugins`.
 fn plugin_count_label(n: usize) -> String {
+    let count = n.to_string();
     if n == 1 {
-        "1 plugin".to_string()
+        crate::locale::ctx().format_named("extensions.count.plugin", "1 plugin", &[("count", &count)])
     } else {
-        format!("{n} plugins")
+        crate::locale::ctx().format_named("extensions.count.plugins", "{count} plugins", &[("count", &count)])
     }
 }
 
@@ -350,7 +351,7 @@ fn mcp_row_badge(
             Some(server.status.theme_color(theme)),
         )
     } else {
-        ("[disabled]".to_string(), Some(theme.accent_error))
+        (crate::locale::ctx().named_text("extensions.badge.disabled", "[disabled]").into_owned(), Some(theme.accent_error))
     }
 }
 
@@ -489,12 +490,24 @@ impl ExtensionsTab {
     /// Display label for the tab bar.
     pub fn label(self) -> &'static str {
         match self {
-            Self::Hooks => "Hooks",
-            Self::Plugins => "Plugins",
-            Self::Marketplace => "Marketplace",
-            Self::Skills => "Skills",
-            Self::Workflows => "Workflows",
-            Self::McpServers => "MCP Servers",
+            Self::Hooks => {
+                crate::locale::ctx().named_static_text("extensions.tab.hooks", "Hooks")
+            }
+            Self::Plugins => {
+                crate::locale::ctx().named_static_text("extensions.tab.plugins", "Plugins")
+            }
+            Self::Marketplace => {
+                crate::locale::ctx().named_static_text("extensions.tab.marketplace", "Marketplace")
+            }
+            Self::Skills => {
+                crate::locale::ctx().named_static_text("extensions.tab.skills", "Skills")
+            }
+            Self::Workflows => {
+                crate::locale::ctx().named_static_text("extensions.tab.workflows", "Workflows")
+            }
+            Self::McpServers => {
+                crate::locale::ctx().named_static_text("extensions.tab.mcp_servers", "MCP Servers")
+            }
         }
     }
 
@@ -568,9 +581,9 @@ pub enum StatusFilter {
 impl StatusFilter {
     pub fn label(self) -> &'static str {
         match self {
-            Self::All => "All",
-            Self::Enabled => "Enabled",
-            Self::Disabled => "Disabled",
+            Self::All => crate::locale::ctx().named_static_text("extensions.filter.all", "All"),
+            Self::Enabled => crate::locale::ctx().named_static_text("extensions.filter.enabled", "Enabled"),
+            Self::Disabled => crate::locale::ctx().named_static_text("extensions.filter.disabled", "Disabled"),
         }
     }
 
@@ -810,7 +823,11 @@ impl ModalInput {
                     .map(|(_, f)| f.label())
                     .collect();
                 if !empty_required.is_empty() {
-                    self.error = Some(format!("Required: {}", empty_required.join(", ")));
+                    self.error = Some(crate::locale::ctx().format_named(
+                        "extensions.form.required",
+                        "Required: {fields}",
+                        &[("fields", &empty_required.join(", "))],
+                    ));
                     return ModalInputOutcome::Changed;
                 }
                 ModalInputOutcome::Submit {
@@ -995,7 +1012,10 @@ impl McpSetupFormState {
             }
             KeyCode::Enter => {
                 if self.selected_value().is_none() {
-                    self.error = Some("Select an option".to_string());
+                    self.error = Some(
+                        crate::locale::ctx().named_text("extensions.form.select_option", "Select an option")
+                            .into_owned(),
+                    );
                     McpSetupOutcome::Changed
                 } else {
                     McpSetupOutcome::Submit
@@ -1449,11 +1469,27 @@ pub fn tab_all_hints(tab: ExtensionsTab) -> Vec<crate::views::shortcuts_bar::Hin
         hints.push(item);
     }
     // Common navigation.
-    hints.push(HintItem::paired(crate::key!('j'), crate::key!('k'), "nav"));
-    hints.push(HintItem::new(crate::key!(Tab), "switch tab"));
-    hints.push(HintItem::new(crate::key!('/'), "search"));
-    hints.push(HintItem::new(crate::key!(Enter), "expand"));
-    hints.push(HintItem::new(crate::key!(Esc), "close"));
+    hints.push(HintItem::paired(
+        crate::key!('j'),
+        crate::key!('k'),
+        crate::locale::ctx().named_static_text("shortcut.nav", "nav"),
+    ));
+    hints.push(HintItem::new(
+        crate::key!(Tab),
+        crate::locale::ctx().named_static_text("shortcut.switch_tab", "switch tab"),
+    ));
+    hints.push(HintItem::new(
+        crate::key!('/'),
+        crate::locale::ctx().named_static_text("shortcut.search", "search"),
+    ));
+    hints.push(HintItem::new(
+        crate::key!(Enter),
+        crate::locale::ctx().named_static_text("shortcut.expand", "expand"),
+    ));
+    hints.push(HintItem::new(
+        crate::key!(Esc),
+        crate::locale::ctx().named_static_text("shortcut.close", "close"),
+    ));
     hints
 }
 
@@ -1477,9 +1513,15 @@ pub fn resolve_key(tab: ExtensionsTab, ch: char) -> Option<ButtonAction> {
         (ExtensionsTab::Plugins, 'a') => Some(ButtonAction::StartInput {
             command_prefix: "plugins_install".into(),
             fields: vec![FieldSpec {
-                label: "Source".into(),
+                label: crate::locale::ctx().named_text("extensions.form.source", "Source").into_owned(),
                 required: true,
-                placeholder: Some("owner/repo, URL, or local path".into()),
+                placeholder: Some(
+                    crate::locale::ctx().named_text(
+                        "extensions.form.source_placeholder",
+                        "owner/repo, URL, or local path",
+                    )
+                    .into_owned(),
+                ),
             }],
         }),
         // Toggle enable/disable on the selected plugin.
@@ -1490,7 +1532,7 @@ pub fn resolve_key(tab: ExtensionsTab, ch: char) -> Option<ButtonAction> {
         (ExtensionsTab::Hooks, 'a') => Some(ButtonAction::StartInput {
             command_prefix: "hooks_add".into(),
             fields: vec![FieldSpec {
-                label: "Path".into(),
+                label: crate::locale::ctx().named_text("extensions.field.path", "Path").into_owned(),
                 required: true,
                 placeholder: None,
             }],
@@ -1510,9 +1552,15 @@ pub fn resolve_key(tab: ExtensionsTab, ch: char) -> Option<ButtonAction> {
         (ExtensionsTab::Marketplace, 'a') => Some(ButtonAction::StartInput {
             command_prefix: "marketplace_add_source".into(),
             fields: vec![FieldSpec {
-                label: "Source".into(),
+                label: crate::locale::ctx().named_text("extensions.form.source", "Source").into_owned(),
                 required: true,
-                placeholder: Some("owner/repo, git URL, or local path".into()),
+                placeholder: Some(
+                    crate::locale::ctx().named_text(
+                        "extensions.form.source_placeholder_git",
+                        "owner/repo, git URL, or local path",
+                    )
+                    .into_owned(),
+                ),
             }],
         }),
         (ExtensionsTab::Marketplace, 'x') => Some(ButtonAction::RemoveSelectedMarketplaceSource),
@@ -1527,14 +1575,26 @@ pub fn resolve_key(tab: ExtensionsTab, ch: char) -> Option<ButtonAction> {
             // `build_action_from_input` reads matching indices.
             fields: vec![
                 FieldSpec {
-                    label: "URL / Command".into(),
+                    label: crate::locale::ctx().named_text("extensions.form.url_command", "URL / Command").into_owned(),
                     required: true,
-                    placeholder: Some("https://... or command [args...]".into()),
+                    placeholder: Some(
+                        crate::locale::ctx().named_text(
+                            "extensions.form.url_command_placeholder",
+                            "https://... or command [args...]",
+                        )
+                        .into_owned(),
+                    ),
                 },
                 FieldSpec {
-                    label: "Name".into(),
+                    label: crate::locale::ctx().named_text("extensions.form.name", "Name").into_owned(),
                     required: false,
-                    placeholder: Some("Auto generated by URL".into()),
+                    placeholder: Some(
+                        crate::locale::ctx().named_text(
+                            "extensions.form.auto_name_placeholder",
+                            "Auto generated by URL",
+                        )
+                        .into_owned(),
+                    ),
                 },
             ],
         }),
@@ -2225,9 +2285,17 @@ impl ExtensionsModalState {
             .is_some_and(|key| !self.is_group_expanded(sel, key));
         let verb = verb.label();
         self.modal_message = Some(ModalMessage::Info(if collapsed_header {
-            format!("Expand this row (Enter), then select a {noun} row to {verb}.")
+            crate::locale::ctx().format_named(
+                "extensions.hint.expand_then_select",
+                "Expand this row (Enter), then select a {noun} row to {verb}.",
+                &[("noun", noun), ("verb", verb)],
+            )
         } else {
-            format!("Select a {noun} row to {verb}.")
+            crate::locale::ctx().format_named(
+                "extensions.hint.select_row",
+                "Select a {noun} row to {verb}.",
+                &[("noun", noun), ("verb", verb)],
+            )
         }));
     }
 
@@ -2493,7 +2561,7 @@ fn classify_hook_source(source_dir: &str) -> HookSourceMeta {
     };
     if let Some(name) = plugin_name("plugins").or_else(|| plugin_name("installed-plugins")) {
         return HookSourceMeta {
-            label: format!("Plugin: {name}"),
+            label: crate::locale::ctx().format_named("extensions.source.plugin", "Plugin: {name}", &[("name", &name)]),
             kind: HookSourceKind::Plugin,
         };
     }
@@ -2502,21 +2570,21 @@ fn classify_hook_source(source_dir: &str) -> HookSourceMeta {
     let global_str = global_hooks.display().to_string();
     if source_dir == global_str || source_dir.starts_with(&format!("{global_str}/")) {
         return HookSourceMeta {
-            label: "Global hooks".into(),
+            label: crate::locale::ctx().named_text("extensions.source.global_hooks", "Global hooks").into_owned(),
             kind: HookSourceKind::Global,
         };
     }
     // Settings under .claude/
     if source_dir.contains("/.claude/") {
         return HookSourceMeta {
-            label: "Claude settings".into(),
+            label: crate::locale::ctx().named_text("extensions.source.claude_settings", "Claude settings").into_owned(),
             kind: HookSourceKind::Claude,
         };
     }
     // Project hooks
     if source_dir.ends_with("/.grok/hooks") || source_dir.contains("/.grok/hooks/") {
         return HookSourceMeta {
-            label: "Project hooks".into(),
+            label: crate::locale::ctx().named_text("extensions.source.project_hooks", "Project hooks").into_owned(),
             kind: HookSourceKind::Project,
         };
     }
@@ -2526,22 +2594,38 @@ fn classify_hook_source(source_dir: &str) -> HookSourceMeta {
             let prefix = crate::util::display_grok_home_prefix();
             let rest_str = rest.to_string_lossy();
             let rest_trimmed = rest_str.strip_prefix('/').unwrap_or(&rest_str);
-            format!("Custom: {prefix}/{rest_trimmed}")
+            crate::locale::ctx().format_named(
+                "extensions.source.custom",
+                "Custom: {path}",
+                &[("path", &format!("{prefix}/{rest_trimmed}"))],
+            )
         } else if let Some(home) = xai_dirs::home_dir() {
             // Path::strip_prefix, not a string prefix: USERPROFILE `C:\Users\foo` must not collapse `C:\Users\foobar`
             if !home.as_os_str().is_empty()
                 && let Ok(rest) = source_path.strip_prefix(&home)
             {
                 if rest.as_os_str().is_empty() {
-                    "Custom: ~".into()
+                    crate::locale::ctx().named_text("extensions.source.custom_home", "Custom: ~").into_owned()
                 } else {
-                    format!("Custom: ~/{}", rest.display())
+                    crate::locale::ctx().format_named(
+                        "extensions.source.custom",
+                        "Custom: {path}",
+                        &[("path", &format!("~/{}", rest.display()))],
+                    )
                 }
             } else {
-                format!("Custom: {source_dir}")
+                crate::locale::ctx().format_named(
+                    "extensions.source.custom",
+                    "Custom: {path}",
+                    &[("path", &source_dir)],
+                )
             }
         } else {
-            format!("Custom: {source_dir}")
+            crate::locale::ctx().format_named(
+                "extensions.source.custom",
+                "Custom: {path}",
+                &[("path", &source_dir)],
+            )
         }
     };
     HookSourceMeta {
@@ -2669,24 +2753,57 @@ fn build_plugin_fields(plugin: &xai_hooks_plugins_types::PluginInfo) -> Vec<Stri
     use xai_hooks_plugins_types::McpStatus;
     let mut components = Vec::new();
     if !plugin.skill_names.is_empty() {
-        components.push(format!("skills: {}", plugin.skill_names.join(", ")));
+        components.push(crate::locale::ctx().format_named(
+            "extensions.components.skills_named",
+            "skills: {names}",
+            &[("names", &plugin.skill_names.join(", "))],
+        ));
     } else if plugin.skill_count > 0 {
-        components.push(format!("{} skills", plugin.skill_count));
+        let count = plugin.skill_count.to_string();
+        components.push(crate::locale::ctx().format_named(
+            "extensions.components.skills_count",
+            "{count} skills",
+            &[("count", &count)],
+        ));
     }
     if !plugin.agent_names.is_empty() {
-        components.push(format!("agents: {}", plugin.agent_names.join(", ")));
+        components.push(crate::locale::ctx().format_named(
+            "extensions.components.agents_named",
+            "agents: {names}",
+            &[("names", &plugin.agent_names.join(", "))],
+        ));
     } else if plugin.agent_count > 0 {
-        components.push(format!("{} agents", plugin.agent_count));
+        let count = plugin.agent_count.to_string();
+        components.push(crate::locale::ctx().format_named(
+            "extensions.components.agents_count",
+            "{count} agents",
+            &[("count", &count)],
+        ));
     }
     if plugin.hook_count > 0 {
-        components.push(format!("{} hooks", plugin.hook_count));
+        let count = plugin.hook_count.to_string();
+        components.push(crate::locale::ctx().format_named(
+            "extensions.components.hooks_count",
+            "{count} hooks",
+            &[("count", &count)],
+        ));
     }
     match plugin.mcp_status {
         McpStatus::Active | McpStatus::ActiveInline => {
-            components.push(format!("{} MCP servers", plugin.mcp_server_count));
+            let count = plugin.mcp_server_count.to_string();
+            components.push(crate::locale::ctx().format_named(
+                "extensions.components.mcp_count",
+                "{count} MCP servers",
+                &[("count", &count)],
+            ));
         }
         McpStatus::Blocked => {
-            components.push(format!("{} MCP: blocked", plugin.mcp_server_count));
+            let count = plugin.mcp_server_count.to_string();
+            components.push(crate::locale::ctx().format_named(
+                "extensions.components.mcp_blocked",
+                "{count} MCP: blocked",
+                &[("count", &count)],
+            ));
         }
         McpStatus::None => {}
     }
@@ -2705,12 +2822,24 @@ fn component_categories(
     use xai_hooks_plugins_types::ComponentCategory;
     components.categories().map(|(category, items)| {
         let label = match category {
-            ComponentCategory::Skills => "skills",
-            ComponentCategory::Commands => "commands",
-            ComponentCategory::Agents => "agents",
-            ComponentCategory::McpServers => "mcp servers",
-            ComponentCategory::Hooks => "hooks",
-            ComponentCategory::LspServers => "lsp servers",
+            ComponentCategory::Skills => {
+                crate::locale::ctx().named_static_text("extensions.field.skills", "skills")
+            }
+            ComponentCategory::Commands => {
+                crate::locale::ctx().named_static_text("extensions.field.commands", "commands")
+            }
+            ComponentCategory::Agents => {
+                crate::locale::ctx().named_static_text("extensions.field.agents", "agents")
+            }
+            ComponentCategory::McpServers => {
+                crate::locale::ctx().named_static_text("extensions.field.mcp_servers", "mcp servers")
+            }
+            ComponentCategory::Hooks => {
+                crate::locale::ctx().named_static_text("extensions.field.hooks", "hooks")
+            }
+            ComponentCategory::LspServers => {
+                crate::locale::ctx().named_static_text("extensions.field.lsp_servers", "lsp servers")
+            }
         };
         (label, items)
     })
@@ -2732,7 +2861,12 @@ pub(crate) fn render_components_fields(
             .collect();
         let mut value = names.join(", ");
         if items.len() > COMPONENT_ITEMS_CAP {
-            value.push_str(&format!(" +{} more", items.len() - COMPONENT_ITEMS_CAP));
+            let more = (items.len() - COMPONENT_ITEMS_CAP).to_string();
+            value.push_str(&crate::locale::ctx().format_named(
+                "extensions.components.more",
+                " +{count} more",
+                &[("count", &more)],
+            ));
         }
         fields.push((label.to_string(), value));
     }
@@ -2856,10 +2990,19 @@ pub fn render_extensions_modal(
                         let collapsed =
                             !searching && state.skills_collapsed_groups.contains(group_label);
                         let count = members.len();
+                        let count_str = count.to_string();
                         entry_labels.push(if count == 1 {
-                            format!("{group_label} (1 skill)")
+                            crate::locale::ctx().format_named(
+                                "extensions.skills.group_count.one",
+                                "{source} (1 skill)",
+                                &[("source", group_label), ("count", &count_str)],
+                            )
                         } else {
-                            format!("{group_label} ({count} skills)")
+                            crate::locale::ctx().format_named(
+                                "extensions.skills.group_count.many",
+                                "{source} ({count} skills)",
+                                &[("source", group_label), ("count", &count_str)],
+                            )
                         });
                         entry_right_labels.push(String::new());
                         entry_desc_lines.push(vec![]);
@@ -2896,16 +3039,25 @@ pub fn render_extensions_modal(
                                 entry_desc_lines.push(vec![desc.to_string()]);
                             }
                             entry_summary_lines.push(vec![]);
-                            let mut fields = vec![("path".to_string(), skill.path.clone())];
+                            let mut fields = vec![(
+                                crate::locale::ctx().named_text("extensions.field.path", "path").into_owned(),
+                                skill.path.clone(),
+                            )];
                             if let Some(ref a) = skill.author
                                 && !a.is_empty()
                             {
-                                fields.push(("author".to_string(), a.clone()));
+                                fields.push((
+                                    crate::locale::ctx().named_text("extensions.field.author", "author").into_owned(),
+                                    a.clone(),
+                                ));
                             }
                             if let Some(ref tools) = skill.allowed_tools
                                 && !tools.is_empty()
                             {
-                                fields.push(("tools".to_string(), tools.join(", ")));
+                                fields.push((
+                                    crate::locale::ctx().named_text("extensions.field.tools", "tools").into_owned(),
+                                    tools.join(", "),
+                                ));
                             }
                             entry_fields.push(fields);
                             entry_is_header.push(false);
@@ -2914,7 +3066,7 @@ pub fn render_extensions_modal(
                             entry_data_indices.push(Some(si));
                             entry_group_keys.push(None);
                             if !skill.enabled {
-                                entry_badge_text.push("[disabled]".into());
+                                entry_badge_text.push(crate::locale::ctx().named_text("extensions.badge.disabled", "[disabled]").into_owned());
                                 entry_badge_color.push(Some(theme.accent_error));
                             } else {
                                 entry_badge_text.push(String::new());
@@ -2923,7 +3075,11 @@ pub fn render_extensions_modal(
                         }
                     }
                 } else if let TabDataState::Error(ref msg) = state.skills_data {
-                    entry_labels.push(format!("Error: {}", msg));
+                    entry_labels.push(crate::locale::ctx().format_named(
+                        "extensions.error.prefix",
+                        "Error: {error}",
+                        &[("error", msg)],
+                    ));
                     entry_right_labels.push(String::new());
                     entry_desc_lines.push(vec![]);
                     entry_summary_lines.push(vec![]);
@@ -3025,9 +3181,16 @@ pub fn render_extensions_modal(
                             if let Some(ref desc) = plugin.description
                                 && !desc.is_empty()
                             {
-                                fields.push(("description".to_string(), desc.clone()));
+                                fields.push((
+                                    crate::locale::ctx().named_text("extensions.field.description", "description")
+                                        .into_owned(),
+                                    desc.clone(),
+                                ));
                             }
-                            fields.push(("path".to_string(), plugin.root.clone()));
+                            fields.push((
+                                crate::locale::ctx().named_text("extensions.field.path", "path").into_owned(),
+                                plugin.root.clone(),
+                            ));
                             entry_fields.push(fields);
                             entry_is_header.push(false);
                             entry_dimmed.push(!plugin.enabled);
@@ -3035,7 +3198,7 @@ pub fn render_extensions_modal(
                             entry_data_indices.push(Some(pi));
                             entry_group_keys.push(None);
                             entry_badge_text.push(if !plugin.enabled {
-                                "[disabled]".into()
+                                crate::locale::ctx().named_text("extensions.badge.disabled", "[disabled]").into_owned()
                             } else {
                                 String::new()
                             });
@@ -3047,7 +3210,11 @@ pub fn render_extensions_modal(
                         }
                     }
                 } else if let TabDataState::Error(ref msg) = state.plugins_data {
-                    entry_labels.push(format!("Error: {}", msg));
+                    entry_labels.push(crate::locale::ctx().format_named(
+                        "extensions.error.prefix",
+                        "Error: {error}",
+                        &[("error", msg)],
+                    ));
                     entry_right_labels.push(String::new());
                     entry_desc_lines.push(vec![]);
                     entry_summary_lines.push(vec![]);
@@ -3077,8 +3244,12 @@ pub fn render_extensions_modal(
                         let collapsed =
                             !searching && state.hooks_collapsed_groups.contains(source_dir);
                         let count = indices.len();
-                        let noun = if count == 1 { "hook" } else { "hooks" };
-                        entry_labels.push(format!("{label} ({count} {noun})"));
+                        let count_str = count.to_string();
+                        entry_labels.push(crate::locale::ctx().format_named(
+                            "extensions.hooks.group_count",
+                            "{source} ({count} hooks)",
+                            &[("source", label), ("count", &count_str)],
+                        ));
                         entry_right_labels.push(String::new());
                         entry_desc_lines.push(vec![]);
                         entry_summary_lines.push(vec![]);
@@ -3099,7 +3270,12 @@ pub fn render_extensions_modal(
                             let cmd = hook
                                 .command
                                 .as_deref()
-                                .unwrap_or(hook.url.as_deref().unwrap_or("(no command)"));
+                                .unwrap_or(
+                                    hook.url.as_deref().unwrap_or(
+                                        crate::locale::ctx().named_text("extensions.hook.no_command", "(no command)")
+                                            .as_ref(),
+                                    ),
+                                );
                             entry_right_labels.push(String::new());
                             entry_desc_lines.push(vec![format!("\u{2192} {}", cmd)]);
                             entry_summary_lines.push(vec![]);
@@ -3112,9 +3288,11 @@ pub fn render_extensions_modal(
                             // Pinned (managed-policy) hooks show their state up front, so a refused Disable isn't the first signal
                             // A pinned hook never shows [disabled]
                             entry_badge_text.push(if hook.pinned {
-                                "[policy]".into()
+                                crate::locale::ctx()
+                                    .named_text("extensions.badge.policy", "[policy]")
+                                    .into_owned()
                             } else if hook.disabled {
-                                "[disabled]".into()
+                                crate::locale::ctx().named_text("extensions.badge.disabled", "[disabled]").into_owned()
                             } else {
                                 String::new()
                             });
@@ -3128,7 +3306,11 @@ pub fn render_extensions_modal(
                         }
                     }
                 } else if let TabDataState::Error(ref msg) = state.hooks_data {
-                    entry_labels.push(format!("Error: {}", msg));
+                    entry_labels.push(crate::locale::ctx().format_named(
+                        "extensions.error.prefix",
+                        "Error: {error}",
+                        &[("error", msg)],
+                    ));
                     entry_right_labels.push(String::new());
                     entry_desc_lines.push(vec![]);
                     entry_summary_lines.push(vec![]);
@@ -3186,16 +3368,34 @@ pub fn render_extensions_modal(
                                 continue;
                             }
                             let status_label = match plugin.install_status.as_str() {
-                                "installed" => "[installed]",
-                                "update_available" => "[update available]",
+                                "installed" => crate::locale::ctx().named_static_text(
+                                    "extensions.badge.installed",
+                                    "[installed]",
+                                ),
+                                "update_available" => crate::locale::ctx().named_static_text(
+                                    "extensions.badge.update_available",
+                                    "[update available]",
+                                ),
                                 _ => "",
                             };
                             entry_labels.push(plugin.name.clone());
                             let right = match (plugin.version.as_deref(), plugin.author.as_deref())
                             {
-                                (Some(v), Some(a)) => format!("v{v} by {a}"),
-                                (Some(v), None) => format!("v{v}"),
-                                (None, Some(a)) => format!("by {a}"),
+                                (Some(v), Some(a)) => crate::locale::ctx().format_named(
+                                    "extensions.marketplace.version_author",
+                                    "v{version} by {author}",
+                                    &[("version", v), ("author", a)],
+                                ),
+                                (Some(v), None) => crate::locale::ctx().format_named(
+                                    "extensions.marketplace.version",
+                                    "v{version}",
+                                    &[("version", v)],
+                                ),
+                                (None, Some(a)) => crate::locale::ctx().format_named(
+                                    "extensions.marketplace.author",
+                                    "by {author}",
+                                    &[("author", a)],
+                                ),
                                 (None, None) => String::new(),
                             };
                             entry_right_labels.push(right);
@@ -3212,16 +3412,28 @@ pub fn render_extensions_modal(
                             // Fields for expanded view.
                             let mut fields = Vec::new();
                             if let Some(ref version) = plugin.version {
-                                fields.push(("version".to_string(), version.clone()));
+                                fields.push((
+                                    crate::locale::ctx().named_text("extensions.field.version", "version").into_owned(),
+                                    version.clone(),
+                                ));
                             }
                             if let Some(ref author) = plugin.author {
-                                fields.push(("author".to_string(), author.clone()));
+                                fields.push((
+                                    crate::locale::ctx().named_text("extensions.field.author", "author").into_owned(),
+                                    author.clone(),
+                                ));
                             }
                             if let Some(ref category) = plugin.category {
-                                fields.push(("category".to_string(), category.clone()));
+                                fields.push((
+                                    crate::locale::ctx().named_text("extensions.field.category", "category").into_owned(),
+                                    category.clone(),
+                                ));
                             }
                             if !plugin.tags.is_empty() {
-                                fields.push(("tags".to_string(), plugin.tags.join(", ")));
+                                fields.push((
+                                    crate::locale::ctx().named_text("extensions.field.tags", "tags").into_owned(),
+                                    plugin.tags.join(", "),
+                                ));
                             }
                             match &plugin.components {
                                 Some(components) if !components.is_empty() => {
@@ -3229,23 +3441,40 @@ pub fn render_extensions_modal(
                                 }
                                 Some(_) => {
                                     fields.push((
-                                        "provides".to_string(),
-                                        NO_DETECTABLE_COMPONENTS.to_string(),
+                                        crate::locale::ctx().named_text("extensions.field.provides", "provides")
+                                            .into_owned(),
+                                        crate::locale::ctx().named_text(
+                                            "extensions.components.none_detectable",
+                                            NO_DETECTABLE_COMPONENTS,
+                                        )
+                                        .into_owned(),
                                     ));
                                 }
                                 None => {
                                     if plugin.remote_url.is_some() {
                                         fields.push((
-                                            "provides".to_string(),
-                                            "contents shown after install".to_string(),
+                                            crate::locale::ctx().named_text("extensions.field.provides", "provides")
+                                                .into_owned(),
+                                            crate::locale::ctx().named_text(
+                                                "extensions.components.after_install",
+                                                "contents shown after install",
+                                            )
+                                            .into_owned(),
                                         ));
                                     }
                                 }
                             }
                             if plugin.install_status != "not_installed" {
-                                fields.push(("status".to_string(), plugin.install_status.clone()));
+                                fields.push((
+                                    crate::locale::ctx().named_text("extensions.field.status", "status").into_owned(),
+                                    plugin.install_status.clone(),
+                                ));
                                 if let Some(ref iv) = plugin.installed_version {
-                                    fields.push(("installed".to_string(), iv.clone()));
+                                    fields.push((
+                                        crate::locale::ctx().named_text("extensions.field.installed", "installed")
+                                            .into_owned(),
+                                        iv.clone(),
+                                    ));
                                 }
                             }
                             entry_fields.push(fields);
@@ -3263,7 +3492,11 @@ pub fn render_extensions_modal(
                         }
                     }
                 } else if let TabDataState::Error(ref msg) = state.marketplace_data {
-                    entry_labels.push(format!("Error: {}", msg));
+                    entry_labels.push(crate::locale::ctx().format_named(
+                        "extensions.error.prefix",
+                        "Error: {error}",
+                        &[("error", msg)],
+                    ));
                     entry_right_labels.push(String::new());
                     entry_desc_lines.push(vec![]);
                     entry_summary_lines.push(vec![]);
@@ -3348,32 +3581,57 @@ pub fn render_extensions_modal(
                                     if server.status == McpServerDisplayStatus::BlockedByPolicy {
                                         // The reason already carries its source in parentheses.
                                         match server.blocked_reason.as_deref() {
-                                            Some(reason) => format!("blocked by policy — {reason}"),
-                                            None => "blocked by policy".to_string(),
+                                            Some(reason) => crate::locale::ctx().format_named(
+                                                "extensions.mcp.blocked_reason",
+                                                "blocked by policy — {reason}",
+                                                &[("reason", reason)],
+                                            ),
+                                            None => crate::locale::ctx().named_text(
+                                                "extensions.mcp.blocked",
+                                                "blocked by policy",
+                                            )
+                                            .into_owned(),
                                         }
                                     } else if !server.enabled {
-                                        "no tools — server is disabled".to_string()
+                                        crate::locale::ctx().named_text(
+                                            "extensions.mcp.no_tools_disabled",
+                                            "no tools — server is disabled",
+                                        )
+                                        .into_owned()
                                     } else if matches!(
                                         server.status,
                                         McpServerDisplayStatus::SetupRequired
                                             | McpServerDisplayStatus::NeedsAuth
                                     ) {
-                                        format!("no tools — {}", server.status.label())
+                                        crate::locale::ctx().format_named(
+                                            "extensions.mcp.no_tools_status",
+                                            "no tools — {status}",
+                                            &[("status", &server.status.label().to_string())],
+                                        )
                                     } else {
-                                        "no tools (server may not be connected)".to_string()
+                                        crate::locale::ctx().named_text(
+                                            "extensions.mcp.no_tools",
+                                            "no tools (server may not be connected)",
+                                        )
+                                        .into_owned()
                                     };
                                 entry_desc_lines.push(vec![line]);
                             } else {
                                 let enabled_count =
                                     server.tools.iter().filter(|t| t.enabled).count();
+                                let total = server.tools.len().to_string();
                                 if enabled_count == server.tools.len() {
-                                    entry_desc_lines
-                                        .push(vec![format!("{} tools", server.tools.len())]);
+                                    entry_desc_lines.push(vec![crate::locale::ctx().format_named(
+                                        "extensions.mcp.tools_count",
+                                        "{count} tools",
+                                        &[("count", &total)],
+                                    )]);
                                 } else {
-                                    entry_desc_lines.push(vec![format!(
-                                        "{} tools ({} enabled)",
-                                        server.tools.len(),
-                                        enabled_count
+                                    let enabled = enabled_count.to_string();
+                                    entry_desc_lines.push(vec![crate::locale::ctx().format_named(
+                                        "extensions.mcp.tools_enabled_count",
+                                        "{count} tools ({enabled} enabled)",
+                                        &[("count", &total), ("enabled", &enabled)],
                                     )]);
                                 }
                             }
@@ -3408,7 +3666,7 @@ pub fn render_extensions_modal(
                                     entry_data_indices.push(Some(si));
                                     entry_group_keys.push(None);
                                     let tool_badge = if !t.enabled {
-                                        ("[disabled]".to_string(), Some(theme.accent_error))
+                                        (crate::locale::ctx().named_text("extensions.badge.disabled", "[disabled]").into_owned(), Some(theme.accent_error))
                                     } else {
                                         (String::new(), None)
                                     };
@@ -3419,7 +3677,11 @@ pub fn render_extensions_modal(
                         }
                     }
                 } else if let TabDataState::Error(ref msg) = state.mcps_data {
-                    entry_labels.push(format!("Error: {}", msg));
+                    entry_labels.push(crate::locale::ctx().format_named(
+                        "extensions.error.prefix",
+                        "Error: {error}",
+                        &[("error", msg)],
+                    ));
                     entry_right_labels.push(String::new());
                     entry_desc_lines.push(vec![]);
                     entry_summary_lines.push(vec![]);
@@ -3572,12 +3834,15 @@ pub fn render_extensions_modal(
         }
         // Same non-clickable hint as the list footer; the painted URL is the mouse target.
         shortcuts.push(Shortcut {
-            label: MCP_SERVERS_OPEN_CONNECTORS_FOOTER,
+            label: crate::locale::ctx().named_static_text(
+                "extensions.shortcut.open_connectors",
+                MCP_SERVERS_OPEN_CONNECTORS_FOOTER,
+            ),
             clickable: false,
             id: 0,
         });
         shortcuts.push(Shortcut {
-            label: "esc back",
+            label: crate::locale::ctx().named_static_text("extensions.shortcut.esc_back", "esc back"),
             clickable: true,
             id: WAIT_BACK_SHORTCUT_ID,
         });
@@ -3591,17 +3856,20 @@ pub fn render_extensions_modal(
         // Input-mode is handled below; it owns its own footer.
     } else if state.mcp_setup.is_some() {
         shortcuts.push(Shortcut {
-            label: "Enter save and authenticate",
+            label: crate::locale::ctx().named_static_text(
+                "extensions.shortcut.save_auth",
+                "Enter save and authenticate",
+            ),
             clickable: false,
             id: 0,
         });
         shortcuts.push(Shortcut {
-            label: "↑/↓ select",
+            label: crate::locale::ctx().named_static_text("extensions.shortcut.select", "↑/↓ select"),
             clickable: false,
             id: 0,
         });
         shortcuts.push(Shortcut {
-            label: "Esc cancel",
+            label: crate::locale::ctx().named_static_text("extensions.shortcut.cancel", "Esc cancel"),
             clickable: false,
             id: 0,
         });
@@ -3609,21 +3877,21 @@ pub fn render_extensions_modal(
         // "Add"/input mode: show the keys the input form actually handles
         // Tab is either path completion (single-field) or field navigation (multi-field)
         shortcuts.push(Shortcut {
-            label: "Enter submit",
+            label: crate::locale::ctx().named_static_text("extensions.shortcut.submit", "Enter submit"),
             clickable: false,
             id: 0,
         });
         shortcuts.push(Shortcut {
             label: if input.is_multi_field() {
-                "Tab/Shift+Tab field"
+                crate::locale::ctx().named_static_text("extensions.shortcut.field", "Tab/Shift+Tab field")
             } else {
-                "Tab complete"
+                crate::locale::ctx().named_static_text("extensions.shortcut.complete", "Tab complete")
             },
             clickable: false,
             id: 0,
         });
         shortcuts.push(Shortcut {
-            label: "Esc cancel",
+            label: crate::locale::ctx().named_static_text("extensions.shortcut.cancel", "Esc cancel"),
             clickable: false,
             id: 0,
         });
@@ -3631,7 +3899,7 @@ pub fn render_extensions_modal(
         // Tab/Shift+Tab cycles tabs (handled in picker.rs). Click on the hint cycles to the next tab only
         // (sentinel id 98, dispatched in `handle_extensions_modal_mouse`).
         shortcuts.push(Shortcut {
-            label: "Tab tabs",
+            label: crate::locale::ctx().named_static_text("extensions.shortcut.tabs", "Tab tabs"),
             clickable: true,
             id: 98,
         });
@@ -3644,7 +3912,10 @@ pub fn render_extensions_modal(
         }
         if state.active_tab == ExtensionsTab::McpServers {
             shortcuts.push(Shortcut {
-                label: MCP_SERVERS_OPEN_CONNECTORS_FOOTER,
+                label: crate::locale::ctx().named_static_text(
+                    "extensions.shortcut.open_connectors",
+                    MCP_SERVERS_OPEN_CONNECTORS_FOOTER,
+                ),
                 clickable: false,
                 id: 0,
             });
@@ -3653,7 +3924,7 @@ pub fn render_extensions_modal(
         // The hint is omitted from the footer to save space; the cheatsheet still lists it
         // ID 99 is the close action, handled in the mouse handler
         shortcuts.push(Shortcut {
-            label: "Esc close",
+            label: crate::locale::ctx().named_static_text("extensions.shortcut.close", "Esc close"),
             clickable: true,
             id: 99,
         });
@@ -3899,7 +4170,9 @@ pub fn render_extensions_modal(
             popup_rect.y + popup_rect.height.saturating_sub(1),
         )
     {
-        let label = state.pending_action.as_deref().unwrap_or("Processing...");
+        let label = state.pending_action.as_deref().unwrap_or(
+            crate::locale::ctx().named_text("extensions.pending.processing", "Processing...").as_ref(),
+        );
         let frames = crate::glyphs::braille_spinner_frames();
         let frame_idx = (tick / SPINNER_DIVISOR) as usize % frames.len();
         let display = format!("{} {label}", frames[frame_idx]);
@@ -3950,8 +4223,20 @@ pub fn render_extensions_modal(
     // Custom render (not via Shortcut) is needed because dismissal keys ("any key") are multi-word.
     if let Some(kind) = modal_msg_kind {
         let segments: &[(&str, &str)] = match kind {
-            ModalMsgKind::Error => &[("any key", " back")],
-            ModalMsgKind::Confirm => &[("y", " confirm"), ("any other key", " cancel")],
+            ModalMsgKind::Error => &[(
+                crate::locale::ctx().named_static_text("extensions.shortcut.any_key", "any key"),
+                crate::locale::ctx().named_static_text("extensions.shortcut.back_suffix", " back"),
+            )],
+            ModalMsgKind::Confirm => &[
+                (
+                    "y",
+                    crate::locale::ctx().named_static_text("extensions.shortcut.confirm_suffix", " confirm"),
+                ),
+                (
+                    crate::locale::ctx().named_static_text("extensions.shortcut.any_other_key", "any other key"),
+                    crate::locale::ctx().named_static_text("extensions.shortcut.cancel_suffix", " cancel"),
+                ),
+            ],
             ModalMsgKind::ConnectorsWait => &[],
         };
         if !segments.is_empty() {
@@ -4022,7 +4307,7 @@ fn render_mcp_setup_form(buf: &mut Buffer, area: Rect, setup: &McpSetupFormState
             .bg(theme.bg_base)
             .add_modifier(Modifier::BOLD),
     );
-    let hint = "Save and authenticate";
+    let hint = crate::locale::ctx().named_text("extensions.form.save_authenticate", "Save and authenticate");
     buf.set_string(
         x,
         top.saturating_add(1),
@@ -5258,7 +5543,7 @@ mod tests {
         render_extensions_modal(&mut buf, area, &mut state, None, false, 0);
         assert_eq!(
             state.entry_labels_cache,
-            [workflows_picker_rows::WORKFLOWS_EMPTY_PLACEHOLDER]
+            [workflows_picker_rows::workflows_empty_placeholder]
         );
         assert_eq!(
             buffer_count(&buf, "No workflows available"),

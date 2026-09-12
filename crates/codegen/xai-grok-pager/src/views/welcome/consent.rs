@@ -29,6 +29,11 @@ const NARROW_COLS: u16 = 40;
 const TOO_SMALL: &str = "Enlarge the window to read this notice";
 const TOO_SMALL_NARROW: &str = "Window too small";
 
+/// Localized quit label shared by both consent menu rows.
+fn quit_label() -> &'static str {
+    crate::locale::ctx().named_static_text("welcome.quit", "Quit")
+}
+
 pub fn render_consent(
     content_area: Rect,
     buf: &mut Buffer,
@@ -62,9 +67,9 @@ pub fn render_consent(
     } else {
         // Title dropped: on a screen this small, why the notice is unreadable matters more.
         let text = if message.width < NARROW_COLS {
-            TOO_SMALL_NARROW
+            crate::locale::ctx().named_static_text("consent.too_small_narrow", TOO_SMALL_NARROW)
         } else {
-            TOO_SMALL
+            crate::locale::ctx().named_static_text("consent.too_small", TOO_SMALL)
         };
         paint_centered(message, buf, Style::default().fg(theme.gray), text);
         Vec::new()
@@ -73,9 +78,9 @@ pub fn render_consent(
     // Accept is refused while the body is unread, so the row is withheld rather than offered and ignored
     // Quit stays, or the screen would show no way out at all
     let menu_items: &[(&str, &str)] = if legibility.can_accept() {
-        &[("a", notice.accept_label.as_str()), ("q", "Quit")]
+        &[("a", notice.accept_label.as_str()), ("q", quit_label())]
     } else {
-        &[("q", "Quit")]
+        &[("q", quit_label())]
     };
     let menu_area = inset_horizontal(layout.menu, prompt::prompt_inset(compact));
     let menu_rects = render_menu(menu_area, buf, theme, menu_items, selected, None, 0);

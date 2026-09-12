@@ -11,7 +11,12 @@ use std::path::PathBuf;
 use std::time::{Instant, SystemTime};
 /// Title prefix for a session that has no name / generated title / prompt yet.
 /// The renderer paints this part in the primary colour and the trailing ` #<id>` suffix in dim gray (see `render::render_row`).
-pub(crate) const NEW_SESSION_LABEL: &str = "New session";
+/// A function rather than a const: the label is localized, and `render.rs` matches the row label against this same text.
+pub(crate) fn new_session_label() -> String {
+    crate::locale::ctx()
+        .named_text("dashboard.row.new_session", "New session")
+        .into_owned()
+}
 /// A single row in the dashboard. Built per-frame from `app.agents`.
 #[derive(Debug, Clone)]
 pub struct DashboardRow {
@@ -326,7 +331,11 @@ fn build_local_rows(
                     parent: *id,
                     child_session_id: format!("__more_{}", id.0),
                 },
-                label: format!("\u{2026} {} more", total - keep),
+                label: crate::locale::ctx().format_named(
+                    "dashboard.row.more",
+                    "\u{2026} {count} more",
+                    &[("count", &(total - keep).to_string())],
+                ),
                 subtitle: None,
                 state: RowState::Idle,
                 activity: None,
@@ -408,8 +417,16 @@ fn append_roster_rows(
             .unwrap_or_else(|| sanitize(&entry.session_id));
         let state = roster_activity_to_state(entry.activity);
         let activity = match state {
-            RowState::NeedsInput => Some("Awaiting input".to_string()),
-            RowState::Working => Some("Working".to_string()),
+            RowState::NeedsInput => Some(
+                crate::locale::ctx()
+                    .named_text("dashboard.row.awaiting_input", "Awaiting input")
+                    .into_owned(),
+            ),
+            RowState::Working => Some(
+                crate::locale::ctx()
+                    .named_text("dashboard.row.working", "Working")
+                    .into_owned(),
+            ),
             _ => None,
         };
         let mut badges = Vec::new();
@@ -562,9 +579,9 @@ fn top_level_label(agent: &AgentView) -> String {
     }
     if let Some(sid) = agent.session.session_id.as_ref() {
         let short: String = sid.0.chars().take(8).collect();
-        return format!("{NEW_SESSION_LABEL} #{short}");
+        return format!("{} #{short}", new_session_label());
     }
-    NEW_SESSION_LABEL.to_string()
+    new_session_label()
 }
 fn top_level_row(id: AgentId, agent: &AgentView, pinned: bool, home: Option<&str>) -> DashboardRow {
     let state = classify_top_level(agent);
@@ -735,7 +752,11 @@ fn top_level_subtitle(agent: &AgentView) -> Option<String> {
         return None;
     }
     if is_worktree {
-        parts.push("worktree".to_string());
+        parts.push(
+            crate::locale::ctx()
+                .named_static_text("dashboard.badge.worktree", "worktree")
+                .to_string(),
+        );
     }
     Some(parts.join(" "))
 }
@@ -752,11 +773,19 @@ fn top_level_secondary_line(
             if let Some(perm) = agent.permission_queue.front() {
                 let title = perm.title.trim();
                 if !title.is_empty() {
-                    return Some(format!("Pending: {}", sanitize(title)));
+                    return Some(crate::locale::ctx().format_named(
+                        "dashboard.row.pending",
+                        "Pending: {detail}",
+                        &[("detail", &sanitize(title))],
+                    ));
                 }
             }
             if agent.question_view.is_some() {
-                return Some("Pending: question".to_string());
+                return Some(
+                    crate::locale::ctx()
+                        .named_text("dashboard.row.pending_question", "Pending: question")
+                        .into_owned(),
+                );
             }
             activity.map(sanitize)
         }
@@ -799,7 +828,10 @@ fn first_nonempty_line(s: &str) -> Option<&str> {
 fn subagent_subtitle(info: &SubagentInfo, cwd: &std::path::Path) -> Option<String> {
     let name = cwd_basename(cwd)?;
     if info.worktree_path.is_some() {
-        Some(format!("{name} worktree"))
+        Some(format!(
+            "{name} {}",
+            crate::locale::ctx().named_static_text("dashboard.badge.worktree", "worktree")
+        ))
     } else {
         Some(name)
     }
@@ -814,18 +846,30 @@ fn subagent_secondary_line(
 }
 fn top_level_activity(agent: &AgentView, state: RowState) -> Option<String> {
     match state {
-        RowState::NeedsInput => Some("Awaiting your input".to_string()),
+        RowState::NeedsInput => Some(
+            crate::locale::ctx()
+                .named_text("dashboard.row.awaiting_your_input", "Awaiting your input")
+                .into_owned(),
+        ),
         RowState::Working => {
             if let Some(cmd) = agent.session.state.command_in_flight() {
                 Some(format!("{}…", cmd.display_name()))
             } else if let Some(activity) = agent.resolve_turn_activity() {
                 Some(sanitize(&format_activity_label(&activity)))
             } else if agent.session.loading_replay {
-                Some("Loading…".to_string())
+                Some(
+                    crate::locale::ctx()
+                        .named_text("dashboard.row.loading", "Loading…")
+                        .into_owned(),
+                )
             } else if let Some(bg) = background_work_label(agent) {
                 Some(bg)
             } else {
-                Some("Working".to_string())
+                Some(
+                    crate::locale::ctx()
+                        .named_text("dashboard.row.working", "Working")
+                        .into_owned(),
+                )
             }
         }
         _ => None,
@@ -849,7 +893,11 @@ fn subagent_activity(info: &SubagentInfo, state: RowState) -> Option<String> {
             .map(|s| s.as_ref())
             .unwrap_or("");
         if last_tool.is_empty() {
-            Some("Working".to_string())
+            Some(
+                crate::locale::ctx()
+                    .named_text("dashboard.row.working", "Working")
+                    .into_owned(),
+            )
         } else {
             Some(sanitize(&format_activity_label(
                 &TurnActivity::ToolRunning {
@@ -862,7 +910,16 @@ fn subagent_activity(info: &SubagentInfo, state: RowState) -> Option<String> {
         let turns = info.attempt.turns.unwrap_or(0);
         let tools = info.attempt.tool_calls.unwrap_or(0);
         let toks = info.attempt.tokens_used.unwrap_or(0);
-        Some(format!("{tools} tools · {toks} tok · {turns} turns"))
+        Some(crate::locale::ctx().format_named(
+            "dashboard.row.finished_stats",
+            "{tools} tools · {toks} tok · {turns} turns",
+            &[
+                ("tools", &tools.to_string()),
+                ("toks", &toks.to_string()),
+                ("tokens", &toks.to_string()),
+                ("turns", &turns.to_string()),
+            ],
+        ))
     } else {
         None
     }

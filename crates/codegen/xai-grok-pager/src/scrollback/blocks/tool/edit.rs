@@ -161,9 +161,27 @@ fn render_diff_hunks_core(
         if i > 0 && !lines.is_empty() && !config.hunk_separator.is_empty() {
             // Add separator between hunks (no background)
             let indent = if config.indent { INDENT } else { "" };
+            let locale = crate::locale::ctx();
             let sep_text = match hunk_gap_lines(&hunks[i - 1], hunk) {
-                Some(1) => format!("{} 1 unchanged line", config.hunk_separator),
-                Some(n) => format!("{} {n} unchanged lines", config.hunk_separator),
+                Some(1) => locale.format_named(
+                    "scrollback.tool.edit.unchanged_lines",
+                    "{separator} 1 unchanged line",
+                    &[
+                        ("separator", config.hunk_separator.as_str()),
+                        ("count", "1"),
+                    ],
+                ),
+                Some(n) => {
+                    let count = n.to_string();
+                    locale.format_named(
+                        "scrollback.tool.edit.unchanged_lines",
+                        "{separator} {count} unchanged lines",
+                        &[
+                            ("separator", config.hunk_separator.as_str()),
+                            ("count", &count),
+                        ],
+                    )
+                }
                 None => config.hunk_separator.clone(),
             };
             let sep_line = Line::from(vec![
@@ -795,9 +813,10 @@ impl EditToolCallBlock {
             started_at: None,
             elapsed_ms: None,
             prefix: if display_name.is_some() {
-                "Editing workflow "
+                crate::locale::ctx()
+                    .named_static_text("scrollback.tool.edit.editing_workflow", "Editing workflow ")
             } else {
-                "Edit "
+                crate::locale::ctx().named_static_text("scrollback.tool.edit.label", "Edit ")
             },
             display_name,
             summary_untrusted: false,
@@ -814,7 +833,10 @@ impl EditToolCallBlock {
 
     pub fn with_prefix(mut self, prefix: &'static str) -> Self {
         self.prefix = if self.display_name.is_some() && prefix == "Creating " {
-            "Creating workflow "
+            crate::locale::ctx()
+                .named_static_text("scrollback.tool.edit.creating_workflow", "Creating workflow ")
+        } else if prefix == "Creating " {
+            crate::locale::ctx().named_static_text("scrollback.tool.edit.creating", "Creating ")
         } else {
             prefix
         };
@@ -959,8 +981,13 @@ impl EditToolCallBlock {
                     Vec::new()
                 }
             } else if collapsed && self.edit_count > 1 {
+                let count = self.edit_count.to_string();
                 vec![Span::styled(
-                    format!(" ({} edits)", self.edit_count),
+                    crate::locale::ctx().format_named(
+                        "scrollback.tool.edit.edits",
+                        " ({count} edits)",
+                        &[("count", &count)],
+                    ),
                     detail_style,
                 )]
             } else {

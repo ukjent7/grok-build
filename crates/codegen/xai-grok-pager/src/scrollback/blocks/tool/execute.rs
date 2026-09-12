@@ -195,11 +195,15 @@ impl ExecuteToolCallBlock {
                 } else {
                     theme.primary().add_modifier(Modifier::BOLD)
                 };
-                let mut spans = vec![Span::styled("Run ".to_string(), label_style)];
-                let mut hang = UnicodeWidthStr::width("Run ");
+                let run_label =
+                    crate::locale::ctx().named_text("scrollback.tool.execute.run", "Run ");
+                let mut spans = vec![Span::styled(run_label.clone(), label_style)];
+                let mut hang = UnicodeWidthStr::width(run_label.as_ref());
                 if self.bash_mode {
-                    spans.push(Span::styled("(user) ".to_string(), theme.muted()));
-                    hang += UnicodeWidthStr::width("(user) ");
+                    let user_label =
+                        crate::locale::ctx().named_text("scrollback.tool.execute.user", "(user) ");
+                    spans.push(Span::styled(user_label.clone(), theme.muted()));
+                    hang += UnicodeWidthStr::width(user_label.as_ref());
                 }
                 (spans, hang)
             }
@@ -288,10 +292,20 @@ impl ExecuteToolCallBlock {
         } else {
             theme.primary().add_modifier(Modifier::BOLD)
         };
-        let mut spans = vec![Span::styled("Run ", label_style)];
+        let mut spans = vec![Span::styled(
+            crate::locale::ctx()
+                .named_text("scrollback.tool.execute.run", "Run ")
+                .into_owned(),
+            label_style,
+        )];
         if self.bash_mode {
             // Same style as session event messages (e.g. "Worked for 2.3s")
-            spans.push(Span::styled("(user) ", theme.muted()));
+            spans.push(Span::styled(
+                crate::locale::ctx()
+                    .named_text("scrollback.tool.execute.user", "(user) ")
+                    .into_owned(),
+                theme.muted(),
+            ));
         }
         // Single ratatui Line: never pass raw newlines (callers that need multi-line command display use `push_command_soft_wrap`)
         let title_owned;
@@ -549,7 +563,11 @@ impl ExecuteToolCallBlock {
                     let hidden = total - threshold;
                     lines.push(apply_pad(
                         BlockLine::separator(Line::from(Span::styled(
-                            format!("\u{2026} +{hidden} lines"),
+                            crate::locale::ctx().format_named(
+                                "scrollback.tool.execute.more_lines",
+                                "\u{2026} +{count} lines",
+                                &[("count", &hidden.to_string())],
+                            ),
                             theme.muted(),
                         )))
                         .with_panel_background(theme.bg_dark),

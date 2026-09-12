@@ -14,7 +14,10 @@ use crate::scrollback::block::RenderBlock;
 
 /// Temporary kill switch: client share links are disabled.
 pub(super) fn dispatch_share_session(app: &mut AppView) -> Vec<Effect> {
-    app.show_toast("Session sharing is temporarily disabled");
+    app.show_toast(&crate::locale::ctx().named_text(
+        "status.session_share_disabled",
+        "Session sharing is temporarily disabled",
+    ));
     vec![]
 }
 
@@ -238,7 +241,10 @@ pub(super) fn set_coding_data_sharing(
 ) -> Vec<Effect> {
     // ── Guard 1: Enterprise ZDR ──────────────────────────────────────
     if app.is_zdr {
-        app.show_toast("\u{2717} Cannot change: Zero Data Retention enabled");
+        app.show_toast(&crate::locale::ctx().named_text(
+            "status.zdr_cannot_change",
+            "\u{2717} Cannot change: Zero Data Retention enabled",
+        ));
         return vec![];
     }
     // ── Guard 2: Non-admin team member ───────────────────────────────
@@ -248,7 +254,10 @@ pub(super) fn set_coding_data_sharing(
             .as_deref()
             .is_some_and(|r| r.eq_ignore_ascii_case("admin"));
         if !is_admin {
-            app.show_toast("\u{2717} Data sharing is controlled by your team admin");
+            app.show_toast(&crate::locale::ctx().named_text(
+                "status.team_admin_controls_sharing",
+                "\u{2717} Data sharing is controlled by your team admin",
+            ));
             return vec![];
         }
     }
@@ -302,7 +311,9 @@ pub(super) fn scrub_error_for_toast(error: &str) -> String {
             .chars()
             .any(crate::render::line_utils::is_unsafe_display_char)
     {
-        "server error (see logs for details)".to_string()
+        crate::locale::ctx()
+            .named_text("status.server_error_generic", "server error (see logs for details)")
+            .into_owned()
     } else {
         error.to_string()
     }
@@ -356,7 +367,12 @@ pub(super) fn dispatch_show_usage(app: &mut AppView) -> Vec<Effect> {
                 push_and_page_flip(
                     &mut agent.scrollback,
                     RenderBlock::system(
-                        "Session usage is unavailable until the session starts.".to_string(),
+                        crate::locale::ctx()
+                            .named_text(
+                                "status.session_usage_unavailable",
+                                "Session usage is unavailable until the session starts.",
+                            )
+                            .into_owned(),
                     ),
                 );
             }
@@ -416,9 +432,13 @@ pub(super) fn append_consumer_billing_surface(app: &mut AppView, agent_id: Agent
     if let Some(url) = app.usage_billing_redirect_url.clone() {
         if let Some(agent) = app.agents.get_mut(&agent_id) {
             agent.scrollback.push_block(RenderBlock::System(
-                crate::scrollback::blocks::SystemMessageBlock::new(format!(
-                    "Please check your usage on {url}"
-                )),
+                crate::scrollback::blocks::SystemMessageBlock::new(
+                    crate::locale::ctx().format_named(
+                        "status.check_usage_on_url",
+                        "Please check your usage on {url}",
+                        &[("url", &url)],
+                    ),
+                ),
             ));
         }
         return vec![];
@@ -452,9 +472,13 @@ pub(crate) fn commit_minimal_update_notice(app: &mut AppView, latest_version: &s
     if let ActiveView::Agent(id) = app.active_view
         && let Some(agent) = app.agents.get_mut(&id)
     {
-        agent.scrollback.push_block(RenderBlock::system(format!(
-            "Update available: v{latest_version}. Restart to apply."
-        )));
+        agent.scrollback.push_block(RenderBlock::system(
+            crate::locale::ctx().format_named(
+                "status.update_available",
+                "Update available: v{version}. Restart to apply.",
+                &[("version", latest_version)],
+            ),
+        ));
     }
 }
 
@@ -497,8 +521,11 @@ pub(super) fn dispatch_open_gboom(app: &mut AppView) -> Vec<Effect> {
     };
     if detect_graphics_protocol() == GraphicsProtocol::None {
         agent.show_toast(
-            "No demons here: GBOOM needs a graphics-capable terminal \
-             (kitty, Ghostty, WezTerm, iTerm2)",
+            &crate::locale::ctx().named_text(
+                "status.gboom_needs_graphics",
+                "No demons here: GBOOM needs a graphics-capable terminal \
+                 (kitty, Ghostty, WezTerm, iTerm2)",
+            ),
         );
         return vec![];
     }
@@ -580,8 +607,10 @@ pub(super) fn handle_coding_data_sharing_failed(
     set_coding_data_sharing_inner(app, rollback_to_opted_in);
     refresh_open_settings_modals(app);
     let scrubbed = scrub_error_for_toast(&error);
-    app.show_toast(&format!(
-        "\u{2717} Couldn't update coding data sharing: {scrubbed}"
+    app.show_toast(&crate::locale::ctx().format_named(
+        "status.coding_data_update_failed",
+        "\u{2717} Couldn't update coding data sharing: {error}",
+        &[("error", &scrubbed)],
     ));
     tracing::warn!(
         target: "settings",

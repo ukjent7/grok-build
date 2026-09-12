@@ -245,12 +245,30 @@ struct BadgeLayout {
     desc_w: usize,
 }
 
+/// Localized provenance badge for the dropdown. Mirrors
+/// [`crate::slash::CommandProvenance::badge`] but routes the fixed labels
+/// through the locale dictionary; the canonical badge text is the fallback.
+fn localized_provenance_badge(provenance: &crate::slash::CommandProvenance) -> String {
+    match provenance {
+        crate::slash::CommandProvenance::Builtin | crate::slash::CommandProvenance::Shell => {
+            crate::locale::ctx()
+                .named_text("slash.provenance.builtin", "built-in")
+                .into_owned()
+        }
+        crate::slash::CommandProvenance::Skill { source } => crate::locale::ctx().format_named(
+            "slash.provenance.skill",
+            "skill · {source}",
+            &[("source", source.as_str())],
+        ),
+    }
+}
+
 impl BadgeLayout {
     fn compute(item: &SuggestionRow, total_w: usize, desc_indent: usize) -> Self {
         let badge = item
             .provenance
             .as_ref()
-            .map(|p| p.badge().into_owned())
+            .map(localized_provenance_badge)
             .filter(|badge| desc_indent + 1 + badge.width() < total_w);
         let reserve = badge.as_ref().map_or(0, |badge| 1 + badge.width());
         let desc_w = total_w

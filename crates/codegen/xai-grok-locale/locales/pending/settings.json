@@ -1,0 +1,14 @@
+{
+  "settings.category.appearance": "外观",
+  "settings.category.mouse": "鼠标",
+  "settings.category.editor": "编辑器与输入",
+  "settings.category.agent": "代理与审批",
+  "settings.category.privacy": "隐私",
+  "settings.category.models": "模型",
+  "settings.category.session": "会话",
+  "settings.category.advanced": "高级",
+  "settings.no_matches": "未找到与“{query}”匹配的设置",
+  "settings.docs_footer.long": "提示 · 可询问 Grok：“将主题改为 grokday”或“紧凑模式有什么作用？”",
+  "settings.docs_footer.short": "提示 · 可让 Grok 更改设置",
+  "settings.shortcut.double_click_select": "双击选择"
+}

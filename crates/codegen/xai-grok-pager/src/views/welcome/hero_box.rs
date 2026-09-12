@@ -28,6 +28,11 @@ const UPGRADE_CTA_ROWS: u16 = 2;
 
 const HERO_SUBTITLE: &str = "Thanks for trying Grok Build, give feedback with /feedback!";
 
+/// Localized "thanks" subtitle (falls back to [`HERO_SUBTITLE`]).
+fn hero_subtitle() -> &'static str {
+    crate::locale::ctx().named_static_text("welcome.hero.subtitle", HERO_SUBTITLE)
+}
+
 use super::logo::LogoTier;
 use super::{PROMPT_HEIGHT, VERSION_GAP};
 
@@ -326,7 +331,7 @@ pub(super) fn render_hero_box(
         buf.set_span(
             layout.hero_subtitle.x,
             layout.hero_subtitle.y,
-            &Span::styled(HERO_SUBTITLE, subtitle_style),
+            &Span::styled(hero_subtitle(), subtitle_style),
             layout.hero_subtitle.width,
         );
     }

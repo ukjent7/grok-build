@@ -308,14 +308,18 @@ impl ContextInfoBlock {
             LegendRow {
                 glyph: system_glyph,
                 color: system_color,
-                label: "System prompt".to_string(),
+                label: crate::locale::ctx()
+                    .named_text("context.system_prompt", "System prompt")
+                    .into_owned(),
                 tokens: system_tokens,
                 detail: None,
             },
             LegendRow {
                 glyph: messages_glyph,
                 color: messages_color,
-                label: "Messages".to_string(),
+                label: crate::locale::ctx()
+                    .named_text("context.messages", "Messages")
+                    .into_owned(),
                 tokens: message_tokens,
                 detail: None,
             },
@@ -324,7 +328,9 @@ impl ContextInfoBlock {
             legend_rows.push(LegendRow {
                 glyph: overhead_glyph,
                 color: overhead_color,
-                label: "Reasoning/overhead".to_string(),
+                label: crate::locale::ctx()
+                    .named_text("context.reasoning_overhead", "Reasoning/overhead")
+                    .into_owned(),
                 tokens: overhead_tokens,
                 detail: None,
             });
@@ -332,14 +338,18 @@ impl ContextInfoBlock {
         legend_rows.push(LegendRow {
             glyph: free_glyph,
             color: empty_color,
-            label: "Free".to_string(),
+            label: crate::locale::ctx()
+                .named_text("context.free", "Free")
+                .into_owned(),
             tokens: free_tokens,
             detail: None,
         });
         let info_rows: Vec<LegendRow> = std::iter::once(LegendRow {
             glyph: tools_glyph,
             color: tools_color,
-            label: "Tool definitions".to_string(),
+            label: crate::locale::ctx()
+                .named_text("context.tool_definitions", "Tool definitions")
+                .into_owned(),
             tokens: tool_tokens,
             detail: Some(count_detail(tool_count, "tool")),
         })
@@ -356,7 +366,12 @@ impl ContextInfoBlock {
 
         let mut lines: Vec<Line<'static>> = vec![
             // Header: bold white "Context"
-            Line::from(Span::styled("Context", primary)),
+            Line::from(Span::styled(
+                crate::locale::ctx()
+                    .named_static_text("context.title", "Context")
+                    .to_string(),
+                primary,
+            )),
             // Blank row between header and the at-a-glance summary
             Line::from(""),
             // Sub-header: token totals and percent. Uses `text_secondary` for a touch more contrast than `muted` so the
@@ -399,16 +414,24 @@ impl ContextInfoBlock {
             let remaining = threshold_tokens.saturating_sub(used);
             let (text, style) = if usage_pct >= threshold_percent {
                 (
-                    format!("Auto-compact triggers next turn (at {threshold_percent}%)"),
+                    crate::locale::ctx().format_named(
+                        "context.auto_compact_triggers",
+                        "Auto-compact triggers next turn (at {percent}%)",
+                        &[("percent", &threshold_percent.to_string())],
+                    ),
                     Style::default().fg(quantize(theme.warning)),
                 )
             } else {
                 // Use `fmt_tok_big` (same as the header) so the remaining count rolls over to `m` for wide context windows
                 // A 4m window at 60% reads `~1.0m tokens remaining`, not `~1000k tokens remaining`
                 (
-                    format!(
-                        "Auto-compact at {threshold_percent}% \u{00b7} ~{} tokens remaining",
-                        fmt_tok_big(remaining)
+                    crate::locale::ctx().format_named(
+                        "context.auto_compact_remaining",
+                        "Auto-compact at {percent}% \u{00b7} ~{tokens} tokens remaining",
+                        &[
+                            ("percent", &threshold_percent.to_string()),
+                            ("tokens", &fmt_tok_big(remaining)),
+                        ],
                     ),
                     muted,
                 )
@@ -419,8 +442,14 @@ impl ContextInfoBlock {
 
         // Footer stats
         lines.push(Line::from(Span::styled(
-            format!(
-                "Turns: {turn_count} \u{00b7} Tool calls: {tool_call_count} \u{00b7} Compactions: {compaction_count}"
+            crate::locale::ctx().format_named(
+                "context.footer",
+                "Turns: {turns} \u{00b7} Tool calls: {tool_calls} \u{00b7} Compactions: {compactions}",
+                &[
+                    ("turns", &turn_count.to_string()),
+                    ("tool_calls", &tool_call_count.to_string()),
+                    ("compactions", &compaction_count.to_string()),
+                ],
             ),
             muted,
         )));
@@ -431,7 +460,12 @@ impl ContextInfoBlock {
         if (80..snapshot.auto_compact_threshold_percent).contains(&usage_pct) {
             lines.push(Line::from(""));
             lines.push(Line::from(Span::styled(
-                "Tip: run /compact to free up context space.".to_string(),
+                crate::locale::ctx()
+                    .named_text(
+                        "context.tip_compact",
+                        "Tip: run /compact to free up context space.",
+                    )
+                    .into_owned(),
                 Style::default().fg(quantize(theme.warning)),
             )));
         }

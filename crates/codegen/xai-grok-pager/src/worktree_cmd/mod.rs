@@ -186,7 +186,14 @@ async fn cmd_show(tx: &xai_acp_lib::AcpAgentTx, id_or_path: &str) -> Result<()> 
             let written = display::print_show(&r, &mut std::io::stdout().lock());
             Ok(crate::util::ignore_broken_pipe(written)?)
         }
-        None => bail!("worktree not found: {id_or_path}"),
+        None => bail!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "worktree.error.not_found",
+                "worktree not found: {id_or_path}",
+                &[("id_or_path", id_or_path)],
+            )
+        ),
     }
 }
 #[derive(serde::Deserialize)]
@@ -217,12 +224,33 @@ async fn cmd_rm(
             Ok(r) => {
                 let path = r.resolved_path.as_deref().unwrap_or(id_or_path);
                 if dry_run {
-                    println!("  would remove: {path}");
+                    println!(
+                        "  {}",
+                        crate::locale::ctx().format_named(
+                            "worktree.rm.would_remove",
+                            "would remove: {path}",
+                            &[("path", path)],
+                        )
+                    );
                 } else if r.removed {
-                    println!("  removed: {path}");
+                    println!(
+                        "  {}",
+                        crate::locale::ctx().format_named(
+                            "worktree.rm.removed",
+                            "removed: {path}",
+                            &[("path", path)],
+                        )
+                    );
                 }
             }
-            Err(e) => eprintln!("  error removing {id_or_path}: {e}"),
+            Err(e) => eprintln!(
+                "  {}",
+                crate::locale::ctx().format_named(
+                    "worktree.rm.error",
+                    "error removing {id_or_path}: {error}",
+                    &[("id_or_path", id_or_path), ("error", &e.to_string())],
+                )
+            ),
         }
     }
     Ok(())
@@ -246,7 +274,14 @@ async fn cmd_gc(
     let mut out = std::io::stdout().lock();
     let written = (|| {
         if dry_run {
-            writeln!(out, "Dry run: no changes made.")?;
+            writeln!(
+                out,
+                "{}",
+                crate::locale::ctx().named_text(
+                    "worktree.gc.dry_run",
+                    "Dry run: no changes made."
+                )
+            )?;
         }
         display::print_gc(&report, &mut out)
     })();

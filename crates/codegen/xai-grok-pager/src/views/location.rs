@@ -11,7 +11,10 @@ use crate::theme::Theme;
 
 /// The `worktree ` marker painted before the path of a linked worktree, matching the session status bar (accent_user).
 pub(crate) fn worktree_badge(theme: &Theme) -> Span<'static> {
-    Span::styled("worktree ", Style::default().fg(theme.accent_user))
+    Span::styled(
+        crate::locale::ctx().named_static_text("welcome.location.worktree_badge", "worktree "),
+        Style::default().fg(theme.accent_user),
+    )
 }
 
 /// The unstyled pieces of a location line, so each surface (welcome top bar, dashboard header) can style them on its own.
@@ -36,7 +39,9 @@ fn location_parts_from(cwd: &Path, info: Option<git_info::CwdGitInfo>) -> Locati
     let is_worktree = info.as_ref().is_some_and(|i| i.is_worktree);
     let branch = info.and_then(|i| i.branch).map(|b| {
         if b.is_empty() {
-            "detached".to_owned()
+            crate::locale::ctx()
+                .named_text("welcome.location.detached", "detached")
+                .into_owned()
         } else {
             b
         }
@@ -60,7 +65,11 @@ fn format_cwd_display(cwd: &Path, info: Option<&git_info::CwdGitInfo>) -> String
 /// Pure formatting for the cwd display; no global state.
 fn format_cwd_parts(display: &str, main_repo: Option<&str>) -> String {
     if let Some(main_repo) = main_repo {
-        format!("{display} (worktree of {main_repo})")
+        crate::locale::ctx().format_named(
+            "welcome.location.worktree_of",
+            "{display} (worktree of {main_repo})",
+            &[("display", display), ("main_repo", main_repo)],
+        )
     } else {
         display.to_string()
     }

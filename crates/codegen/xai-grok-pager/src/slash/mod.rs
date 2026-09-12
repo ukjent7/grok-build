@@ -117,6 +117,43 @@ pub struct SuggestionRow {
     pub provenance: Option<CommandProvenance>,
 }
 
+/// Localized dropdown description for a command row, keyed by the command's
+/// canonical name. Only pager-owned (builtin-sourced) commands are mapped so
+/// server-authored ACP/skill descriptions stay opaque. Unknown names fall back
+/// to the original English text.
+fn localized_command_description(source: CommandSource, canonical: &str, english: &str) -> String {
+    if source != CommandSource::Builtin {
+        return english.to_string();
+    }
+    crate::locale::ctx()
+        .named_text(&format!("slash.command.{canonical}.description"), english)
+        .into_owned()
+}
+
+/// Localized display for a curated dropdown tag. Tag values are free-form;
+/// unknown values pass through unchanged.
+fn localized_tag(tag: String) -> String {
+    let key = match tag.as_str() {
+        "new" => "slash.tag.new",
+        "beta" => "slash.tag.beta",
+        _ => return tag,
+    };
+    crate::locale::ctx().named_text(key, &tag).into_owned()
+}
+
+/// Localized args placeholder for the composer. Only fixed, pager-owned
+/// placeholder texts are mapped; unknown placeholders pass through unchanged.
+fn localized_arg_placeholder(placeholder: String) -> String {
+    let key = match placeholder.as_str() {
+        "<name> [--agent-budget N] [--effort LEVEL] [args] | runs | pause|resume|stop|save [name]" => {
+            "slash.command.workflow.arg_placeholder"
+        }
+        "[feedback text]" => "slash.command.feedback.arg_placeholder",
+        _ => return placeholder,
+    };
+    crate::locale::ctx().named_text(key, &placeholder).into_owned()
+}
+
 impl SuggestionRow {
     fn from_command(
         trigger: &CommandTrigger,
@@ -129,7 +166,11 @@ impl SuggestionRow {
         }
         Self {
             display: trigger.display.clone(),
-            description: trigger.description.clone(),
+            description: localized_command_description(
+                trigger.source,
+                &trigger.canonical,
+                &trigger.description,
+            ),
             insert_text,
             indices: Vec::new(),
             tag: None,
@@ -656,7 +697,8 @@ impl SlashController {
                 snapshot.command_recognized = true;
                 snapshot.is_skill = command.is_skill();
                 if args_text_empty {
-                    snapshot.args_placeholder = command.arg_placeholder().map(|s| s.to_string());
+                    snapshot.args_placeholder =
+                        command.arg_placeholder().map(|s| localized_arg_placeholder(s.to_string()));
                 }
             }
         }
@@ -839,7 +881,8 @@ impl SlashController {
         snapshot.matches = arg_matches;
         snapshot.selected = Self::carry_selection(previous, &snapshot.matches, false, &input);
         if args_empty {
-            snapshot.args_placeholder = command.arg_placeholder().map(|s| s.to_string());
+            snapshot.args_placeholder =
+                command.arg_placeholder().map(|s| localized_arg_placeholder(s.to_string()));
         }
 
         snapshot
@@ -1017,7 +1060,7 @@ impl SlashController {
             {
                 let command_tags = self.command_tags.borrow();
                 for (row, canonical) in rows.iter_mut().zip(canonicals.iter()) {
-                    row.tag = command_tags.get(*canonical).cloned();
+                    row.tag = command_tags.get(*canonical).cloned().map(localized_tag);
                 }
             }
 
@@ -1115,7 +1158,7 @@ impl SlashController {
         {
             let command_tags = self.command_tags.borrow();
             for (row, (canonical, _)) in rows.iter_mut().zip(sort_meta.iter()) {
-                row.tag = command_tags.get(canonical.as_str()).cloned();
+                row.tag = command_tags.get(canonical.as_str()).cloned().map(localized_tag);
             }
         }
         // Resolve all recency scores under a single borrow (one keystroke means one borrow, not one per candidate)

@@ -46,9 +46,15 @@ impl UsageInfoTab {
 
     pub fn label(self) -> &'static str {
         match self {
-            UsageInfoTab::ContextUsage => "Context usage",
-            UsageInfoTab::UsageLimit => "Usage limit",
-            UsageInfoTab::SessionInfo => "Session info",
+            UsageInfoTab::ContextUsage => {
+                crate::locale::ctx().named_static_text("usage.modal.tab.context", "Context usage")
+            }
+            UsageInfoTab::UsageLimit => {
+                crate::locale::ctx().named_static_text("usage.modal.tab.limit", "Usage limit")
+            }
+            UsageInfoTab::SessionInfo => {
+                crate::locale::ctx().named_static_text("usage.modal.tab.session", "Session info")
+            }
         }
     }
 
@@ -563,19 +569,22 @@ pub fn render_usage_modal(
 
     let mut shortcuts: Vec<Shortcut> = vec![
         Shortcut {
-            label: "Tab switch",
+            label: crate::locale::ctx()
+                .named_static_text("usage.modal.footer.tabs", "Tab switch"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "\u{2191}/\u{2193} scroll",
+            label: crate::locale::ctx()
+                .named_static_text("usage.modal.footer.scroll", "\u{2191}/\u{2193} scroll"),
             clickable: false,
             id: 0,
         },
     ];
     if state.ctx.session_id.is_some() {
         shortcuts.push(Shortcut {
-            label: "c copy session ID",
+            label: crate::locale::ctx()
+                .named_static_text("usage.modal.footer.copy_session_id", "c copy session ID"),
             clickable: true,
             id: COPY_SESSION_ID_SHORTCUT,
         });
@@ -584,13 +593,15 @@ pub fn render_usage_modal(
         && state.session_fields.as_ref().is_some_and(|f| !f.is_empty())
     {
         shortcuts.push(Shortcut {
-            label: "y copy all",
+            label: crate::locale::ctx()
+                .named_static_text("usage.modal.footer.copy_all", "y copy all"),
             clickable: true,
             id: COPY_ALL_SESSION_INFO_SHORTCUT,
         });
     }
     shortcuts.push(Shortcut {
-        label: "Esc close",
+        label: crate::locale::ctx()
+            .named_static_text("usage.modal.footer.close", "Esc close"),
         clickable: false,
         id: 0,
     });
@@ -860,16 +871,30 @@ fn context_tab_lines(state: &UsageInfoModalState, theme: &Theme, width: u16) -> 
     if let Some(error) = &state.context_error {
         return vec![muted_line(
             theme,
-            format!("Couldn't load context usage: {error}"),
+            crate::locale::ctx().format_named(
+                "usage.modal.context.load_failed",
+                "Couldn't load context usage: {error}",
+                &[("error", error)],
+            ),
         )];
     }
     if let Some(block) = &state.context {
         return block.lines_for_width(theme, width);
     }
     if state.ctx.session_id.is_none() {
-        return vec![muted_line(theme, "No active session.")];
+        return vec![muted_line(
+            theme,
+            crate::locale::ctx()
+                .named_text("usage.modal.no_active_session", "No active session.")
+                .into_owned(),
+        )];
     }
-    vec![muted_line(theme, "Loading context usage\u{2026}")]
+    vec![muted_line(
+        theme,
+        crate::locale::ctx()
+            .named_text("usage.modal.context.loading", "Loading context usage\u{2026}")
+            .into_owned(),
+    )]
 }
 
 /// Account allowance followed by this session's token/cost totals.
@@ -883,17 +908,49 @@ fn usage_limit_lines(
     if state.ctx.chat_kind {
         // Gateway chat sessions have no Build coding credits to show.
     } else if !state.ctx.usage_visible {
-        lines.push(muted_line(theme, "Usage limits are managed by your team."));
+        lines.push(muted_line(
+            theme,
+            crate::locale::ctx()
+                .named_text(
+                    "usage.modal.limit.managed_by_team",
+                    "Usage limits are managed by your team.",
+                )
+                .into_owned(),
+        ));
     } else if let Some(url) = &state.ctx.billing_redirect_url {
-        lines.push(plain(theme, format!("Please check your usage on {url}")));
+        lines.push(plain(
+            theme,
+            crate::locale::ctx().format_named(
+                "status.usage.redirect",
+                "Please check your usage on {url}",
+                &[("url", url)],
+            ),
+        ));
     } else if let Some(bal) = balance {
         lines.extend(allowance_lines(state, bal, theme));
     } else if let Some(error) = &state.billing_error {
-        lines.push(muted_line(theme, format!("Couldn't load usage: {error}")));
+        lines.push(muted_line(
+            theme,
+            crate::locale::ctx().format_named(
+                "usage.modal.limit.load_failed",
+                "Couldn't load usage: {error}",
+                &[("error", error)],
+            ),
+        ));
     } else if state.billing_loading {
-        lines.push(muted_line(theme, "Loading usage\u{2026}"));
+        lines.push(muted_line(
+            theme,
+            crate::locale::ctx()
+                .named_text("usage.modal.limit.loading", "Loading usage\u{2026}")
+                .into_owned(),
+        ));
     } else {
-        lines.push(muted_line(theme, "No billing data available."));
+        lines.push(muted_line(
+            theme,
+            crate::locale::ctx()
+                .named_text("usage.modal.no_billing", "No billing data available.")
+                .into_owned(),
+        ));
     }
 
     if let Some(usage_text) = &state.session_usage_text {
@@ -911,7 +968,12 @@ fn usage_limit_lines(
         if !lines.is_empty() {
             lines.push(Line::default());
         }
-        lines.push(muted_line(theme, "Loading session usage\u{2026}"));
+        lines.push(muted_line(
+            theme,
+            crate::locale::ctx()
+                .named_text("usage.modal.session_usage.loading", "Loading session usage\u{2026}")
+                .into_owned(),
+        ));
     }
     lines
 }
@@ -951,15 +1013,27 @@ fn allowance_lines(
     ]));
 
     if let Some(reset) = &bal.period_end_display {
-        lines.push(muted_line(theme, format!("Resets: {reset}")));
+        lines.push(muted_line(
+            theme,
+            crate::locale::ctx().format_named(
+                "usage.modal.limit.resets",
+                "Resets: {reset}",
+                &[("reset", reset)],
+            ),
+        ));
     }
 
     // Prepaid credits (stored as negative cents, an accounting convention)
     if let Some(prepaid) = bal.prepaid_balance_cents.map(i64::abs).filter(|c| *c > 0) {
         lines.push(Line::default());
+        let amount = format!("${:.2}", prepaid as f64 / 100.0);
         lines.push(plain(
             theme,
-            format!("Credits: ${:.2}", prepaid as f64 / 100.0),
+            crate::locale::ctx().format_named(
+                "usage.modal.limit.credits",
+                "Credits: {amount}",
+                &[("amount", &amount)],
+            ),
         ));
     }
 
@@ -968,10 +1042,21 @@ fn allowance_lines(
         let used = bal.on_demand_used_cents.unwrap_or(0).abs() as f64 / 100.0;
         let cap = bal.on_demand_cap_cents.unwrap_or(0).abs() as f64 / 100.0;
         lines.push(Line::default());
-        lines.push(Line::styled("Pay as you go: Enabled", header_style(theme)));
+        lines.push(Line::styled(
+            crate::locale::ctx()
+                .named_text("usage.modal.limit.payg_enabled", "Pay as you go: Enabled")
+                .into_owned(),
+            header_style(theme),
+        ));
+        let used = format!("${used:.2}");
+        let cap = format!("${cap:.2}");
         lines.push(muted_line(
             theme,
-            format!("Usage: ${used:.2} / ${cap:.2} per month"),
+            crate::locale::ctx().format_named(
+                "usage.modal.limit.payg_usage",
+                "Usage: {used} / {cap} per month",
+                &[("used", &used), ("cap", &cap)],
+            ),
         ));
     }
     lines
@@ -981,20 +1066,44 @@ fn session_info_content(state: &UsageInfoModalState, theme: &Theme) -> TabConten
     if let Some(error) = &state.session_error {
         return TabContent::from_lines(vec![muted_line(
             theme,
-            format!("Couldn't load session info: {error}"),
+            crate::locale::ctx().format_named(
+                "session.info.load_failed",
+                "Couldn't load session info: {error}",
+                &[("error", error)],
+            ),
         )]);
     }
     let Some(fields) = state.session_fields.as_ref().filter(|f| !f.is_empty()) else {
         if state.ctx.session_id.is_none() {
-            return TabContent::from_lines(vec![muted_line(theme, "No active session.")]);
+            return TabContent::from_lines(vec![muted_line(
+                theme,
+                crate::locale::ctx()
+                    .named_text("usage.modal.no_active_session", "No active session.")
+                    .into_owned(),
+            )]);
         }
-        return TabContent::from_lines(vec![muted_line(theme, "Loading session info\u{2026}")]);
+        return TabContent::from_lines(vec![muted_line(
+            theme,
+            crate::locale::ctx()
+                .named_text("usage.modal.session.loading", "Loading session info\u{2026}")
+                .into_owned(),
+        )]);
     };
 
     let mut lines = vec![Line::from(vec![
-        Span::styled("Session info", header_style(theme)),
         Span::styled(
-            "   click or drag to copy",
+            crate::locale::ctx()
+                .named_text("usage.modal.session.header", "Session info")
+                .into_owned(),
+            header_style(theme),
+        ),
+        Span::styled(
+            crate::locale::ctx()
+                .named_text(
+                    "usage.modal.session.click_drag_to_copy",
+                    "   click or drag to copy",
+                )
+                .into_owned(),
             Style::default().fg(theme.gray_dim),
         ),
     ])];

@@ -127,12 +127,17 @@ impl SearchToolCallBlock {
             theme.fg(theme.command)
         };
 
-        let prefix = "Search Tools ";
+        let prefix =
+            crate::locale::ctx().named_text("scrollback.tool.search_tools.label", "Search Tools ");
 
         match max_width {
             Some(w) => {
-                let s = if self.result_count == 1 { "" } else { "s" };
-                let suffix = format!(" ({} result{s})", self.result_count);
+                let count = self.result_count.to_string();
+                let suffix = crate::locale::ctx().format_named(
+                    "scrollback.tool.search_tools.results",
+                    " ({count} results)",
+                    &[("count", &count)],
+                );
 
                 let suffix_fits = prefix.len() + suffix.len() < w;
                 let effective_suffix = if suffix_fits { &suffix } else { "" };
@@ -235,7 +240,16 @@ impl BlockContent for SearchToolCallBlock {
                 } else if self.error.is_none() {
                     lines.push(Line::from("").into());
                     lines.push(
-                        Line::from(Span::styled("  (no results found)", theme.muted())).into(),
+                        Line::from(Span::styled(
+                            crate::locale::ctx()
+                                .named_text(
+                                    "scrollback.tool.search_tools.no_results_found",
+                                    "  (no results found)",
+                                )
+                                .into_owned(),
+                            theme.muted(),
+                        ))
+                        .into(),
                     );
                 }
 

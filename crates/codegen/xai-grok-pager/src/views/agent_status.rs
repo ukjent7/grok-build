@@ -199,16 +199,24 @@ fn format_elapsed_compact(ms: u64) -> String {
 /// Paused variants render their `pause_label()`, Budget renders "Budget", Done renders "Done".
 /// An Active goal uses the shared [`active_phase_label`] suffix.
 fn goal_phase_label(goal: &GoalDisplayState) -> String {
+    let ctx = crate::locale::ctx();
     match goal.status {
         GoalDisplayStatus::UserPaused
         | GoalDisplayStatus::BackOffPaused
         | GoalDisplayStatus::NoProgressPaused
         | GoalDisplayStatus::InfraPaused
         | GoalDisplayStatus::Blocked => goal.status.pause_label().into(),
-        GoalDisplayStatus::Failed => "Failed".into(),
-        GoalDisplayStatus::Interrupted => "Interrupted".into(),
-        GoalDisplayStatus::BudgetLimited => "Budget".into(),
-        GoalDisplayStatus::Complete => "Done".into(),
+        GoalDisplayStatus::Failed => {
+            ctx.named_static_text("goal.status.failed", "Failed").into()
+        }
+        GoalDisplayStatus::Interrupted => {
+            ctx.named_static_text("goal.status.interrupted", "Interrupted")
+                .into()
+        }
+        GoalDisplayStatus::BudgetLimited => {
+            ctx.named_static_text("goal.status.budget", "Budget").into()
+        }
+        GoalDisplayStatus::Complete => ctx.named_static_text("goal.status.done", "Done").into(),
         GoalDisplayStatus::Active => active_phase_label(goal),
     }
 }
@@ -216,22 +224,31 @@ fn goal_phase_label(goal: &GoalDisplayState) -> String {
 /// Live phase suffix for an Active goal, shared by the status chip and the goal-detail modal so they cannot disagree.
 /// The transient `verifying_completion` overlay wins, then `planning`, then the steady-state phase.
 pub fn active_phase_label(goal: &GoalDisplayState) -> String {
+    let ctx = crate::locale::ctx();
     if goal.verifying_completion {
         let attempts = classifier_attempts_label(goal);
         // Omit the "(n/m)" suffix until the first counter arrives so the chip reads "Verifying" instead of a confusing "Verifying (0/0)"
         return if attempts.is_empty() {
-            "Verifying".into()
+            ctx.named_text("goal.phase.verifying", "Verifying").into_owned()
         } else {
-            format!("Verifying ({attempts})")
+            ctx.format_named(
+                "goal.phase.verifying_attempts",
+                "Verifying ({attempts})",
+                &[("attempts", &attempts)],
+            )
         };
     }
     if goal.planning {
-        return "Planning".into();
+        return ctx.named_text("goal.phase.planning", "Planning").into_owned();
     }
     match goal.phase {
-        GoalDisplayPhase::Idle => "Idle".into(),
-        GoalDisplayPhase::Planning => "Planning".into(),
-        GoalDisplayPhase::Executing => "Executing".into(),
+        GoalDisplayPhase::Idle => ctx.named_text("goal.phase.idle", "Idle").into_owned(),
+        GoalDisplayPhase::Planning => {
+            ctx.named_text("goal.phase.planning", "Planning").into_owned()
+        }
+        GoalDisplayPhase::Executing => {
+            ctx.named_text("goal.phase.executing", "Executing").into_owned()
+        }
     }
 }
 
@@ -262,11 +279,15 @@ pub fn goal_status_line(
 
     let tokens_str =
         format_tokens_compact(goal.live_tokens_used(context_used, active_subagent_tokens));
+    let ctx = crate::locale::ctx();
+    let unit = ctx.named_static_text("goal.unit.tokens", "tokens");
     let tokens_display = match goal.token_budget {
-        Some(budget) if budget > 0 => {
-            format!("{}/{} tokens", tokens_str, format_tokens_compact(budget))
-        }
-        _ => format!("{} tokens", tokens_str),
+        Some(budget) if budget > 0 => format!(
+            "{}/{} {unit}",
+            tokens_str,
+            format_tokens_compact(budget)
+        ),
+        _ => format!("{tokens_str} {unit}"),
     };
 
     let elapsed_str = format_elapsed_compact(goal.live_elapsed_ms());
@@ -292,13 +313,19 @@ pub fn goal_status_line(
 
     let is_active = matches!(goal.status, GoalDisplayStatus::Active);
 
-    let chip_name = "Goal";
+    let ctx = crate::locale::ctx();
+    let chip_name = ctx.named_static_text("goal.chip.name", "Goal");
+    let chip = ctx.format_named(
+        "goal.chip.template",
+        "{name}: {label}",
+        &[("name", chip_name), ("label", &label)],
+    );
     let goal_text = if is_active {
         let frames = crate::glyphs::dot_spinner_frames();
         let frame = frames[(tick / 4) % frames.len()];
-        format!("{frame} {chip_name}: {label}")
+        format!("{frame} {chip}")
     } else {
-        format!("{chip_name}: {label}")
+        chip
     };
 
     Line::from(vec![

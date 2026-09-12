@@ -29,11 +29,28 @@ pub enum SentMessagePresentation {
 
 impl SentMessagePresentation {
     pub(crate) fn title(&self) -> &'static str {
+        let locale = crate::locale::ctx();
         match self {
-            Self::Sending => "Sending message to subagent",
-            Self::Sent => "Sent message to subagent",
-            Self::Rejected { .. } => "Failed to send message to subagent",
-            Self::Unconfirmed { .. } => "Message delivery unconfirmed",
+            Self::Sending => locale
+                .named_static_text(
+                    "scrollback.sent_message.title.sending",
+                    "Sending message to subagent",
+                ),
+            Self::Sent => locale
+                .named_static_text(
+                    "scrollback.sent_message.title.sent",
+                    "Sent message to subagent",
+                ),
+            Self::Rejected { .. } => locale
+                .named_static_text(
+                    "scrollback.sent_message.title.rejected",
+                    "Failed to send message to subagent",
+                ),
+            Self::Unconfirmed { .. } => locale
+                .named_static_text(
+                    "scrollback.sent_message.title.unconfirmed",
+                    "Message delivery unconfirmed",
+                ),
         }
     }
 
@@ -218,12 +235,19 @@ impl BlockContent for SentMessageToolCallBlock {
         }
 
         lines.push(Line::from("").into());
-        let id_wrap = RtOptions::new(width)
-            .initial_indent(Line::from(Span::styled("Subagent ID: ", theme.muted())));
+        let id_wrap = RtOptions::new(width).initial_indent(Line::from(Span::styled(
+            crate::locale::ctx()
+                .named_text("scrollback.sent_message.subagent_id", "Subagent ID: ")
+                .into_owned(),
+            theme.muted(),
+        )));
+        let unavailable = crate::locale::ctx()
+            .named_text("scrollback.sent_message.unavailable", "unavailable")
+            .into_owned();
         let id_value = Line::from(Span::styled(
             self.subagent_id
                 .as_deref()
-                .unwrap_or("unavailable")
+                .unwrap_or(&unavailable)
                 .to_owned(),
             theme.primary(),
         ));
@@ -241,7 +265,9 @@ impl BlockContent for SentMessageToolCallBlock {
         }
         lines.push(Line::from("").into());
         lines.push(BlockLine::separator(Line::from(Span::styled(
-            "Message:",
+            crate::locale::ctx()
+                .named_text("scrollback.sent_message.message", "Message:")
+                .into_owned(),
             theme.muted(),
         ))));
         match &self.text {
@@ -274,8 +300,12 @@ impl BlockContent for SentMessageToolCallBlock {
                 }
             }
             None => {
-                let mut line =
-                    BlockLine::styled(Line::from(Span::styled("unavailable", theme.muted())));
+                let mut line = BlockLine::styled(Line::from(Span::styled(
+                    crate::locale::ctx()
+                        .named_text("scrollback.sent_message.unavailable", "unavailable")
+                        .into_owned(),
+                    theme.muted(),
+                )));
                 line.selectable = Selectable::None;
                 lines.push(line);
             }

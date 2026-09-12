@@ -157,13 +157,18 @@ impl TodoCounts {
 }
 
 fn empty_placeholder_message(todos_empty: bool, counts: TodoCounts) -> String {
+    let ctx = crate::locale::ctx();
     if todos_empty {
-        return "No todo items.".into();
+        return ctx.named_text("todo.empty.none", "No todo items.").into_owned();
     }
     match (counts.completed, counts.cancelled) {
-        (_, 0) => "All done.".into(),
-        (0, c) => format!("{c} cancelled."),
-        (d, c) => format!("{d} done. {c} cancelled."),
+        (_, 0) => ctx.named_text("todo.empty.all_done", "All done.").into_owned(),
+        (0, c) => ctx.format_named("todo.empty.cancelled", "{cancelled} cancelled.", &[("cancelled", &c.to_string())]),
+        (d, c) => ctx.format_named(
+            "todo.empty.done_cancelled",
+            "{done} done. {cancelled} cancelled.",
+            &[("done", &d.to_string()), ("cancelled", &c.to_string())],
+        ),
     }
 }
 

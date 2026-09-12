@@ -219,15 +219,16 @@ impl RowState {
 
     /// Human-readable group header.
     pub fn group_label(self) -> &'static str {
+        let locale = crate::locale::ctx();
         match self {
             // Shorter, punchier labels
             // "Done" reads cleaner as a group header than the past-tense "Completed" did
-            Self::NeedsInput => "Awaiting",
-            Self::Working => "Working",
-            Self::Idle => "Idle",
-            Self::Inactive => "Inactive",
-            Self::Completed => "Done",
-            Self::Failed => "Failed",
+            Self::NeedsInput => locale.named_static_text("dashboard.state.awaiting", "Awaiting"),
+            Self::Working => locale.named_static_text("dashboard.state.working", "Working"),
+            Self::Idle => locale.named_static_text("dashboard.state.idle", "Idle"),
+            Self::Inactive => locale.named_static_text("dashboard.state.inactive", "Inactive"),
+            Self::Completed => locale.named_static_text("dashboard.state.done", "Done"),
+            Self::Failed => locale.named_static_text("dashboard.state.failed", "Failed"),
         }
     }
 }
@@ -241,18 +242,26 @@ pub(crate) enum DashboardStopAction {
 
 impl DashboardStopAction {
     pub(crate) fn label(self) -> &'static str {
+        let locale = crate::locale::ctx();
         match self {
-            Self::Stop => "stop",
-            Self::Archive => "archive",
-            Self::Close => "close",
+            Self::Stop => locale.named_static_text("dashboard.hint.stop", "stop"),
+            Self::Archive => locale.named_static_text("dashboard.hint.archive", "archive"),
+            Self::Close => locale.named_static_text("dashboard.hint.close", "close"),
         }
     }
 
     pub(crate) fn confirmation_label(self) -> Option<&'static str> {
+        let locale = crate::locale::ctx();
         match self {
             Self::Stop => None,
-            Self::Archive => Some("archive this session"),
-            Self::Close => Some("close this session"),
+            Self::Archive => Some(locale.named_static_text(
+                "dashboard.confirm.archive",
+                "archive this session",
+            )),
+            Self::Close => Some(locale.named_static_text(
+                "dashboard.confirm.close",
+                "close this session",
+            )),
         }
     }
 }
@@ -1388,12 +1397,21 @@ impl DashboardState {
     /// The footer label for Enter on the focused actions-row item.
     /// `+ New Agent` with a typed draft sends it rather than creating an empty session, and the label says so.
     pub(crate) fn focused_action_label(&self) -> Option<&'static str> {
+        let locale = crate::locale::ctx();
         Some(match self.actions_focus? {
-            ActionsFocus::NewAgent if self.focused_new_agent_sends_draft() => "send",
-            ActionsFocus::NewAgent => "create",
-            ActionsFocus::OpenPrevious => "open previous",
-            ActionsFocus::Worktree if self.worktree_armed() => "disable worktree",
-            ActionsFocus::Worktree => "enable worktree",
+            ActionsFocus::NewAgent if self.focused_new_agent_sends_draft() => {
+                locale.named_static_text("dashboard.hint.send", "send")
+            }
+            ActionsFocus::NewAgent => locale.named_static_text("dashboard.hint.create", "create"),
+            ActionsFocus::OpenPrevious => {
+                locale.named_static_text("dashboard.hint.open_previous", "open previous")
+            }
+            ActionsFocus::Worktree if self.worktree_armed() => {
+                locale.named_static_text("dashboard.hint.disable_worktree", "disable worktree")
+            }
+            ActionsFocus::Worktree => {
+                locale.named_static_text("dashboard.hint.enable_worktree", "enable worktree")
+            }
         })
     }
 
@@ -2467,7 +2485,10 @@ impl DashboardState {
         let mut attachment = match image {
             ProbedAttachment::Image(pasted) => {
                 if peek_in_question {
-                    self.set_error_toast("Pasted image discarded: reply switched to a question");
+                    self.set_error_toast(&crate::locale::ctx().named_text(
+                        "dashboard.error.paste_question",
+                        "Pasted image discarded: reply switched to a question",
+                    ));
                     ClipboardPasteCompletion::Dropped
                 } else {
                     let (_, completion) = if peek {
@@ -2492,7 +2513,10 @@ impl DashboardState {
             if file_urls.as_deref().is_some_and(|urls| {
                 !crate::prompt_images::try_read_images_from_paste(urls).is_empty()
             }) {
-                self.set_error_toast("Pasted image discarded: reply switched to a question");
+                self.set_error_toast(&crate::locale::ctx().named_text(
+                    "dashboard.error.paste_question",
+                    "Pasted image discarded: reply switched to a question",
+                ));
             }
             attachment = ClipboardPasteCompletion::Dropped;
         }
@@ -2564,11 +2588,17 @@ impl DashboardState {
                 });
             } else if !same_row {
                 // Never reply to a row the user is no longer peeking.
-                self.set_error_toast("Reply canceled: peek panel changed");
+                self.set_error_toast(&crate::locale::ctx().named_text(
+                    "dashboard.error.reply_row_changed",
+                    "Reply canceled: peek panel changed",
+                ));
             } else {
                 // A question now owns the panel (Enter answers it there, and the reply dispatch would silently queue a prompt and wipe the draft
                 // behind the dialog); drop the stash; the draft stays put
-                self.set_error_toast("Reply canceled: answer the question first");
+                self.set_error_toast(&crate::locale::ctx().named_text(
+                    "dashboard.error.reply_question_pending",
+                    "Reply canceled: answer the question first",
+                ));
             }
         }
         actions
@@ -2659,7 +2689,11 @@ impl DashboardState {
             let valid = self.peek.as_ref().is_some_and(|p| idx < p.options.len());
             if !valid {
                 let n_opts = self.peek.as_ref().map(|p| p.options.len()).unwrap_or(0);
-                self.set_error_toast(&format!("No such option (only {n_opts} available)"));
+                self.set_error_toast(&crate::locale::ctx().format_named(
+                    "dashboard.error.invalid_option",
+                    "No such option (only {n_opts} available)",
+                    &[("n_opts", &n_opts.to_string()), ("count", &n_opts.to_string())],
+                ));
                 return Some(InputOutcome::Changed);
             }
             if let Some(p) = self.peek.as_mut() {

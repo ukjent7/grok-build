@@ -35,9 +35,14 @@ use crate::render::line_utils::truncate_str;
 use crate::theme::Theme;
 use xai_grok_announcements::visible_announcements;
 
-const HIDE_CTA: &str = "hide: /announcements hide";
+/// Dim hint pointing at the hide command (`hide: /announcements hide`).
+fn hide_cta() -> &'static str {
+    crate::locale::ctx().named_static_text("announcement.hide_cta", "hide: /announcements hide")
+}
 /// Clickable hide button, far right of the title row.
-const HIDE_BUTTON: &str = "[hide]";
+fn hide_button() -> &'static str {
+    crate::locale::ctx().named_static_text("announcement.hide_button", "[hide]")
+}
 /// Alert prefix on the title row; the message row indents by its width.
 const TITLE_PREFIX: &str = "! ";
 /// Columns between title/message text and the right-hand button/CTA.
@@ -361,7 +366,7 @@ fn paint_hide_button(
     use unicode_width::UnicodeWidthStr;
 
     let max_w = area.width as usize;
-    let button_w = UnicodeWidthStr::width(HIDE_BUTTON);
+    let button_w = UnicodeWidthStr::width(hide_button());
     if max_w < button_w {
         return None;
     }
@@ -374,7 +379,7 @@ fn paint_hide_button(
     buf.set_span(
         hide_x,
         row,
-        &Span::styled(HIDE_BUTTON, button_style),
+        &Span::styled(hide_button(), button_style),
         button_w as u16,
     );
     Some(Rect::new(hide_x, row, button_w as u16, 1))
@@ -438,7 +443,7 @@ fn render_critical_rows(
     let dim_style = dim_hide_style(&theme);
     let max_w = area.width as usize;
     let prefix_w = UnicodeWidthStr::width(TITLE_PREFIX);
-    let button_w = UnicodeWidthStr::width(HIDE_BUTTON);
+    let button_w = UnicodeWidthStr::width(hide_button());
     let row0 = area.y;
     let row1 = area.y.saturating_add(1);
     let max_y = area.y.saturating_add(area.height);
@@ -483,7 +488,7 @@ fn render_critical_rows(
         // Message column matches the title column: indent past the `! ` prefix
         let mut x = area.x.saturating_add(prefix_w as u16);
         let mut remaining = max_w.saturating_sub(prefix_w);
-        let cta_w = UnicodeWidthStr::width(HIDE_CTA);
+        let cta_w = UnicodeWidthStr::width(hide_cta());
 
         // Reserve the CTA (plus gap) up front: the message truncates, never the CTA
         // Non-dismissible reserves nothing; the message reclaims the full row past the prefix (`W−2`)
@@ -507,7 +512,7 @@ fn render_critical_rows(
         }
         if dismissible && remaining > 0 {
             // Degenerate widths still truncate the CTA itself rather than panic.
-            let cta_disp = truncate_str(HIDE_CTA, remaining);
+            let cta_disp = truncate_str(hide_cta(), remaining);
             buf.set_span(
                 x,
                 row1,
@@ -551,8 +556,8 @@ fn render_promo_row(
 
     let dim_style = dim_hide_style(&theme);
     let max_w = area.width as usize;
-    let button_w = UnicodeWidthStr::width(HIDE_BUTTON);
-    let hide_cta_w = UnicodeWidthStr::width(HIDE_CTA);
+    let button_w = UnicodeWidthStr::width(hide_button());
+    let hide_cta_w = UnicodeWidthStr::width(hide_cta());
     let row = area.y;
     let mut hits = BannerHits::default();
 
@@ -570,7 +575,7 @@ fn render_promo_row(
             buf.set_span(
                 hide_cta_x,
                 row,
-                &Span::styled(HIDE_CTA, dim_style),
+                &Span::styled(hide_cta(), dim_style),
                 hide_cta_w as u16,
             );
             right_reserved = button_w + GAP + hide_cta_w;
@@ -832,7 +837,7 @@ mod tests {
         // Row 0: `! Title` left, `[hide]` right-aligned; row 1: message indented to the title column, then the dim CTA after a gap
         let row0 = buf_row(&buf, area, 0);
         assert!(row0.starts_with("! Outage"), "row0={row0:?}");
-        assert!(row0.ends_with(HIDE_BUTTON), "row0={row0:?}");
+        assert!(row0.ends_with(hide_button()), "row0={row0:?}");
         assert_eq!(
             buf_row(&buf, area, 1),
             "  Do not deploy  hide: /announcements hide"
@@ -948,7 +953,7 @@ mod tests {
             .filter_map(|(x, y)| buf.cell((x, y)).map(|c| c.symbol().to_string()))
             .collect();
         assert!(!any.contains("hello"));
-        assert!(!any.contains(HIDE_BUTTON));
+        assert!(!any.contains(hide_button()));
     }
 
     /// The [hide] button width is reserved before the title budget, so a long title truncates with an ellipsis instead of overpainting the button.
@@ -969,7 +974,7 @@ mod tests {
             row0.contains('…'),
             "long title must show ellipsis; row0={row0:?}"
         );
-        assert!(row0.ends_with(HIDE_BUTTON), "row0={row0:?}");
+        assert!(row0.ends_with(hide_button()), "row0={row0:?}");
         assert_eq!(hits.hide, Some(Rect::new(34, 0, 6, 1)));
         assert!(
             buf_row(&buf, area, 1).contains("MSGBODY"),
@@ -1122,7 +1127,7 @@ mod tests {
         // Title budget 40 minus 2 leaves 38: 37 chars plus the ellipsis fill to the right edge
         let row0 = buf_row(&buf, area, 0);
         assert_eq!(row0, format!("! {}…", "T".repeat(37)));
-        assert!(!row0.contains(HIDE_BUTTON), "row0={row0:?}");
+        assert!(!row0.contains(hide_button()), "row0={row0:?}");
         // Message budget 40 minus 2 leaves 38: the 20-char message fits whole, no hide CTA
         // (The dismissible twin truncates it to 11 columns at this width.)
         assert_eq!(buf_row(&buf, area, 1), "  0123456789ABCDEFGHIJ");
@@ -1398,7 +1403,7 @@ mod tests {
         let row0 = buf_row(&buf, area, 0);
         assert!(!row0.contains("[Go]"), "row0={row0:?}");
         assert!(!row0.contains("Plain message"), "row0={row0:?}");
-        assert!(row0.ends_with(HIDE_BUTTON), "row0={row0:?}");
+        assert!(row0.ends_with(hide_button()), "row0={row0:?}");
     }
 
     /// Dismissible promo row: `[Label]` leads (warning yellow), NO message and NO caption even when one is configured.
@@ -1427,8 +1432,8 @@ mod tests {
             !row0.contains("Ctrl+O"),
             "a dismissible promo suppresses its configured caption; row0={row0:?}"
         );
-        assert!(row0.ends_with(HIDE_BUTTON), "row0={row0:?}");
-        assert!(row0.contains(HIDE_CTA), "row0={row0:?}");
+        assert!(row0.ends_with(hide_button()), "row0={row0:?}");
+        assert!(row0.contains(hide_cta()), "row0={row0:?}");
 
         // [Label] is 15 cols at x 0; [hide] right-aligns at 80 minus 6 = 74; the hide CTA sits one gap left of it (74 minus 2 minus 25 = 47)
         assert_eq!(hits.cta, Some(Rect::new(0, 0, 15, 1)), "[Label] hit rect");
@@ -1487,8 +1492,8 @@ mod tests {
             row0.contains('…'),
             "button label must truncate; row0={row0:?}"
         );
-        assert!(row0.contains(HIDE_CTA), "row0={row0:?}");
-        assert!(row0.ends_with(HIDE_BUTTON), "row0={row0:?}");
+        assert!(row0.contains(hide_cta()), "row0={row0:?}");
+        assert!(row0.ends_with(hide_button()), "row0={row0:?}");
         assert!(hits.cta.is_some());
         assert_eq!(hits.hide, Some(Rect::new(44, 0, 6, 1)));
     }
@@ -1503,7 +1508,7 @@ mod tests {
 
         let row0 = buf_row(&buf, area, 0);
         assert!(!row0.contains("Plain promo message"), "row0={row0:?}");
-        assert!(row0.ends_with(HIDE_BUTTON), "row0={row0:?}");
+        assert!(row0.ends_with(hide_button()), "row0={row0:?}");
         assert_eq!(hits.cta, None, "no usable CTA, no click target");
         assert!(hits.hide.is_some());
     }
@@ -1518,7 +1523,7 @@ mod tests {
 
         let row0 = buf_row(&buf, area, 0);
         assert!(!row0.contains("hide:"), "row0={row0:?}");
-        assert!(row0.ends_with(HIDE_BUTTON), "row0={row0:?}");
+        assert!(row0.ends_with(hide_button()), "row0={row0:?}");
         assert!(row0.starts_with("[Go]"), "row0={row0:?}");
         assert_eq!(hits.hide, Some(Rect::new(14, 0, 6, 1)));
     }

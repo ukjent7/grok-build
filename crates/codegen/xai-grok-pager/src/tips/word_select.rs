@@ -38,11 +38,27 @@ pub fn word_select_tip() -> EphemeralTip {
         ..EphemeralTip::new(
             WORD_SELECT_TIP_KEY,
             Line::from(vec![
-                Span::styled("Want double-click to select? ", dim),
+                Span::styled(
+                    crate::locale::ctx().named_static_text(
+                        "tip.ephemeral.word_select.lead",
+                        "Want double-click to select? ",
+                    ),
+                    dim,
+                ),
                 Span::styled("/settings", key_style),
-                Span::styled(" → Text selection · ", dim),
+                Span::styled(
+                    crate::locale::ctx().named_static_text(
+                        "tip.ephemeral.word_select.middle",
+                        " → Text selection · ",
+                    ),
+                    dim,
+                ),
                 Span::styled(WORD_SELECT_ACCEPT_CHORD, key_style),
-                Span::styled(": enable now", dim),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_static_text("tip.ephemeral.word_select.tail", ": enable now"),
+                    dim,
+                ),
             ]),
         )
         .with_session_seen_cap(WORD_SELECT_TIP_SEEN_KEY, WORD_SELECT_TIP_SEEN_CAP)

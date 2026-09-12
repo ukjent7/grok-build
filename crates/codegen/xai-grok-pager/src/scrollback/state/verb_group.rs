@@ -309,9 +309,14 @@ impl<'e> BucketAccumulator<'e> {
             } else {
                 bucket.sources.len()
             };
+            let separator = if i == 0 {
+                std::borrow::Cow::Borrowed("")
+            } else {
+                crate::locale::ctx().named_text("scrollback.verb_group.separator", ", ")
+            };
             let segment = format!(
                 "{}{} {} {}",
-                if i == 0 { "" } else { ", " },
+                separator,
                 bucket.kind.verb(self.running),
                 count,
                 bucket.kind.noun(count)
@@ -320,7 +325,11 @@ impl<'e> BucketAccumulator<'e> {
             spans.push(Span::styled(segment, text_style));
         }
         if self.failed_count > 0 {
-            let suffix = format!(" · {} failed", self.failed_count);
+            let suffix = crate::locale::ctx().format_named(
+                "scrollback.verb_group.failed",
+                " · {count} failed",
+                &[("count", &self.failed_count.to_string())],
+            );
             text.push_str(&suffix);
             spans.push(Span::styled(suffix, theme.fg(theme.accent_error)));
         }

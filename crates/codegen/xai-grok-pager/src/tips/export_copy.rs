@@ -102,11 +102,23 @@ pub fn export_copy_tip() -> EphemeralTip {
         ..EphemeralTip::new(
             EXPORT_COPY_TIP_KEY,
             Line::from(vec![
-                Span::styled("Copying a lot? ", dim),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_static_text("tip.export_copy.lead", "Copying a lot? "),
+                    dim,
+                ),
                 Span::styled("/copy", key_style),
-                Span::styled(" last reply · ", dim),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_static_text("tip.export_copy.last_reply", " last reply · "),
+                    dim,
+                ),
                 Span::styled("/export", key_style),
-                Span::styled(" full transcript", dim),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_static_text("tip.export_copy.full_transcript", " full transcript"),
+                    dim,
+                ),
             ]),
         )
         .with_session_seen_cap(EXPORT_COPY_TIP_SEEN_KEY, EXPORT_COPY_TIP_SEEN_CAP)

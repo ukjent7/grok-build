@@ -169,6 +169,11 @@ pub struct UiConfig {
     /// `[ui.status_line]`. Disabled by default.
     #[serde(default, skip_serializing_if = "status_line_should_not_be_saved")]
     pub status_line: StatusLineConfig,
+    /// UI language for user-facing interface copy (`en-US` | `zh-CN`).
+    /// Unset keeps the upstream English interface. Read by the pager's locale
+    /// resolver at startup; declared here so `serde_ignored` stays quiet.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub locale: Option<String>,
 }
 
 fn status_line_should_not_be_saved(status_line: &StatusLineConfig) -> bool {
@@ -288,6 +293,7 @@ impl Default for UiConfig {
             follow_up_behavior: None,
             display_refresh: DisplayRefreshSettings::default(),
             status_line: StatusLineConfig::default(),
+            locale: None,
         }
     }
 }
@@ -322,6 +328,9 @@ impl UiConfig {
 
     /// Canonical default for `[ui].follow_up_behavior`.
     pub const FOLLOW_UP_BEHAVIOR_DEFAULT: &'static str = "queue";
+
+    /// Canonical default for `[ui].locale` when unset: the upstream English UI.
+    pub const LOCALE_DEFAULT: &'static str = "en-US";
 
     /// Resolved follow-up behavior: `"queue"` or `"steer"`.
     /// Unknown values fall back to queue.

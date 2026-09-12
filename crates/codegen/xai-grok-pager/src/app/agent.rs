@@ -362,12 +362,23 @@ impl GoalDisplayStatus {
     /// Single source of truth so the three displays cannot drift.
     /// Returns the empty string for non-paused variants; they render through their own labels (e.g. `"Budget"`, `"Done"`) elsewhere.
     pub fn pause_label(&self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Self::UserPaused => "Paused",
-            Self::BackOffPaused => "Paused (back-off)",
-            Self::NoProgressPaused => "Paused (no progress)",
-            Self::InfraPaused => "Paused (error)",
-            Self::Blocked => "Paused (verification blocked)",
+            Self::UserPaused => ctx.named_static_text("goal.status.paused", "Paused"),
+            Self::BackOffPaused => {
+                ctx.named_static_text("goal.status.paused_back_off", "Paused (back-off)")
+            }
+            Self::NoProgressPaused => ctx.named_static_text(
+                "goal.status.paused_no_progress",
+                "Paused (no progress)",
+            ),
+            Self::InfraPaused => {
+                ctx.named_static_text("goal.status.paused_error", "Paused (error)")
+            }
+            Self::Blocked => ctx.named_static_text(
+                "goal.status.paused_verification_blocked",
+                "Paused (verification blocked)",
+            ),
             Self::Active
             | Self::Failed
             | Self::Interrupted

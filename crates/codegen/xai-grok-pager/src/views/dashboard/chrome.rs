@@ -25,6 +25,19 @@ pub struct HeaderUpgradeCta<'a> {
     pub caption: Option<&'a str>,
 }
 
+/// Localized text for a header chip's state word (`awaiting`, `working`, …); the pushed id stays English.
+fn chip_label(label: &'static str) -> &'static str {
+    let id = match label {
+        "awaiting" => "dashboard.state.awaiting",
+        "working" => "dashboard.state.working",
+        "idle" => "dashboard.state.idle",
+        "done" => "dashboard.state.done",
+        "failed" => "dashboard.state.failed",
+        _ => return label,
+    };
+    crate::locale::ctx().named_static_text(id, label)
+}
+
 /// Render the dashboard header row:
 /// ```text
 ///   main worktree ~/wt/wt1 (worktree of ~/proj) [Choose Ctrl+l]   ◆ 2 awaiting │ ⋮ 3 working │ ◇ 1 idle
@@ -104,7 +117,10 @@ pub(super) fn render_header(
             label,
             Line::from(vec![
                 Span::styled(glyph, bg.fg(color)),
-                Span::styled(format!(" {count} {label}"), bg.fg(theme.gray)),
+                Span::styled(
+                    format!(" {count} {}", chip_label(label)),
+                    bg.fg(theme.gray),
+                ),
             ]),
         );
     }
@@ -154,7 +170,10 @@ pub(super) fn render_header(
     buf.set_line(area.x, area.y, &location, location_w);
 
     let mut choose_hint = hint_line(
-        Span::styled("Choose", dim),
+        Span::styled(
+            crate::locale::ctx().named_static_text("dashboard.actions.choose", "Choose"),
+            dim,
+        ),
         chord_hint(
             theme,
             registry,
@@ -291,9 +310,14 @@ pub(super) fn render_actions_row(
     // When worktree mode is on and the cwd is a git repo (so it can actually take effect), the next session goes in a fresh git worktree
     let worktree_armed = state.worktree_armed();
     let new_agent_label = if worktree_armed {
-        "+ New Agent in Worktree"
+        crate::locale::ctx()
+            .named_static_text(
+                "dashboard.actions.new_agent_worktree",
+                "+ New Agent in Worktree",
+            )
     } else {
-        "+ New Agent"
+        crate::locale::ctx()
+            .named_static_text("dashboard.actions.new_agent", "+ New Agent")
     };
     let new_agent_w = (UnicodeWidthStr::width(new_agent_label) as u16).min(area.width);
 
@@ -320,9 +344,11 @@ pub(super) fn render_actions_row(
         };
 
     let worktree_label = if worktree_armed {
-        "Disable Worktree"
+        crate::locale::ctx()
+            .named_static_text("dashboard.actions.disable_worktree", "Disable Worktree")
     } else {
-        "Worktree"
+        crate::locale::ctx()
+            .named_static_text("dashboard.actions.worktree", "Worktree")
     };
     let worktree_hint = hint_line(
         Span::styled(
@@ -348,7 +374,8 @@ pub(super) fn render_actions_row(
         // The session picker has no dashboard chord (`Ctrl+R` is rename here), so the hint names the slash command that opens it
         let open_previous = hint_line(
             Span::styled(
-                "Open Previous",
+                crate::locale::ctx()
+                    .named_static_text("dashboard.actions.open_previous", "Open Previous"),
                 bg.fg(button_fg(
                     state.open_session_button_focused(),
                     state.open_session_button_hit.hovered,

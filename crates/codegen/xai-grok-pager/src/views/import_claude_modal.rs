@@ -112,11 +112,19 @@ impl ItemKind {
 
     fn label(&self) -> &'static str {
         match self {
-            Self::Permission => "Permissions",
-            Self::EnvVar => "Env vars",
-            Self::McpServer => "MCP servers",
-            Self::Hook => "Hooks",
-            Self::PathEntry => "Paths",
+            Self::Permission => {
+                crate::locale::ctx().named_static_text("import.category.permissions", "Permissions")
+            }
+            Self::EnvVar => {
+                crate::locale::ctx().named_static_text("import.category.env_vars", "Env vars")
+            }
+            Self::McpServer => {
+                crate::locale::ctx().named_static_text("import.category.mcp_servers", "MCP servers")
+            }
+            Self::Hook => crate::locale::ctx().named_static_text("import.category.hooks", "Hooks"),
+            Self::PathEntry => {
+                crate::locale::ctx().named_static_text("import.category.paths", "Paths")
+            }
         }
     }
 
@@ -573,30 +581,35 @@ pub fn render_import_claude_modal(
     theme: &Theme,
     compact: bool,
 ) {
-    let confirm_label = format!("Enter import {}", state.selected_count());
+    let ctx = crate::locale::ctx();
+    let confirm_label = ctx.format_named(
+        "import.shortcut.confirm",
+        "Enter import {count}",
+        &[("count", &state.selected_count().to_string())],
+    );
     let shortcuts = [
         Shortcut {
-            label: "\u{2191}\u{2193} navigate",
+            label: ctx.named_static_text("import.shortcut.navigate", "\u{2191}\u{2193} navigate"),
             clickable: false,
             id: SHORTCUT_ID_HINT,
         },
         Shortcut {
-            label: "space toggle",
+            label: ctx.named_static_text("import.shortcut.toggle", "space toggle"),
             clickable: false,
             id: SHORTCUT_ID_HINT,
         },
         Shortcut {
-            label: "\u{2190}\u{2192} fold",
+            label: ctx.named_static_text("import.shortcut.fold", "\u{2190}\u{2192} fold"),
             clickable: false,
             id: SHORTCUT_ID_HINT,
         },
         Shortcut {
-            label: "a all",
+            label: ctx.named_static_text("import.shortcut.all", "a all"),
             clickable: true,
             id: SHORTCUT_ID_SELECT_ALL,
         },
         Shortcut {
-            label: "n none",
+            label: ctx.named_static_text("import.shortcut.none", "n none"),
             clickable: true,
             id: SHORTCUT_ID_SELECT_NONE,
         },
@@ -606,13 +619,14 @@ pub fn render_import_claude_modal(
             id: SHORTCUT_ID_CONFIRM,
         },
         Shortcut {
-            label: "Esc cancel",
+            label: ctx.named_static_text("import.shortcut.cancel", "Esc cancel"),
             clickable: true,
             id: SHORTCUT_ID_CANCEL,
         },
     ];
     let config = ModalWindowConfig {
-        title: "Import Claude settings",
+        title: ctx
+            .named_static_text("import.title", "Import Claude settings"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing: ModalSizing::default().with_compact(compact),
@@ -698,7 +712,12 @@ fn build_rows(
     if !plan.global_items.is_empty() {
         let scope_start = flat_index;
         let scope_key = format!("scope:{:?}", Scope::Global);
-        let label = "Global  ~/.grok/config.toml".to_string();
+        let label = crate::locale::ctx()
+            .named_text(
+                "import.scope.global_label",
+                "Global  ~/.grok/config.toml",
+            )
+            .into_owned();
         // Placeholder header; flat_indices filled after children are pushed.
         let scope_header_pos = rows.len();
         rows.push(Row::ScopeHeader {
@@ -728,7 +747,11 @@ fn build_rows(
         let project_config = find_project_root(cwd)
             .join(".grok")
             .join(xai_grok_config::USER_CONFIG_FILENAME);
-        let label = format!("Project  {}", project_config.display());
+        let label = crate::locale::ctx().format_named(
+            "import.scope.project_label",
+            "Project  {path}",
+            &[("path", &project_config.display().to_string())],
+        );
         let scope_header_pos = rows.len();
         rows.push(Row::ScopeHeader {
             label,

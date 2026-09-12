@@ -1,0 +1,6 @@
+{
+  "permission.subagent_label": "子智能体“{name}”（{kind}）：",
+  "permission.child_session_label": "子会话（未跟踪）：",
+  "permission.args.more_lines": "…（另有 {hidden} 行）",
+  "question.answer_placeholder": "在此输入你的回答"
+}

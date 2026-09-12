@@ -31,6 +31,11 @@ const MORE_INDENT: &str = "   ";
 const QUEUE_BODY_INDENT: u16 = 1;
 const STOP_LABEL: &str = "[stop]";
 
+/// Localized kill control (falls back to [`STOP_LABEL`]); reuses the turn-button term.
+fn stop_label() -> &'static str {
+    crate::locale::ctx().named_static_text("turn.button.stop", STOP_LABEL)
+}
+
 /// Seeded at startup and on `x.ai/settings/update` from Feature::Dock.
 static ENABLED: AtomicBool = AtomicBool::new(false);
 
@@ -94,28 +99,28 @@ impl Section {
     }
 
     fn label(self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Section::Subagents => "Subagents",
-            Section::Tasks => "Tasks",
-            Section::Watchers => "Watchers",
-            Section::Queued => "Queued",
+            Section::Subagents => ctx.named_static_text("dock.section.subagents", "Subagents"),
+            Section::Tasks => ctx.named_static_text("dock.section.tasks", "Tasks"),
+            Section::Watchers => ctx.named_static_text("dock.section.watchers", "Watchers"),
+            Section::Queued => ctx.named_static_text("dock.section.queued", "Queued"),
         }
     }
 
     pub(crate) fn tab_hint(self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Section::Subagents => "subagents",
-            Section::Tasks => "tasks",
-            Section::Watchers => "watchers",
-            Section::Queued => "queued",
+            Section::Subagents => ctx.named_static_text("dock.section.subagents", "subagents"),
+            Section::Tasks => ctx.named_static_text("dock.section.tasks", "tasks"),
+            Section::Watchers => ctx.named_static_text("dock.section.watchers", "watchers"),
+            Section::Queued => ctx.named_static_text("dock.section.queued", "queued"),
         }
     }
 
     /// Every killable dock row paints `[stop]`, including subagents.
     pub fn kill_label(self) -> &'static str {
-        match self {
-            Section::Subagents | Section::Tasks | Section::Watchers | Section::Queued => STOP_LABEL,
-        }
+        stop_label()
     }
 }
 
@@ -319,8 +324,14 @@ pub fn render(buf: &mut Buffer, area: Rect, theme: &Theme, data: &DockData) {
                 let hidden = layout.hidden_rows(section);
                 let arrow = crate::glyphs::disclosure_open();
                 let indent_len = MORE_INDENT.len().min(area.width.saturating_sub(1) as usize);
+                let count = hidden.to_string();
+                let more_text = crate::locale::ctx().format_named(
+                    "dock.more",
+                    "show {count} more",
+                    &[("count", &count)],
+                );
                 let line = Line::from(Span::styled(
-                    format!("{}{arrow} show {hidden} more", &MORE_INDENT[..indent_len]),
+                    format!("{}{arrow} {more_text}", &MORE_INDENT[..indent_len]),
                     Style::default().fg(theme.gray),
                 ));
                 buf.set_line(area.x, y, &line, area.width);

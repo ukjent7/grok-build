@@ -26,9 +26,84 @@ use crate::scrollback::block::RenderBlock;
 use agent_client_protocol as acp;
 
 /// Format a "✓ Label: value" success toast.
+/// The value ("on"/"off") and the template are localized; `label` is passed
+/// verbatim by callers that don't know their stable setting key.
 pub(in crate::app::dispatch) fn save_success_toast(label: &str, on: bool) -> String {
-    let value = if on { "on" } else { "off" };
-    format!("\u{2713} {label}: {value}")
+    let (id, english) = if on {
+        ("settings.ui.value.on", "on")
+    } else {
+        ("settings.ui.value.off", "off")
+    };
+    let value = crate::locale::ctx().named_static_text(id, english);
+    format_save_toast(label, value)
+}
+
+/// Format a "✓ <label>: <value>" toast with a translated template.
+fn format_save_toast(label: &str, value: &str) -> String {
+    crate::locale::ctx()
+        .named_text("settings.toast.saved", "\u{2713} {label}: {value}")
+        .replace("{label}", label)
+        .replace("{value}", value)
+}
+
+/// Format a "✓ <label>: <value>" toast, localizing the display label by the
+/// setting's stable key (keys and config values themselves stay canonical).
+pub(in crate::app::dispatch) fn save_setting_value_toast(
+    setting_key: &str,
+    label: &str,
+    value: &str,
+) -> String {
+    let label = crate::locale::ctx().setting_label(setting_key, label);
+    format_save_toast(label.as_ref(), value)
+}
+
+/// Format a "✓ <label>: <on/off>" toast for a Bool setting; the label is
+/// localized by the setting's stable key.
+pub(in crate::app::dispatch) fn save_setting_bool_toast(
+    setting_key: &str,
+    label: &str,
+    on: bool,
+) -> String {
+    let (id, english) = if on {
+        ("settings.ui.value.on", "on")
+    } else {
+        ("settings.ui.value.off", "off")
+    };
+    let value = crate::locale::ctx().named_static_text(id, english);
+    save_setting_value_toast(setting_key, label, value)
+}
+
+/// Format a "✓ <label>: <choice>" toast where the value is an enum choice;
+/// the choice display is localized by (setting key, canonical value).
+pub(in crate::app::dispatch) fn save_setting_choice_toast(
+    setting_key: &str,
+    label: &str,
+    canonical: &str,
+    english_display: &str,
+) -> String {
+    let value = crate::locale::ctx().setting_choice_label(setting_key, canonical, english_display);
+    save_setting_value_toast(setting_key, label, value.as_ref())
+}
+
+/// Wrap a toast message with the "restart to apply" cue (localized template).
+pub(in crate::app::dispatch) fn restart_required_toast(message: &str) -> String {
+    crate::locale::ctx()
+        .named_text("settings.toast.restart_required", "{message} (restart to apply)")
+        .replace("{message}", message)
+}
+
+/// Format the "already at default" toast for a reset no-op.
+pub(in crate::app::dispatch) fn setting_already_default_toast(setting_key: &str, label: &str) -> String {
+    let label = crate::locale::ctx().setting_label(setting_key, label);
+    crate::locale::ctx()
+        .named_text("settings.toast.already_default", "{label}: already at default")
+        .replace("{label}", label.as_ref())
+}
+
+/// Format the "cleared" toast for a cleared override value.
+pub(in crate::app::dispatch) fn setting_cleared_toast(setting_key: &str, label: &str) -> String {
+    let cleared = crate::locale::ctx().named_static_text("settings.toast.value.cleared", "cleared");
+    save_setting_value_toast(setting_key, label, cleared)
 }
 
 /// Refresh every open settings modal's `ui_snapshot` and `pager_snapshot` so the next render reads the latest live state.
@@ -359,7 +434,8 @@ pub(in crate::app::dispatch) fn dispatch_confirm_reset_setting(
                     "reset skipped — setting already at default",
                 );
                 with_active_agent(app, |agent| {
-                    agent.show_toast(&format!("{}: already at default", meta.label));
+                    agent
+                        .show_toast(&setting_already_default_toast(meta.key, meta.label));
                 });
                 return vec![];
             }
@@ -418,9 +494,9 @@ pub(in crate::app::dispatch) fn dispatch_toggle_vim_mode(app: &mut AppView) -> V
     set_vim_mode_inner(app, enabled);
     refresh_open_settings_modals(app);
     let msg = if enabled {
-        "Vim mode: on"
+        crate::locale::ctx().named_static_text("settings.vim_mode.on", "Vim mode: on")
     } else {
-        "Vim mode: off"
+        crate::locale::ctx().named_static_text("settings.vim_mode.off", "Vim mode: off")
     };
     tracing::info!(vim_mode = enabled, "Vim mode toggled");
     match app.active_view {
@@ -504,7 +580,9 @@ pub(in crate::app::dispatch) fn dispatch_toggle_mouse_capture(app: &mut AppView)
         }
         with_active_agent(app, |agent| {
             toast_applied = true;
-            agent.show_toast("Mouse reporting on");
+            let toast =
+                crate::locale::ctx().named_static_text("settings.toast.mouse_reporting_on", "Mouse reporting on");
+            agent.show_toast(toast);
         });
     } else {
         for agent in app.agents.values_mut() {

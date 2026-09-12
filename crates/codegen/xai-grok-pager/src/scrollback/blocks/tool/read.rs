@@ -173,19 +173,30 @@ impl ReadToolCallBlock {
         // SKILL.md reads render as "Skill {skill_name}".
         if let Some(skill) = self.skill_name() {
             return Line::from(vec![
-                Span::styled("Skill ", bold_style),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_static_text("scrollback.tool.read.skill", "Skill ")
+                        .to_string(),
+                    bold_style,
+                ),
                 Span::styled(skill.to_owned(), path_style),
             ]);
         }
 
-        let prefix = "Read ";
+        let prefix = crate::locale::ctx().named_text("scrollback.tool.read.label", "Read ");
         let range_suffix = self
             .line_range
             .map(|r| {
                 if let Some(total) = self.total_lines
                     && total > r.end.saturating_sub(r.start) + 1
                 {
-                    format!(" ({} of {total})", r)
+                    let range = r.to_string();
+                    let total = total.to_string();
+                    crate::locale::ctx().format_named(
+                        "scrollback.tool.read.range_of",
+                        " ({range} of {total})",
+                        &[("range", &range), ("total", &total)],
+                    )
                 } else {
                     format!(" ({})", r)
                 }
@@ -193,11 +204,22 @@ impl ReadToolCallBlock {
             .unwrap_or_default();
         // Extra suffix for errors or empty content
         let extra_suffix = if self.content.as_ref().is_some_and(|c| c.is_empty()) {
-            " (empty)".to_string()
+            crate::locale::ctx()
+                .named_text("scrollback.tool.read.empty", " (empty)")
+                .into_owned()
         } else if let Some(media) = &self.media_kind {
             match media {
-                ReadMediaKind::Image => " (image)".to_string(),
-                ReadMediaKind::Pdf { pages } => format!(" ({pages} pages)"),
+                ReadMediaKind::Image => crate::locale::ctx()
+                    .named_text("scrollback.tool.read.image", " (image)")
+                    .into_owned(),
+                ReadMediaKind::Pdf { pages } => {
+                    let count = pages.to_string();
+                    crate::locale::ctx().format_named(
+                        "scrollback.tool.read.pages",
+                        " ({count} pages)",
+                        &[("count", &count)],
+                    )
+                }
             }
         } else {
             String::new()

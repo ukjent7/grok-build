@@ -319,12 +319,25 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
                 return;
             };
             let next_hint = match TUTORIAL_TOPICS.get(index + 1) {
-                Some(next) => format!("\u{2192} next: {}", next.title),
-                None => "\u{2192} done".to_owned(),
+                Some(next) => crate::locale::ctx().format_named(
+                    "tutorial.next",
+                    "\u{2192} next: {title}",
+                    &[(
+                        "title",
+                        crate::locale::ctx().named_static_text(
+                            &format!("tutorial.topic.{}.title", index + 2),
+                            next.title,
+                        ),
+                    )],
+                ),
+                None => crate::locale::ctx()
+                    .named_static_text("tutorial.done", "\u{2192} done")
+                    .to_owned(),
             };
             let mut shortcuts = vec![
                 Shortcut {
-                    label: "\u{2191}/\u{2193} scroll",
+                    label: crate::locale::ctx()
+                        .named_static_text("tutorial.scroll", "\u{2191}/\u{2193} scroll"),
                     clickable: false,
                     id: 0,
                 },
@@ -336,13 +349,15 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
             ];
             if topic.go_deeper.is_some() {
                 shortcuts.push(Shortcut {
-                    label: "d go deeper",
+                    label: crate::locale::ctx()
+                        .named_static_text("tutorial.go_deeper", "d go deeper"),
                     clickable: false,
                     id: 0,
                 });
             }
             shortcuts.push(Shortcut {
-                label: "Esc list",
+                label: crate::locale::ctx()
+                    .named_static_text("tutorial.back_to_list", "Esc list"),
                 clickable: false,
                 id: 0,
             });
@@ -350,7 +365,10 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
                 buf,
                 area,
                 &mut st.window,
-                topic.title,
+                crate::locale::ctx().named_static_text(
+                    &format!("tutorial.topic.{}.title", index + 1),
+                    topic.title,
+                ),
                 topic_body(topic.content),
                 &mut st.scroll,
                 &mut st.cached_lines,
@@ -384,7 +402,13 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
 }
 
 fn render_list(buf: &mut Buffer, area: Rect, st: &mut TutorialState, compact: bool, theme: &Theme) {
-    let progress = format!("{}/{} explored", st.viewed.len(), TUTORIAL_TOPICS.len());
+    let viewed_count = st.viewed.len().to_string();
+    let total_count = TUTORIAL_TOPICS.len().to_string();
+    let progress = crate::locale::ctx().format_named(
+        "tutorial.explored",
+        "{viewed}/{total} explored",
+        &[("viewed", &viewed_count), ("total", &total_count)],
+    );
     let shortcuts = [
         Shortcut {
             label: &progress,
@@ -392,23 +416,24 @@ fn render_list(buf: &mut Buffer, area: Rect, st: &mut TutorialState, compact: bo
             id: 0,
         },
         Shortcut {
-            label: "\u{2191}/\u{2193} navigate",
+            label: crate::locale::ctx()
+                .named_static_text("tutorial.navigate", "\u{2191}/\u{2193} navigate"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "Enter open",
+            label: crate::locale::ctx().named_static_text("tutorial.open", "Enter open"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "Esc done",
+            label: crate::locale::ctx().named_static_text("tutorial.close", "Esc done"),
             clickable: false,
             id: 0,
         },
     ];
     let modal_config = ModalWindowConfig {
-        title: "Welcome to Grok Build",
+        title: crate::locale::ctx().named_static_text("tutorial.title", "Welcome to Grok Build"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing: ModalSizing {
@@ -429,8 +454,12 @@ fn render_list(buf: &mut Buffer, area: Rect, st: &mut TutorialState, compact: bo
 
     // Intro copy, then a blank row, then the topic rows.
     let intro_style = Style::default().fg(theme.gray_bright);
+    let intro = [
+        crate::locale::ctx().named_static_text("tutorial.intro", INTRO_LINES[0]),
+        crate::locale::ctx().named_static_text("tutorial.intro_pick", INTRO_LINES[1]),
+    ];
     let mut y = mca.content.y;
-    for line in INTRO_LINES {
+    for line in intro {
         if y >= mca.content.y + mca.content.height {
             break;
         }
@@ -460,16 +489,31 @@ fn render_list(buf: &mut Buffer, area: Rect, st: &mut TutorialState, compact: bo
     // Narrow modals can't fit title and blurb on one row; stack the blurb below
     const NARROW_THRESHOLD: u16 = 64;
     let narrow = entries_area.width < NARROW_THRESHOLD;
-    let blurb_slices: Vec<[&str; 1]> = TUTORIAL_TOPICS.iter().map(|t| [t.blurb]).collect();
+    let topic_texts: Vec<(&'static str, &'static str)> = TUTORIAL_TOPICS
+        .iter()
+        .enumerate()
+        .map(|(i, t)| {
+            let title = crate::locale::ctx().named_static_text(
+                &format!("tutorial.topic.{}.title", i + 1),
+                t.title,
+            );
+            let blurb = crate::locale::ctx().named_static_text(
+                &format!("tutorial.topic.{}.blurb", i + 1),
+                t.blurb,
+            );
+            (title, blurb)
+        })
+        .collect();
+    let blurb_slices: Vec<[&str; 1]> = topic_texts.iter().map(|(_, b)| [*b]).collect();
 
     let picker_entries: Vec<PickerEntry<'_>> = TUTORIAL_TOPICS
         .iter()
         .enumerate()
-        .map(|(i, t)| {
+        .map(|(i, _topic)| {
             let viewed = st.viewed.contains(&i);
             PickerEntry::Row(PickerRow {
-                label: t.title,
-                right_label: if narrow { "" } else { t.blurb },
+                label: topic_texts[i].0,
+                right_label: if narrow { "" } else { topic_texts[i].1 },
                 selected: i == st.picker.selected,
                 expanded: narrow,
                 fields: &[],

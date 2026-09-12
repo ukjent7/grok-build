@@ -13,9 +13,14 @@ use super::markdown_content::MarkdownContent;
 use super::quote_bar::QuoteBarStrip;
 use crate::appearance::AppearanceConfig;
 
-/// TODO: hard-coded because `AppView::minimal_key_intercept` matches this chord literally instead of going through the keybinding registry.
-/// Resolve the label from the registry once it does, so a remap is advertised correctly.
+/// TODO: the chord itself is hard-coded because `AppView::minimal_key_intercept` matches this chord literally
+/// instead of going through the keybinding registry. Resolve the label from the registry once it does, so a
+/// remap is advertised correctly.
 const EXPAND_HINT: &str = "ctrl+e to expand";
+
+fn expand_hint() -> &'static str {
+    crate::locale::ctx().named_static_text("scrollback.thinking.expand_hint", EXPAND_HINT)
+}
 
 const EXPAND_HINT_GAP: &str = "  ";
 
@@ -33,7 +38,7 @@ fn append_expand_hint(line: Line<'static>, ctx: &BlockContext) -> Line<'static> 
     {
         return line;
     }
-    let hint = format!("{EXPAND_HINT_GAP}({EXPAND_HINT})");
+    let hint = format!("{EXPAND_HINT_GAP}({})", expand_hint());
     let used: usize = line.spans.iter().map(|s| s.content.width()).sum();
     if used + hint.width() > ctx.content_width() {
         return line;
@@ -269,14 +274,36 @@ impl ThinkingBlock {
         let detail_style = theme.muted();
 
         if ctx.is_running {
-            Line::from(Span::styled("Thinking…", label_style))
+            Line::from(Span::styled(
+                crate::locale::ctx()
+                    .named_static_text("scrollback.thinking.running", "Thinking…")
+                    .to_string(),
+                label_style,
+            ))
         } else if let Some(time_str) = self.format_time() {
             Line::from(vec![
-                Span::styled("Thought", label_style),
-                Span::styled(format!(" for {time_str}"), detail_style),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_static_text("scrollback.thinking.completed", "Thought")
+                        .to_string(),
+                    label_style,
+                ),
+                Span::styled(
+                    crate::locale::ctx().format_named(
+                        "scrollback.thinking.duration",
+                        " for {duration}",
+                        &[("duration", &time_str)],
+                    ),
+                    detail_style,
+                ),
             ])
         } else {
-            Line::from(Span::styled("Thought", label_style))
+            Line::from(Span::styled(
+                crate::locale::ctx()
+                    .named_static_text("scrollback.thinking.completed", "Thought")
+                    .to_string(),
+                label_style,
+            ))
         }
     }
 

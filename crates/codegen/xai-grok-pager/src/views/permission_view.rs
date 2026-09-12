@@ -553,14 +553,24 @@ pub fn render_permission_view(
         let mut spans: Vec<Span<'static>> = Vec::new();
         if show_scope_hint {
             spans.push(Span::styled("\u{2190} \u{2192}", key_style));
-            spans.push(Span::styled(" narrow scope", hint_style));
+            spans.push(Span::styled(
+                crate::locale::ctx()
+                    .named_text("permission.scope.narrow", " narrow scope")
+                    .into_owned(),
+                hint_style,
+            ));
         }
         if show_edit_hint {
             if show_scope_hint {
                 spans.push(Span::styled("  \u{00b7}  ", hint_style));
             }
             spans.push(Span::styled("e", key_style));
-            spans.push(Span::styled(" edit pattern", hint_style));
+            spans.push(Span::styled(
+                crate::locale::ctx()
+                    .named_text("permission.pattern.edit", " edit pattern")
+                    .into_owned(),
+                hint_style,
+            ));
         }
         buf.set_line(content_x, y, &Line::from(spans), content_width);
         y += 1;
@@ -771,35 +781,59 @@ fn render_pattern_preview_line(
     match edit.trimmed() {
         None => {
             spans.push(Span::styled(
-                "type a command pattern to allow (e.g. gh api repos/*)",
+                crate::locale::ctx()
+                    .named_text(
+                        "permission.pattern.placeholder",
+                        "type a command pattern to allow (e.g. gh api repos/*)",
+                    )
+                    .into_owned(),
                 dim,
             ));
         }
         Some(pattern) if xai_grok_workspace::permission::bash_glob_is_catchall(pattern) => {
             spans.push(Span::styled(
-                "\u{2717} matches everything, won't be saved",
+                crate::locale::ctx()
+                    .named_text(
+                        "permission.pattern.catchall_rejected",
+                        "\u{2717} matches everything, won't be saved",
+                    )
+                    .into_owned(),
                 Style::default().fg(theme.accent_error),
             ));
             spans.push(sep);
             spans.push(Span::styled("Esc", Style::default().fg(theme.accent_user)));
-            spans.push(Span::styled(" cancel", dim));
+            spans.push(Span::styled(
+                crate::locale::ctx()
+                    .named_text("permission.pattern.cancel", " cancel")
+                    .into_owned(),
+                dim,
+            ));
         }
         Some(pattern) => {
             if xai_grok_workspace::permission::bash_pattern_matches_command(pattern, command) {
                 spans.push(Span::styled(
-                    "\u{2713} matches this command",
+                    crate::locale::ctx()
+                        .named_text("permission.pattern.matches", "\u{2713} matches this command")
+                        .into_owned(),
                     Style::default().fg(theme.accent_success),
                 ));
             } else {
                 spans.push(Span::styled(
-                    "\u{2717} won't match this command",
+                    crate::locale::ctx()
+                        .named_text(
+                            "permission.pattern.no_match",
+                            "\u{2717} won't match this command",
+                        )
+                        .into_owned(),
                     Style::default().fg(theme.accent_error),
                 ));
             }
             if xai_grok_workspace::permission::bash_pattern_is_broad(pattern) {
                 spans.push(sep.clone());
                 spans.push(Span::styled(
-                    "\u{26a0} very broad",
+                    crate::locale::ctx()
+                        .named_text("permission.pattern.broad", "\u{26a0} very broad")
+                        .into_owned(),
                     Style::default().fg(theme.warning),
                 ));
             }
@@ -808,9 +842,19 @@ fn render_pattern_preview_line(
                 "Enter",
                 Style::default().fg(theme.accent_user),
             ));
-            spans.push(Span::styled(" save  ", dim));
+            spans.push(Span::styled(
+                crate::locale::ctx()
+                    .named_text("permission.pattern.save", " save  ")
+                    .into_owned(),
+                dim,
+            ));
             spans.push(Span::styled("Esc", Style::default().fg(theme.accent_user)));
-            spans.push(Span::styled(" cancel", dim));
+            spans.push(Span::styled(
+                crate::locale::ctx()
+                    .named_text("permission.pattern.cancel", " cancel")
+                    .into_owned(),
+                dim,
+            ));
         }
     }
     buf.set_line(content_x, y, &Line::from(spans), content_width);
@@ -1275,7 +1319,12 @@ fn truncation_indicator_line(theme: &Theme) -> Line<'static> {
             "Ctrl-F",
             Style::default().fg(theme.accent_user).bg(theme.bg_light),
         ),
-        Span::styled(" to expand", style),
+        Span::styled(
+            crate::locale::ctx()
+                .named_text("permission.expand", " to expand")
+                .into_owned(),
+            style,
+        ),
     ])
 }
 
@@ -1441,7 +1490,12 @@ fn build_reject_once_line<'a>(
         (preview, Style::default().fg(theme.text_primary).bg(row_bg))
     } else {
         (
-            "No, reject (type to add feedback)".to_string(),
+            crate::locale::ctx()
+                .named_text(
+                    "dashboard.peek.reject_placeholder",
+                    "No, reject (type to add feedback)",
+                )
+                .into_owned(),
             Style::default().fg(theme.gray).bg(row_bg),
         )
     };
@@ -1461,6 +1515,21 @@ fn build_reject_once_line<'a>(
     Line::from(spans).style(Style::default().bg(row_bg))
 }
 
+/// Localized display prefix for permission scope rows whose prompt prefix comes
+/// from option meta data (`BashCommandPermission` / `McpToolPermission`). The
+/// prefix is only ever rendered; matching here does not affect any comparison.
+fn localized_prompt_prefix(prefix: &str) -> String {
+    match prefix {
+        "Always allow:" => crate::locale::ctx()
+            .named_text("permission.option.always_allow_prefix", "Always allow:")
+            .into_owned(),
+        "Never allow:" => crate::locale::ctx()
+            .named_text("permission.option.never_allow_prefix", "Never allow:")
+            .into_owned(),
+        other => other.to_string(),
+    }
+}
+
 fn dynamic_option_label(
     option: &acp::PermissionOption,
     selected_words: Option<&str>,
@@ -1478,11 +1547,21 @@ fn dynamic_option_label(
             let scope_text = match scope.selected {
                 McpScope::Tool => perm.display_name(),
                 McpScope::Server => match scope.server_prefix.as_deref() {
-                    Some(s) => format!("all tools from {}", mcp_titleize_segment(s)),
+                    Some(s) => {
+                        let server = mcp_titleize_segment(s);
+                        crate::locale::ctx().format_named(
+                            "permission.option.mcp_all_tools_from",
+                            "all tools from {server}",
+                            &[("server", server.as_str())],
+                        )
+                    }
                     None => perm.display_name(),
                 },
             };
-            return (format!("{} ", perm.prompt_prefix), Some(scope_text));
+            return (
+                format!("{} ", localized_prompt_prefix(&perm.prompt_prefix)),
+                Some(scope_text),
+            );
         }
 
         if let Some(words) = selected_words
@@ -1491,7 +1570,7 @@ fn dynamic_option_label(
             )
         {
             return (
-                format!("{} ", bash_perm.prompt_prefix),
+                format!("{} ", localized_prompt_prefix(&bash_perm.prompt_prefix)),
                 Some(words.to_owned()),
             );
         }

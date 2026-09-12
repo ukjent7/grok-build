@@ -34,9 +34,12 @@ impl WelcomeWorkspaceMode {
     }
 
     pub fn label(self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Self::Sandbox => "Sandbox",
-            Self::LocalWorkspace => "Local workspace",
+            Self::Sandbox => ctx.named_static_text("welcome.workspace.sandbox", "Sandbox"),
+            Self::LocalWorkspace => {
+                ctx.named_static_text("welcome.workspace.local", "Local workspace")
+            }
         }
     }
 
@@ -49,10 +52,15 @@ impl WelcomeWorkspaceMode {
 
     /// Compact in-session / status-bar label.
     pub fn status_label(self, cli_locked: bool) -> &'static str {
+        let ctx = crate::locale::ctx();
         match (self, cli_locked) {
-            (Self::Sandbox, _) => "Sandbox",
-            (Self::LocalWorkspace, true) => "Local·CLI",
-            (Self::LocalWorkspace, false) => "Local",
+            (Self::Sandbox, _) => ctx.named_static_text("welcome.workspace.sandbox", "Sandbox"),
+            (Self::LocalWorkspace, true) => {
+                ctx.named_static_text("welcome.workspace.local_cli", "Local·CLI")
+            }
+            (Self::LocalWorkspace, false) => {
+                ctx.named_static_text("welcome.workspace.local_short", "Local")
+            }
         }
     }
 
@@ -236,9 +244,17 @@ pub fn render_workspace_mode_picker(
         .add_modifier(Modifier::BOLD);
     let locked_style = Style::default().fg(theme.gray);
 
-    buf.set_span(row.x, row.y, &Span::styled("Workspace  ", label_style), 11);
+    let heading = crate::locale::ctx().named_static_text("welcome.workspace.heading", "Workspace");
+    let heading = format!("{heading}  ");
+    let heading_w = UnicodeWidthStr::width(heading.as_str()) as u16;
+    buf.set_span(
+        row.x,
+        row.y,
+        &Span::styled(heading, label_style),
+        heading_w.min(row.width),
+    );
 
-    let mut x = row.x.saturating_add(11);
+    let mut x = row.x.saturating_add(heading_w);
     let mut options = [None; 2];
 
     let modes: &[WelcomeWorkspaceMode] = if startup_locked {
@@ -293,9 +309,12 @@ pub fn render_workspace_mode_picker(
     }
 
     let trailing = if ack_pending {
-        "  confirm local workspace? y/N"
+        crate::locale::ctx().named_static_text(
+            "welcome.workspace.confirm_local",
+            "  confirm local workspace? y/N",
+        )
     } else if startup_locked {
-        "  locked by CLI"
+        crate::locale::ctx().named_static_text("welcome.workspace.locked_cli", "  locked by CLI")
     } else {
         "  ctrl+e"
     };
@@ -308,22 +327,28 @@ pub fn render_workspace_mode_picker(
     } else {
         key_style
     };
-    if !trailing.is_empty() && x + trailing.len() as u16 <= row.x + row.width {
+    let trailing_w = UnicodeWidthStr::width(trailing) as u16;
+    if !trailing.is_empty() && x + trailing_w <= row.x + row.width {
         buf.set_span(
-            row.x + row.width - trailing.len() as u16,
+            row.x + row.width - trailing_w,
             row.y,
             &Span::styled(trailing, trailing_style),
-            trailing.len() as u16,
+            trailing_w,
         );
     } else if ack_pending && row.width > 20 {
         // Narrow terminals: paint confirm over the right side so it stays visible.
-        let short = "  y/N confirm local";
-        let start = row.x + row.width.saturating_sub(short.len() as u16);
+        let short =
+            crate::locale::ctx().named_static_text(
+                "welcome.workspace.confirm_local_short",
+                "  y/N confirm local",
+            );
+        let short_w = UnicodeWidthStr::width(short) as u16;
+        let start = row.x + row.width.saturating_sub(short_w);
         buf.set_span(
             start,
             row.y,
             &Span::styled(short, trailing_style),
-            short.len() as u16,
+            short_w,
         );
     }
 

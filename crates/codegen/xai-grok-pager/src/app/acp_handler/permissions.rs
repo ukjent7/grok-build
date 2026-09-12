@@ -180,12 +180,19 @@ fn resolve_subagent_label(agent: &AgentView, session_id: &acp::SessionId) -> Opt
         return None;
     }
     if let Some(info) = agent.subagent_sessions.get(sid) {
-        return Some(format!(
-            "Subagent \"{}\" ({}):",
-            info.description, info.subagent_type
+        let name: &str = info.description.as_ref();
+        let kind: &str = info.subagent_type.as_ref();
+        return Some(crate::locale::ctx().format_named(
+            "permission.subagent_label",
+            "Subagent \"{name}\" ({kind}):",
+            &[("name", name), ("kind", kind)],
         ));
     }
-    Some("Child session (untracked):".to_string())
+    Some(
+        crate::locale::ctx()
+            .named_text("permission.child_session_label", "Child session (untracked):")
+            .into_owned(),
+    )
 }
 
 pub(super) fn build_permission_display(
@@ -231,8 +238,14 @@ pub(super) fn build_permission_display(
             .map(|t| t.to_string())
             .unwrap_or_else(
                 || match bash_highlights.and_then(|h| h.highlighted_words.first()) {
-                    Some(bin) => format!("Allow `{bin}`?"),
-                    None => "Allow Execute?".to_string(),
+                    Some(bin) => crate::locale::ctx().format_named(
+                        "permission.title.command",
+                        "Allow `{target}`?",
+                        &[("target", bin.as_str())],
+                    ),
+                    None => crate::locale::ctx()
+                        .named_text("permission.title.execute", "Allow Execute?")
+                        .into_owned(),
                 },
             )
     } else if is_edit_permission(req) {
@@ -244,26 +257,44 @@ pub(super) fn build_permission_display(
             .and_then(|v| v.get("file_path"))
             .and_then(|v| v.as_str());
         if let Some(path) = file_path {
-            format!("Allow Edit to {}?", path)
+            crate::locale::ctx().format_named(
+                "permission.title.edit_target",
+                "Allow Edit to {target}?",
+                &[("target", path)],
+            )
         } else if let Some(t) = acp_title {
-            format!(
-                "Allow {}?",
-                xai_grok_workspace::permission::mcp_pretty_name_if_qualified(t)
+            let pretty = xai_grok_workspace::permission::mcp_pretty_name_if_qualified(t);
+            crate::locale::ctx().format_named(
+                "permission.title.action",
+                "Allow {action}?",
+                &[("action", pretty.as_str())],
             )
         } else {
-            "Allow Edit?".to_string()
+            crate::locale::ctx()
+                .named_text("permission.title.edit", "Allow Edit?")
+                .into_owned()
         }
     } else if let Some(t) = acp_title {
-        format!(
-            "Allow {}?",
-            xai_grok_workspace::permission::mcp_pretty_name_if_qualified(t)
+        let pretty = xai_grok_workspace::permission::mcp_pretty_name_if_qualified(t);
+        crate::locale::ctx().format_named(
+            "permission.title.action",
+            "Allow {action}?",
+            &[("action", pretty.as_str())],
         )
     } else {
         match req.tool_call.fields.kind {
-            Some(acp::ToolKind::Edit) => "Allow Edit?".to_string(),
-            Some(acp::ToolKind::Execute) => "Allow Execute?".to_string(),
-            Some(acp::ToolKind::Delete) => "Allow Delete?".to_string(),
-            _ => "Allow?".to_string(),
+            Some(acp::ToolKind::Edit) => crate::locale::ctx()
+                .named_text("permission.title.edit", "Allow Edit?")
+                .into_owned(),
+            Some(acp::ToolKind::Execute) => crate::locale::ctx()
+                .named_text("permission.title.execute", "Allow Execute?")
+                .into_owned(),
+            Some(acp::ToolKind::Delete) => crate::locale::ctx()
+                .named_text("permission.title.delete", "Allow Delete?")
+                .into_owned(),
+            _ => crate::locale::ctx()
+                .named_text("permission.title.generic", "Allow?")
+                .into_owned(),
         }
     };
 
@@ -280,13 +311,20 @@ fn qualify_permission_title_for_local_workspace(
     if !session_local_workspace {
         return title;
     }
-    if title.contains("on your machine") {
+    let machine = crate::locale::ctx()
+        .named_text("permission.title.on_machine", "(on your machine)")
+        .into_owned();
+    // Guard against double-qualification, in either language.
+    if title.contains("(on your machine)") || title.contains(machine.as_str()) {
         return title;
     }
     if let Some(stripped) = title.strip_suffix('?') {
-        return format!("{stripped} (on your machine)?");
+        return format!("{stripped} {machine}?");
     }
-    format!("{title} (on your machine)")
+    if let Some(stripped) = title.strip_suffix('\u{ff1f}') {
+        return format!("{stripped} {machine}\u{ff1f}");
+    }
+    format!("{title} {machine}")
 }
 
 fn permission_description_lines(
@@ -355,7 +393,12 @@ pub(super) fn mcp_args_lines(req: &acp::RequestPermissionRequest) -> Vec<String>
     if lines.len() > MCP_ARGS_MAX_LINES {
         let hidden = lines.len() - MCP_ARGS_MAX_LINES;
         lines.truncate(MCP_ARGS_MAX_LINES);
-        lines.push(format!("… (+{hidden} more lines)"));
+        let hidden_str = hidden.to_string();
+        lines.push(crate::locale::ctx().format_named(
+            "permission.args.more_lines",
+            "\u{2026} (+{hidden} more lines)",
+            &[("hidden", hidden_str.as_str())],
+        ));
     }
     lines
 }

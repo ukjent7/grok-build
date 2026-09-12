@@ -86,24 +86,50 @@ impl BlockContent for WorkflowBlock {
         };
         let muted = theme.muted();
 
-        let mut spans = vec![Span::styled("Workflow ", bold)];
+        let locale = crate::locale::ctx();
+        let mut spans = vec![Span::styled(
+            locale
+                .named_static_text("scrollback.workflow.label", "Workflow ")
+                .to_string(),
+            bold,
+        )];
         let verb = match &self.status {
-            WorkflowBlockStatus::Running => format!("{}: ", self.name),
+            WorkflowBlockStatus::Running => locale.format_named(
+                "scrollback.workflow.running",
+                "{name}: ",
+                &[("name", &self.name)],
+            ),
             WorkflowBlockStatus::Done { elapsed } => {
-                format!("{} done in {}: ", self.name, format_duration(*elapsed))
+                let duration = format_duration(*elapsed);
+                locale.format_named(
+                    "scrollback.workflow.done",
+                    "{name} done in {duration}: ",
+                    &[("name", &self.name), ("duration", &duration)],
+                )
             }
             WorkflowBlockStatus::Failed { elapsed } => {
-                format!("{} failed in {}: ", self.name, format_duration(*elapsed))
+                let duration = format_duration(*elapsed);
+                locale.format_named(
+                    "scrollback.workflow.failed",
+                    "{name} failed in {duration}: ",
+                    &[("name", &self.name), ("duration", &duration)],
+                )
             }
             WorkflowBlockStatus::Cancelled { elapsed } => {
-                format!(
-                    "{} ◌ cancelled after {}: ",
-                    self.name,
-                    format_duration(*elapsed)
+                let duration = format_duration(*elapsed);
+                locale.format_named(
+                    "scrollback.workflow.cancelled",
+                    "{name} ◌ cancelled after {duration}: ",
+                    &[("name", &self.name), ("duration", &duration)],
                 )
             }
             WorkflowBlockStatus::Paused { elapsed } => {
-                format!("{} paused at {}: ", self.name, format_duration(*elapsed))
+                let duration = format_duration(*elapsed);
+                locale.format_named(
+                    "scrollback.workflow.paused",
+                    "{name} paused at {duration}: ",
+                    &[("name", &self.name), ("duration", &duration)],
+                )
             }
         };
         let text_style = if matches!(self.status, WorkflowBlockStatus::Cancelled { .. }) {
@@ -120,7 +146,11 @@ impl BlockContent for WorkflowBlock {
         }
         if matches!(self.status, WorkflowBlockStatus::Running) && self.active_agents > 0 {
             spans.push(Span::styled(
-                format!("  ({} agents)", self.active_agents),
+                crate::locale::ctx().format_named(
+                    "scrollback.workflow.active_agents",
+                    "  ({count} agents)",
+                    &[("count", &self.active_agents.to_string())],
+                ),
                 muted,
             ));
         }

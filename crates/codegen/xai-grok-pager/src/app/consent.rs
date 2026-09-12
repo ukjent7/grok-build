@@ -282,14 +282,15 @@ impl ConsentNotice {
             version,
             title: text_or(
                 gate.title.as_deref(),
-                "Updates to our terms",
+                &crate::locale::ctx()
+                    .named_text("consent.title.default", "Updates to our terms"),
                 MAX_CONSENT_TITLE_COLS,
             ),
             segments,
             links,
             accept_label: text_or(
                 gate.accept_label.as_deref(),
-                "Got it",
+                &crate::locale::ctx().named_text("consent.accept.default", "Got it"),
                 MAX_CONSENT_LABEL_COLS,
             ),
         })

@@ -51,7 +51,13 @@ pub fn plan_nudge_tip() -> EphemeralTip {
     EphemeralTip::new(
         PLAN_NUDGE_KEY,
         Line::from(vec![
-            Span::styled("Planning? Check out plan mode via ", dim),
+            Span::styled(
+                crate::locale::ctx().named_static_text(
+                    "tip.ephemeral.plan_mode.lead",
+                    "Planning? Check out plan mode via ",
+                ),
+                dim,
+            ),
             Span::styled(plan_chord_label(), chord),
         ]),
     )

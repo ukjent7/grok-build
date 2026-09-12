@@ -717,7 +717,9 @@ pub(crate) fn build_session_entry_data(
         .map(|(fi, &orig_idx)| {
             let entry = &entries_data[orig_idx];
             let summary = if entry.summary.is_empty() {
-                "(no prompt)".to_string()
+                crate::locale::ctx()
+                    .named_text("session.entry.no_prompt", "(no prompt)")
+                    .into_owned()
             } else {
                 entry.summary.clone()
             };
@@ -727,47 +729,76 @@ pub(crate) fn build_session_entry_data(
             let is_foreign = crate::app::is_foreign_picker_source(&entry.source);
             let is_expanded = !is_foreign && state.expanded.contains(&orig_idx);
 
+            let ctx = crate::locale::ctx();
+            let field = |id: &'static str, english: &'static str, value: String| {
+                (ctx.named_text(id, english).into_owned(), value)
+            };
             let mut field_data: Vec<(String, String)> = Vec::new();
             if is_expanded {
-                field_data.push(("ID".into(), entry.id.clone()));
-                field_data.push(("CWD".into(), entry.cwd.clone()));
+                field_data.push(field("session.field.id", "ID", entry.id.clone()));
+                field_data.push(field("session.field.cwd", "CWD", entry.cwd.clone()));
                 if let Some(ref model) = entry.model_id {
-                    field_data.push(("Model".into(), model.clone()));
+                    field_data.push(field("session.field.model", "Model", model.clone()));
                 }
                 let fmt_time = |dt: chrono::DateTime<chrono::Utc>| {
                     dt.with_timezone(&chrono::Local)
                         .format("%b %d, %l:%M%P")
                         .to_string()
                 };
-                field_data.push(("Created".into(), fmt_time(entry.created_at)));
-                field_data.push(("Updated".into(), fmt_time(entry.updated_at)));
-                field_data.push(("Source".into(), entry.source.clone()));
+                field_data.push(field(
+                    "session.field.created",
+                    "Created",
+                    fmt_time(entry.created_at),
+                ));
+                field_data.push(field(
+                    "session.field.updated",
+                    "Updated",
+                    fmt_time(entry.updated_at),
+                ));
+                field_data.push(field("session.field.source", "Source", entry.source.clone()));
                 if let Some(ref host) = entry.hostname {
-                    field_data.push(("Host".into(), host.clone()));
+                    field_data.push(field("session.field.host", "Host", host.clone()));
                 }
                 if entry.num_messages > 0 {
-                    field_data.push(("Messages".into(), entry.num_messages.to_string()));
+                    field_data.push(field(
+                        "session.field.messages",
+                        "Messages",
+                        entry.num_messages.to_string(),
+                    ));
                 }
                 // Recap ("where was I") and the last-turn summary, whenever available. Truncated to the card width like the Prompt line.
                 let max_w = content_width.saturating_sub(4 + 12) as usize;
                 if let Some(recap) = entry.last_recap.as_deref().map(str::trim)
                     && !recap.is_empty()
                 {
-                    field_data.push(("Recap".into(), truncate_str(recap, max_w)));
+                    field_data.push(field(
+                        "session.field.recap",
+                        "Recap",
+                        truncate_str(recap, max_w),
+                    ));
                 }
                 if let Some(last_turn) = entry.last_turn_summary.as_deref().map(str::trim)
                     && !last_turn.is_empty()
                 {
-                    field_data.push(("Last turn".into(), truncate_str(last_turn, max_w)));
+                    field_data.push(field(
+                        "session.field.last_turn",
+                        "Last turn",
+                        truncate_str(last_turn, max_w),
+                    ));
                 }
                 if let Some(ref detail) = entry.card_detail {
-                    field_data.push((
-                        "Turns".into(),
-                        format!("{}    Tools  {}", detail.turn_count, detail.tool_call_count),
-                    ));
+                    let turns = ctx.format_named(
+                        "session.field.turns_with_tools",
+                        "{turns}    Tools  {tools}",
+                        &[
+                            ("turns", &detail.turn_count.to_string()),
+                            ("tools", &detail.tool_call_count.to_string()),
+                        ],
+                    );
+                    field_data.push((field("session.field.turns", "Turns", String::new()).0, turns));
                     if !detail.first_prompt_preview.is_empty() {
                         let preview = truncate_str(&detail.first_prompt_preview, max_w);
-                        field_data.push(("Prompt".into(), preview));
+                        field_data.push(field("session.field.prompt", "Prompt", preview));
                     }
                 }
             }
@@ -935,11 +966,22 @@ pub(crate) fn build_content_header_label(
         let spinner_frames = crate::glyphs::dot_spinner_frames();
         let frame_idx = (tick / 4) as usize % spinner_frames.len();
         format!(
-            "{} Searching session content\u{2026}",
-            spinner_frames[frame_idx]
+            "{} {}",
+            spinner_frames[frame_idx],
+            crate::locale::ctx()
+                .named_text(
+                    "session.content.searching",
+                    "Searching session content\u{2026}",
+                )
+                .into_owned()
         )
     } else if has_content_rows {
-        "Extended search results (remote and local sessions)".to_string()
+        crate::locale::ctx()
+            .named_text(
+                "session.content.extended_results",
+                "Extended search results (remote and local sessions)",
+            )
+            .into_owned()
     } else {
         String::new()
     }
@@ -957,8 +999,11 @@ pub(crate) fn hidden_external_hint(
                 .filter(|entry| crate::app::is_foreign_picker_source(&entry.source))
                 .count();
             (hidden > 0).then(|| {
-                let plural = if hidden == 1 { "" } else { "s" };
-                format!("{hidden} external session{plural} hidden \u{b7} f to show")
+                crate::locale::ctx().format_named(
+                    "session.hidden_external",
+                    "{count} external session(s) hidden \u{b7} f to show",
+                    &[("count", &hidden.to_string())],
+                )
             })
         }
         _ => None,
@@ -974,16 +1019,38 @@ pub(crate) fn format_time_ago(dt: chrono::DateTime<chrono::Utc>) -> String {
     let now = chrono::Utc::now();
     let duration = now.signed_duration_since(dt);
 
+    let ctx = crate::locale::ctx();
     let raw = if duration.num_minutes() < 1 {
-        "just now".to_string()
+        ctx.named_text("session_picker.time.just_now", "just now")
+            .into_owned()
     } else if duration.num_minutes() < 60 {
-        format!("{}m ago", duration.num_minutes())
+        let value = duration.num_minutes().to_string();
+        ctx.format_named(
+            "session_picker.time.minutes_ago",
+            "{value}m ago",
+            &[("value", &value)],
+        )
     } else if duration.num_hours() < 24 {
-        format!("{}h ago", duration.num_hours())
+        let value = duration.num_hours().to_string();
+        ctx.format_named(
+            "session_picker.time.hours_ago",
+            "{value}h ago",
+            &[("value", &value)],
+        )
     } else if duration.num_days() < 30 {
-        format!("{}d ago", duration.num_days())
+        let value = duration.num_days().to_string();
+        ctx.format_named(
+            "session_picker.time.days_ago",
+            "{value}d ago",
+            &[("value", &value)],
+        )
     } else {
-        format!("{}mo ago", duration.num_days() / 30)
+        let value = (duration.num_days() / 30).to_string();
+        ctx.format_named(
+            "session_picker.time.months_ago",
+            "{value}mo ago",
+            &[("value", &value)],
+        )
     };
     // Right-align to fixed width so the column doesn't jump
     format!("{:>8}", raw)

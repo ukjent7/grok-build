@@ -104,38 +104,95 @@ pub enum VerbGroupKind {
 impl VerbGroupKind {
     /// Verb-group row verb: present tense while running, past otherwise.
     pub fn verb(self, running: bool) -> &'static str {
+        let ctx = crate::locale::ctx();
         let (past, present) = match self {
-            VerbGroupKind::File | VerbGroupKind::Skill => ("Read", "Reading"),
+            VerbGroupKind::File | VerbGroupKind::Skill => (
+                ctx.named_static_text("scrollback.verb_group.verb.read.completed", "Read"),
+                ctx.named_static_text("scrollback.verb_group.verb.read.running", "Reading"),
+            ),
             VerbGroupKind::Search
             | VerbGroupKind::WebSearch
             | VerbGroupKind::MemorySearch
-            | VerbGroupKind::IntegrationSearch => ("Searched", "Searching"),
-            VerbGroupKind::Dir => ("Listed", "Listing"),
-            VerbGroupKind::WebFetch => ("Fetched", "Fetching"),
-            VerbGroupKind::Subagent | VerbGroupKind::Command | VerbGroupKind::OtherTool => {
-                ("Ran", "Running")
-            }
-            VerbGroupKind::Message => ("Sent", "Sending"),
-            VerbGroupKind::EditFile => ("Edited", "Editing"),
-            VerbGroupKind::McpCall => ("Called", "Calling"),
+            | VerbGroupKind::IntegrationSearch => (
+                ctx.named_static_text("scrollback.verb_group.verb.search.completed", "Searched"),
+                ctx.named_static_text("scrollback.verb_group.verb.search.running", "Searching"),
+            ),
+            VerbGroupKind::Dir => (
+                ctx.named_static_text("scrollback.verb_group.verb.list.completed", "Listed"),
+                ctx.named_static_text("scrollback.verb_group.verb.list.running", "Listing"),
+            ),
+            VerbGroupKind::WebFetch => (
+                ctx.named_static_text("scrollback.verb_group.verb.fetch.completed", "Fetched"),
+                ctx.named_static_text("scrollback.verb_group.verb.fetch.running", "Fetching"),
+            ),
+            VerbGroupKind::Subagent | VerbGroupKind::Command | VerbGroupKind::OtherTool => (
+                ctx.named_static_text("scrollback.verb_group.verb.run.completed", "Ran"),
+                ctx.named_static_text("scrollback.verb_group.verb.run.running", "Running"),
+            ),
+            VerbGroupKind::Message => (
+                ctx.named_static_text("scrollback.verb_group.verb.send.completed", "Sent"),
+                ctx.named_static_text("scrollback.verb_group.verb.send.running", "Sending"),
+            ),
+            VerbGroupKind::EditFile => (
+                ctx.named_static_text("scrollback.verb_group.verb.edit.completed", "Edited"),
+                ctx.named_static_text("scrollback.verb_group.verb.edit.running", "Editing"),
+            ),
+            VerbGroupKind::McpCall => (
+                ctx.named_static_text("scrollback.verb_group.verb.call.completed", "Called"),
+                ctx.named_static_text("scrollback.verb_group.verb.call.running", "Calling"),
+            ),
         };
         if running { present } else { past }
     }
 
     /// Verb-group row noun, pluralized by `count`.
     pub fn noun(self, count: usize) -> &'static str {
+        let ctx = crate::locale::ctx();
         let (one, many) = match self {
-            VerbGroupKind::File | VerbGroupKind::EditFile => ("file", "files"),
-            VerbGroupKind::Skill => ("skill", "skills"),
-            VerbGroupKind::Search => ("pattern", "patterns"),
-            VerbGroupKind::Dir => ("dir", "dirs"),
-            VerbGroupKind::WebFetch | VerbGroupKind::WebSearch => ("website", "websites"),
-            VerbGroupKind::MemorySearch => ("memory", "memories"),
-            VerbGroupKind::IntegrationSearch | VerbGroupKind::McpCall => ("MCP tool", "MCP tools"),
-            VerbGroupKind::Subagent => ("subagent", "subagents"),
-            VerbGroupKind::Command => ("command", "commands"),
-            VerbGroupKind::Message => ("message", "messages"),
-            VerbGroupKind::OtherTool => ("tool", "tools"),
+            VerbGroupKind::File | VerbGroupKind::EditFile => (
+                ctx.named_static_text("scrollback.verb_group.noun.file", "file"),
+                ctx.named_static_text("scrollback.verb_group.noun.file", "files"),
+            ),
+            VerbGroupKind::Skill => (
+                ctx.named_static_text("scrollback.verb_group.noun.skill", "skill"),
+                ctx.named_static_text("scrollback.verb_group.noun.skill", "skills"),
+            ),
+            VerbGroupKind::Search => (
+                ctx.named_static_text("scrollback.verb_group.noun.pattern", "pattern"),
+                ctx.named_static_text("scrollback.verb_group.noun.pattern", "patterns"),
+            ),
+            VerbGroupKind::Dir => (
+                ctx.named_static_text("scrollback.verb_group.noun.dir", "dir"),
+                ctx.named_static_text("scrollback.verb_group.noun.dir", "dirs"),
+            ),
+            VerbGroupKind::WebFetch | VerbGroupKind::WebSearch => (
+                ctx.named_static_text("scrollback.verb_group.noun.website", "website"),
+                ctx.named_static_text("scrollback.verb_group.noun.website", "websites"),
+            ),
+            VerbGroupKind::MemorySearch => (
+                ctx.named_static_text("scrollback.verb_group.noun.memory", "memory"),
+                ctx.named_static_text("scrollback.verb_group.noun.memory", "memories"),
+            ),
+            VerbGroupKind::IntegrationSearch | VerbGroupKind::McpCall => (
+                ctx.named_static_text("scrollback.verb_group.noun.mcp_tool", "MCP tool"),
+                ctx.named_static_text("scrollback.verb_group.noun.mcp_tool", "MCP tools"),
+            ),
+            VerbGroupKind::Subagent => (
+                ctx.named_static_text("scrollback.verb_group.noun.subagent", "subagent"),
+                ctx.named_static_text("scrollback.verb_group.noun.subagent", "subagents"),
+            ),
+            VerbGroupKind::Command => (
+                ctx.named_static_text("scrollback.verb_group.noun.command", "command"),
+                ctx.named_static_text("scrollback.verb_group.noun.command", "commands"),
+            ),
+            VerbGroupKind::Message => (
+                ctx.named_static_text("scrollback.verb_group.noun.message", "message"),
+                ctx.named_static_text("scrollback.verb_group.noun.message", "messages"),
+            ),
+            VerbGroupKind::OtherTool => (
+                ctx.named_static_text("scrollback.verb_group.noun.tool", "tool"),
+                ctx.named_static_text("scrollback.verb_group.noun.tool", "tools"),
+            ),
         };
         if count == 1 { one } else { many }
     }

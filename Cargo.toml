@@ -39,6 +39,7 @@ members = [
     "crates/codegen/xai-grok-http",
     "crates/codegen/xai-grok-image",
     "crates/codegen/xai-grok-login",
+    "crates/codegen/xai-grok-locale",
     "crates/codegen/xai-grok-markdown",
     "crates/codegen/xai-grok-markdown-core",
     "crates/codegen/xai-grok-mcp",
@@ -339,6 +340,7 @@ xai-grok-foreign-sessions = { path = "crates/codegen/xai-grok-foreign-sessions" 
 xai-grok-http = { path = "crates/codegen/xai-grok-http" }
 xai-grok-image = { path = "crates/codegen/xai-grok-image" }
 xai-grok-login = { path = "crates/codegen/xai-grok-login" }
+xai-grok-locale = { path = "crates/codegen/xai-grok-locale" }
 xai-grok-markdown = { path = "crates/codegen/xai-grok-markdown" }
 xai-grok-markdown-core = { path = "crates/codegen/xai-grok-markdown-core" }
 xai-grok-mcp = { path = "crates/codegen/xai-grok-mcp" }

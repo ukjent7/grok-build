@@ -47,9 +47,15 @@ pub fn entry_title(agent: &AgentView) -> String {
     match agent.session.session_id.as_ref() {
         Some(sid) => {
             let short: String = sid.0.chars().take(8).collect();
-            format!("session {short}")
+            crate::locale::ctx().format_named(
+                "session_title.fallback_session",
+                "session {short}",
+                &[("short", &short)],
+            )
         }
-        None => "loading...".to_string(),
+        None => crate::locale::ctx()
+            .named_text("session_title.loading", "loading...")
+            .into_owned(),
     }
 }
 
@@ -169,23 +175,46 @@ pub(crate) fn sanitize_display_text(s: &str) -> Cow<'_, str> {
 
 /// Format an elapsed duration as a compact relative label (`now`, `30s ago`, `5m ago`, `2h ago`, `3d ago`).
 pub(crate) fn format_relative_time(elapsed: Duration) -> String {
+    let ctx = crate::locale::ctx();
     let secs = elapsed.as_secs();
     if secs < 1 {
-        return "now".to_string();
+        return ctx
+            .named_text("session_picker.time.just_now", "now")
+            .into_owned();
     }
     if secs < 60 {
-        return format!("{secs}s ago");
+        let value = secs.to_string();
+        return ctx.format_named(
+            "session_title.time.seconds_ago",
+            "{value}s ago",
+            &[("value", &value)],
+        );
     }
     let mins = secs / 60;
     if mins < 60 {
-        return format!("{mins}m ago");
+        let value = mins.to_string();
+        return ctx.format_named(
+            "session_picker.time.minutes_ago",
+            "{value}m ago",
+            &[("value", &value)],
+        );
     }
     let hours = mins / 60;
     if hours < 24 {
-        return format!("{hours}h ago");
+        let value = hours.to_string();
+        return ctx.format_named(
+            "session_picker.time.hours_ago",
+            "{value}h ago",
+            &[("value", &value)],
+        );
     }
     let days = hours / 24;
-    format!("{days}d ago")
+    let value = days.to_string();
+    ctx.format_named(
+        "session_picker.time.days_ago",
+        "{value}d ago",
+        &[("value", &value)],
+    )
 }
 
 #[cfg(test)]

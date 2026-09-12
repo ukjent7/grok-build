@@ -472,7 +472,10 @@ impl AgentView {
                         if let Some(viewer) = crate::prompt_images::ImageViewerState::open(img) {
                             self.image_viewer = Some(viewer);
                         } else {
-                            self.show_toast("Couldn't load image preview");
+                            self.show_toast(crate::locale::ctx().named_static_text(
+                                "prompt.image.preview_unavailable",
+                                "Couldn't load image preview",
+                            ));
                         }
                     }
                     return InputOutcome::Changed;
@@ -770,7 +773,12 @@ impl AgentView {
                 && let Some(cancel_key) = registry.key_for(ActionId::CancelTurn)
             {
                 let cancel_key = cancel_key.display();
-                self.show_cancel_key_hint(&format!("Press {cancel_key} to cancel the turn"));
+                let hint = crate::locale::ctx().format_named(
+                    "prompt.turn.cancel_hint",
+                    "Press {key} to cancel the turn",
+                    &[("key", &cancel_key)],
+                );
+                self.show_cancel_key_hint(&hint);
             }
             self.suppress_rewind_arm(std::time::Instant::now());
             return Some(InputOutcome::Changed);
@@ -786,7 +794,9 @@ impl AgentView {
             return Some(InputOutcome::ArmPending {
                 action: Action::ClearPrompt,
                 shortcut: crate::input::key::KeyShortcut::from(*key),
-                label: Some("clear"),
+                label: Some(
+                    crate::locale::ctx().named_static_text("shortcut.clear", "clear"),
+                ),
                 ttl: crate::app::app_view::esc_double_press_ttl(),
             });
         }

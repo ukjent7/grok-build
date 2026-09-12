@@ -557,9 +557,15 @@ pub fn render_peek_panel(
                         // Permission reject vs. ask-tool "Other" free-text.
                         // Painted manually (not via the widget's unfocused-only placeholder) so the hint stays visible while the caret sits on the row
                         let placeholder_text = if panel.is_ask_question() {
-                            "Other (type your own answer)"
+                            crate::locale::ctx().named_static_text(
+                                "dashboard.peek.other_placeholder",
+                                "Other (type your own answer)",
+                            )
                         } else {
-                            "No, reject (type to add feedback)"
+                            crate::locale::ctx().named_static_text(
+                                "dashboard.peek.reject_placeholder",
+                                "No, reject (type to add feedback)",
+                            )
                         };
                         let placeholder = truncate_str(placeholder_text, avail as usize);
                         buf.set_string(text_x, y, placeholder, theme.dim().bg(theme.bg_base));
@@ -612,14 +618,18 @@ pub fn render_peek_panel(
         };
         // While Working, the status label is secondary (a touch brighter than dim chrome)
         // Live-tail keeps painting the middle regardless
+        // `response_type` itself stays English: it is matched against `"Working"` below and stored
+        // on the panel across frames, so it is localized only at paint time
         let working = panel.response_type == "Working";
+        let status_label = localize_status_word(&panel.response_type);
         let label_style = if working {
-            Style::default().fg(theme.text_secondary)
+            Style::default()
+                .fg(theme.text_secondary)
+                .bg(theme.bg_base)
         } else {
-            theme.dim()
-        }
-        .bg(theme.bg_base);
-        let label_trunc = truncate_str(&panel.response_type, label_avail);
+            theme.dim().bg(theme.bg_base)
+        };
+        let label_trunc = truncate_str(&status_label, label_avail);
         buf.set_string(inner.x, inner.y, label_trunc, label_style);
         if time_w > 0 && time_w + 1 < inner.width {
             let time_x = inner.x + inner.width - time_w;
@@ -640,7 +650,12 @@ pub fn render_peek_panel(
         if let Some(PeekLiveTailArgs { scrollback }) = live_tail {
             if middle_h > 0 {
                 if scrollback.is_empty() {
-                    if let Some(hint) = empty_hint.or(Some("No activity yet")) {
+                    if let Some(hint) =
+                        empty_hint.or(Some(crate::locale::ctx().named_static_text(
+                            "dashboard.peek.no_activity_yet",
+                            "No activity yet",
+                        )))
+                    {
                         let trunc = truncate_str(hint, inner.width as usize);
                         buf.set_string(inner.x, middle_top, trunc, theme.dim().bg(theme.bg_base));
                     }
@@ -677,7 +692,10 @@ pub fn render_peek_panel(
         vpad_top: 0,
         chrome: false,
         bg: PromptBg::Canvas(theme.bg_base),
-        placeholder_override: Some("reply\u{2026}"),
+        placeholder_override: Some(crate::locale::ctx().named_static_text(
+            "dashboard.peek.reply_placeholder",
+            "reply\u{2026}",
+        )),
         image_preview: false,
         ..PromptStyle::default()
     };
@@ -733,6 +751,42 @@ pub fn reply_row_count(
     reply
         .desired_height(reply_text_width, &style, false, cap.max(1))
         .max(1)
+}
+
+/// Localized peek status word for display. The stored `response_type` stays English because it is
+/// matched against `"Working"` and asserted in tests; only the painted label goes through here.
+pub(crate) fn localize_status_word(word: &str) -> String {
+    let id = match word {
+        "Thinking" => "dashboard.peek.status.thinking",
+        "Response" => "dashboard.peek.status.response",
+        "Compacting" => "dashboard.peek.status.compacting",
+        "Retrying" => "dashboard.peek.status.retrying",
+        "Preparing" => "dashboard.peek.status.preparing",
+        "Message" => "dashboard.peek.status.message",
+        "Working" => "dashboard.peek.status.working",
+        "Thought" => "dashboard.peek.status.thought",
+        "Idle" => "dashboard.peek.status.idle",
+        "Awaiting your input" => "dashboard.peek.status.awaiting_input",
+        "Bash" => "dashboard.peek.status.bash",
+        "Read" => "dashboard.peek.status.read",
+        "Edit" => "dashboard.peek.status.edit",
+        "List" => "dashboard.peek.status.list",
+        "Search" => "dashboard.peek.status.search",
+        "Fetch" => "dashboard.peek.status.fetch",
+        "Web search" => "dashboard.peek.status.web_search",
+        "Tool search" => "dashboard.peek.status.tool_search",
+        "Tool" => "dashboard.peek.status.tool",
+        "Memory" => "dashboard.peek.status.memory",
+        "Skill" => "dashboard.peek.status.skill",
+        "Subagent" => "dashboard.peek.status.subagent",
+        "Workflow" => "dashboard.peek.status.workflow",
+        "Task" => "dashboard.peek.status.task",
+        "Btw" => "dashboard.peek.status.btw",
+        "Context" => "dashboard.peek.status.context",
+        "Credit limit" => "dashboard.peek.status.credit_limit",
+        _ => return word.to_string(),
+    };
+    crate::locale::ctx().named_static_text(id, word).to_string()
 }
 
 /// It mirrors the agent view's turn-status line so the peek never dwells on a stale completed

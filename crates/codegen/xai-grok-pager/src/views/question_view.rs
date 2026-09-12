@@ -1505,7 +1505,9 @@ fn build_freeform_line(
     } else {
         // Empty: show placeholder
         (
-            "Type your answer here".to_string(),
+            crate::locale::ctx()
+                .named_text("question.answer_placeholder", "Type your answer here")
+                .into_owned(),
             Style::default().fg(fg(theme.gray)).bg(row_bg),
         )
     };
@@ -1755,7 +1757,12 @@ fn render_truncation_indicator(buf: &mut Buffer, x: u16, y: u16, width: u16, the
             "Ctrl-F",
             Style::default().fg(theme.accent_user).bg(theme.bg_light),
         ),
-        Span::styled(" to expand", style),
+        Span::styled(
+            crate::locale::ctx()
+                .named_text("question.truncation.expand", " to expand")
+                .into_owned(),
+            style,
+        ),
     ]);
     buf.set_line(x, y, &indicator, width);
 }

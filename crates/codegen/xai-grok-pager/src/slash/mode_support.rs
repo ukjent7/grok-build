@@ -41,14 +41,27 @@ impl ModeSupport {
             Self::MinimalOnly(remedy) => (remedy, "fullscreen", "/minimal"),
         };
         Some(match remedy {
-            Remedy::SwitchMode { why } => format!(
+            Remedy::SwitchMode { why } => crate::locale::ctx().format_named(
+                "slash.mode.error.switch",
                 "/{token} isn't available in {current} mode ({why}). \
-                 Run {switch} to switch this session."
+                 Run {switch} to switch this session.",
+                &[
+                    ("token", token),
+                    ("current", current),
+                    ("why", why),
+                    ("switch", switch),
+                ],
             ),
-            Remedy::UseInstead(instead) => {
-                format!("/{token} isn't available in {current} mode: {instead}.")
-            }
-            Remedy::AlreadyInMode => format!("You're already in {current} mode."),
+            Remedy::UseInstead(instead) => crate::locale::ctx().format_named(
+                "slash.mode.error.use_instead",
+                "/{token} isn't available in {current} mode: {instead}.",
+                &[("token", token), ("current", current), ("instead", instead)],
+            ),
+            Remedy::AlreadyInMode => crate::locale::ctx().format_named(
+                "slash.mode.error.already_in_mode",
+                "You're already in {current} mode.",
+                &[("current", current)],
+            ),
         })
     }
 }

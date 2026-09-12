@@ -61,6 +61,15 @@ impl McpScope {
     }
 }
 
+/// Display form of a scope ("user" / "project"), localized.
+fn scope_text(scope: McpScope) -> std::borrow::Cow<'static, str> {
+    let ctx = crate::locale::ctx();
+    match scope {
+        McpScope::User => ctx.named_text("mcp.scope.user", "user"),
+        McpScope::Project => ctx.named_text("mcp.scope.project", "project"),
+    }
+}
+
 #[derive(Debug, Subcommand, Clone)]
 pub enum McpCommand {
     /// List configured MCP servers
@@ -190,7 +199,13 @@ fn run_list(json: bool) -> Result<()> {
             .collect();
         println!("{}", serde_json::to_string_pretty(&payload)?);
     } else if servers.is_empty() {
-        println!("No MCP servers configured. Run `grok mcp add --help` to get started.");
+        println!(
+            "{}",
+            crate::locale::ctx().named_text(
+                "mcp.list.empty",
+                "No MCP servers configured. Run `grok mcp add --help` to get started."
+            )
+        );
     } else {
         for (name, (config, scope)) in &servers {
             let transport = match &config.transport {
@@ -205,13 +220,25 @@ fn run_list(json: bool) -> Result<()> {
             };
             let mut notes = Vec::new();
             if blocked.contains_key(name) {
-                notes.push("blocked by organization policy");
+                notes.push(
+                    crate::locale::ctx()
+                        .named_text("mcp_cli.note_blocked", "blocked by organization policy")
+                        .into_owned(),
+                );
             }
             if disabled.contains(name) {
-                notes.push("disabled");
+                notes.push(
+                    crate::locale::ctx()
+                        .named_text("mcp_cli.note_disabled", "disabled")
+                        .into_owned(),
+                );
             }
             if *scope == "project" {
-                notes.push("project");
+                notes.push(
+                    crate::locale::ctx()
+                        .named_text("mcp.scope.project", "project")
+                        .into_owned(),
+                );
             }
             let suffix = if notes.is_empty() {
                 String::new()
@@ -255,11 +282,17 @@ async fn run_add(args: AddArgs) -> Result<()> {
                 rendered.push(' ');
                 rendered.push_str(&cmd_args.join(" "));
             }
-            format!("{kind} MCP server '{name}' with command: {rendered}")
+            crate::locale::ctx().format_named(
+                "mcp.add.summary_command",
+                "{kind} MCP server '{name}' with command: {rendered}",
+                &[("kind", kind), ("name", name), ("rendered", &rendered)],
+            )
         }
-        McpServerTransportConfig::StreamableHttp { url, .. } => {
-            format!("{kind} MCP server '{name}' with URL: {url}")
-        }
+        McpServerTransportConfig::StreamableHttp { url, .. } => crate::locale::ctx().format_named(
+            "mcp.add.summary_url",
+            "{kind} MCP server '{name}' with URL: {url}",
+            &[("kind", kind), ("name", name), ("url", url)],
+        ),
     };
 
     let config = McpServerConfig {
@@ -289,8 +322,22 @@ async fn run_add(args: AddArgs) -> Result<()> {
 
     let path = scope_target(args.scope);
     xai_grok_shell::util::config::save_mcp_server_config_at(&path, name, &config).await?;
-    println!("Added {summary} to {} config", args.scope.label());
-    println!("File modified: {}", scope_display(args.scope, &path));
+    println!(
+        "{}",
+        crate::locale::ctx().format_named(
+            "mcp.add.added_to_config",
+            "Added {summary} to {scope} config",
+            &[("summary", &summary), ("scope", &scope_text(args.scope))],
+        )
+    );
+    println!(
+        "{}",
+        crate::locale::ctx().format_named(
+            "mcp.file_modified",
+            "File modified: {path}",
+            &[("path", &scope_display(args.scope, &path))],
+        )
+    );
     Ok(())
 }
 
@@ -326,11 +373,21 @@ fn resolve_add(args: &AddArgs) -> Result<ResolvedAdd> {
     // Legacy-flag misroutes: --url always means a remote server, and --type only modifies --url
     if args.url.is_some() && transport == McpTransport::Stdio {
         bail!(
-            "--url cannot be combined with --transport stdio. For a remote server, use --transport http or --transport sse."
+            "{}",
+            crate::locale::ctx().named_text(
+                "mcp.error.url_with_stdio",
+                "--url cannot be combined with --transport stdio. For a remote server, use --transport http or --transport sse."
+            )
         );
     }
     if args.transport_type.is_some() && args.url.is_none() {
-        bail!("--type is only valid together with --url. Use --transport to choose the transport.");
+        bail!(
+            "{}",
+            crate::locale::ctx().named_text(
+                "mcp.error.type_without_url",
+                "--type is only valid together with --url. Use --transport to choose the transport."
+            )
+        );
     }
 
     let server_args = if args.command.is_some() {
@@ -349,11 +406,21 @@ fn resolve_add(args: &AddArgs) -> Result<ResolvedAdd> {
         McpTransport::Stdio => {
             let Some(command) = source else {
                 bail!(
-                    "A command is required for stdio servers. Usage: grok mcp add <name> -- <command> [args...]"
+                    "{}",
+                    crate::locale::ctx().named_text(
+                        "mcp.error.command_required",
+                        "A command is required for stdio servers. Usage: grok mcp add <name> -- <command> [args...]"
+                    )
                 );
             };
             if !args.header.is_empty() {
-                bail!("--header can only be used with HTTP or SSE servers.");
+                bail!(
+                    "{}",
+                    crate::locale::ctx().named_text(
+                        "mcp.error.header_stdio",
+                        "--header can only be used with HTTP or SSE servers."
+                    )
+                );
             }
             // A KEY=value command means an env pair leaked out of -e, which takes one pair per flag (the old --env was greedy)
             if looks_like_env_pair(command) {
@@ -365,8 +432,12 @@ fn resolve_add(args: &AddArgs) -> Result<ResolvedAdd> {
                     .map(|pair| format!("-e {pair}"))
                     .collect();
                 bail!(
-                    "Invalid command '{command}': it looks like an environment variable. Pass each variable as its own flag: {}",
-                    pairs.join(" ")
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "mcp.error.command_looks_env",
+                        "Invalid command '{command}': it looks like an environment variable. Pass each variable as its own flag: {pairs}",
+                        &[("command", command), ("pairs", &pairs.join(" "))],
+                    )
                 );
             }
             let env = parse_env_vars(&args.env)?;
@@ -381,8 +452,17 @@ fn resolve_add(args: &AddArgs) -> Result<ResolvedAdd> {
                         format!("http://{command}")
                     };
                 warnings.push(format!(
-                    "Warning: '{command}' looks like a URL, but it is being added as a stdio command because --transport was not specified.\nFor a remote server, use: grok mcp add --transport http {} {suggested_url}",
-                    args.name
+                    "{}\n{}",
+                    crate::locale::ctx().format_named(
+                        "mcp.warning.url_as_stdio",
+                        "Warning: '{command}' looks like a URL, but it is being added as a stdio command because --transport was not specified.",
+                        &[("command", command)],
+                    ),
+                    crate::locale::ctx().format_named(
+                        "mcp_cli.warning.remote_hint",
+                        "For a remote server, use: grok mcp add --transport http {name} {url}",
+                        &[("name", &args.name), ("url", &suggested_url)],
+                    )
                 ));
             }
 
@@ -405,27 +485,51 @@ fn resolve_add(args: &AddArgs) -> Result<ResolvedAdd> {
             };
             let Some(url) = source else {
                 bail!(
-                    "A URL is required for {label} servers. Usage: grok mcp add --transport {label} <name> <url>"
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "mcp.error.url_required",
+                        "A URL is required for {label} servers. Usage: grok mcp add --transport {label} <name> <url>",
+                        &[("label", label)],
+                    )
                 );
             };
             if !url.starts_with("http://") && !url.starts_with("https://") {
-                bail!("Invalid URL '{url}'. Server URLs must start with http:// or https://.");
+                bail!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "mcp.error.invalid_url",
+                        "Invalid URL '{url}'. Server URLs must start with http:// or https://.",
+                        &[("url", url)],
+                    )
+                );
             }
             if !server_args.is_empty() {
                 bail!(
-                    "Unexpected arguments after the URL: '{}'. HTTP and SSE servers take a single URL.",
-                    server_args.join(" ")
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "mcp.error.unexpected_args",
+                        "Unexpected arguments after the URL: '{args}'. HTTP and SSE servers take a single URL.",
+                        &[("args", &server_args.join(" "))],
+                    )
                 );
             }
             if !args.env.is_empty() {
-                bail!("--env can only be used with stdio servers.");
+                bail!(
+                    "{}",
+                    crate::locale::ctx().named_text(
+                        "mcp.error.env_remote",
+                        "--env can only be used with stdio servers."
+                    )
+                );
             }
             let headers = parse_headers(&args.header)?;
 
             let mut warnings = Vec::new();
             if inferred_http {
-                warnings.push(format!(
-                    "No --transport given; '{url}' starts with http(s)://, adding as an HTTP server. Use --transport sse for an SSE server, or --transport stdio to force a stdio command."
+                warnings.push(crate::locale::ctx().format_named(
+                    "mcp.warning.inferred_http",
+                    "No --transport given; '{url}' starts with http(s)://, adding as an HTTP server. Use --transport sse for an SSE server, or --transport stdio to force a stdio command.",
+                    &[("url", url)],
                 ));
             }
 
@@ -453,7 +557,12 @@ fn validate_server_name(name: &str) -> Result<()> {
             .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
     {
         bail!(
-            "Invalid name '{name}'. Names can only contain letters, numbers, hyphens, and underscores."
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.error.invalid_name",
+                "Invalid name '{name}'. Names can only contain letters, numbers, hyphens, and underscores.",
+                &[("name", name)],
+            )
         );
     }
     Ok(())
@@ -467,7 +576,12 @@ fn parse_env_vars(pairs: &[String]) -> Result<HashMap<String, String>> {
                 env.insert(key.to_string(), value.to_string());
             }
             _ => bail!(
-                "Invalid environment variable format: '{pair}'. Environment variables should be added as: -e KEY1=value1 -e KEY2=value2"
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.error.invalid_env",
+                    "Invalid environment variable format: '{pair}'. Environment variables should be added as: -e KEY1=value1 -e KEY2=value2",
+                    &[("pair", pair)],
+                )
             ),
         }
     }
@@ -478,11 +592,25 @@ fn parse_headers(headers: &[String]) -> Result<HashMap<String, String>> {
     let mut parsed = HashMap::new();
     for header in headers {
         let Some((name, value)) = header.split_once(':') else {
-            bail!("Invalid header format: '{header}'. Expected format: 'Name: value'");
+            bail!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.error.invalid_header_format",
+                    "Invalid header format: '{header}'. Expected format: 'Name: value'",
+                    &[("header", header)],
+                )
+            );
         };
         let name = name.trim();
         if name.is_empty() {
-            bail!("Invalid header: '{header}'. Header name cannot be empty.");
+            bail!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.error.empty_header_name",
+                    "Invalid header: '{header}'. Header name cannot be empty.",
+                    &[("header", header)],
+                )
+            );
         }
         parsed.insert(name.to_string(), value.trim().to_string());
     }
@@ -510,7 +638,14 @@ fn looks_like_env_pair(s: &str) -> bool {
 /// Current working directory, exiting loudly when it cannot be determined.
 fn current_dir_or_exit() -> PathBuf {
     std::env::current_dir().unwrap_or_else(|e| {
-        eprintln!("Cannot determine working directory: {e}");
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp_cli.cannot_determine_cwd",
+                "Cannot determine working directory: {error}",
+                &[("error", &e.to_string())],
+            )
+        );
         std::process::exit(1);
     })
 }
@@ -615,23 +750,53 @@ async fn run_set_enabled(name: &str, enabled: bool) -> Result<()> {
     // Do not use validate_server_name (add-only: [A-Za-z0-9_-])
     // Enable/disable also targets compat/plugin names that may contain dots or other keys
     if name.is_empty() {
-        bail!("Server name cannot be empty.");
+        bail!(
+            "{}",
+            crate::locale::ctx().named_text(
+                "mcp.error.empty_server_name",
+                "Server name cannot be empty."
+            )
+        );
     }
     if is_gateway_cli_toggle_name(name) {
         eprintln!(
-            "Gateway connectors (e.g. managed_gateway:…) cannot be toggled via CLI; use Space in /mcps."
+            "{}",
+            crate::locale::ctx().named_text(
+                "mcp.gateway.toggle_denied",
+                "Gateway connectors (e.g. managed_gateway:…) cannot be toggled via CLI; use Space in /mcps."
+            )
         );
         std::process::exit(1);
     }
     let cwd = current_dir_or_exit();
 
     if !mcp_server_is_known(name, &cwd) {
-        eprintln!("No MCP server named '{name}'.");
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.error.server_missing",
+                "No MCP server named '{name}'.",
+                &[("name", name)],
+            )
+        );
         let available = available_mcp_server_names(&cwd);
         if !available.is_empty() {
-            eprintln!("Available servers: {}", available.join(", "));
+            eprintln!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.available_servers",
+                    "Available servers: {names}",
+                    &[("names", &available.join(", "))],
+                )
+            );
         } else {
-            eprintln!("No MCP servers configured. Run `grok mcp add --help` to get started.");
+            eprintln!(
+                "{}",
+                crate::locale::ctx().named_text(
+                    "mcp.list.empty",
+                    "No MCP servers configured. Run `grok mcp add --help` to get started."
+                )
+            );
         }
         std::process::exit(1);
     }
@@ -653,8 +818,25 @@ async fn run_set_enabled(name: &str, enabled: bool) -> Result<()> {
             .is_ok_and(|user_config| user_disabled_list_has(&user_config, name))
     };
     if already {
-        let state = if enabled { "enabled" } else { "disabled" };
-        println!("MCP server '{name}' is already {state}.");
+        if enabled {
+            println!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.state.already_enabled",
+                    "MCP server '{name}' is already enabled.",
+                    &[("name", name)],
+                )
+            );
+        } else {
+            println!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.state.already_disabled",
+                    "MCP server '{name}' is already disabled.",
+                    &[("name", name)],
+                )
+            );
+        }
         return Ok(());
     }
 
@@ -665,30 +847,70 @@ async fn run_set_enabled(name: &str, enabled: bool) -> Result<()> {
 
     if enabled && now_disabled {
         eprintln!(
-            "Warning: '{name}' is still disabled after enable (check project-scoped config)."
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.warning.enable_still_disabled",
+                "Warning: '{name}' is still disabled after enable (check project-scoped config).",
+                &[("name", name)],
+            )
         );
         std::process::exit(1);
     }
     if !enabled && !now_disabled {
-        eprintln!("Warning: '{name}' is still enabled after disable.");
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.warning.disable_still_enabled",
+                "Warning: '{name}' is still enabled after disable.",
+                &[("name", name)],
+            )
+        );
         std::process::exit(1);
     }
 
     if enabled {
-        println!("Enabled MCP server '{name}'.");
+        println!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.state.enabled",
+                "Enabled MCP server '{name}'.",
+                &[("name", name)],
+            )
+        );
     } else {
-        println!("Disabled MCP server '{name}'.");
+        println!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.state.disabled",
+                "Disabled MCP server '{name}'.",
+                &[("name", name)],
+            )
+        );
     }
 
     let user_config = xai_grok_shell::util::config::user_config_path();
     for path in &modified {
         if path == &user_config {
             println!(
-                "File modified: {}",
-                display_user_grok_path(xai_grok_config::USER_CONFIG_FILENAME)
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.file_modified",
+                    "File modified: {path}",
+                    &[(
+                        "path",
+                        &display_user_grok_path(xai_grok_config::USER_CONFIG_FILENAME)
+                    )],
+                )
             );
         } else {
-            println!("File modified: {}", path.display());
+            println!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.file_modified",
+                    "File modified: {path}",
+                    &[("path", &path.display().to_string())],
+                )
+            );
         }
     }
     Ok(())
@@ -714,18 +936,61 @@ async fn run_remove(name: &str, requested_scope: Option<McpScope>) -> Result<()>
     {
         Ok(site) => site,
         Err(RemoveError::NotFound) => {
-            let searched = requested_scope.map_or("user or project", McpScope::label);
-            eprintln!("No MCP server named '{name}' in {searched} config");
+            let searched = match requested_scope {
+                Some(s) => scope_text(s).into_owned(),
+                None => crate::locale::ctx()
+                    .named_text("mcp.scope.user_or_project", "user or project")
+                    .into_owned(),
+            };
+            eprintln!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.error.remove_missing",
+                    "No MCP server named '{name}' in {scope} config",
+                    &[("name", name), ("scope", &searched)],
+                )
+            );
             std::process::exit(1);
         }
         Err(RemoveError::Ambiguous { project_path }) => {
-            eprintln!("MCP server '{name}' exists in multiple scopes:");
+            let ctx = crate::locale::ctx();
             eprintln!(
-                "  user: {}",
-                display_user_grok_path(xai_grok_config::USER_CONFIG_FILENAME)
+                "{}",
+                ctx.format_named(
+                    "mcp.remove.ambiguous",
+                    "MCP server '{name}' exists in multiple scopes:",
+                    &[("name", name)],
+                )
             );
-            eprintln!("  project: {}", project_path.display());
-            eprintln!("Specify which one to remove, e.g.: grok mcp remove {name} --scope project");
+            eprintln!(
+                "{}",
+                ctx.format_named(
+                    "mcp.remove.user_path",
+                    "  user: {path}",
+                    &[
+                        (
+                            "path",
+                            &display_user_grok_path(xai_grok_config::USER_CONFIG_FILENAME)
+                        ),
+                    ],
+                )
+            );
+            eprintln!(
+                "{}",
+                ctx.format_named(
+                    "mcp.remove.project_path",
+                    "  project: {path}",
+                    &[("path", &project_path.display().to_string())],
+                )
+            );
+            eprintln!(
+                "{}",
+                ctx.format_named(
+                    "mcp.remove.choose_scope",
+                    "Specify which one to remove, e.g.: grok mcp remove {name} --scope project",
+                    &[("name", name)],
+                )
+            );
             std::process::exit(1);
         }
     };
@@ -733,12 +998,33 @@ async fn run_remove(name: &str, requested_scope: Option<McpScope>) -> Result<()>
     let existed = delete_mcp_server_config_at(&path, name).await?;
     if !existed {
         // Race guard: the entry vanished between the existence check and the delete.
-        eprintln!("No MCP server named '{name}' in {} config", scope.label());
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.error.remove_missing",
+                "No MCP server named '{name}' in {scope} config",
+                &[("name", name), ("scope", &scope_text(scope))],
+            )
+        );
         std::process::exit(1);
     }
 
-    println!("Removed MCP server '{name}' from {} config", scope.label());
-    println!("File modified: {}", scope_display(scope, &path));
+    println!(
+        "{}",
+        crate::locale::ctx().format_named(
+            "mcp.remove.success",
+            "Removed MCP server '{name}' from {scope} config",
+            &[("name", name), ("scope", &scope_text(scope))],
+        )
+    );
+    println!(
+        "{}",
+        crate::locale::ctx().format_named(
+            "mcp.file_modified",
+            "File modified: {path}",
+            &[("path", &scope_display(scope, &path))],
+        )
+    );
 
     // A scoped delete can leave the name defined in the other scope or an ancestor .grok/config.toml, where it still resolves for sessions
     let still_user_defined = mcp_server_defined_at(&user_config_path(), name);
@@ -746,8 +1032,15 @@ async fn run_remove(name: &str, requested_scope: Option<McpScope>) -> Result<()>
         surviving_definition(still_user_defined, find_project_site())
     {
         eprintln!(
-            "note: '{name}' is still defined in {}",
-            scope_display(survivor_scope, &remaining)
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.remove.note_survivor",
+                "note: '{name}' is still defined in {path}",
+                &[
+                    ("name", name),
+                    ("path", &scope_display(survivor_scope, &remaining)),
+                ],
+            )
         );
     }
 
@@ -761,9 +1054,23 @@ async fn run_doctor(json: bool, name: Option<String>) -> Result<()> {
     if let Some(ref filter) = name
         && report.servers.is_empty()
     {
-        eprintln!("MCP server '{}' not found.", filter);
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "mcp.doctor.missing",
+                "MCP server '{name}' not found.",
+                &[("name", filter)],
+            )
+        );
         if !report.all_server_names.is_empty() {
-            eprintln!("Available servers: {}", report.all_server_names.join(", "));
+            eprintln!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "mcp.available_servers",
+                    "Available servers: {names}",
+                    &[("names", &report.all_server_names.join(", "))],
+                )
+            );
         }
         std::process::exit(1);
     }

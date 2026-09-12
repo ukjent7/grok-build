@@ -110,7 +110,7 @@ impl WebFetchToolCallBlock {
             theme.fg(theme.command)
         };
 
-        let prefix = "Fetch ";
+        let prefix = crate::locale::ctx().named_text("scrollback.tool.fetch.label", "Fetch ");
         let display_url = match max_width {
             Some(w) => truncate_str(&self.url, w.saturating_sub(prefix.len())),
             None => self.url.clone(),
@@ -143,19 +143,37 @@ impl WebFetchToolCallBlock {
 
         if let Some(code) = self.status_code {
             parts.push(vec![
-                Span::styled("status: ", label_style),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_text("scrollback.tool.fetch.metadata.status", "status: ")
+                        .into_owned(),
+                    label_style,
+                ),
                 Span::styled(code.to_string(), value_style),
             ]);
         }
         if let Some(ref ct) = self.content_type {
             parts.push(vec![
-                Span::styled("content_type: ", label_style),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_text(
+                            "scrollback.tool.fetch.metadata.content_type",
+                            "content_type: ",
+                        )
+                        .into_owned(),
+                    label_style,
+                ),
                 Span::styled(ct.clone(), value_style),
             ]);
         }
         if let Some(bytes) = self.bytes {
             parts.push(vec![
-                Span::styled("size: ", label_style),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_text("scrollback.tool.fetch.metadata.size", "size: ")
+                        .into_owned(),
+                    label_style,
+                ),
                 Span::styled(crate::util::format_bytes(bytes as u64), value_style),
             ]);
         }
@@ -240,11 +258,16 @@ impl BlockContent for WebFetchToolCallBlock {
 
                     for (i, line) in output.lines().enumerate() {
                         if i >= max_inline {
+                            let remaining = total_lines - max_inline;
                             lines.push(
                                 BlockLine::from(Line::from(Span::styled(
                                     format!(
-                                        "{indent}... ({} more lines, press Enter to view)",
-                                        total_lines - max_inline
+                                        "{indent}{}",
+                                        crate::locale::ctx().format_named(
+                                            "scrollback.tool.more_lines_hint",
+                                            "... ({count} more lines, press Enter to view)",
+                                            &[("count", &remaining.to_string())],
+                                        )
                                     ),
                                     theme.dim(),
                                 )))
@@ -267,7 +290,13 @@ impl BlockContent for WebFetchToolCallBlock {
                 } else if self.error.is_none() {
                     lines.push(Line::from("").into());
                     lines.push(
-                        Line::from(Span::styled("  (no content)".to_owned(), theme.muted())).into(),
+                        Line::from(Span::styled(
+                            crate::locale::ctx()
+                                .named_text("scrollback.tool.no_content", "  (no content)")
+                                .into_owned(),
+                            theme.muted(),
+                        ))
+                        .into(),
                     );
                 }
 

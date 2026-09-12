@@ -126,9 +126,9 @@ pub(crate) fn render_managed_connectors_wait(
     fill_overlay_content(buf, msg_area, theme);
 
     let btn = if wait.url_copied {
-        "[copied]"
+        crate::locale::ctx().named_static_text("welcome.connectors.copied", "[copied]")
     } else {
-        "[copy the url]"
+        crate::locale::ctx().named_static_text("welcome.connectors.copy_url", "[copy the url]")
     };
     // Chunks borrow a local handle so the paint loop below can still record rects on `wait`.
     let url = Arc::clone(&wait.url);
@@ -142,9 +142,15 @@ pub(crate) fn render_managed_connectors_wait(
         Url(&'a str),
     }
     let mut lines = vec![
-        Line::Text("Finish in the browser."),
+        Line::Text(crate::locale::ctx().named_static_text(
+            "welcome.connectors.finish",
+            "Finish in the browser.",
+        )),
         Line::Spacer,
-        Line::Text("Refresh when you're done."),
+        Line::Text(crate::locale::ctx().named_static_text(
+            "welcome.connectors.refresh",
+            "Refresh when you're done.",
+        )),
         Line::Spacer,
         Line::Btn(btn),
     ];

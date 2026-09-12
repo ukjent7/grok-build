@@ -34,8 +34,12 @@ impl AgentsTab {
     /// Display label for the tab bar.
     pub fn label(self) -> &'static str {
         match self {
-            Self::Agents => "Agents",
-            Self::Personas => "Personas",
+            Self::Agents => {
+                crate::locale::ctx().named_static_text("agents.tab.agents", "Agents")
+            }
+            Self::Personas => {
+                crate::locale::ctx().named_static_text("agents.tab.personas", "Personas")
+            }
         }
     }
     /// Next tab (wraps around).
@@ -135,8 +139,10 @@ pub enum ConfigFileScope {
 impl ConfigFileScope {
     pub fn label(self) -> &'static str {
         match self {
-            Self::User => "user",
-            Self::Project => "project",
+            Self::User => crate::locale::ctx().named_static_text("agents.scope.user", "user"),
+            Self::Project => {
+                crate::locale::ctx().named_static_text("agents.scope.project", "project")
+            }
         }
     }
     pub fn toggle(self) -> Self {
@@ -615,7 +621,12 @@ pub fn sanitize_config_name(name: &str) -> Result<String, String> {
         })
         .collect();
     if !sanitized.chars().any(|c| c.is_alphanumeric()) {
-        return Err("Name must contain at least one alphanumeric character".to_string());
+        return Err(crate::locale::ctx()
+            .named_text(
+                "agents.error.name_alphanumeric",
+                "Name must contain at least one alphanumeric character",
+            )
+            .into_owned());
     }
     Ok(sanitized)
 }
@@ -643,11 +654,19 @@ pub fn create_persona_template(
     let sanitized = sanitize_config_name(name)?;
     let personas_dir = personas_dir_for_scope(scope, cwd);
     if let Err(e) = std::fs::create_dir_all(&personas_dir) {
-        return Err(format!("Failed to create personas directory: {e}"));
+        return Err(crate::locale::ctx().format_named(
+            "agents.error.create_directory",
+            "Failed to create personas directory: {error}",
+            &[("error", &e.to_string())],
+        ));
     }
     let path = personas_dir.join(format!("{sanitized}.toml"));
     if path.exists() {
-        return Err(format!("Persona '{}' already exists", sanitized));
+        return Err(crate::locale::ctx().format_named(
+            "agents.error.persona_exists",
+            "Persona '{name}' already exists",
+            &[("name", &sanitized)],
+        ));
     }
     let desc_opt = (!description.trim().is_empty()).then(|| description.trim());
     let instr_opt = (!instructions.trim().is_empty()).then(|| instructions.trim());
@@ -656,8 +675,20 @@ pub fn create_persona_template(
         instructions: instr_opt,
     };
     let content =
-        toml::to_string_pretty(&template).map_err(|e| format!("Failed to format persona: {e}"))?;
-    std::fs::write(&path, content).map_err(|e| format!("Failed to write persona file: {e}"))?;
+        toml::to_string_pretty(&template).map_err(|e| {
+            crate::locale::ctx().format_named(
+                "agents.error.format_persona",
+                "Failed to format persona: {error}",
+                &[("error", &e.to_string())],
+            )
+        })?;
+    std::fs::write(&path, content).map_err(|e| {
+        crate::locale::ctx().format_named(
+            "agents.error.write_persona",
+            "Failed to write persona file: {error}",
+            &[("error", &e.to_string())],
+        )
+    })?;
     Ok(path)
 }
 /// True when `path` is a deletable local persona file (user or project `.grok/personas`).
@@ -704,11 +735,29 @@ pub fn delete_persona_file(path: &Path) -> Result<(), String> {
             c.components()
                 .any(|comp| matches!(comp, std::path::Component::Normal(s) if s == "bundled"))
         }) {
-            return Err("Cannot delete bundled personas".to_string());
+            return Err(
+                crate::locale::ctx()
+                    .named_text(
+                        "agents.error.delete_bundled_persona",
+                        "Cannot delete bundled personas",
+                    )
+                    .into_owned(),
+            );
         }
-        return Err("Persona file is not in a known personas directory".to_string());
+        return Err(crate::locale::ctx()
+            .named_text(
+                "agents.error.persona_unknown_directory",
+                "Persona file is not in a known personas directory",
+            )
+            .into_owned());
     }
-    std::fs::remove_file(path).map_err(|e| format!("Failed to delete persona file: {e}"))?;
+    std::fs::remove_file(path).map_err(|e| {
+        crate::locale::ctx().format_named(
+            "agents.error.delete_persona",
+            "Failed to delete persona file: {error}",
+            &[("error", &e.to_string())],
+        )
+    })?;
     Ok(())
 }
 /// Load `[agent]` from effective config (merged shell + pager config layers).
@@ -749,21 +798,32 @@ pub fn set_default_agent(name: Option<&str>) -> Result<(), String> {
         let _ = std::fs::create_dir_all(parent);
     }
     let Some(mut doc) = crate::config_toml_edit::read_config_document_for_edit(&config_path) else {
-        return Err("Could not read or parse config.toml".to_string());
+        return Err(
+            crate::locale::ctx()
+                .named_text("agents.error.config_read", "Could not read or parse config.toml")
+                .into_owned(),
+        );
     };
     if let Some(agent_name) = name {
         if !doc.contains_key("agent") {
             doc["agent"] = toml_edit::Item::Table(toml_edit::Table::new());
         }
-        let agent_table = doc["agent"]
-            .as_table_mut()
-            .ok_or("[agent] is not a table")?;
+        let agent_table = doc["agent"].as_table_mut().ok_or_else(|| {
+            crate::locale::ctx()
+                .named_text("agents.error.agent_not_table", "[agent] is not a table")
+                .into_owned()
+        })?;
         agent_table["name"] = toml_edit::value(agent_name);
     } else if let Some(agent_table) = doc.get_mut("agent").and_then(|v| v.as_table_mut()) {
         agent_table.remove("name");
     }
-    std::fs::write(&config_path, doc.to_string())
-        .map_err(|e| format!("Failed to write config.toml: {e}"))?;
+    std::fs::write(&config_path, doc.to_string()).map_err(|e| {
+        crate::locale::ctx().format_named(
+            "agents.error.write_config",
+            "Failed to write config.toml: {error}",
+            &[("error", &e.to_string())],
+        )
+    })?;
     Ok(())
 }
 /// Toggle an agent's enabled state via `[subagents.toggle]` in config.toml.
@@ -773,40 +833,78 @@ pub fn toggle_agent(name: &str, enabled: bool) -> Result<(), String> {
         let _ = std::fs::create_dir_all(parent);
     }
     let Some(mut doc) = crate::config_toml_edit::read_config_document_for_edit(&config_path) else {
-        return Err("Could not read or parse config.toml".to_string());
+        return Err(
+            crate::locale::ctx()
+                .named_text("agents.error.config_read", "Could not read or parse config.toml")
+                .into_owned(),
+        );
     };
     if !doc.contains_key("subagents") {
         doc["subagents"] = toml_edit::Item::Table(toml_edit::Table::new());
     }
-    let subagents = doc["subagents"]
-        .as_table_mut()
-        .ok_or("subagents is not a table")?;
+    let subagents = doc["subagents"].as_table_mut().ok_or_else(|| {
+        crate::locale::ctx()
+            .named_text("agents.error.subagents_not_table", "subagents is not a table")
+            .into_owned()
+    })?;
     if !subagents.contains_key("toggle") {
         subagents["toggle"] = toml_edit::Item::Table(toml_edit::Table::new());
     }
-    let toggle_table = subagents["toggle"]
-        .as_table_mut()
-        .ok_or("subagents.toggle is not a table")?;
+    let toggle_table = subagents["toggle"].as_table_mut().ok_or_else(|| {
+        crate::locale::ctx()
+            .named_text(
+                "agents.error.toggle_not_table",
+                "subagents.toggle is not a table",
+            )
+            .into_owned()
+    })?;
     toggle_table[name] = toml_edit::value(enabled);
-    std::fs::write(&config_path, doc.to_string())
-        .map_err(|e| format!("Failed to write config.toml: {e}"))?;
+    std::fs::write(&config_path, doc.to_string()).map_err(|e| {
+        crate::locale::ctx().format_named(
+            "agents.error.write_config",
+            "Failed to write config.toml: {error}",
+            &[("error", &e.to_string())],
+        )
+    })?;
     Ok(())
 }
 /// Format detail lines for an expanded agent entry.
 pub fn format_agent_detail(entry: &AgentListEntry) -> Vec<String> {
     let def = &entry.definition;
     let mut lines = Vec::new();
-    lines.push(format!("  Model: {}", def.model));
+    let model = def.model.clone();
+    lines.push(crate::locale::ctx().format_named(
+        "agents.detail.model_line",
+        "  Model: {value}",
+        &[("value", &model)],
+    ));
     let mode_label = match def.prompt_mode {
-        xai_grok_agent::config::PromptMode::Extend => "extend",
-        xai_grok_agent::config::PromptMode::Full => "full",
+        xai_grok_agent::config::PromptMode::Extend => {
+            crate::locale::ctx().named_static_text("agents.prompt_mode.extend", "extend")
+        }
+        xai_grok_agent::config::PromptMode::Full => {
+            crate::locale::ctx().named_static_text("agents.prompt_mode.full", "full")
+        }
     };
-    lines.push(format!("  Prompt mode: {mode_label}"));
+    lines.push(crate::locale::ctx().format_named(
+        "agents.detail.prompt_mode_line",
+        "  Prompt mode: {value}",
+        &[("value", &mode_label)],
+    ));
     let tools = &def.tool_config.tools;
     if tools.is_empty() {
-        lines.push("  Tools: (none)".to_string());
+        lines.push(
+            crate::locale::ctx()
+                .named_text("agents.detail.tools_none", "  Tools: (none)")
+                .into_owned(),
+        );
     } else {
-        lines.push(format!("  Tools ({}): ", tools.len()));
+        let count = tools.len().to_string();
+        lines.push(crate::locale::ctx().format_named(
+            "agents.detail.tools_count",
+            "  Tools ({count}): ",
+            &[("count", &count)],
+        ));
         for tool in tools {
             let name = tool.name_override.as_deref().unwrap_or_else(|| {
                 tool.id
@@ -817,29 +915,71 @@ pub fn format_agent_detail(entry: &AgentListEntry) -> Vec<String> {
         }
     }
     if !def.skills.is_empty() {
-        lines.push(format!("  Skills: {}", def.skills.join(", ")));
+        let skills = def.skills.join(", ");
+        lines.push(crate::locale::ctx().format_named(
+            "agents.detail.skills_line",
+            "  Skills: {value}",
+            &[("value", &skills)],
+        ));
     }
     if let Some(ref plugin) = def.plugin_name {
-        lines.push(format!("  Plugin: {plugin}"));
+        lines.push(crate::locale::ctx().format_named(
+            "agents.detail.plugin_line",
+            "  Plugin: {value}",
+            &[("value", plugin)],
+        ));
     }
     if let Some(ref path) = entry.source_path {
-        lines.push(format!("  Source: {}", path.display()));
+        let path = path.display().to_string();
+        lines.push(crate::locale::ctx().format_named(
+            "agents.detail.source_line",
+            "  Source: {value}",
+            &[("value", &path)],
+        ));
     }
-    lines.push(format!("  Scope: {}", entry.scope.label()));
+    let scope = entry.scope.label().to_string();
+    lines.push(crate::locale::ctx().format_named(
+        "agents.detail.scope_line",
+        "  Scope: {value}",
+        &[("value", &scope)],
+    ));
     if let Some(ref body) = def.prompt_body {
         let rendered = render_prompt_body(body, &def.tool_config);
         let char_count = rendered.chars().count();
         let truncated: String = rendered.chars().take(120).collect::<String>();
         if char_count > 120 {
-            lines.push(format!("  Prompt extension: {truncated}..."));
-            lines.push("  (Enter to view full)".to_string());
+            lines.push(crate::locale::ctx().format_named(
+                "agents.detail.prompt_extension_truncated",
+                "  Prompt extension: {preview}...",
+                &[("preview", &truncated)],
+            ));
+            lines.push(
+                crate::locale::ctx()
+                    .named_text("agents.detail.enter_view_full", "  (Enter to view full)")
+                    .into_owned(),
+            );
         } else {
-            lines.push(format!("  Prompt extension: {truncated}"));
+            lines.push(crate::locale::ctx().format_named(
+                "agents.detail.prompt_extension_line",
+                "  Prompt extension: {preview}",
+                &[("preview", &truncated)],
+            ));
         }
     } else if entry.source_path.is_some() {
-        lines.push("  Prompt extension: (in file, Enter to view)".to_string());
+        lines.push(
+            crate::locale::ctx()
+                .named_text(
+                    "agents.detail.prompt_in_file",
+                    "  Prompt extension: (in file, Enter to view)",
+                )
+                .into_owned(),
+        );
     } else {
-        lines.push("  Prompt extension: (none)".to_string());
+        lines.push(
+            crate::locale::ctx()
+                .named_text("agents.detail.prompt_extension_none", "  Prompt extension: (none)")
+                .into_owned(),
+        );
     }
     lines
 }
@@ -881,8 +1021,12 @@ fn synthesize_agent_markdown(entry: &AgentListEntry) -> String {
         render_prompt_body(body, &entry.definition.tool_config)
     } else {
         format!(
-            "*{} uses the base system prompt with no additional instructions.*\n",
-            entry.name,
+            "{}\n",
+            crate::locale::ctx().format_named(
+                "agents.detail.no_additional_instructions",
+                "*{name} uses the base system prompt with no additional instructions.*",
+                &[("name", &entry.name)],
+            )
         )
     }
 }
@@ -1009,10 +1153,18 @@ fn modal_sizing(compact: bool) -> ModalSizing {
 }
 fn scope_badge(scope: AgentScope, theme: &Theme) -> (String, Style) {
     let label = match scope {
-        AgentScope::BuiltIn => " built-in ",
-        AgentScope::Project => " project ",
-        AgentScope::User => " user ",
-        AgentScope::Bundled => " bundled ",
+        AgentScope::BuiltIn => {
+            crate::locale::ctx().named_text("agents.badge.built_in", " built-in ").into_owned()
+        }
+        AgentScope::Project => {
+            crate::locale::ctx().named_text("agents.badge.project", " project ").into_owned()
+        }
+        AgentScope::User => {
+            crate::locale::ctx().named_text("agents.badge.user", " user ").into_owned()
+        }
+        AgentScope::Bundled => {
+            crate::locale::ctx().named_text("agents.badge.bundled", " bundled ").into_owned()
+        }
     };
     let fg = match scope {
         AgentScope::BuiltIn => theme.accent_assistant,
@@ -1040,8 +1192,9 @@ pub fn render_agents_modal(
         AgentsTab::Agents => build_agents_tab_shortcuts(state),
         AgentsTab::Personas => build_personas_tab_shortcuts(state),
     };
+    let title = crate::locale::ctx().named_text("agents.title", "Agents").into_owned();
     let config = ModalWindowConfig {
-        title: "Agents",
+        title: &title,
         tabs: Some(&tab_labels),
         shortcuts: &shortcuts,
         sizing: modal_sizing(compact),
@@ -1065,49 +1218,50 @@ pub fn render_agents_modal(
 }
 /// Build footer shortcuts for the Agents tab.
 fn build_agents_tab_shortcuts<'a>(state: &AgentsModalState) -> Vec<Shortcut<'a>> {
+    let ctx = crate::locale::ctx();
     let mut shortcuts = vec![
         Shortcut {
-            label: "j/k nav",
+            label: ctx.named_static_text("agents.shortcut.navigate", "j/k nav"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "e/\u{2192} expand",
+            label: ctx.named_static_text("agents.shortcut.expand", "e/\u{2192} expand"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "E/\u{2190} collapse",
+            label: ctx.named_static_text("agents.shortcut.collapse", "E/\u{2190} collapse"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "Enter view",
+            label: ctx.named_static_text("agents.shortcut.view", "Enter view"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "/ search",
+            label: ctx.named_static_text("agents.shortcut.search", "/ search"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "t toggle",
+            label: ctx.named_static_text("agents.shortcut.toggle", "t toggle"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "s default",
+            label: ctx.named_static_text("agents.shortcut.default", "s default"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "Tab switch tab",
+            label: ctx.named_static_text("agents.shortcut.switch_tab", "Tab switch tab"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "Esc close",
+            label: ctx.named_static_text("agents.shortcut.close", "Esc close"),
             clickable: false,
             id: 0,
         },
@@ -1117,20 +1271,21 @@ fn build_agents_tab_shortcuts<'a>(state: &AgentsModalState) -> Vec<Shortcut<'a>>
 }
 /// Build footer shortcuts for the Personas tab.
 fn build_personas_tab_shortcuts<'a>(state: &AgentsModalState) -> Vec<Shortcut<'a>> {
+    let ctx = crate::locale::ctx();
     if state.persona_input.is_some() {
         vec![
             Shortcut {
-                label: "Tab switch field",
+                label: ctx.named_static_text("agents.shortcut.switch_field", "Tab switch field"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "Enter create",
+                label: ctx.named_static_text("agents.shortcut.create", "Enter create"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "Esc cancel",
+                label: ctx.named_static_text("agents.shortcut.cancel", "Esc cancel"),
                 clickable: false,
                 id: 0,
             },
@@ -1138,12 +1293,12 @@ fn build_personas_tab_shortcuts<'a>(state: &AgentsModalState) -> Vec<Shortcut<'a
     } else if state.persona_confirm.is_some() {
         vec![
             Shortcut {
-                label: "y confirm",
+                label: ctx.named_static_text("agents.shortcut.confirm", "y confirm"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "n/Esc cancel",
+                label: ctx.named_static_text("agents.shortcut.cancel_no", "n/Esc cancel"),
                 clickable: false,
                 id: 0,
             },
@@ -1151,47 +1306,47 @@ fn build_personas_tab_shortcuts<'a>(state: &AgentsModalState) -> Vec<Shortcut<'a
     } else {
         let mut shortcuts = vec![
             Shortcut {
-                label: "j/k nav",
+                label: ctx.named_static_text("agents.shortcut.navigate", "j/k nav"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "e/\u{2192} expand",
+                label: ctx.named_static_text("agents.shortcut.expand", "e/\u{2192} expand"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "E/\u{2190} collapse",
+                label: ctx.named_static_text("agents.shortcut.collapse", "E/\u{2190} collapse"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "Enter view",
+                label: ctx.named_static_text("agents.shortcut.view", "Enter view"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "/ search",
+                label: ctx.named_static_text("agents.shortcut.search", "/ search"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "n new",
+                label: ctx.named_static_text("agents.shortcut.new", "n new"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "d delete",
+                label: ctx.named_static_text("agents.shortcut.delete", "d delete"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "Tab switch tab",
+                label: ctx.named_static_text("agents.shortcut.switch_tab", "Tab switch tab"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: "Esc close",
+                label: ctx.named_static_text("agents.shortcut.close", "Esc close"),
                 clickable: false,
                 id: 0,
             },
@@ -1282,9 +1437,13 @@ fn render_agents_tab(
     let filtered = state.filtered_indices();
     if filtered.is_empty() {
         let msg = if state.search_query().is_empty() {
-            "No agents found"
+            crate::locale::ctx()
+                .named_text("agents.empty", "No agents found")
+                .into_owned()
         } else {
-            "No matching agents"
+            crate::locale::ctx()
+                .named_text("agents.no_matches", "No matching agents")
+                .into_owned()
         };
         buf.set_string(content_area.x, y, msg, Style::default().fg(theme.gray_dim));
         return;
@@ -1351,18 +1510,23 @@ fn render_agents_tab(
         }
         match &rows[ri] {
             FlatRow::GroupHeader(group) => {
+                let ctx = crate::locale::ctx();
                 let label = match group {
                     AgentGroup::Scope(AgentScope::BuiltIn) => {
-                        "\u{2500}\u{2500} Built-in \u{2500}\u{2500}"
+                        ctx.named_static_text("agents.scope_header.built_in", "\u{2500}\u{2500} Built-in \u{2500}\u{2500}")
                     }
                     AgentGroup::Scope(AgentScope::Project) => {
-                        "\u{2500}\u{2500} Project \u{2500}\u{2500}"
+                        ctx.named_static_text("agents.scope_header.project", "\u{2500}\u{2500} Project \u{2500}\u{2500}")
                     }
-                    AgentGroup::Scope(AgentScope::User) => "\u{2500}\u{2500} User \u{2500}\u{2500}",
+                    AgentGroup::Scope(AgentScope::User) => {
+                        ctx.named_static_text("agents.scope_header.user", "\u{2500}\u{2500} User \u{2500}\u{2500}")
+                    }
                     AgentGroup::Scope(AgentScope::Bundled) => {
-                        "\u{2500}\u{2500} Bundled \u{2500}\u{2500}"
+                        ctx.named_static_text("agents.scope_header.bundled", "\u{2500}\u{2500} Bundled \u{2500}\u{2500}")
                     }
-                    AgentGroup::Plugin => "\u{2500}\u{2500} Plugins \u{2500}\u{2500}",
+                    AgentGroup::Plugin => {
+                        ctx.named_static_text("agents.scope_header.plugin", "\u{2500}\u{2500} Plugins \u{2500}\u{2500}")
+                    }
                 };
                 let style = Style::default()
                     .fg(theme.gray_dim)
@@ -1434,7 +1598,8 @@ fn render_agents_tab(
                     .as_deref()
                     .is_some_and(|a| a == entry.name);
                 if is_active {
-                    let active_label = " active";
+                    let active_label = crate::locale::ctx()
+                        .named_static_text("agents.status.active", " active");
                     let active_remaining =
                         (content_area.x + content_area.width).saturating_sub(x) as usize;
                     if active_remaining >= active_label.width() {
@@ -1450,7 +1615,8 @@ fn render_agents_tab(
                 }
                 let is_default = entry.name == state.default_agent;
                 if is_default {
-                    let default_label = " default";
+                    let default_label = crate::locale::ctx()
+                        .named_static_text("agents.status.default", " default");
                     let default_remaining =
                         (content_area.x + content_area.width).saturating_sub(x) as usize;
                     if default_remaining >= default_label.width() {
@@ -1465,7 +1631,8 @@ fn render_agents_tab(
                     }
                 }
                 if !entry.enabled {
-                    let off_label = " [off]";
+                    let off_label = crate::locale::ctx()
+                        .named_static_text("agents.status.off", " [off]");
                     let off_remaining =
                         (content_area.x + content_area.width).saturating_sub(x) as usize;
                     if off_remaining >= off_label.len() {
@@ -1479,7 +1646,9 @@ fn render_agents_tab(
                 }
                 let (badge_text, mut badge_style) = if entry.definition.plugin_name.is_some() {
                     (
-                        " plugin ".to_string(),
+                        crate::locale::ctx()
+                            .named_text("agents.badge.plugin", " plugin ")
+                            .into_owned(),
                         Style::default().fg(theme.text_secondary),
                     )
                 } else {
@@ -1548,12 +1717,22 @@ fn render_personas_tab(
     if let Some(ref msg) = state.message {
         y = render_modal_message_line(buf, content_area.x, y, w, msg, theme);
     }
-    let blurb = "Personas shape subagent behavior via the persona parameter on spawn_subagent.";
+    let blurb = crate::locale::ctx()
+        .named_text(
+            "agents.personas.description",
+            "Personas shape subagent behavior via the persona parameter on spawn_subagent.",
+        )
+        .into_owned();
     let blurb_style = Style::default().fg(theme.gray_dim);
-    buf.set_string(content_area.x, y, blurb, blurb_style);
+    buf.set_string(content_area.x, y, &blurb, blurb_style);
     y += 1;
-    let blurb2 = "Used by skills (e.g. /implement) and by the model when spawning subagents.";
-    buf.set_string(content_area.x, y, blurb2, blurb_style);
+    let blurb2 = crate::locale::ctx()
+        .named_text(
+            "agents.personas.usage",
+            "Used by skills (e.g. /implement) and by the model when spawning subagents.",
+        )
+        .into_owned();
+    buf.set_string(content_area.x, y, &blurb2, blurb_style);
     y += 2;
     if state.search_active || !state.search_query().is_empty() {
         render_agents_search(
@@ -1573,9 +1752,13 @@ fn render_personas_tab(
     let filtered = state.filtered_persona_indices();
     if filtered.is_empty() {
         let msg = if state.personas.is_empty() {
-            "No personas available"
+            crate::locale::ctx()
+                .named_text("agents.personas.empty", "No personas available")
+                .into_owned()
         } else {
-            "No matching personas"
+            crate::locale::ctx()
+                .named_text("agents.personas.no_matches", "No matching personas")
+                .into_owned()
         };
         buf.set_string(content_area.x, y, msg, Style::default().fg(theme.gray_dim));
         return;
@@ -1598,18 +1781,33 @@ fn render_personas_tab(
                 }
             }
             if persona.has_inputs || persona.has_outputs {
+                let ctx = crate::locale::ctx();
                 let mut tags = Vec::new();
                 if persona.has_inputs {
-                    tags.push("accepts structured inputs");
+                    tags.push(
+                        ctx.named_text("agents.personas.accepts_inputs", "accepts structured inputs")
+                            .into_owned(),
+                    );
                 }
                 if persona.has_outputs {
-                    tags.push("produces structured outputs");
+                    tags.push(
+                        ctx.named_text(
+                            "agents.personas.produces_outputs",
+                            "produces structured outputs",
+                        )
+                        .into_owned(),
+                    );
                 }
                 rows.push(PersonaFlatRow::Tags(idx, tags.join(" \u{00b7} ")));
             }
             rows.push(PersonaFlatRow::Hint(
                 idx,
-                "Enter to view full definition".to_string(),
+                crate::locale::ctx()
+                    .named_text(
+                        "agents.personas.enter_view_full",
+                        "Enter to view full definition",
+                    )
+                    .into_owned(),
             ));
         }
     }
@@ -1860,7 +2058,9 @@ fn render_persona_create_form(
 ) {
     let mut y = content_area.y;
     let w = content_area.width as usize;
-    let title = "Create New Persona";
+    let title = crate::locale::ctx()
+        .named_text("agents.create.title", "Create New Persona")
+        .into_owned();
     let title_style = Style::default()
         .fg(theme.text_primary)
         .add_modifier(Modifier::BOLD);
@@ -1875,37 +2075,45 @@ fn render_persona_create_form(
         );
         y += 2;
     }
+    let ctx = crate::locale::ctx();
+    let name_label = ctx.named_text("agents.create.name", "Name: ").into_owned();
     y = render_create_text_field(
         buf,
         content_area,
         y,
         w,
-        "Name: ",
+        &name_label,
         input.name_editor(),
         input.active_field == CreateField::Name,
         theme,
     );
+    let description_label = ctx
+        .named_text("agents.create.description", "Description: ")
+        .into_owned();
     y = render_create_text_field(
         buf,
         content_area,
         y,
         w,
-        "Description: ",
+        &description_label,
         input.description_editor(),
         input.active_field == CreateField::Description,
         theme,
     );
+    let instructions_label = ctx
+        .named_text("agents.create.instructions", "Instructions: ")
+        .into_owned();
     y = render_create_text_field(
         buf,
         content_area,
         y,
         w,
-        "Instructions: ",
+        &instructions_label,
         input.instructions_editor(),
         input.active_field == CreateField::Instructions,
         theme,
     );
-    let scope_label = "Scope: ";
+    let scope_label = ctx.named_text("agents.create.scope", "Scope: ").into_owned();
     let scope_active = input.active_field == CreateField::Scope;
     let label_style = if scope_active {
         Style::default().fg(theme.accent_user)
@@ -1921,7 +2129,12 @@ fn render_persona_create_form(
         Style::default().fg(theme.text_primary),
     );
     y += 2;
-    let hint = "Tab/↑↓: field | Space/←→ on scope: user/project | Enter: create | Esc: cancel";
+    let hint = crate::locale::ctx()
+        .named_text(
+            "agents.create.hint",
+            "Tab/↑↓: field | Space/←→ on scope: user/project | Enter: create | Esc: cancel",
+        )
+        .into_owned();
     buf.set_string(content_area.x, y, hint, Style::default().fg(theme.gray_dim));
 }
 /// Render the confirm-delete persona dialog.
@@ -1933,13 +2146,19 @@ fn render_persona_confirm_dialog(
 ) {
     let PersonaConfirmAction::Delete { name, path } = confirm;
     let mut y = content_area.y;
-    let title = "Delete Persona";
+    let title = crate::locale::ctx()
+        .named_text("agents.delete.title", "Delete Persona")
+        .into_owned();
     let title_style = Style::default()
         .fg(theme.accent_error)
         .add_modifier(Modifier::BOLD);
     buf.set_string(content_area.x, y, title, title_style);
     y += 2;
-    let msg = format!("Delete persona '{name}'?");
+    let msg = crate::locale::ctx().format_named(
+        "agents.delete.confirm",
+        "Delete persona '{name}'?",
+        &[("name", name)],
+    );
     buf.set_string(
         content_area.x,
         y,
@@ -1955,7 +2174,9 @@ fn render_persona_confirm_dialog(
         Style::default().fg(theme.gray),
     );
     y += 2;
-    let hint = "y: confirm | n/Esc: cancel";
+    let hint = crate::locale::ctx()
+        .named_text("agents.delete.hint", "y: confirm | n/Esc: cancel")
+        .into_owned();
     buf.set_string(content_area.x, y, hint, Style::default().fg(theme.gray_dim));
 }
 /// Group an agent entry belongs to in the flat list: its scope, or the dedicated plugins group for plugin-provided agents.
@@ -2051,8 +2272,9 @@ pub fn handle_agents_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
         return finish_search_edit(state, outcome);
     }
     let tab_labels: Vec<&str> = AgentsTab::ALL.iter().map(|t| t.label()).collect();
+    let title = crate::locale::ctx().named_text("agents.title", "Agents").into_owned();
     let config = ModalWindowConfig {
-        title: "Agents",
+        title: &title,
         tabs: Some(&tab_labels),
         shortcuts: &[],
         sizing: modal_sizing(false),
@@ -2169,7 +2391,11 @@ fn handle_agents_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
         KeyCode::Enter | KeyCode::Char('o') => {
             if let Some(entry) = state.agents.get(state.selected) {
                 if let Some(ref path) = entry.source_path {
-                    let title = format!("{} \u{00b7} prompt extension", entry.name);
+                    let title = crate::locale::ctx().format_named(
+                        "agents.detail.viewer_title",
+                        "{name} \u{00b7} prompt extension",
+                        &[("name", &entry.name)],
+                    );
                     return AgentsModalOutcome::ViewAgent {
                         title,
                         source_path: Some(path.clone()),
@@ -2177,7 +2403,11 @@ fn handle_agents_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
                     };
                 }
                 if entry.definition.prompt_body.is_some() {
-                    let title = format!("{} \u{00b7} prompt extension", entry.name);
+                    let title = crate::locale::ctx().format_named(
+                        "agents.detail.viewer_title",
+                        "{name} \u{00b7} prompt extension",
+                        &[("name", &entry.name)],
+                    );
                     return AgentsModalOutcome::ViewAgent {
                         title,
                         source_path: None,
@@ -2198,8 +2428,13 @@ fn handle_agents_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
             if let Some(entry) = state.agents.get(state.selected) {
                 if entry.definition.plugin_name.is_some() {
                     state.message = Some(AgentsModalMessage::info(
-                        "Plugin agents can't be the session default \u{2014} \
-                         they are spawned as subagents via the Task tool.",
+                        crate::locale::ctx()
+                            .named_text(
+                                "agents.message.plugin_not_default",
+                                "Plugin agents can't be the session default \u{2014} \
+                                 they are spawned as subagents via the Task tool.",
+                            )
+                            .into_owned(),
                     ));
                     return AgentsModalOutcome::Changed;
                 }
@@ -2214,14 +2449,16 @@ fn handle_agents_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
                     Ok(()) => {
                         refresh_default_agent(state);
                         state.message = Some(if is_already_default {
-                            AgentsModalMessage::info(format!(
-                                "Cleared: new sessions use '{}'",
-                                state.default_agent
+                            AgentsModalMessage::info(crate::locale::ctx().format_named(
+                                "agents.message.default_cleared",
+                                "Cleared: new sessions use '{name}'",
+                                &[("name", &state.default_agent)],
                             ))
                         } else {
-                            AgentsModalMessage::info(format!(
-                                "New sessions will start with '{}'",
-                                state.default_agent
+                            AgentsModalMessage::info(crate::locale::ctx().format_named(
+                                "agents.message.default_set",
+                                "New sessions will start with '{name}'",
+                                &[("name", &state.default_agent)],
                             ))
                         });
                     }
@@ -2239,11 +2476,19 @@ fn handle_agents_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
                 match toggle_agent(&name, new_enabled) {
                     Ok(()) => {
                         state.rebuild_agents();
-                        state.message = Some(AgentsModalMessage::info(format!(
-                            "{} '{}' \u{2014} applies to new sessions",
-                            if new_enabled { "Enabled" } else { "Disabled" },
-                            name
-                        )));
+                        state.message = Some(AgentsModalMessage::info(if new_enabled {
+                            crate::locale::ctx().format_named(
+                                "agents.message.enabled",
+                                "Enabled '{name}' \u{2014} applies to new sessions",
+                                &[("name", &name)],
+                            )
+                        } else {
+                            crate::locale::ctx().format_named(
+                                "agents.message.disabled",
+                                "Disabled '{name}' \u{2014} applies to new sessions",
+                                &[("name", &name)],
+                            )
+                        }));
                     }
                     Err(e) => {
                         state.message = Some(AgentsModalMessage::error(e));
@@ -2322,8 +2567,14 @@ fn handle_personas_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agen
         KeyCode::Char('d') => {
             if let Some(persona) = state.personas.get(state.persona_selected) {
                 if !persona_is_deletable(persona) {
-                    state.message =
-                        Some(AgentsModalMessage::error("Cannot delete bundled personas"));
+                    state.message = Some(AgentsModalMessage::error(
+                        crate::locale::ctx()
+                            .named_text(
+                                "agents.error.delete_bundled_persona",
+                                "Cannot delete bundled personas",
+                            )
+                            .into_owned(),
+                    ));
                     return AgentsModalOutcome::Changed;
                 }
                 if let Some(ref path_str) = persona.source_path {
@@ -2332,7 +2583,11 @@ fn handle_personas_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agen
                         path: PathBuf::from(path_str),
                     });
                 } else {
-                    state.message = Some(AgentsModalMessage::error("Persona has no source file"));
+                    state.message = Some(AgentsModalMessage::error(
+                        crate::locale::ctx()
+                            .named_text("agents.error.no_source", "Persona has no source file")
+                            .into_owned(),
+                    ));
                 }
             }
             AgentsModalOutcome::Changed
@@ -2423,7 +2678,11 @@ fn handle_persona_create_form_key(
         let instructions = input.instructions().trim().to_string();
         let scope = input.scope;
         if name.is_empty() {
-            state.message = Some(AgentsModalMessage::error("Name is required"));
+            state.message = Some(AgentsModalMessage::error(
+                crate::locale::ctx()
+                    .named_text("agents.error.name_required", "Name is required")
+                    .into_owned(),
+            ));
             return AgentsModalOutcome::Changed;
         }
         match create_persona_template(&name, &description, &instructions, scope, &cwd) {
@@ -2431,8 +2690,10 @@ fn handle_persona_create_form_key(
                 let label = path.file_stem().and_then(|s| s.to_str()).unwrap_or(&name);
                 state.persona_input = None;
                 state.refresh_personas();
-                state.message = Some(AgentsModalMessage::success(format!(
-                    "Created persona '{label}'"
+                state.message = Some(AgentsModalMessage::success(crate::locale::ctx().format_named(
+                    "agents.message.created",
+                    "Created persona '{name}'",
+                    &[("name", label)],
                 )));
             }
             Err(e) => {
@@ -2457,8 +2718,10 @@ fn handle_persona_confirm_key(state: &mut AgentsModalState, key: &KeyEvent) -> A
             match delete_persona_file(&path) {
                 Ok(()) => {
                     state.refresh_personas();
-                    state.message = Some(AgentsModalMessage::success(format!(
-                        "Deleted persona '{name}'"
+                    state.message = Some(AgentsModalMessage::success(crate::locale::ctx().format_named(
+                        "agents.message.deleted",
+                        "Deleted persona '{name}'",
+                        &[("name", &name)],
                     )));
                 }
                 Err(e) => {

@@ -50,10 +50,25 @@ pub async fn run(args: TraceArgs, agent_config: &AgentConfig) -> Result<()> {
         );
         if !args.json {
             eprintln!(
-                "Trace uploads disabled. Set [telemetry] trace_upload = true in {}",
-                crate::util::display_user_grok_path(xai_grok_config::USER_CONFIG_FILENAME)
+                "{}",
+                crate::locale::ctx().format_named(
+                    "trace_cli.disabled",
+                    "Trace uploads disabled. Set [telemetry] trace_upload = true in {path}",
+                    &[
+                        (
+                            "path",
+                            &crate::util::display_user_grok_path(xai_grok_config::USER_CONFIG_FILENAME)
+                        ),
+                    ],
+                )
             );
-            eprintln!("Falling back to local export.");
+            eprintln!(
+                "{}",
+                crate::locale::ctx().named_text(
+                    "trace_cli.fallback_local",
+                    "Falling back to local export."
+                )
+            );
         }
         return run_export(
             &args.session_id,
@@ -211,7 +226,14 @@ fn append_bytes<W: std::io::Write>(archive: &mut tar::Builder<W>, path: &str, da
     set_mtime(&mut header);
     if let Err(e) = archive.append_data(&mut header, path, data) {
         tracing::warn!(error = %e, "trace_cmd: failed to add file to archive");
-        eprintln!("  Warning: failed to add {path}: {e}");
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "trace_cli.add_failed",
+                "  Warning: failed to add {path}: {error}",
+                &[("path", path), ("error", &e.to_string())],
+            )
+        );
     }
 }
 
@@ -254,7 +276,14 @@ fn add_directory_to_tar<W: std::io::Write>(
                         error = %e,
                         "trace_cmd: failed to read file for archive"
                     );
-                    eprintln!("  Warning: failed to read {}: {}", path.display(), e);
+                    eprintln!(
+                        "{}",
+                        crate::locale::ctx().format_named(
+                            "trace_cli.read_failed",
+                            "  Warning: failed to read {path}: {error}",
+                            &[("path", &path.display().to_string()), ("error", &e.to_string())],
+                        )
+                    );
                 }
             }
         }
@@ -392,8 +421,21 @@ async fn run_export(
 ) -> Result<()> {
     let session_dir = find_session_dir(session_id)?;
     if !json {
-        eprintln!("Found session at: {}", session_dir.display());
-        eprintln!("Building session trace archive...");
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "trace_cli.found_session",
+                "Found session at: {path}",
+                &[("path", &session_dir.display().to_string())],
+            )
+        );
+        eprintln!(
+            "{}",
+            crate::locale::ctx().named_text(
+                "trace_cli.building",
+                "Building session trace archive..."
+            )
+        );
     }
 
     let archive = build_session_tar(&session_dir, session_id, agent_config)?;
@@ -410,7 +452,14 @@ async fn run_export(
         println!("{}", serde_json::to_string(&result)?);
     } else {
         let size_kb = archive.len() / 1024;
-        eprintln!("Session trace exported ({size_kb} KB):");
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "trace_cli.exported",
+                "Session trace exported ({size_kb} KB):",
+                &[("size_kb", &size_kb.to_string())],
+            )
+        );
         eprintln!("  {}", output_path.display());
         println!("{}", output_path.display());
     }
@@ -430,7 +479,14 @@ async fn run_upload(
 ) -> Result<()> {
     let session_dir = find_session_dir(session_id)?;
     if !json {
-        eprintln!("Found session at: {}", session_dir.display());
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "trace_cli.found_session",
+                "Found session at: {path}",
+                &[("path", &session_dir.display().to_string())],
+            )
+        );
     }
 
     let upload_method = resolve_upload_method(agent_config).await;
@@ -442,15 +498,27 @@ async fn run_upload(
                 "trace_cmd: no upload credentials available"
             );
             anyhow::bail!(
-                "No upload credentials. Run `grok login` or set a deployment key. \
-                 See {} for upload overrides.",
-                crate::util::display_user_grok_path("docs/user-guide")
+                "{}",
+                crate::locale::ctx().format_named(
+                    "trace_cli.no_credentials",
+                    "No upload credentials. Run `grok login` or set a deployment key. See {path} for upload overrides.",
+                    &[(
+                        "path",
+                        &crate::util::display_user_grok_path("docs/user-guide")
+                    )],
+                )
             );
         }
     };
 
     if !json {
-        eprintln!("Building session trace archive...");
+        eprintln!(
+            "{}",
+            crate::locale::ctx().named_text(
+                "trace_cli.building",
+                "Building session trace archive..."
+            )
+        );
     }
     let archive = build_session_tar(&session_dir, session_id, agent_config)?;
     let archive_size = archive.len();
@@ -467,9 +535,11 @@ async fn run_upload(
         )
     {
         anyhow::bail!(
-            "No trace upload bucket configured. Set `GROK_TELEMETRY_GCS_BUCKET`, \
-             `GROK_TRACE_UPLOAD_BUCKET`, or `endpoints.trace_upload_bucket` in \
-             config for direct GCS uploads."
+            "{}",
+            crate::locale::ctx().named_text(
+                "trace_cli.no_bucket",
+                "No trace upload bucket configured. Set `GROK_TELEMETRY_GCS_BUCKET`, `GROK_TRACE_UPLOAD_BUCKET`, or `endpoints.trace_upload_bucket` in config for direct GCS uploads."
+            )
         );
     }
     let bucket_display = bucket_url.as_deref().unwrap_or("proxy-managed");
@@ -499,7 +569,14 @@ async fn run_upload(
     );
     if !json {
         let size_kb = archive_size / 1024;
-        eprintln!("Uploading session trace ({size_kb} KB)...");
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "trace_cli.uploading",
+                "Uploading session trace ({size_kb} KB)...",
+                &[("size_kb", &size_kb.to_string())],
+            )
+        );
         eprintln!("{method_desc}");
     }
 
@@ -517,7 +594,13 @@ async fn run_upload(
                 println!("{}", serde_json::to_string(&result)?);
             } else {
                 eprintln!();
-                eprintln!("Session trace uploaded successfully.");
+                eprintln!(
+                    "{}",
+                    crate::locale::ctx().named_text(
+                        "trace_cli.uploaded",
+                        "Session trace uploaded successfully."
+                    )
+                );
                 eprintln!("  {url}");
                 println!("{url}");
             }
@@ -556,7 +639,14 @@ impl UploadAttempt<'_> {
 
         let export_path = save_local_bundle(self.archive, self.session_id, self.output)
             .unwrap_or_else(|write_err| {
-                eprintln!("Failed to save local bundle: {write_err}");
+                eprintln!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "trace_cli.save_failed",
+                        "Failed to save local bundle: {error}",
+                        &[("error", &write_err.to_string())],
+                    )
+                );
                 export_dir.join(format!("{}.tar.gz", self.session_id))
             });
 
@@ -573,14 +663,49 @@ impl UploadAttempt<'_> {
             println!("{}", serde_json::to_string(&result).unwrap_or_default());
         } else {
             eprintln!();
-            eprintln!("Trace upload failed: {error}");
-            eprintln!("  Bundle: {}", export_path.display());
-            eprintln!("  Log:    {}", log_path.display());
-            eprintln!("  Retry:  grok trace {}", self.session_id);
+            eprintln!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "trace_cli.upload_failed",
+                    "Trace upload failed: {error}",
+                    &[("error", &error.to_string())],
+                )
+            );
+            eprintln!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "trace_cli.bundle",
+                    "  Bundle: {path}",
+                    &[("path", &export_path.display().to_string())],
+                )
+            );
+            eprintln!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "trace_cli.log",
+                    "  Log:    {path}",
+                    &[("path", &log_path.display().to_string())],
+                )
+            );
+            eprintln!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "trace_cli.retry",
+                    "  Retry:  grok trace {session_id}",
+                    &[("session_id", self.session_id)],
+                )
+            );
             println!("{}", export_path.display());
         }
 
-        anyhow::anyhow!("Trace upload failed for session {}", self.session_id)
+        anyhow::anyhow!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "trace_cli.upload_failed_session",
+                "Trace upload failed for session {session_id}",
+                &[("session_id", self.session_id)],
+            )
+        )
     }
 
     fn write_debug_log(&self, error: &anyhow::Error, output_dir: &Path) -> PathBuf {
@@ -610,7 +735,14 @@ impl UploadAttempt<'_> {
         let _ = writeln!(log, "Full error chain:\n  {error:?}");
 
         if let Err(e) = std::fs::write(&log_path, &log) {
-            eprintln!("  Warning: failed to write debug log: {e}");
+            eprintln!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "trace_cli.log_write_failed",
+                    "  Warning: failed to write debug log: {error}",
+                    &[("error", &e.to_string())],
+                )
+            );
         }
         log_path
     }
@@ -640,12 +772,28 @@ async fn upload_with_retries(
             xai_file_utils::gcs::upload_bytes(config, object_path, archive, "application/gzip"),
         )
         .await
-        .map_err(|_| anyhow::anyhow!("Upload timed out after {}s", UPLOAD_TIMEOUT.as_secs()))?
+        .map_err(|_| {
+            anyhow::anyhow!(
+                "{}",
+                crate::locale::ctx().format_named(
+                    "trace_cli.timed_out",
+                    "Upload timed out after {seconds}s",
+                    &[("seconds", &UPLOAD_TIMEOUT.as_secs().to_string())],
+                )
+            )
+        })?
     })
     .retry(backoff)
     .notify(|err, dur| {
         tracing::warn!(error = %err, retry_in = ?dur, "trace_cmd: upload attempt failed, retrying");
-        eprintln!("  Upload failed, retrying in {}s...", dur.as_secs());
+        eprintln!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "trace_cli.retry_in",
+                "  Upload failed, retrying in {seconds}s...",
+                &[("seconds", &dur.as_secs().to_string())],
+            )
+        );
     })
     .await
 }
@@ -661,7 +809,10 @@ pub async fn resolve_upload_method(agent_config: &AgentConfig) -> Option<UploadM
         agent_config.login_device_flow,
         agent_config.endpoints.proxy_url(),
         agent_config.endpoints.has_noninteractive_upload_auth(),
-        Some("Authentication required for trace upload."),
+        Some(&crate::locale::ctx().named_text(
+            "trace_cli.auth_required",
+            "Authentication required for trace upload.",
+        )),
     )
     .await
     .inspect_err(

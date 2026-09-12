@@ -228,7 +228,11 @@ impl FeedbackModalState {
     pub fn mark_draft_submit_pending(&mut self) {
         self.invalidate_draft_load();
         self.submit_pending = true;
-        self.error = Some("Sending draft…".to_owned());
+        self.error = Some(
+            crate::locale::ctx()
+                .named_text("feedback.draft.sending", "Sending draft…")
+                .into_owned(),
+        );
     }
 
     pub fn cancel_draft_submit_pending(&mut self, error: String) {
@@ -242,8 +246,12 @@ impl FeedbackModalState {
         self.submit_terminal = Some(DraftSubmitTerminal::CleanupFailed);
         self.step = FeedbackModalStep::Write;
         self.error = Some(
-            "Feedback was sent, but the stored draft could not be deleted. Delete it manually; do not resend."
-                .to_owned(),
+            crate::locale::ctx()
+                .named_text(
+                    "feedback.draft.cleanup_failed",
+                    "Feedback was sent, but the stored draft could not be deleted. Delete it manually; do not resend.",
+                )
+                .into_owned(),
         );
     }
 
@@ -271,8 +279,12 @@ impl FeedbackModalState {
                 failure_mode: self.metadata.failure_mode,
             }));
             self.error = Some(
-                "The remote outcome is unknown. The latest text was copied to the clipboard. Saving it back to this draft; close and do not resend."
-                    .to_owned(),
+                crate::locale::ctx()
+                    .named_text(
+                        "feedback.draft.unknown_saved_to_draft",
+                        "The remote outcome is unknown. The latest text was copied to the clipboard. Saving it back to this draft; close and do not resend.",
+                    )
+                    .into_owned(),
             );
             let copy = post_text(&title, &details);
             return (!copy.trim().is_empty()).then_some(copy);
@@ -280,8 +292,12 @@ impl FeedbackModalState {
         // A later POST success may already have deleted the row; never append a replacement.
         self.pending_request = None;
         self.error = Some(
-            "The remote outcome is unknown. The latest text was copied to the clipboard. Close and do not resend."
-                .to_owned(),
+            crate::locale::ctx()
+                .named_text(
+                    "feedback.draft.unknown_copied",
+                    "The remote outcome is unknown. The latest text was copied to the clipboard. Close and do not resend.",
+                )
+                .into_owned(),
         );
         (!details.trim().is_empty()).then_some(details)
     }
@@ -299,12 +315,20 @@ impl FeedbackModalState {
         }
         self.error = Some(match error {
             None => {
-                "The remote outcome is unknown. The latest text was saved to this draft and copied to the clipboard. Close and do not resend."
-                    .to_owned()
+                crate::locale::ctx()
+                    .named_text(
+                        "feedback.draft.unknown_saved",
+                        "The remote outcome is unknown. The latest text was saved to this draft and copied to the clipboard. Close and do not resend.",
+                    )
+                    .into_owned()
             }
             Some(_) => {
-                "The remote outcome is unknown. The latest text was copied to the clipboard, but it could not be saved to the draft. Close and do not resend."
-                    .to_owned()
+                crate::locale::ctx()
+                    .named_text(
+                        "feedback.draft.unknown_save_failed",
+                        "The remote outcome is unknown. The latest text was copied to the clipboard, but it could not be saved to the draft. Close and do not resend.",
+                    )
+                    .into_owned()
             }
         });
     }

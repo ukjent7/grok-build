@@ -1723,16 +1723,23 @@ pub struct PickerConfig<'a> {
 /// Returns a static reference, so there is no per-call allocation.
 pub fn picker_shortcuts() -> &'static [HintItem] {
     static SHORTCUTS: LazyLock<Vec<HintItem>> = LazyLock::new(|| {
+        let ctx = crate::locale::ctx();
         vec![
             HintItem {
                 keys: vec![],
-                label: "nav".into(),
+                label: std::borrow::Cow::Borrowed(ctx.named_static_text("picker.hint.nav", "nav")),
                 custom_display: Some("\u{2191}/\u{2193}"),
                 description: None,
                 pinned: false,
             },
-            HintItem::new(crate::key!(Enter), "select"),
-            HintItem::new(crate::key!(Esc), "close"),
+            HintItem::new(
+                crate::key!(Enter),
+                ctx.named_static_text("picker.hint.select", "select"),
+            ),
+            HintItem::new(
+                crate::key!(Esc),
+                ctx.named_static_text("picker.hint.close", "close"),
+            ),
         ]
     });
     &SHORTCUTS
@@ -1959,7 +1966,10 @@ fn render_picker_content_inner(
     if loading {
         let spinner_frames = crate::glyphs::dot_spinner_frames();
         let frame = spinner_frames[(loading_tick / 4) as usize % spinner_frames.len()];
-        let msg = format!("{frame} Loading\u{2026}");
+        let msg = format!(
+            "{frame} {}",
+            crate::locale::ctx().named_text("picker.loading", "Loading…")
+        );
         let msg_style = Style::default().fg(theme.gray);
         let cx = content_area.x + content_area.width.saturating_sub(msg.width() as u16) / 2;
         let cy = content_area.y + content_area.height / 2;
@@ -1972,7 +1982,15 @@ fn render_picker_content_inner(
         let msg_style = Style::default()
             .fg(theme.gray_dim)
             .bg(picker_base_bg(bg, theme));
-        buf.set_string(content_area.x, content_area.y, "  No matches", msg_style);
+        buf.set_string(
+            content_area.x,
+            content_area.y,
+            &format!(
+                "  {}",
+                crate::locale::ctx().named_text("picker.search.no_matches", "No matches")
+            ),
+            msg_style,
+        );
         return empty_hit;
     }
 
@@ -2413,20 +2431,27 @@ pub fn render_picker(
         }
         // Show `i` in vim nav mode so users discover how to start typing
         if config.vim_normal_first && !state.search_active {
-            all_hints.push(HintItem::new(crate::key!('i'), "search"));
+            all_hints.push(HintItem::new(
+                crate::key!('i'),
+                crate::locale::ctx().named_static_text("picker.hint.search", "search"),
+            ));
         }
         // Expandable: add the e (expand) and y (copy) hints
         if config.expandable && !config.compact_bottom_bar {
             all_hints.push(HintItem {
                 keys: vec![],
-                label: "expand".into(),
+                label: std::borrow::Cow::Borrowed(
+                    crate::locale::ctx().named_static_text("picker.hint.expand", "expand"),
+                ),
                 custom_display: Some("e/Shift+e"),
                 description: None,
                 pinned: false,
             });
             all_hints.push(HintItem {
                 keys: vec![],
-                label: "copy".into(),
+                label: std::borrow::Cow::Borrowed(
+                    crate::locale::ctx().named_static_text("picker.hint.copy", "copy"),
+                ),
                 custom_display: Some("y"),
                 description: None,
                 pinned: false,

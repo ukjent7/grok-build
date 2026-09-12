@@ -49,7 +49,11 @@ async fn run_status_command(
                 metrics::global().record_failed(elapsed_ms);
             }
             RunOutcome::Failed {
-                text: format!("[status line: {error}]"),
+                text: crate::locale::ctx().format_named(
+                    "status_line.error.wrapper",
+                    "[status line: {error}]",
+                    &[("error", &error.to_string())],
+                ),
                 error: error.to_string(),
             }
         }
@@ -68,13 +72,53 @@ enum RunError {
 impl std::fmt::Display for RunError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            RunError::Spawn(e) => write!(f, "could not start the script: {e}"),
-            RunError::Wait(e) => write!(f, "could not wait for the script: {e}"),
+            RunError::Spawn(e) => write!(
+                f,
+                "{}",
+                crate::locale::ctx().format_named(
+                    "status_line.error.spawn",
+                    "could not start the script: {error}",
+                    &[("error", &e.to_string())]
+                )
+            ),
+            RunError::Wait(e) => write!(
+                f,
+                "{}",
+                crate::locale::ctx().format_named(
+                    "status_line.error.wait",
+                    "could not wait for the script: {error}",
+                    &[("error", &e.to_string())]
+                )
+            ),
             // Grok's own bug rather than the script's, so it says whose it is.
-            RunError::Json(e) => write!(f, "could not encode Grok's payload: {e}"),
-            RunError::TimedOut => f.write_str("timed out"),
-            RunError::Exit(Some(code)) => write!(f, "exit {code}"),
-            RunError::Exit(None) => f.write_str("killed by signal"),
+            RunError::Json(e) => write!(
+                f,
+                "{}",
+                crate::locale::ctx().format_named(
+                    "status_line.error.json",
+                    "could not encode Grok's payload: {error}",
+                    &[("error", &e.to_string())]
+                )
+            ),
+            RunError::TimedOut => {
+                f.write_str(crate::locale::ctx().named_static_text(
+                    "status_line.error.timed_out",
+                    "timed out",
+                ))
+            }
+            RunError::Exit(Some(code)) => write!(
+                f,
+                "{}",
+                crate::locale::ctx().format_named(
+                    "status_line.error.exit",
+                    "exit {code}",
+                    &[("code", &code.to_string())]
+                )
+            ),
+            RunError::Exit(None) => f.write_str(crate::locale::ctx().named_static_text(
+                "status_line.error.signal",
+                "killed by signal",
+            )),
         }
     }
 }

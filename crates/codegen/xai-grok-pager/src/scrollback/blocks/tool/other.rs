@@ -246,7 +246,12 @@ impl BlockContent for OtherToolCallBlock {
                             // "     → answer" or "     (no answer)"
                             let a_line = if answer.is_empty() {
                                 Line::from(Span::styled(
-                                    "     (no answer)".to_string(),
+                                    crate::locale::ctx()
+                                        .named_text(
+                                            "scrollback.question.no_answer",
+                                            "     (no answer)",
+                                        )
+                                        .into_owned(),
                                     theme.dim(),
                                 ))
                             } else {

@@ -277,9 +277,17 @@ impl<'a> EntryRenderer<'a> {
             spans.extend(label.line.spans.iter().cloned());
         } else {
             let label = if self.group_collapse_header {
-                format!("{n} tool calls & thoughts")
+                crate::locale::ctx().format_named(
+                    "scrollback.group.tool_calls_thoughts",
+                    "{count} tool calls & thoughts",
+                    &[("count", &n.to_string())],
+                )
             } else {
-                format!("{n} more")
+                crate::locale::ctx().format_named(
+                    "scrollback.group.more",
+                    "{count} more",
+                    &[("count", &n.to_string())],
+                )
             };
             spans.push(ratatui::text::Span::styled(label, text_style));
         }

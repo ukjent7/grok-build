@@ -92,28 +92,31 @@ impl FeedbackModalMetadata {
 
 impl FeedbackModalState {
     // Esc closes the picker back to the label rows, never the modal, so no cancel hint here.
-    pub(super) const PICKER_SHORTCUTS: &[Shortcut<'static>] = &[
-        Shortcut {
-            label: "↑↓ move",
-            clickable: false,
-            id: 0,
-        },
-        Shortcut {
-            label: "type filter",
-            clickable: false,
-            id: 0,
-        },
-        Shortcut {
-            label: "Enter select",
-            clickable: false,
-            id: 0,
-        },
-        Shortcut {
-            label: "Esc back",
-            clickable: false,
-            id: 0,
-        },
-    ];
+    pub(super) fn picker_shortcuts() -> Vec<Shortcut<'static>> {
+        let ctx = crate::locale::ctx();
+        vec![
+            Shortcut {
+                label: ctx.named_static_text("feedback.shortcut.move_rows", "↑↓ move"),
+                clickable: false,
+                id: 0,
+            },
+            Shortcut {
+                label: ctx.named_static_text("feedback.shortcut.filter", "type filter"),
+                clickable: false,
+                id: 0,
+            },
+            Shortcut {
+                label: ctx.named_static_text("feedback.shortcut.select", "Enter select"),
+                clickable: false,
+                id: 0,
+            },
+            Shortcut {
+                label: ctx.named_static_text("feedback.shortcut.back", "Esc back"),
+                clickable: false,
+                id: 0,
+            },
+        ]
+    }
 
     /// One full-width row per supplied enum, stacked above the composer, in `fields`. (`field_order`)
     /// order. The focused row carries the selection marker in the emphasized style; the rest stay

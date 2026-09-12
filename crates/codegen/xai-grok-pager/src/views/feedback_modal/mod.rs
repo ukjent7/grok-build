@@ -29,7 +29,13 @@ use enum_picker::EnumPicker;
 
 static NEXT_FEEDBACK_MODAL_ID: AtomicU64 = AtomicU64::new(1);
 static NEXT_FEEDBACK_SUBMISSION_ID: AtomicU64 = AtomicU64::new(1);
-const FEEDBACK_TABS: &[&str] = &["Write", "Drafts"];
+fn feedback_tabs() -> [&'static str; 2] {
+    let ctx = crate::locale::ctx();
+    [
+        ctx.named_static_text("feedback.tab.write", "Write"),
+        ctx.named_static_text("feedback.tab.drafts", "Drafts"),
+    ]
+}
 // One id shared by the footer `Shortcut` and the mouse `ShortcutActivated` arm; drifting them breaks click-to-cancel.
 const CANCEL_SHORTCUT_ID: usize = 1;
 const DRAFT_DOUBLE_CLICK_TIMEOUT: std::time::Duration = std::time::Duration::from_millis(300);
@@ -88,14 +94,36 @@ pub(crate) enum FeedbackModalDisplacement {
 
 impl FeedbackModalDisplacement {
     pub(crate) fn notice(self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Self::CancelTurn => "Feedback closed because the turn-cancel prompt needs an answer.",
-            Self::PlanApproval => "Feedback closed because a plan is ready for approval.",
-            Self::Permission => "Feedback closed because a permission request needs an answer.",
-            Self::AcpQuestion => "Feedback closed because the agent asked a question.",
-            Self::LocalQuestion => "Feedback closed because another prompt needs an answer.",
-            Self::McpElicitation => "Feedback closed because a tool needs your input.",
-            Self::HookBlockedPrompt => "Feedback closed because a hook blocked the prompt.",
+            Self::CancelTurn => ctx.named_static_text(
+                "feedback.closed.cancel_turn",
+                "Feedback closed because the turn-cancel prompt needs an answer.",
+            ),
+            Self::PlanApproval => ctx.named_static_text(
+                "feedback.closed.plan_approval",
+                "Feedback closed because a plan is ready for approval.",
+            ),
+            Self::Permission => ctx.named_static_text(
+                "feedback.closed.permission",
+                "Feedback closed because a permission request needs an answer.",
+            ),
+            Self::AcpQuestion => ctx.named_static_text(
+                "feedback.closed.acp_question",
+                "Feedback closed because the agent asked a question.",
+            ),
+            Self::LocalQuestion => ctx.named_static_text(
+                "feedback.closed.local_question",
+                "Feedback closed because another prompt needs an answer.",
+            ),
+            Self::McpElicitation => ctx.named_static_text(
+                "feedback.closed.mcp_elicitation",
+                "Feedback closed because a tool needs your input.",
+            ),
+            Self::HookBlockedPrompt => ctx.named_static_text(
+                "feedback.closed.hook_blocked",
+                "Feedback closed because a hook blocked the prompt.",
+            ),
         }
     }
 }
@@ -117,10 +145,17 @@ impl FeedbackTraceChoice {
         [Self::SendThisSession, Self::FeedbackOnly, Self::NeverAsk];
 
     pub(crate) fn label(self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Self::SendThisSession => "Send this session's trace",
-            Self::FeedbackOnly => "No, just the feedback",
-            Self::NeverAsk => "No, and don't ask again",
+            Self::SendThisSession => {
+                ctx.named_static_text("feedback.trace_choice.send_session", "Send this session's trace")
+            }
+            Self::FeedbackOnly => {
+                ctx.named_static_text("feedback.trace_choice.feedback_only", "No, just the feedback")
+            }
+            Self::NeverAsk => {
+                ctx.named_static_text("feedback.trace_choice.never_ask", "No, and don't ask again")
+            }
         }
     }
 }
@@ -179,21 +214,39 @@ impl FeedbackModalMetadata {
     }
 
     fn field_text(&self, field: MetadataField) -> Option<String> {
+        let ctx = crate::locale::ctx();
         match field {
             MetadataField::Type => Some(match &self.r#type {
-                Some(value) => format!("Type: {}", value.label()),
-                None if self.draft_id.is_some() => "Type: (choose)".to_string(),
+                Some(value) => ctx.format_named(
+                    "feedback.field.type",
+                    "Type: {value}",
+                    &[("value", value.label())],
+                ),
+                None if self.draft_id.is_some() => {
+                    ctx.named_text("feedback.field.type_unselected", "Type: (choose)")
+                        .into_owned()
+                }
                 None => return None,
             }),
             MetadataField::Task => Some(match &self.task_category {
-                Some(value) => format!("Task: {}", value.label()),
-                None if self.draft_id.is_some() => "Task: (choose)".to_string(),
+                Some(value) => ctx.format_named(
+                    "feedback.field.task",
+                    "Task: {value}",
+                    &[("value", value.label())],
+                ),
+                None if self.draft_id.is_some() => {
+                    ctx.named_text("feedback.field.task_unselected", "Task: (choose)")
+                        .into_owned()
+                }
                 None => return None,
             }),
-            MetadataField::Failure => self
-                .failure_mode
-                .as_ref()
-                .map(|value| format!("Failure: {}", value.label())),
+            MetadataField::Failure => self.failure_mode.as_ref().map(|value| {
+                ctx.format_named(
+                    "feedback.field.failure",
+                    "Failure: {value}",
+                    &[("value", value.label())],
+                )
+            }),
         }
     }
 
@@ -369,7 +422,7 @@ impl FeedbackModalState {
                 .collect(),
         );
         Self {
-            window: ModalWindowState::with_tabs(FEEDBACK_TABS.len()),
+            window: ModalWindowState::with_tabs(feedback_tabs().len()),
             id,
             composer,
             metadata,
@@ -383,8 +436,14 @@ impl FeedbackModalState {
             image_rehydrations_in_flight,
             deferred_submit: false,
             trace_outcome_reported: false,
-            error: (rejected_images > 0)
-                .then(|| format!("Dropped {rejected_images} invalid image(s).")),
+            error: (rejected_images > 0).then(|| {
+                let count = rejected_images.to_string();
+                crate::locale::ctx().format_named(
+                    "feedback.images.dropped_invalid",
+                    "Dropped {count} invalid image(s).",
+                    &[("count", &count)],
+                )
+            }),
             drafts: DraftsState::Unloaded,
             open_on_drafts_if_any,
             draft_generation: 0,
@@ -606,13 +665,24 @@ impl FeedbackModalState {
     /// Trace-step question copy comes only from the supplied feedback type;
     /// an absent type uses the neutral line, and user-authored text never picks it.
     fn trace_prompt(&self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self.metadata.r#type {
-            Some(FeedbackType::Bug) => "Attach this session's trace to help us debug this bug?",
-            Some(FeedbackType::Idea) => "Attach this session's trace to give this idea context?",
-            Some(FeedbackType::MissingCapability) => {
-                "Attach this session's trace to show what was missing?"
-            }
-            None => "Attach this session's trace to your feedback?",
+            Some(FeedbackType::Bug) => ctx.named_static_text(
+                "feedback.trace_prompt.bug",
+                "Attach this session's trace to help us debug this bug?",
+            ),
+            Some(FeedbackType::Idea) => ctx.named_static_text(
+                "feedback.trace_prompt.idea",
+                "Attach this session's trace to give this idea context?",
+            ),
+            Some(FeedbackType::MissingCapability) => ctx.named_static_text(
+                "feedback.trace_prompt.missing_capability",
+                "Attach this session's trace to show what was missing?",
+            ),
+            None => ctx.named_static_text(
+                "feedback.trace_prompt.default",
+                "Attach this session's trace to your feedback?",
+            ),
         }
     }
 
@@ -632,7 +702,12 @@ impl FeedbackModalState {
             self.composer
                 .drop_image_preserving_session_file(image_identity);
             self.error = Some(
-                "Couldn't restore one feedback image; the original file was kept.".to_string(),
+                crate::locale::ctx()
+                    .named_text(
+                        "feedback.image_restore_failed",
+                        "Couldn't restore one feedback image; the original file was kept.",
+                    )
+                    .into_owned(),
             );
             return;
         };
@@ -783,7 +858,8 @@ impl FeedbackModalState {
             self.metadata_focus = Some(last);
             return FeedbackModalOutcome::Changed;
         }
-        let config = Self::window_config(&[], false, false);
+        let tabs = feedback_tabs();
+        let config = Self::window_config(&[], &tabs, false, false);
         match modal_window::handle_modal_key(&mut self.window, key, &config) {
             ModalWindowOutcome::CloseRequested => return FeedbackModalOutcome::Cancel,
             ModalWindowOutcome::Unhandled => {}
@@ -803,7 +879,11 @@ impl FeedbackModalState {
                 return FeedbackModalOutcome::Submit;
             }
             EnterOutcome::Submit => {
-                self.error = Some(FEEDBACK_EMPTY_SUBMIT_ERROR.to_string());
+                self.error = Some(
+                    crate::locale::ctx()
+                        .named_text("feedback.empty_submit", FEEDBACK_EMPTY_SUBMIT_ERROR)
+                        .into_owned(),
+                );
                 return FeedbackModalOutcome::Changed;
             }
             EnterOutcome::PassThrough => {}

@@ -29,12 +29,17 @@ pub(crate) fn queue_block_text(agent: &AgentView) -> String {
     }
 
     if rows.is_empty() {
-        "Queue is empty.".to_string()
+        crate::locale::ctx()
+            .named_text("status.queue.empty", "Queue is empty.")
+            .into_owned()
     } else {
-        let header = format!(
-            "Queued prompt{} ({}):",
-            if rows.len() == 1 { "" } else { "s" },
-            rows.len()
+        let header = crate::locale::ctx().format_named(
+            "status.queue.header",
+            "Queued prompt{s} ({count}):",
+            &[
+                ("s", if rows.len() == 1 { "" } else { "s" }),
+                ("count", &rows.len().to_string()),
+            ],
         );
         join_header_rows(header, rows)
     }
@@ -55,8 +60,16 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
         let active = run.active_agent_count();
         let agents = match active {
             0 => String::new(),
-            1 => " · 1 agent".to_string(),
-            n => format!(" · {n} agents"),
+            1 => crate::locale::ctx().format_named(
+                "status.tasks.agent_count",
+                " · 1 agent",
+                &[("count", "1")],
+            ),
+            n => crate::locale::ctx().format_named(
+                "status.tasks.agent_count",
+                " · {count} agents",
+                &[("count", &n.to_string())],
+            ),
         };
         let phase = run
             .current_phase
@@ -66,12 +79,15 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
             .map(|phase| format!(" · {phase}"))
             .unwrap_or_default();
         rows.push(format!(
-            "  {:<9}Workflow · {}{phase}{agents}  ({})",
+            "  {:<9}{} · {}{phase}{agents}  ({})",
             if run.is_active() {
-                "running".to_string()
+                crate::locale::ctx()
+                    .named_static_text("status.state.running", "running")
+                    .to_string()
             } else {
                 run.status.replace('_', " ")
             },
+            crate::locale::ctx().named_text("status.tasks.workflow", "Workflow"),
             run.name,
             format_duration(std::time::Duration::from_millis(run.live_elapsed_ms()))
         ));
@@ -92,11 +108,14 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
     for info in subs {
         let (type_label, desc) = format_subagent_label(info);
         let status = if info.attempt.pending_kill {
-            "stopping"
+            crate::locale::ctx().named_static_text("status.state.stopping", "stopping")
         } else if info.is_running() {
-            "running"
+            crate::locale::ctx().named_static_text("status.state.running", "running")
         } else {
-            info.attempt.status.as_deref().unwrap_or("done")
+            info.attempt
+                .status
+                .as_deref()
+                .unwrap_or(crate::locale::ctx().named_static_text("status.state.done", "done"))
         };
         let label = if desc.is_empty() {
             type_label
@@ -121,7 +140,11 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
             .then(a.task_id.cmp(&b.task_id))
     });
     for task in tasks {
-        let kind = if task.is_monitor { "Monitor" } else { "Task" };
+        let kind = if task.is_monitor {
+            crate::locale::ctx().named_static_text("status.tasks.monitor", "Monitor")
+        } else {
+            crate::locale::ctx().named_static_text("status.tasks.task", "Task")
+        };
         let one_line = task
             .description
             .as_deref()
@@ -129,12 +152,18 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
             .filter(|s| !s.is_empty())
             .unwrap_or_else(|| first_nonempty_line(&task.command));
         let status = if task.pending_kill {
-            "stopping"
+            crate::locale::ctx().named_static_text("status.state.stopping", "stopping")
         } else {
             match task.status {
-                BgTaskStatus::Running => "running",
-                BgTaskStatus::Done => "done",
-                BgTaskStatus::Failed => "failed",
+                BgTaskStatus::Running => {
+                    crate::locale::ctx().named_static_text("status.state.running", "running")
+                }
+                BgTaskStatus::Done => {
+                    crate::locale::ctx().named_static_text("status.state.done", "done")
+                }
+                BgTaskStatus::Failed => {
+                    crate::locale::ctx().named_static_text("status.state.failed", "failed")
+                }
             }
         };
         rows.push(format!(
@@ -154,7 +183,7 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
     for info in sched {
         rows.push(format!(
             "  {:<9}{} · {} · {}",
-            "scheduled",
+            crate::locale::ctx().named_static_text("status.state.scheduled", "scheduled"),
             info.tag,
             info.human_schedule,
             first_nonempty_line(&info.prompt)
@@ -162,12 +191,20 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
     }
 
     if rows.is_empty() {
-        "No background tasks, workflows, or subagents.".to_string()
+        crate::locale::ctx()
+            .named_text(
+                "status.tasks.empty",
+                "No background tasks, workflows, or subagents.",
+            )
+            .into_owned()
     } else {
-        let header = format!(
-            "Task{} ({}):",
-            if rows.len() == 1 { "" } else { "s" },
-            rows.len()
+        let header = crate::locale::ctx().format_named(
+            "status.tasks.header",
+            "Task{s} ({count}):",
+            &[
+                ("s", if rows.len() == 1 { "" } else { "s" }),
+                ("count", &rows.len().to_string()),
+            ],
         );
         join_header_rows(header, rows)
     }
@@ -189,54 +226,101 @@ pub(crate) fn session_usage_block_text(
     let t = &usage.totals;
     if t.model_calls == 0 && usage.model_usage.is_empty() {
         return if usage.usage_is_incomplete {
-            "Session usage: none recorded, but tracking is incomplete and may under-count."
-                .to_string()
+            crate::locale::ctx()
+                .named_text(
+                    "status.usage.empty_incomplete",
+                    "Session usage: none recorded, but tracking is incomplete and may under-count.",
+                )
+                .into_owned()
         } else {
-            "Session usage: no model calls yet in this session.".to_string()
+            crate::locale::ctx()
+                .named_text(
+                    "status.usage.empty",
+                    "Session usage: no model calls yet in this session.",
+                )
+                .into_owned()
         };
     }
 
     let mut rows = Vec::new();
-    rows.push(format!(
-        "  Input tokens:   {} ({} cached, {:.0}% hit)",
-        group_thousands(t.input_tokens),
-        group_thousands(t.cached_read_tokens),
-        cache_hit_percent(t.input_tokens, t.cached_read_tokens),
+    let hit = format!("{:.0}", cache_hit_percent(t.input_tokens, t.cached_read_tokens));
+    rows.push(crate::locale::ctx().format_named(
+        "status.usage.input_tokens_hit",
+        "  Input tokens:   {input} ({cached} cached, {hit}% hit)",
+        &[
+            ("input", &group_thousands(t.input_tokens)),
+            ("cached", &group_thousands(t.cached_read_tokens)),
+            ("hit", &hit),
+        ],
     ));
-    rows.push(format!(
-        "  Output tokens:  {} ({} reasoning)",
-        group_thousands(t.output_tokens),
-        group_thousands(t.reasoning_tokens),
+    rows.push(crate::locale::ctx().format_named(
+        "status.usage.output_tokens",
+        "  Output tokens:  {output} ({reasoning} reasoning)",
+        &[
+            ("output", &group_thousands(t.output_tokens)),
+            ("reasoning", &group_thousands(t.reasoning_tokens)),
+        ],
     ));
-    rows.push(format!(
-        "  Total tokens:   {}",
-        group_thousands(t.total_tokens)
+    rows.push(crate::locale::ctx().format_named(
+        "status.usage.total_tokens",
+        "  Total tokens:   {total}",
+        &[("total", &group_thousands(t.total_tokens))],
     ));
-    rows.push(format!(
-        "  Model calls:    {} · API time: {}",
-        group_thousands(t.model_calls),
-        format_duration(std::time::Duration::from_millis(t.api_duration_ms)),
+    rows.push(crate::locale::ctx().format_named(
+        "status.usage.model_calls",
+        "  Model calls:    {calls} · API time: {time}",
+        &[
+            ("calls", &group_thousands(t.model_calls)),
+            (
+                "time",
+                &format_duration(std::time::Duration::from_millis(t.api_duration_ms)),
+            ),
+        ],
     ));
-    rows.push(format!("  Cost:           {}", format_cost(t)));
+    rows.push(crate::locale::ctx().format_named(
+        "status.usage.cost",
+        "  Cost:           {cost}",
+        &[("cost", &format_cost(t))],
+    ));
 
     if usage.model_usage.len() > 1 {
-        rows.push("  By model:".to_string());
+        rows.push(
+            crate::locale::ctx()
+                .named_text("status.usage.by_model", "  By model:")
+                .into_owned(),
+        );
         for (model, m) in &usage.model_usage {
-            rows.push(format!(
-                "    {model}: {} in / {} out · {}",
-                group_thousands(m.input_tokens),
-                group_thousands(m.output_tokens),
-                format_cost(m),
+            rows.push(crate::locale::ctx().format_named(
+                "status.usage.model_row",
+                "    {model}: {input} in / {output} out · {cost}",
+                &[
+                    ("model", model),
+                    ("input", &group_thousands(m.input_tokens)),
+                    ("output", &group_thousands(m.output_tokens)),
+                    ("cost", &format_cost(m)),
+                ],
             ));
         }
     }
 
     if usage.usage_is_incomplete {
-        rows.push("  Note: usage is incomplete and may under-count.".to_string());
+        rows.push(
+            crate::locale::ctx()
+                .named_text(
+                    "status.usage.incomplete_note",
+                    "  Note: usage is incomplete and may under-count.",
+                )
+                .into_owned(),
+        );
     }
 
     join_header_rows(
-        "Session usage (since start or last resume):".to_string(),
+        crate::locale::ctx()
+            .named_text(
+                "status.usage.header",
+                "Session usage (since start or last resume):",
+            )
+            .into_owned(),
         rows,
     )
 }
@@ -246,8 +330,15 @@ fn format_cost(m: &xai_grok_shell::extensions::notification::PromptUsageModel) -
     use xai_grok_shell::extensions::notification::ticks_to_usd;
     match m.cost_usd_ticks {
         Some(ticks) => format!("${:.4}", ticks_to_usd(ticks)),
-        None if m.cost_is_partial => "not available (not reported for some calls)".to_string(),
-        None => "not available (not reported)".to_string(),
+        None if m.cost_is_partial => crate::locale::ctx()
+            .named_text(
+                "status.usage.cost_partial",
+                "not available (not reported for some calls)",
+            )
+            .into_owned(),
+        None => crate::locale::ctx()
+            .named_text("status.usage.cost_unavailable", "not available (not reported)")
+            .into_owned(),
     }
 }
 
@@ -265,8 +356,15 @@ fn format_queue_row(pos: usize, text: &str) -> String {
     let extra = text.lines().count().saturating_sub(1);
     if extra > 0 {
         format!(
-            "  #{pos}  {first_line}  (+{extra} more line{})",
-            if extra == 1 { "" } else { "s" }
+            "  #{pos}  {first_line}  {}",
+            crate::locale::ctx().format_named(
+                "status.queue.more_lines",
+                "(+{count} more line{s})",
+                &[
+                    ("count", &extra.to_string()),
+                    ("s", if extra == 1 { "" } else { "s" }),
+                ],
+            )
         )
     } else {
         format!("  #{pos}  {first_line}")

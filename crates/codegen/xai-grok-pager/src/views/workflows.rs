@@ -183,60 +183,68 @@ pub fn footer_shortcuts(
         });
         if has_run_list {
             s.push(Shortcut {
-                label: "←/tab runs",
+                label: crate::locale::ctx()
+                    .named_static_text("workflows.shortcut.runs", "←/tab runs"),
                 clickable: true,
                 id: shortcut_ids::RUNS,
             });
         }
         if run.is_some_and(WorkflowRunSnapshot::can_pause) {
             s.push(Shortcut {
-                label: "p pause",
+                label: crate::locale::ctx()
+                    .named_static_text("workflows.shortcut.pause", "p pause"),
                 clickable: true,
                 id: shortcut_ids::PAUSE,
             });
         }
         if run.is_some_and(WorkflowRunSnapshot::can_resume) {
             s.push(Shortcut {
-                label: "r resume",
+                label: crate::locale::ctx()
+                    .named_static_text("workflows.shortcut.resume", "r resume"),
                 clickable: true,
                 id: shortcut_ids::RESUME,
             });
         }
         if run.is_some_and(WorkflowRunSnapshot::can_stop) {
             s.push(Shortcut {
-                label: "x stop",
+                label: crate::locale::ctx()
+                    .named_static_text("workflows.shortcut.stop", "x stop"),
                 clickable: true,
                 id: shortcut_ids::STOP,
             });
         }
         if run.is_some_and(WorkflowRunSnapshot::can_save) {
             s.push(Shortcut {
-                label: "s save",
+                label: crate::locale::ctx()
+                    .named_static_text("workflows.shortcut.save", "s save"),
                 clickable: true,
                 id: shortcut_ids::SAVE,
             });
         }
     } else {
         s.push(Shortcut {
-            label: "↑↓ select",
+            label: crate::locale::ctx()
+                .named_static_text("workflows.shortcut.select", "↑↓ select"),
             clickable: false,
             id: 0,
         });
         s.push(Shortcut {
-            label: "enter open",
+            label: crate::locale::ctx()
+                .named_static_text("workflows.shortcut.open", "enter open"),
             clickable: true,
             id: shortcut_ids::OPEN,
         });
         if run.is_some_and(WorkflowRunSnapshot::can_stop) {
             s.push(Shortcut {
-                label: "x stop",
+                label: crate::locale::ctx()
+                    .named_static_text("workflows.shortcut.stop", "x stop"),
                 clickable: true,
                 id: shortcut_ids::STOP,
             });
         }
     }
     s.push(Shortcut {
-        label: "esc close",
+        label: crate::locale::ctx().named_static_text("workflows.shortcut.close", "esc close"),
         clickable: false,
         id: 0,
     });
@@ -455,7 +463,12 @@ pub fn phase_rail(run: &WorkflowRunSnapshot) -> Vec<(String, String)> {
         phases.push((current.to_owned(), state.to_owned()));
     }
     if phases.is_empty() {
-        phases.push(("All agents".to_owned(), "active".to_owned()));
+        phases.push((
+            crate::locale::ctx()
+                .named_text("workflows.all_agents", "All agents")
+                .into_owned(),
+            "active".to_owned(),
+        ));
     }
     phases
 }
@@ -541,7 +554,8 @@ pub fn render_workflows(
     let (shortcuts, sizing) = modal_config(in_detail, has_run_list, selected_run);
     let config = ModalWindowConfig {
         // "Workflow Runs", not "Workflows": that name belongs to the extensions-modal catalog tab
-        title: "Workflow Runs",
+        title: crate::locale::ctx()
+            .named_static_text("workflows.runs_title", "Workflow Runs"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing,
@@ -570,7 +584,12 @@ fn render_list(
             buf,
             inner.x + 1,
             y + 1,
-            "No workflow runs in this session yet.",
+            crate::locale::ctx()
+                .named_text(
+                    "workflows.empty",
+                    "No workflow runs in this session yet.",
+                )
+                .as_ref(),
             Style::default().fg(theme.gray_bright),
             inner.right(),
         );
@@ -578,7 +597,12 @@ fn render_list(
             buf,
             inner.x + 1,
             y + 3,
-            "Start one with /deep-research <query> or ask for a workflow.",
+            crate::locale::ctx()
+                .named_text(
+                    "workflows.empty_hint",
+                    "Start one with /deep-research <query> or ask for a workflow.",
+                )
+                .as_ref(),
             Style::default().fg(theme.gray),
             inner.right(),
         );
@@ -603,20 +627,25 @@ fn render_list(
         let phase_part = if run.phases.is_empty() {
             run.status.clone()
         } else {
-            format!(
-                "{}/{} phase{}",
-                done_phases,
-                run.phases.len(),
-                if run.phases.len() == 1 { "" } else { "s" }
+            crate::locale::ctx().format_named(
+                "workflows.phase_progress",
+                "{done}/{total} phases",
+                &[
+                    ("done", &done_phases.to_string()),
+                    ("total", &run.phases.len().to_string()),
+                ],
             )
         };
-        let meta = format!(
-            "{phase_part} · {}/{} agent{} · {}",
-            run.done_agents(),
-            run.agents.len(),
-            if run.agents.len() == 1 { "" } else { "s" },
-            format_elapsed(run.live_elapsed_ms()),
+        let agents_part = crate::locale::ctx().format_named(
+            "workflows.agent_progress",
+            "{done}/{total} agents",
+            &[
+                ("done", &run.done_agents().to_string()),
+                ("total", &run.agents.len().to_string()),
+            ],
         );
+        let elapsed = format_elapsed(run.live_elapsed_ms());
+        let meta = format!("{phase_part} \u{00b7} {agents_part} \u{00b7} {elapsed}");
         let label = format!(
             "{} · {}",
             strip_control(&run.name),
@@ -728,16 +757,23 @@ fn render_detail(
     let mut body_y = inner.y + 2;
     let status_line = if run.status == "budget_limited" {
         let body = if run.agents_used >= 1_024 {
-            "budget limited: maximum agent budget reached; start a new run".to_string()
+            crate::locale::ctx()
+                .named_text(
+                    "workflows.budget.maximum",
+                    "budget limited: maximum agent budget reached; start a new run",
+                )
+                .into_owned()
         } else if let Some(pause) = run.pause_message.as_deref().filter(|s| !s.is_empty()) {
-            format!(
-                "budget limited: bare resume disabled; raise agent budget via agent/tool. {}",
-                strip_control(pause)
+            crate::locale::ctx().format_named(
+                "workflows.budget.raise_with_reason",
+                "budget limited: bare resume disabled; raise agent budget via agent/tool. {reason}",
+                &[("reason", &strip_control(pause))],
             )
         } else {
-            format!(
-                "budget limited: bare resume disabled; raise agent budget above {} via agent/tool",
-                run.agents_used
+            crate::locale::ctx().format_named(
+                "workflows.budget.raise_above",
+                "budget limited: bare resume disabled; raise agent budget above {count} via agent/tool",
+                &[("count", &run.agents_used.to_string())],
             )
         };
         Some((body, Style::default().fg(theme.warning)))
@@ -748,7 +784,12 @@ fn render_detail(
         ))
     } else if run.status == "failed" {
         Some((
-            "failed: see scrollback for details; r resumes from the journal".to_string(),
+            crate::locale::ctx()
+                .named_text(
+                    "workflows.failed_hint",
+                    "failed: see scrollback for details; r resumes from the journal",
+                )
+                .into_owned(),
             Style::default().fg(theme.accent_error),
         ))
     } else {
@@ -811,7 +852,7 @@ fn render_detail(
         buf,
         rail_area.x,
         body_y,
-        "Phases",
+        crate::locale::ctx().named_text("workflows.phases", "Phases").as_ref(),
         Style::default().fg(theme.text_secondary),
         rail_area.right(),
     );
@@ -936,19 +977,20 @@ fn render_detail(
     if state.roster_scroll == 0 {
         state.roster_top_agent_id = None;
     }
+    let agents_count = crate::locale::ctx().format_named(
+        "workflows.agent_count",
+        "{count} agents",
+        &[("count", &roster_agents.len().to_string())],
+    );
     let roster_title = if state.roster_scroll > 0 {
         format!(
-            "{} · {} · ↑{}",
+            "{} \u{00b7} {} \u{00b7} \u{2191}{}",
             selected_phase_title,
-            plural(roster_agents.len(), "agent"),
+            agents_count,
             state.roster_scroll,
         )
     } else {
-        format!(
-            "{} · {}",
-            selected_phase_title,
-            plural(roster_agents.len(), "agent")
-        )
+        format!("{} \u{00b7} {}", selected_phase_title, agents_count)
     };
     span_at(
         buf,
@@ -964,7 +1006,9 @@ fn render_detail(
             buf,
             roster_inner.x,
             roster_inner.y,
-            "No agents in this phase yet.",
+            crate::locale::ctx()
+                .named_text("workflows.no_agents", "No agents in this phase yet.")
+                .as_ref(),
             Style::default().fg(theme.gray_dim),
             roster_inner.right(),
         );
@@ -1000,10 +1044,13 @@ fn render_detail(
                 .context_tokens
                 .zip(status.context_window_tokens.filter(|&window| window > 0))
         }) {
-            meta_parts.push(format!(
-                "{} / {} context",
-                format_tokens_compact(i64::try_from(context_tokens).unwrap_or(i64::MAX)),
-                format_tokens_compact(i64::try_from(context_window_tokens).unwrap_or(i64::MAX)),
+            let used = format_tokens_compact(i64::try_from(context_tokens).unwrap_or(i64::MAX));
+            let total =
+                format_tokens_compact(i64::try_from(context_window_tokens).unwrap_or(i64::MAX));
+            meta_parts.push(crate::locale::ctx().format_named(
+                "workflows.context_tokens",
+                "{used} / {total} context",
+                &[("used", &used), ("total", &total)],
             ));
         }
         if elapsed_ms > 0 {

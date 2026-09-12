@@ -104,11 +104,15 @@ impl ListDirToolCallBlock {
             theme.fg(theme.path)
         };
 
-        let prefix = "List ";
+        let prefix = crate::locale::ctx().named_text("scrollback.tool.list.label", "List ");
         let entry_count = self.output.lines().filter(|l| !l.trim().is_empty()).count();
         let suffix = if self.error.is_none() && entry_count > 0 {
-            let s = if entry_count == 1 { "y" } else { "ies" };
-            format!(" ({entry_count} entr{s})")
+            let count = entry_count.to_string();
+            crate::locale::ctx().format_named(
+                "scrollback.tool.list.entries",
+                " ({count} entries)",
+                &[("count", &count)],
+            )
         } else {
             String::new()
         };

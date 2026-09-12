@@ -103,7 +103,14 @@ impl WebSearchToolCallBlock {
             theme.fg(theme.command)
         };
 
-        let prefix = self.label.as_deref().unwrap_or("Web Search ").to_owned();
+        let prefix = self
+            .label
+            .clone()
+            .unwrap_or_else(|| {
+                crate::locale::ctx()
+                    .named_text("scrollback.tool.web_search.label", "Web Search ")
+                    .into_owned()
+            });
 
         match max_width {
             Some(w) => {
@@ -111,8 +118,12 @@ impl WebSearchToolCallBlock {
                 // The fullscreen footer shows raw citation count as "Sources".
                 let site_count = self.unique_domains().len();
                 let suffix = if site_count > 0 {
-                    let s = if site_count == 1 { "" } else { "s" };
-                    format!(" ({site_count} site{s})")
+                    let count = site_count.to_string();
+                    crate::locale::ctx().format_named(
+                        "scrollback.tool.web_search.sites",
+                        " ({count} sites)",
+                        &[("count", &count)],
+                    )
                 } else {
                     String::new()
                 };
@@ -181,7 +192,12 @@ impl WebSearchToolCallBlock {
         let label_style = theme.muted();
         let value_style = theme.primary();
 
-        let mut spans: Vec<Span<'static>> = vec![Span::styled("  Sources: ", label_style)];
+        let mut spans: Vec<Span<'static>> = vec![Span::styled(
+            crate::locale::ctx()
+                .named_text("scrollback.tool.web_search.sources", "  Sources: ")
+                .into_owned(),
+            label_style,
+        )];
 
         let shown = unique.len().min(MAX_INLINE_SOURCES);
         for (i, domain) in unique.iter().take(shown).enumerate() {
@@ -193,7 +209,15 @@ impl WebSearchToolCallBlock {
 
         let remaining = unique.len().saturating_sub(MAX_INLINE_SOURCES);
         if remaining > 0 {
-            spans.push(Span::styled(format!(" (+{remaining} more)"), label_style));
+            let count = remaining.to_string();
+            spans.push(Span::styled(
+                crate::locale::ctx().format_named(
+                    "scrollback.tool.web_search.more_sources",
+                    " (+{count} more)",
+                    &[("count", &count)],
+                ),
+                label_style,
+            ));
         }
 
         Some(Line::from(spans))
@@ -270,7 +294,12 @@ impl BlockContent for WebSearchToolCallBlock {
                             lines.push(
                                 BlockLine::from(Line::from(Span::styled(
                                     format!(
-                                        "{indent}... ({remaining} more lines, press Enter to view)",
+                                        "{indent}{}",
+                                        crate::locale::ctx().format_named(
+                                            "scrollback.tool.more_lines_hint",
+                                            "... ({count} more lines, press Enter to view)",
+                                            &[("count", &remaining.to_string())],
+                                        )
                                     ),
                                     theme.dim(),
                                 )))
@@ -301,7 +330,15 @@ impl BlockContent for WebSearchToolCallBlock {
                     );
                 } else if !self.is_x_search {
                     lines.push(Line::from("").into());
-                    lines.push(Line::from(Span::styled("  (no content)", theme.muted())).into());
+                    lines.push(
+                        Line::from(Span::styled(
+                            crate::locale::ctx()
+                                .named_text("scrollback.tool.no_content", "  (no content)")
+                                .into_owned(),
+                            theme.muted(),
+                        ))
+                        .into(),
+                    );
                 }
 
                 // Sources summary line (after content, matching fullscreen order).

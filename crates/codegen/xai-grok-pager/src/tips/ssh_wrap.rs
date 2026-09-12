@@ -39,9 +39,19 @@ pub fn ssh_wrap_tip() -> EphemeralTip {
         ..EphemeralTip::new(
             SSH_WRAP_TIP_KEY,
             Line::from(vec![
-                Span::styled("Run ", dim),
+                Span::styled(
+                    crate::locale::ctx()
+                        .named_static_text("tip.ephemeral.ssh_wrap.lead", "Run "),
+                    dim,
+                ),
                 Span::styled("/doctor", command),
-                Span::styled(" for details and fixes.", dim),
+                Span::styled(
+                    crate::locale::ctx().named_static_text(
+                        "tip.ephemeral.ssh_wrap.tail",
+                        " for details and fixes.",
+                    ),
+                    dim,
+                ),
             ]),
         )
         .with_session_seen_cap(SSH_WRAP_TIP_SEEN_KEY, SSH_WRAP_TIP_SEEN_CAP)

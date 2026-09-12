@@ -102,11 +102,24 @@ pub async fn run(args: SessionsArgs, agent_config: &AgentConfig) -> Result<()> {
                     )
                     .await
                     .unwrap_or_else(|_| {
-                        eprintln!("warning: remote session search timed out");
+                        eprintln!(
+                            "{}",
+                            crate::locale::ctx().named_text(
+                                "sessions.search.remote_timeout",
+                                "warning: remote session search timed out"
+                            )
+                        );
                         Ok(Vec::new())
                     })
                     .unwrap_or_else(|e| {
-                        eprintln!("warning: remote session search failed: {e}");
+                        eprintln!(
+                            "{}",
+                            crate::locale::ctx().format_named(
+                                "sessions.search.remote_failed",
+                                "warning: remote session search failed: {error}",
+                                &[("error", &e.to_string())],
+                            )
+                        );
                         Vec::new()
                     })
                 }
@@ -115,17 +128,22 @@ pub async fn run(args: SessionsArgs, agent_config: &AgentConfig) -> Result<()> {
             let resp = local_resp?;
             if let Some(by) = search.off_reason() {
                 eprintln!(
-                    "warning: local session search is off ({by}); searched remote sessions only."
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "sessions.search.local_off",
+                        "warning: local session search is off ({reason}); searched remote sessions only.",
+                        &[("reason", &by.to_string())],
+                    )
                 );
             }
             let local_ids: HashSet<&str> =
                 resp.results.iter().map(|r| r.session_id.as_str()).collect();
 
             for hit in &resp.results {
-                let title = if hit.title.is_empty() {
-                    "(untitled)"
+                let title: std::borrow::Cow<str> = if hit.title.is_empty() {
+                    crate::locale::ctx().named_text("sessions.common.untitled", "(untitled)")
                 } else {
-                    &hit.title
+                    std::borrow::Cow::Borrowed(hit.title.as_str())
                 };
                 let time = chrono::DateTime::from_timestamp(hit.updated_at_unix, 0)
                     .map(|dt| {
@@ -134,11 +152,18 @@ pub async fn run(args: SessionsArgs, agent_config: &AgentConfig) -> Result<()> {
                             .to_string()
                     })
                     .unwrap_or_default();
+                let score_text = format!("{:.2}", hit.score);
                 println!(
-                    "{} (score: {:.2})  {}\n  {}\n  {}",
-                    hit.session_id,
-                    hit.score,
-                    time,
+                    "{}\n  {}\n  {}",
+                    crate::locale::ctx().format_named(
+                        "sessions_cli.search_result",
+                        "{session_id} (score: {score})  {time}",
+                        &[
+                            ("session_id", &hit.session_id),
+                            ("score", &score_text),
+                            ("time", &time),
+                        ],
+                    ),
                     title,
                     hit.snippet.as_deref().unwrap_or("")
                 );
@@ -153,10 +178,10 @@ pub async fn run(args: SessionsArgs, agent_config: &AgentConfig) -> Result<()> {
                 if local_ids.contains(r.session_id.as_str()) {
                     continue;
                 }
-                let title = if r.summary.is_empty() {
-                    "(untitled)"
+                let title: std::borrow::Cow<str> = if r.summary.is_empty() {
+                    crate::locale::ctx().named_text("sessions.common.untitled", "(untitled)")
                 } else {
-                    &r.summary
+                    std::borrow::Cow::Borrowed(r.summary.as_str())
                 };
                 let time = chrono::DateTime::parse_from_rfc3339(&r.updated_at)
                     .map(|dt| {
@@ -173,13 +198,23 @@ pub async fn run(args: SessionsArgs, agent_config: &AgentConfig) -> Result<()> {
                     .take(80)
                     .collect();
                 println!(
-                    "{} (remote)  {}\n  {}\n  {}",
-                    r.session_id, time, title, snippet
+                    "{}\n  {}\n  {}",
+                    crate::locale::ctx().format_named(
+                        "sessions_cli.remote_result",
+                        "{session_id} (remote)  {time}",
+                        &[("session_id", &r.session_id), ("time", &time)],
+                    ),
+                    title,
+                    snippet
                 );
                 remote_shown += 1;
             }
 
-            println!("\nTotal: {}", resp.results.len() + remote_shown);
+            println!(
+                "\n{} {}",
+                crate::locale::ctx().named_text("sessions.search.total", "Total:"),
+                resp.results.len() + remote_shown
+            );
         }
         SessionsCommand::Delete { id } => {
             // Always attempt the remote delete when authenticated and not ZDR; `list` and `search` likewise query remote
@@ -200,9 +235,23 @@ pub async fn run(args: SessionsArgs, agent_config: &AgentConfig) -> Result<()> {
             .await?;
 
             if deletion.any_removed() {
-                println!("Deleted session {id}");
+                println!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "sessions.delete.deleted",
+                        "Deleted session {id}",
+                        &[("id", &id)],
+                    )
+                );
             } else {
-                println!("No session found with id {id}.");
+                println!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "sessions.delete.not_found",
+                        "No session found with id {id}.",
+                        &[("id", &id)],
+                    )
+                );
             }
         }
     }
@@ -213,7 +262,10 @@ pub async fn run(args: SessionsArgs, agent_config: &AgentConfig) -> Result<()> {
 /// Print sessions grouped by worktree label, preserving the original table format with a `Label: <label>` header before each group.
 fn print_sessions_grouped(sessions: &[MergedSession]) {
     if sessions.is_empty() {
-        println!("No sessions found.");
+        println!(
+            "{}",
+            crate::locale::ctx().named_text("sessions.list.empty", "No sessions found.")
+        );
         return;
     }
 
@@ -227,9 +279,14 @@ fn print_sessions_grouped(sessions: &[MergedSession]) {
             .push(s);
     }
 
+    let ctx = crate::locale::ctx();
     let header = format!(
         "{:<36}  {:<10}  {:<10}  {:<10}  {}",
-        "SESSION ID", "CREATED", "UPDATED", "STATUS", "SUMMARY"
+        ctx.named_text("sessions.list.column.id", "SESSION ID"),
+        ctx.named_text("sessions.list.column.created", "CREATED"),
+        ctx.named_text("sessions.list.column.updated", "UPDATED"),
+        ctx.named_text("sessions.list.column.status", "STATUS"),
+        ctx.named_text("sessions.list.column.summary", "SUMMARY")
     );
 
     // Labeled groups first (alphabetical), then unlabeled last.
@@ -239,6 +296,7 @@ fn print_sessions_grouped(sessions: &[MergedSession]) {
         println!("{header}");
         for s in members {
             let first_line;
+            let no_summary_text;
             let summary: &str = if !s.summary.is_empty() {
                 &s.summary
             } else if let Some(ref fp) = s.first_prompt
@@ -247,7 +305,10 @@ fn print_sessions_grouped(sessions: &[MergedSession]) {
                 first_line = line.trim().to_string();
                 &first_line
             } else {
-                "(no summary)"
+                no_summary_text = crate::locale::ctx()
+                    .named_text("sessions.list.no_summary", "(no summary)")
+                    .into_owned();
+                &no_summary_text
             };
             let truncated: String = summary.chars().take(50).collect();
             let created = &s.created_at[..s.created_at.len().min(10)];
@@ -260,10 +321,17 @@ fn print_sessions_grouped(sessions: &[MergedSession]) {
     };
 
     for (label, members) in &groups {
-        let line = format!("Label: {}", label.unwrap_or(""));
+        let line = crate::locale::ctx().format_named(
+            "sessions.list.label",
+            "Label: {label}",
+            &[("label", label.unwrap_or(""))],
+        );
         print_group(&line, members);
     }
     if let Some(members) = &none_group {
-        print_group("(no label)", members);
+        let line = crate::locale::ctx()
+            .named_text("sessions.list.no_label", "(no label)")
+            .into_owned();
+        print_group(&line, members);
     }
 }

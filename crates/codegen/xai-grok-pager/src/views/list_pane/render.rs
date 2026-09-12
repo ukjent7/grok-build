@@ -112,8 +112,8 @@ impl<T: ListItem> StatefulWidget for ListPane<'_, T> {
         // Render the "Copied!" toast (bottom-right corner, briefly after y-copy)
         // Rendered after the indicators so it can replace the bottom-right indicator instead of overlapping it
         if state.copy_toast_active() && content_area.height > 0 && content_area.width > 8 {
-            let toast_text = " Copied!";
-            let x = content_area.right().saturating_sub(toast_text.len() as u16);
+            let toast_text = crate::locale::ctx().named_text("list_pane.copied", " Copied!").into_owned();
+            let x = content_area.right().saturating_sub(unicode_width::UnicodeWidthStr::width(toast_text.as_str()) as u16);
             let y = content_area.bottom().saturating_sub(1);
             // Write each char, keeping bg (selection highlight) but overriding fg and modifiers so content styles don't leak
             for (i, ch) in toast_text.chars().enumerate() {
@@ -518,10 +518,18 @@ fn render_bottom_bar(
     if let Some(mode) = state.input_mode() {
         // Active input bar: left-aligned, editable
         let label = match mode {
-            super::state::InputBarMode::Search => "search: ",
-            super::state::InputBarMode::Filter => "filter: ",
-            super::state::InputBarMode::GotoLine => "go to: ",
-            super::state::InputBarMode::Comment => "comment: ",
+            super::state::InputBarMode::Search => {
+                crate::locale::ctx().named_text("list_pane.input.search", "search: ").into_owned()
+            }
+            super::state::InputBarMode::Filter => {
+                crate::locale::ctx().named_text("list_pane.input.filter", "filter: ").into_owned()
+            }
+            super::state::InputBarMode::GotoLine => {
+                crate::locale::ctx().named_text("list_pane.input.goto", "go to: ").into_owned()
+            }
+            super::state::InputBarMode::Comment => {
+                crate::locale::ctx().named_text("list_pane.input.comment", "comment: ").into_owned()
+            }
         };
         let label_style = Style::default()
             .fg(style.input_bar_prompt_fg)
@@ -543,8 +551,12 @@ fn render_bottom_bar(
     } else if let Some(matcher) = state.matcher() {
         // Accepted matcher: right-aligned, dim
         let mode_word = match matcher.mode {
-            super::state::MatchMode::Filter => "filter",
-            super::state::MatchMode::Search => "search",
+            super::state::MatchMode::Filter => {
+                crate::locale::ctx().named_text("list_pane.matcher.filter", "filter").into_owned()
+            }
+            super::state::MatchMode::Search => {
+                crate::locale::ctx().named_text("list_pane.matcher.search", "search").into_owned()
+            }
         };
         let status = format!("[{}: {}]  ", mode_word, matcher.query());
         let status_w = status.len() as u16;

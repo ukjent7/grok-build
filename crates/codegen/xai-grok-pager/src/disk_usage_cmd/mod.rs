@@ -44,7 +44,13 @@ pub fn run(args: DiskUsageArgs) -> Result<()> {
     let mut out = std::io::stdout().lock();
     let present = grok_home
         .try_exists()
-        .with_context(|| format!("cannot stat {}", grok_home.display()))?;
+        .with_context(|| {
+            crate::locale::ctx().format_named(
+                "du.error.cannot_stat",
+                "cannot stat {path}",
+                &[("path", &grok_home.display().to_string())],
+            )
+        })?;
     if !present {
         if args.json {
             return write_report(&empty_report(&grok_home), args.json, &mut out);
@@ -303,7 +309,13 @@ fn collect_report(grok_home: &Path) -> Result<DiskUsageReport> {
     let volume = Volume::of(grok_home);
     let mut worktree_sizes: HashMap<PathBuf, Measure> = HashMap::new();
     let children = std::fs::read_dir(grok_home)
-        .with_context(|| format!("cannot read {}", grok_home.display()))?;
+        .with_context(|| {
+            crate::locale::ctx().format_named(
+                "du.error.cannot_read",
+                "cannot read {path}",
+                &[("path", &grok_home.display().to_string())],
+            )
+        })?;
     for child in children {
         let child = match child {
             Ok(child) => child,

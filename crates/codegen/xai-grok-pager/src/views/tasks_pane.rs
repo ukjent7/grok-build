@@ -169,11 +169,12 @@ const GROUP_KIND_COUNT: usize = 4;
 impl GroupKind {
     /// Display label shown in the group header.
     fn label(self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            GroupKind::Workflows => "Workflows",
-            GroupKind::Subagents => "Subagents",
-            GroupKind::Tasks => "Tasks",
-            GroupKind::Watchers => "Watchers",
+            GroupKind::Workflows => ctx.named_static_text("tasks.group.workflows", "Workflows"),
+            GroupKind::Subagents => ctx.named_static_text("tasks.group.subagents", "Subagents"),
+            GroupKind::Tasks => ctx.named_static_text("tasks.group.tasks", "Tasks"),
+            GroupKind::Watchers => ctx.named_static_text("tasks.group.watchers", "Watchers"),
         }
     }
 
@@ -263,14 +264,15 @@ impl TaskEntry {
                 .map(|d| d.replace('\n', " "))
                 .unwrap_or_else(|| task.command.trim().replace('\n', " "));
             const TAG: &str = "Monitor";
+            let tag = crate::locale::ctx().named_static_text("tasks.kind.monitor", TAG);
             let desc_style = if running {
                 Style::default().fg(theme.text_secondary)
             } else {
                 Style::default().fg(theme.gray_bright)
             };
-            let label = format!("{TAG} {text}");
+            let label = format!("{tag} {text}");
             let styled = Line::from(vec![
-                Span::styled(format!("{TAG} "), Style::default().fg(theme.accent_system)),
+                Span::styled(format!("{tag} "), Style::default().fg(theme.accent_system)),
                 Span::styled(text, desc_style),
             ]);
             (label, styled)
@@ -282,14 +284,15 @@ impl TaskEntry {
             // The tag makes the entry type identifiable at a glance, the same way subagent rows lead with their persona/role label
             // The prefix is included in `label` so it is searchable (the tasks-pane filter matches against `label`)
             const PREFIX: &str = "Task ";
+            let prefix = crate::locale::ctx().named_static_text("tasks.kind.task_prefix", PREFIX);
             let desc_style = if running {
                 Style::default().fg(theme.text_primary)
             } else {
                 Style::default().fg(theme.gray_bright)
             };
-            let label = format!("{PREFIX}{one_line}");
+            let label = format!("{prefix}{one_line}");
             let styled = Line::from(vec![
-                Span::styled(PREFIX, Style::default().fg(theme.text_secondary)),
+                Span::styled(prefix, Style::default().fg(theme.text_secondary)),
                 Span::styled(one_line, desc_style),
             ]);
             (label, styled)
@@ -455,23 +458,34 @@ impl TaskEntry {
                 .as_deref()
                 .map(str::trim)
                 .filter(|p| !p.is_empty());
+            let ctx = crate::locale::ctx();
             let agents = match run.agents.iter().filter(|a| a.state == "running").count() {
                 0 => None,
-                1 => Some("1 agent".to_string()),
-                n => Some(format!("{n} agents")),
+                1 => Some(ctx.format_named("tasks.agent.one", "1 agent", &[("count", "1")])),
+                n => {
+                    let count = n.to_string();
+                    Some(ctx.format_named("tasks.agent.many", "{count} agents", &[("count", &count)]))
+                }
             };
             match (phase, agents) {
                 (Some(p), Some(a)) => format!("{p} · {a}"),
                 (Some(p), None) => p.to_string(),
                 (None, Some(a)) => a,
-                (None, None) => "running".to_string(),
+                (None, None) => crate::locale::ctx()
+                    .named_text("tasks.workflow.running", "running")
+                    .into_owned(),
             }
         } else {
             run.status.replace('_', " ")
         };
 
         let mut spans = vec![
-            Span::styled("Workflow ".to_string(), Style::default().fg(tag_color)),
+            Span::styled(
+                crate::locale::ctx()
+                    .named_text("tasks.kind.workflow_prefix", "Workflow ")
+                    .into_owned(),
+                Style::default().fg(tag_color),
+            ),
             Span::styled(run.name.clone(), name_style),
         ];
         if !suffix.is_empty() {
@@ -481,7 +495,10 @@ impl TaskEntry {
             ));
         }
 
-        let label = format!("Workflow {} {suffix}", run.name);
+        let workflow_label = crate::locale::ctx()
+            .named_text("tasks.kind.workflow_prefix", "Workflow ")
+            .into_owned();
+        let label = format!("{workflow_label}{} {suffix}", run.name);
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         "workflow:".hash(&mut hasher);
         run.run_id.hash(&mut hasher);
@@ -513,9 +530,16 @@ impl TaskEntry {
                 let approx = created + std::time::Duration::from_secs(secs);
                 let now = std::time::Instant::now();
                 if approx > now {
-                    format!(" (next in {})", format_duration(approx.duration_since(now)))
+                    let duration = format_duration(approx.duration_since(now));
+                    crate::locale::ctx().format_named(
+                        "tasks.schedule.next_in",
+                        " (next in {duration})",
+                        &[("duration", &duration)],
+                    )
                 } else {
-                    " (due now)".to_string()
+                    crate::locale::ctx()
+                        .named_text("tasks.schedule.due_now", " (due now)")
+                        .into_owned()
                 }
             } else {
                 String::new()
@@ -523,18 +547,28 @@ impl TaskEntry {
         };
         let is_provisional = info.task_id.starts_with("provisional-");
         let suffix = if linked_running {
-            " (running)".to_string()
+            crate::locale::ctx()
+                .named_text("tasks.schedule.running", " (running)")
+                .into_owned()
         } else if is_provisional {
-            " (starting)".to_string()
+            crate::locale::ctx()
+                .named_text("tasks.schedule.starting", " (starting)")
+                .into_owned()
         } else if let Some(n) = &info.next_fire_at {
             if let Ok(dt) = DateTime::<chrono::FixedOffset>::parse_from_rfc3339(n) {
                 let dt = dt.with_timezone(&Utc);
                 let now = Utc::now();
                 if dt > now {
-                    let dur = (dt - now).to_std().unwrap_or_default();
-                    format!(" (next in {})", format_duration(dur))
+                    let duration = format_duration((dt - now).to_std().unwrap_or_default());
+                    crate::locale::ctx().format_named(
+                        "tasks.schedule.next_in",
+                        " (next in {duration})",
+                        &[("duration", &duration)],
+                    )
                 } else {
-                    " (due now)".to_string()
+                    crate::locale::ctx()
+                        .named_text("tasks.schedule.due_now", " (due now)")
+                        .into_owned()
                 }
             } else {
                 countdown(&info.human_schedule, info.created_at)
@@ -1236,9 +1270,10 @@ impl TasksPane {
         if self.entries.is_empty() {
             if inner.height > 0 && inner.width > 0 {
                 let theme = Theme::current();
+                let ctx = crate::locale::ctx();
                 if self.show_done {
                     let span = Span::styled(
-                        "No tasks or agents.",
+                        ctx.named_static_text("tasks.empty.all", "No tasks or agents."),
                         Style::default().fg(theme.gray_bright),
                     );
                     buf.set_span(inner.x, inner.y, &span, inner.width);
@@ -1248,9 +1283,17 @@ impl TasksPane {
                         .fg(theme.text_primary)
                         .add_modifier(Modifier::BOLD);
                     let line = Line::from(vec![
-                        Span::styled("No running tasks. Press ", muted),
+                        Span::styled(
+                            ctx.named_text("tasks.empty.running_prefix", "No running tasks. Press ")
+                                .into_owned(),
+                            muted,
+                        ),
                         Span::styled("h", key_style),
-                        Span::styled(" to show all.", muted),
+                        Span::styled(
+                            ctx.named_text("tasks.empty.running_suffix", " to show all.")
+                                .into_owned(),
+                            muted,
+                        ),
                     ]);
                     buf.set_line(inner.x, inner.y, &line, inner.width);
                 }
@@ -1486,7 +1529,9 @@ impl TasksPane {
             (
                 frames[frame_idx],
                 Style::default().fg(theme.accent_error),
-                "killing\u{2026} ".to_string(),
+                crate::locale::ctx()
+                    .named_text("tasks.status.killing", "killing\u{2026} ")
+                    .into_owned(),
                 Style::default().fg(theme.accent_error),
             )
         } else {
@@ -1628,7 +1673,9 @@ impl TasksPane {
             (
                 frames[frame_idx],
                 Style::default().fg(theme.accent_error),
-                "killing\u{2026} ".to_string(),
+                crate::locale::ctx()
+                    .named_text("tasks.status.killing", "killing\u{2026} ")
+                    .into_owned(),
                 Style::default().fg(theme.accent_error),
             )
         } else if info.is_running() {

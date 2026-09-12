@@ -2341,7 +2341,12 @@ impl PromptWidget {
     /// Toast text shown when an image insertion is rejected because the prompt already holds [`Self::IMAGE_CAP`] images.
     #[allow(dead_code)]
     pub(crate) fn cap_reached_toast() -> String {
-        format!("Image limit reached (max {})", Self::IMAGE_CAP)
+        let max = Self::IMAGE_CAP.to_string();
+        crate::locale::ctx().format_named(
+            "prompt.image.limit_reached",
+            "Image limit reached (max {max})",
+            &[("max", &max)],
+        )
     }
 
     /// Insert a pasted image as an atomic `[Image #N]` chip. Returns `Err` with a user-facing message
@@ -2355,15 +2360,25 @@ impl PromptWidget {
         if let Some((w, h)) = image.preview_dimensions()
             && (w < MIN_SIDE || h < MIN_SIDE)
         {
-            return Err(format!(
-                "Image too small ({w}×{h}). Must be at least {MIN_SIDE}×{MIN_SIDE} pixels."
+            let width = w.to_string();
+            let height = h.to_string();
+            let min = MIN_SIDE.to_string();
+            return Err(crate::locale::ctx().format_named(
+                "prompt.image.too_small",
+                "Image too small ({width}×{height}). Must be at least {min}×{min} pixels.",
+                &[("width", &width), ("height", &height), ("min", &min)],
             ));
         }
 
         self.image_counter += 1;
         let display_number = self.image_counter;
         let placeholder = crate::prompt_images::display_text(display_number);
-        let display_line = chip_line(format!("Image #{display_number}"));
+        let number = display_number.to_string();
+        let display_line = chip_line(crate::locale::ctx().format_named(
+            "prompt.image.chip",
+            "Image #{number}",
+            &[("number", &number)],
+        ));
 
         let buf_len_before = self.textarea.text().len();
         self.textarea.begin_undo_group();
@@ -2853,16 +2868,28 @@ impl PromptWidget {
         let chord = Style::default()
             .fg(theme.fuzzy_accent)
             .add_modifier(Modifier::BOLD);
+        let ctx = crate::locale::ctx();
         let action = if self.paste_element_at_cursor().is_some() {
-            "enter"
+            ctx.named_text("prompt.paste.action.enter", "enter").into_owned()
         } else {
-            "paste again"
+            ctx.named_text("prompt.paste.action.paste_again", "paste again")
+                .into_owned()
         };
         Line::from(vec![
             Span::styled(action, chord),
-            Span::styled(" or ", dim),
-            Span::styled("double-click", chord),
-            Span::styled(" to expand", dim),
+            Span::styled(
+                ctx.named_text("prompt.paste.or", " or ").into_owned(),
+                dim,
+            ),
+            Span::styled(
+                ctx.named_text("prompt.paste.action.double_click", "double-click")
+                    .into_owned(),
+                chord,
+            ),
+            Span::styled(
+                ctx.named_text("prompt.paste.to_expand", " to expand").into_owned(),
+                dim,
+            ),
         ])
     }
 
@@ -3266,7 +3293,12 @@ impl PromptWidget {
             && (!style.focused || style.placeholder_when_focused)
             && !voice_interim_shown
         {
-            let placeholder = style.placeholder_override.unwrap_or("Build anything");
+            let placeholder = style
+                .placeholder_override
+                .unwrap_or(crate::locale::ctx().named_static_text(
+                    "prompt.placeholder.default",
+                    "Build anything",
+                ));
             // `set_string` clips at the buffer edge, not at the textarea, so a placeholder longer than the box would paint over its border.
             let truncated =
                 crate::render::line_utils::truncate_str(placeholder, ta_area.width as usize);
@@ -3736,10 +3768,17 @@ fn normalize_line_breaks(text: &str) -> String {
 ///
 /// Renders as: `[Pasted: N lines]`
 fn paste_chip_display(line_count: usize) -> Line<'static> {
-    chip_line(format!(
-        "Pasted: {} line{}",
-        line_count,
-        if line_count != 1 { "s" } else { "" }
+    // Keep the English singular/plural split so the en-US fallback is byte-identical to the original.
+    let template = if line_count == 1 {
+        "Pasted: {count} line"
+    } else {
+        "Pasted: {count} lines"
+    };
+    let count = line_count.to_string();
+    chip_line(crate::locale::ctx().format_named(
+        "prompt.paste.chip.lines",
+        template,
+        &[("count", &count)],
     ))
 }
 
@@ -3751,9 +3790,19 @@ fn paste_chip_display_bytes(byte_len: usize) -> Line<'static> {
     } else if byte_len >= 1000 {
         format!("{} KB", byte_len / 1000)
     } else {
-        format!("{byte_len} bytes")
+        let count = byte_len.to_string();
+        crate::locale::ctx().format_named(
+            "prompt.paste.size.bytes",
+            "{count} bytes",
+            &[("count", &count)],
+        )
     };
-    chip_line(format!("Pasted: {size}"))
+    let size_str = size.to_string();
+    chip_line(crate::locale::ctx().format_named(
+        "prompt.paste.chip.size",
+        "Pasted: {size}",
+        &[("size", &size_str)],
+    ))
 }
 
 /// Highest `display_number` present in `images`, or `0` when the slice is empty.

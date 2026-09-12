@@ -5,32 +5,60 @@ use std::time::Duration;
 use xai_grok_telemetry::startup::{AgentKind, PhaseSnapshot, StartupPhase, format_duration};
 const WRAP_WIDTH: usize = 76;
 pub(super) fn render(failure: &StartupFailure) -> String {
+    let locale = crate::locale::ctx();
     let context = &failure.context;
     let mut rows = vec![
-        ("Mode", attempted_agents(context)),
-        ("Version", context.version.clone()),
+        (
+            locale.named_text("startup_failure.label.mode", "Mode").into_owned(),
+            attempted_agents(context),
+        ),
+        (
+            locale
+                .named_text("startup_failure.label.version", "Version")
+                .into_owned(),
+            context.version.clone(),
+        ),
     ];
     let mut report = match &failure.reason {
         Reason::TimedOut { waited, timings } => {
             let advice = advice_for(timings, context.attempt);
-            rows.push(("Steps", format_steps(timings)));
+            rows.push((
+                locale
+                    .named_text("startup_failure.label.steps", "Steps")
+                    .into_owned(),
+                format_steps(timings),
+            ));
             if let Some(command) = advice.next_step.command() {
-                rows.push(("Try", command.to_owned()));
+                rows.push((
+                    locale
+                        .named_text("startup_failure.label.try", "Try")
+                        .into_owned(),
+                    command.to_owned(),
+                ));
             }
             let explanation = fill_indented(&advice.explanation(), "  ", "  ");
-            format!(
-                "Couldn't start Grok: startup timed out after {}.\n\n{explanation}",
-                whole_seconds(*waited)
+            let seconds = whole_seconds(*waited);
+            locale.format_named(
+                "startup_failure.timed_out",
+                "Couldn't start Grok: startup timed out after {seconds}.\n\n{explanation}",
+                &[("seconds", &seconds), ("explanation", &explanation)],
             )
         }
         Reason::Cancelled => {
-            format!(
-                "Startup cancelled while connecting to the {}.",
-                agent_name(context.target)
+            let agent = agent_name(context.target).to_string();
+            locale.format_named(
+                "startup_failure.cancelled",
+                "Startup cancelled while connecting to the {agent}.",
+                &[("agent", &agent)],
             )
         }
     };
-    rows.push(("Log", context.log_path.display().to_string()));
+    rows.push((
+        locale
+            .named_text("startup_failure.label.log", "Log")
+            .into_owned(),
+        context.log_path.display().to_string(),
+    ));
     let _ = write!(report, "\n\n{}", label_rows(&rows));
     report
 }
@@ -55,16 +83,30 @@ fn advice_for(timings: &PhaseSnapshot, attempt: ConnectAttempt) -> Advice {
 }
 impl Advice {
     fn explanation(&self) -> String {
+        let locale = crate::locale::ctx();
         let mut explanation = match self.doing {
-            Some(doing) => format!("The longest step was {doing}."),
-            None => "No startup step had begun.".to_owned(),
+            Some(doing) => locale.format_named(
+                "startup_failure.longest_step",
+                "The longest step was {doing}.",
+                &[("doing", doing)],
+            ),
+            None => locale
+                .named_text("startup_failure.no_step_started", "No startup step had begun.")
+                .into_owned(),
         };
         if let Some(earlier) = self.earlier {
-            let target = agent_name(earlier.target);
+            let target = agent_name(earlier.target).to_string();
             let _ = write!(
                 explanation,
-                " Grok spent the first {} on the {target}.",
-                whole_seconds(earlier.wait)
+                " {}",
+                locale.format_named(
+                    "startup_failure.earlier_attempt",
+                    "Grok spent the first {seconds} on the {target}.",
+                    &[
+                        ("seconds", &whole_seconds(earlier.wait)),
+                        ("target", &target)
+                    ],
+                )
             );
         }
         let _ = write!(explanation, " {}", self.next_step.text());
@@ -74,8 +116,12 @@ impl Advice {
         ) {
             let _ = write!(
                 explanation,
-                " On a slow machine or network filesystem, a larger startup \
-                 budget can help. Set it with the command below."
+                " {}",
+                locale.named_text(
+                    "startup_failure.slow_machine_hint",
+                    "On a slow machine or network filesystem, a larger startup budget can help. \
+                     Set it with the command below."
+                )
             );
         }
         explanation
@@ -103,7 +149,7 @@ fn format_steps(timings: &PhaseSnapshot) -> String {
     steps.join(", ")
 }
 /// Values hang under their label, so a wrapped one never reads as a new field.
-fn label_rows(rows: &[(&str, String)]) -> String {
+fn label_rows(rows: &[(String, String)]) -> String {
     let column_width = rows
         .iter()
         .map(|(label, _)| label.len() + ":".len())
@@ -136,13 +182,21 @@ enum NextStep {
 }
 impl NextStep {
     fn text(self) -> &'static str {
+        let locale = crate::locale::ctx();
         match self {
-            Self::Retry => "Start Grok again.",
-            Self::CheckNetworkThenRetry => "Check your network connection, then start Grok again.",
-            Self::RestartSharedLeader => {
+            Self::Retry => locale.named_static_text(
+                "startup_failure.next_step.retry",
+                "Start Grok again.",
+            ),
+            Self::CheckNetworkThenRetry => locale.named_static_text(
+                "startup_failure.next_step.check_network",
+                "Check your network connection, then start Grok again.",
+            ),
+            Self::RestartSharedLeader => locale.named_static_text(
+                "startup_failure.next_step.restart_leader",
                 "Stop it with the command below, which also stops any other Grok \
-                 session using it, then start Grok again."
-            }
+                 session using it, then start Grok again.",
+            ),
         }
     }
     /// Kept out of the prose so wrapping can never split it.
@@ -156,32 +210,100 @@ impl NextStep {
 /// Reads as the object of "The longest step was".
 fn step_advice(phase: StartupPhase) -> (&'static str, NextStep) {
     use NextStep::{CheckNetworkThenRetry as Network, RestartSharedLeader, Retry};
+    let locale = crate::locale::ctx();
     match phase {
-        StartupPhase::ConfigLoad => ("reading your local configuration", Retry),
-        StartupPhase::ManagedPolicy => ("checking your organization's managed policy", Network),
-        StartupPhase::Bootstrap => ("loading your account settings", Network),
-        StartupPhase::ModelCatalog => ("reading the list of available models", Retry),
-        StartupPhase::WorkerSpawn => ("starting the local agent", Retry),
-        StartupPhase::LeaderConnect => ("connecting to the shared leader", RestartSharedLeader),
-        StartupPhase::AcpInitialize => ("waiting for the agent to respond", Retry),
-        StartupPhase::EagerAuth => ("refreshing your sign-in", Network),
-        StartupPhase::AppInit => ("preparing the interface", Retry),
-        StartupPhase::SessionCreate => ("creating the session", Retry),
+        StartupPhase::ConfigLoad => (
+            locale.named_static_text(
+                "startup_failure.step.config_load",
+                "reading your local configuration",
+            ),
+            Retry,
+        ),
+        StartupPhase::ManagedPolicy => (
+            locale.named_static_text(
+                "startup_failure.step.managed_policy",
+                "checking your organization's managed policy",
+            ),
+            Network,
+        ),
+        StartupPhase::Bootstrap => (
+            locale.named_static_text(
+                "startup_failure.step.bootstrap",
+                "loading your account settings",
+            ),
+            Network,
+        ),
+        StartupPhase::ModelCatalog => (
+            locale.named_static_text(
+                "startup_failure.step.model_catalog",
+                "reading the list of available models",
+            ),
+            Retry,
+        ),
+        StartupPhase::WorkerSpawn => (
+            locale.named_static_text(
+                "startup_failure.step.worker_spawn",
+                "starting the local agent",
+            ),
+            Retry,
+        ),
+        StartupPhase::LeaderConnect => (
+            locale.named_static_text(
+                "startup_failure.step.leader_connect",
+                "connecting to the shared leader",
+            ),
+            RestartSharedLeader,
+        ),
+        StartupPhase::AcpInitialize => (
+            locale.named_static_text(
+                "startup_failure.step.acp_initialize",
+                "waiting for the agent to respond",
+            ),
+            Retry,
+        ),
+        StartupPhase::EagerAuth => (
+            locale.named_static_text(
+                "startup_failure.step.eager_auth",
+                "refreshing your sign-in",
+            ),
+            Network,
+        ),
+        StartupPhase::AppInit => (
+            locale.named_static_text(
+                "startup_failure.step.app_init",
+                "preparing the interface",
+            ),
+            Retry,
+        ),
+        StartupPhase::SessionCreate => (
+            locale.named_static_text(
+                "startup_failure.step.session_create",
+                "creating the session",
+            ),
+            Retry,
+        ),
     }
 }
 fn attempted_agents(context: &Context) -> String {
     let target = agent_name(context.target);
     match context.attempt {
         ConnectAttempt::First => target.to_owned(),
-        ConnectAttempt::AfterFallback(earlier) => {
-            format!("{}, then {target}", agent_name(earlier.target))
-        }
+        ConnectAttempt::AfterFallback(earlier) => crate::locale::ctx().format_named(
+            "startup_failure.attempted_agents_fallback",
+            "{first}, then {target}",
+            &[("first", agent_name(earlier.target)), ("target", target)],
+        ),
     }
 }
 fn agent_name(agent: AgentKind) -> &'static str {
+    let locale = crate::locale::ctx();
     match agent {
-        AgentKind::Embedded => "local agent",
-        AgentKind::Leader => "shared leader",
+        AgentKind::Embedded => {
+            locale.named_static_text("startup_failure.agent.local", "local agent")
+        }
+        AgentKind::Leader => {
+            locale.named_static_text("startup_failure.agent.shared_leader", "shared leader")
+        }
     }
 }
 /// Rounded: a truncated total can print smaller than the steps it sums.

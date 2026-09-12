@@ -130,10 +130,38 @@ pub(crate) fn format_retry_activity_label(
 
 pub(crate) fn retry_clause(attempt: u32, max_retries: u32, style: RetryLabelStyle) -> String {
     // Longer headline plus U+2026 wraps this status row into the prompt.
+    let attempt = attempt.to_string();
+    let max_retries = max_retries.to_string();
     match style {
-        RetryLabelStyle::Status => format!("Retrying (attempt {attempt})..."),
-        RetryLabelStyle::Compact => format!("Retrying ({attempt}/{max_retries})"),
+        RetryLabelStyle::Status => crate::locale::ctx().format_named(
+            "error.retry.status",
+            "Retrying (attempt {attempt})...",
+            &[("attempt", &attempt)],
+        ),
+        RetryLabelStyle::Compact => crate::locale::ctx().format_named(
+            "error.retry.compact",
+            "Retrying ({attempt}/{max_retries})",
+            &[("attempt", &attempt), ("max_retries", &max_retries)],
+        ),
     }
+}
+
+/// Fixed client-side copy: translated through the locale dictionary, while
+/// dynamic provider/server detail stays byte-for-byte intact.
+#[derive(Clone, Copy)]
+struct FixedCopy {
+    id: &'static str,
+    english: &'static str,
+}
+
+impl FixedCopy {
+    fn render(self) -> String {
+        crate::locale::ctx().named_text(self.id, self.english).into_owned()
+    }
+}
+
+const fn fixed(id: &'static str, english: &'static str) -> FixedCopy {
+    FixedCopy { id, english }
 }
 
 fn classified_retry_headline(reason: &str, error_type: Option<&str>) -> Option<String> {
@@ -175,13 +203,23 @@ pub(crate) fn format_request_failure(
     let wire = refine_untyped_wire(wire, untyped, status, raw);
     let extracted = extract_error_detail(raw);
     let class = classify(status, wire);
+    let localized_headline = class.headline.render();
     let why = extracted
-        .filter(|d| !is_server_fault(status, wire) && !is_headline_echo(d, &class.headline))
-        .or_else(|| class.default_why.map(str::to_string));
-    let detail = compose_detail(why.as_deref(), class.action);
+        .filter(|d| {
+            !is_server_fault(status, wire)
+                && !is_headline_echo(d, class.headline.english)
+                && !is_headline_echo(d, &localized_headline)
+        })
+        .or_else(|| class.default_why.map(|copy| copy.render()));
+    let action = class.action.map(|copy| copy.render());
+    let detail = compose_detail(why.as_deref(), action.as_deref());
+    let headline = match status {
+        Some(code) => format!("{localized_headline} ({code})"),
+        None => localized_headline,
+    };
     FormattedRequestFailure {
         status,
-        headline: class.headline,
+        headline,
         detail,
         wire,
     }
@@ -218,127 +256,229 @@ fn http_wire_from_dump(raw: &str) -> Option<WireErrorType> {
 }
 
 struct Classified {
-    headline: String,
+    headline: FixedCopy,
     /// What the user can do. Omitted when we have no real next step.
-    action: Option<&'static str>,
+    action: Option<FixedCopy>,
     /// Used only when the server body added nothing.
-    default_why: Option<&'static str>,
+    default_why: Option<FixedCopy>,
 }
 
 fn classify(status: Option<u16>, wire: WireErrorType) -> Classified {
-    if let Some(code) = status {
+    if status.is_some() {
         let (prefix, action, default_why) = match code {
             400 | 422 => (
-                "Bad request",
+                fixed("error.request.headline.bad_request", "Bad request"),
                 None,
-                Some("The server rejected this request."),
+                Some(fixed(
+                    "error.request.why.server_rejected",
+                    "The server rejected this request.",
+                )),
             ),
             403 => (
-                "Request denied",
+                fixed("error.request.headline.request_denied", "Request denied"),
                 None,
-                Some("You don't have permission to do this."),
+                Some(fixed(
+                    "error.request.why.permission_denied",
+                    "You don't have permission to do this.",
+                )),
             ),
             404 => (
-                "Not found",
-                Some("Run /model to pick another."),
-                Some("This model isn't available."),
+                fixed("error.request.headline.not_found", "Not found"),
+                Some(fixed(
+                    "error.request.action.select_model",
+                    "Run /model to pick another.",
+                )),
+                Some(fixed(
+                    "error.request.why.model_unavailable",
+                    "This model isn't available.",
+                )),
             ),
             408 | 504 => (
-                "Request timed out",
-                Some("Try again shortly."),
-                Some("The server took too long to respond."),
+                fixed(
+                    "error.request.headline.request_timed_out",
+                    "Request timed out",
+                ),
+                Some(fixed(
+                    "error.request.action.retry_shortly",
+                    "Try again shortly.",
+                )),
+                Some(fixed(
+                    "error.request.why.server_timeout",
+                    "The server took too long to respond.",
+                )),
             ),
             409 => (
-                "Conflict",
-                Some("Try again."),
-                Some("The request conflicted with the current state."),
+                fixed("error.request.headline.conflict", "Conflict"),
+                Some(fixed("error.request.action.try_again", "Try again.")),
+                Some(fixed(
+                    "error.request.why.conflict_state",
+                    "The request conflicted with the current state.",
+                )),
             ),
             413 => (
-                "Request too large",
-                Some("Try a smaller prompt or run /compact."),
+                fixed(
+                    "error.request.headline.request_too_large",
+                    "Request too large",
+                ),
+                Some(fixed(
+                    "error.request.action.smaller_prompt_compact",
+                    "Try a smaller prompt or run /compact.",
+                )),
                 None,
             ),
             429 => (
-                "Rate limited",
-                Some("Try again later."),
-                Some("You've hit the rate limit for your plan."),
+                fixed("error.request.headline.rate_limited", "Rate limited"),
+                Some(fixed(
+                    "error.request.action.try_again_later",
+                    "Try again later.",
+                )),
+                Some(fixed(
+                    "error.request.why.plan_rate_limit",
+                    "You've hit the rate limit for your plan.",
+                )),
             ),
             502 | 503 => (
-                "Service unavailable",
-                Some("The service is busy. Wait a minute and send again."),
+                fixed(
+                    "error.request.headline.service_unavailable",
+                    "Service unavailable",
+                ),
+                Some(fixed(
+                    "error.request.action.service_busy",
+                    "The service is busy. Wait a minute and send again.",
+                )),
                 None,
             ),
             100..=399 => (
-                "Request failed",
+                fixed("error.request.headline.request_failed", "Request failed"),
                 None,
-                Some("The request did not complete successfully."),
+                Some(fixed(
+                    "error.request.why.did_not_complete",
+                    "The request did not complete successfully.",
+                )),
             ),
             400..=499 => (
-                "Request failed",
+                fixed("error.request.headline.request_failed", "Request failed"),
                 None,
-                Some("The server rejected this request."),
+                Some(fixed(
+                    "error.request.why.server_rejected",
+                    "The server rejected this request.",
+                )),
             ),
             _ => (
-                "Server error",
-                Some("Something went wrong on our side. Wait a minute and send again."),
+                fixed("error.request.headline.server_error", "Server error"),
+                Some(fixed(
+                    "error.request.action.server_side_retry",
+                    "Something went wrong on our side. Wait a minute and send again.",
+                )),
                 None,
             ),
         };
         return Classified {
-            headline: format!("{prefix} ({code})"),
+            headline: prefix,
             action,
             default_why,
         };
     }
     let (headline, action, default_why) = match wire {
         WireErrorType::IdleTimeout => (
-            "No response from the model",
-            Some("Try sending again."),
-            Some("It may be stuck."),
+            fixed(
+                "error.request.headline.no_model_response",
+                "No response from the model",
+            ),
+            Some(fixed(
+                "error.request.action.send_again",
+                "Try sending again.",
+            )),
+            Some(fixed("error.request.why.may_be_stuck", "It may be stuck.")),
         ),
         WireErrorType::EmptyResponse => (
-            "Empty response",
-            Some("Try sending again."),
-            Some("The model returned no content."),
+            fixed("error.request.headline.empty_response", "Empty response"),
+            Some(fixed(
+                "error.request.action.send_again",
+                "Try sending again.",
+            )),
+            Some(fixed(
+                "error.request.why.model_no_content",
+                "The model returned no content.",
+            )),
         ),
         WireErrorType::Serialization => (
-            "Couldn't read the response",
-            Some("Try sending again."),
+            fixed(
+                "error.request.headline.couldnt_read_response",
+                "Couldn't read the response",
+            ),
+            Some(fixed(
+                "error.request.action.send_again",
+                "Try sending again.",
+            )),
             None,
         ),
         WireErrorType::Http => (
-            "Connection failed",
-            Some("Check your network and try again."),
+            fixed(
+                "error.request.headline.connection_failed",
+                "Connection failed",
+            ),
+            Some(fixed(
+                "error.request.action.check_network",
+                "Check your network and try again.",
+            )),
             None,
         ),
         WireErrorType::MaxTokensTruncation => (
-            "Response truncated",
+            fixed(
+                "error.request.headline.response_truncated",
+                "Response truncated",
+            ),
             None,
-            Some("The model hit its output limit."),
+            Some(fixed(
+                "error.request.why.output_limit",
+                "The model hit its output limit.",
+            )),
         ),
         WireErrorType::RateLimited => (
-            "Rate limited",
-            Some("Try again later."),
-            Some("You've hit the rate limit for your plan."),
+            fixed("error.request.headline.rate_limited", "Rate limited"),
+            Some(fixed(
+                "error.request.action.try_again_later",
+                "Try again later.",
+            )),
+            Some(fixed(
+                "error.request.why.plan_rate_limit",
+                "You've hit the rate limit for your plan.",
+            )),
         ),
         WireErrorType::Api => (
-            "Server error",
-            Some("Something went wrong on our side. Wait a minute and send again."),
+            fixed("error.request.headline.server_error", "Server error"),
+            Some(fixed(
+                "error.request.action.server_side_retry",
+                "Something went wrong on our side. Wait a minute and send again.",
+            )),
             None,
         ),
         WireErrorType::AuthTransient => (
-            "Authentication temporarily unavailable",
-            Some("Try sending again in a moment."),
+            fixed(
+                "error.request.headline.auth_temporarily_unavailable",
+                "Authentication temporarily unavailable",
+            ),
+            Some(fixed(
+                "error.request.action.retry_moment",
+                "Try sending again in a moment.",
+            )),
             None,
         ),
         _ => (
-            "Request failed",
-            Some("Try sending again."),
-            Some("Something went wrong."),
+            fixed("error.request.headline.request_failed", "Request failed"),
+            Some(fixed(
+                "error.request.action.send_again",
+                "Try sending again.",
+            )),
+            Some(fixed(
+                "error.request.why.something_wrong",
+                "Something went wrong.",
+            )),
         ),
     };
     Classified {
-        headline: headline.to_string(),
+        headline,
         action,
         default_why,
     }
@@ -376,18 +516,21 @@ fn is_server_fault(status: Option<u16>, wire: WireErrorType) -> bool {
 fn is_headline_echo(detail: &str, headline: &str) -> bool {
     let detail = normalize_phrase(detail);
     let headline = normalize_phrase(headline);
-    detail.is_empty() || headline.starts_with(&detail) || detail.starts_with(&headline)
+    detail.is_empty()
+        || (!headline.is_empty()
+            && (headline.starts_with(&detail) || detail.starts_with(&headline)))
 }
 
-/// Lowercase, alphanumeric words joined by single spaces.
+/// Lowercase, word characters joined by single spaces (Unicode-aware so
+/// localized copy still compares).
 fn normalize_phrase(s: &str) -> String {
     s.chars()
-        .filter(|c| c.is_ascii_alphanumeric() || c.is_ascii_whitespace())
+        .filter(|c| c.is_alphanumeric() || c.is_whitespace())
         .collect::<String>()
         .split_whitespace()
         .collect::<Vec<_>>()
         .join(" ")
-        .to_ascii_lowercase()
+        .to_lowercase()
 }
 
 /// Pull an HTTP error status out of a raw dump: `API error (status 500): …`, `Unauthorized (401)`, or our own formatted `Server error (500): …`.

@@ -56,11 +56,32 @@ pub mod wrap_cmd;
 pub(crate) mod wrap_filter;
 pub(crate) mod wrap_restore;
 pub use xai_grok_gboom as gboom;
+pub use xai_grok_locale as locale;
 pub use xai_grok_pager_render::key;
 pub use xai_grok_pager_render::{
     appearance, clipboard, glyphs, host, input, link_opener, modal_window_state, prompt_images,
     render, search, syntax, terminal, theme, util,
 };
+
+/// Resolve the UI locale from user `config.toml` (`[ui].locale`) once at the
+/// composition root and publish it process-wide. Values outside the `en`/`zh`
+/// families fall back to the upstream English interface.
+pub fn init_locale_from_config() {
+    let config = xai_grok_config::load_from_disk().ok();
+    let configured = config.as_ref().and_then(|value| {
+        value
+            .get("ui")?
+            .get("locale")?
+            .as_str()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+    });
+    let resolved = locale::ResolvedLocale::resolve(locale::LocalePreferences {
+        config: configured,
+        ..locale::LocalePreferences::default()
+    });
+    locale::init(locale::LocaleContext::new(resolved));
+}
 #[cfg(test)]
 pub mod test_util;
 pub mod trace_cmd;

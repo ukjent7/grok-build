@@ -193,7 +193,12 @@ impl BlockContent for UseToolCallBlock {
                             lines.push(
                                 BlockLine::from(Line::from(Span::styled(
                                     format!(
-                                        "{indent}... ({remaining} more lines, press Enter to view)",
+                                        "{indent}{}",
+                                        crate::locale::ctx().format_named(
+                                            "scrollback.tool.more_lines_hint",
+                                            "... ({count} more lines, press Enter to view)",
+                                            &[("count", &remaining.to_string())],
+                                        )
                                     ),
                                     theme.dim(),
                                 )))

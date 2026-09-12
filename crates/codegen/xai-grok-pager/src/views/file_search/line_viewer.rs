@@ -1653,36 +1653,57 @@ pub fn render_line_viewer(
         let copy_hovered = viewer.plan_ref().is_some_and(|p| p.copy_hovered);
         let is_approval = viewer.feedback_active();
 
-        let comment_spans = build_shortcut_button('c', "comment", comment_hovered, theme);
+        let comment_spans = build_shortcut_button(
+            'c',
+            &crate::locale::ctx().named_text("file_search.plan.comment", "comment"),
+            comment_hovered,
+            theme,
+        );
         let comment_w: u16 = comment_spans.iter().map(|s| s.width() as u16).sum();
 
-        let copy_spans = build_shortcut_button('y', "copy plan", copy_hovered, theme);
+        let copy_spans = build_shortcut_button(
+            'y',
+            &crate::locale::ctx().named_text("shortcut.copy_plan", "copy plan"),
+            copy_hovered,
+            theme,
+        );
         let copy_w: u16 = copy_spans.iter().map(|s| s.width() as u16).sum();
 
         // In approval mode, show `a approve` (or `a approve w/ comments` when inline comments are pending)
         // In casual mode, show `s send` only when comments exist
-        let (_action_label, action_w, action_spans): (&str, u16, Option<Vec<Span>>) = if is_approval
-        {
-            let label = if comment_count > 0 {
-                "approve w/ comments"
+        let ctx = crate::locale::ctx();
+        let action_label: String = if is_approval {
+            if comment_count > 0 {
+                ctx.named_text("file_search.plan.approve_with_comments", "approve w/ comments")
+                    .into_owned()
             } else {
-                "approve"
-            };
-            let spans = build_shortcut_button('a', label, approve_hovered, theme);
-            let w: u16 = spans.iter().map(|s| s.width() as u16).sum();
-            (label, w, Some(spans))
+                ctx.named_text("file_search.plan.approve", "approve")
+                    .into_owned()
+            }
         } else if comment_count > 0 {
-            let spans = build_shortcut_button('s', "send", approve_hovered, theme);
-            let w: u16 = spans.iter().map(|s| s.width() as u16).sum();
-            ("send", w, Some(spans))
+            ctx.named_text("file_search.plan.send", "send").into_owned()
         } else {
-            ("", 0, None)
+            String::new()
         };
+        let action_spans: Option<Vec<Span>> = if is_approval {
+            Some(build_shortcut_button('a', &action_label, approve_hovered, theme))
+        } else if comment_count > 0 {
+            Some(build_shortcut_button('s', &action_label, approve_hovered, theme))
+        } else {
+            None
+        };
+        let action_w: u16 = action_spans
+            .as_ref()
+            .map(|spans| spans.iter().map(|s| s.width() as u16).sum())
+            .unwrap_or(0);
 
         // `s revise` button, always visible in approval mode so the user can request changes (switches to prompt for revision notes)
         let (revise_w, revise_spans): (u16, Option<Vec<Span>>) = if is_approval {
             let send_hovered = viewer.plan_ref().is_some_and(|p| p.send_hovered);
-            let spans = build_shortcut_button('s', "request changes", send_hovered, theme);
+            let revise_label = ctx
+                .named_text("file_search.plan.request_changes", "request changes")
+                .into_owned();
+            let spans = build_shortcut_button('s', &revise_label, send_hovered, theme);
             let w: u16 = spans.iter().map(|s| s.width() as u16).sum();
             (w, Some(spans))
         } else {
@@ -1691,7 +1712,10 @@ pub fn render_line_viewer(
 
         // Quit button only renders in approval mode (casual closes via X).
         let quit_spans = if is_approval {
-            let s = build_shortcut_button('q', "quit plan", abandon_hovered, theme);
+            let quit_label = ctx
+                .named_text("file_search.plan.quit_plan", "quit plan")
+                .into_owned();
+            let s = build_shortcut_button('q', &quit_label, abandon_hovered, theme);
             let w: u16 = s.iter().map(|s| s.width() as u16).sum();
             Some((s, w))
         } else {

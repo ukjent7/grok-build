@@ -321,7 +321,13 @@ pub(crate) fn render_dashboard(
                     .get(parent)
                     .is_some_and(|p| p.subagent_views.contains_key(child_session_id));
                 if parent_ok && !loaded {
-                    (Some("Subagent not loaded"), false)
+                    (
+                        Some(crate::locale::ctx().named_static_text(
+                            "dashboard.peek.subagent_not_loaded",
+                            "Subagent not loaded",
+                        )),
+                        false,
+                    )
                 } else {
                     (None, loaded)
                 }
@@ -500,10 +506,14 @@ pub(crate) fn render_dashboard(
     dispatch_cursor
 }
 
-const RENAME_PREFIX: &str = "rename: ";
+/// Localized rename editor prefix. A function rather than a const: the text is localized, and the
+/// editor's caret offset and width budget are computed from the same call.
+fn rename_prefix() -> &'static str {
+    crate::locale::ctx().named_static_text("dashboard.rename.prefix", "rename: ")
+}
 
 fn rename_editor_view(draft: &RenameDraft, width: u16) -> (&str, u16) {
-    let prefix_width = UnicodeWidthStr::width(RENAME_PREFIX) as u16;
+    let prefix_width = UnicodeWidthStr::width(rename_prefix()) as u16;
     let editor_width = width.saturating_sub(prefix_width);
     let viewport = draft.viewport(editor_width as usize);
     let visible = &draft.text()[viewport.visible_byte_range];
@@ -524,11 +534,11 @@ fn render_rename_editor(
     if width == 0 {
         return;
     }
-    let prefix_width = UnicodeWidthStr::width(RENAME_PREFIX) as u16;
+    let prefix_width = UnicodeWidthStr::width(rename_prefix()) as u16;
     buf.set_span(
         x,
         y,
-        &Span::styled(RENAME_PREFIX, style),
+        &Span::styled(rename_prefix(), style),
         prefix_width.min(width),
     );
     let (visible, _) = rename_editor_view(draft, width);
@@ -600,13 +610,34 @@ fn render_dashboard_banner(
         }
     }
     let agent_word = if total == 1 { "agent" } else { "agents" };
-    let mut title_parts: Vec<String> = vec!["Dashboard".to_string()];
-    title_parts.push(format!("{total} {agent_word}"));
+    let agent_part = crate::locale::ctx().format_named(
+        if total == 1 {
+            "dashboard.banner.agent.one"
+        } else {
+            "dashboard.banner.agent.many"
+        },
+        "{count} {agent_word}",
+        &[("count", &total.to_string()), ("agent", agent_word)],
+    );
+    let mut title_parts: Vec<String> = vec![
+        crate::locale::ctx()
+            .named_text("dashboard.banner.title", "Dashboard")
+            .into_owned(),
+        agent_part,
+    ];
     if working > 0 {
-        title_parts.push(format!("{working} working"));
+        title_parts.push(crate::locale::ctx().format_named(
+            "dashboard.banner.working",
+            "{count} working",
+            &[("count", &working.to_string())],
+        ));
     }
     if needs_input > 0 {
-        title_parts.push(format!("{needs_input} awaiting"));
+        title_parts.push(crate::locale::ctx().format_named(
+            "dashboard.banner.awaiting",
+            "{count} awaiting",
+            &[("count", &needs_input.to_string())],
+        ));
     }
     let title = format!(" {} ", title_parts.join(" · "));
 
@@ -634,7 +665,10 @@ fn render_dashboard_banner(
         return;
     }
     if rows.is_empty() {
-        let hint = " No sessions yet. Esc to dispatch one. ";
+        let hint: &str = crate::locale::ctx().named_static_text(
+            "dashboard.banner.empty",
+            " No sessions yet. Esc to dispatch one. ",
+        );
         let trunc = truncate_str(hint, inner.width as usize);
         buf.set_string(inner.x, inner.y, trunc, theme.dim().bg(theme.bg_base));
         return;
@@ -665,22 +699,26 @@ fn render_location_picker(
 
     let mut shortcuts = vec![
         Shortcut {
-            label: "\u{2191}\u{2193} nav",
+            label: crate::locale::ctx()
+                .named_static_text("dashboard.hint.up_down_nav", "\u{2191}\u{2193} nav"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: "Tab complete",
+            label: crate::locale::ctx()
+                .named_static_text("dashboard.hint.tab_complete", "Tab complete"),
             clickable: false,
             id: 1,
         },
         Shortcut {
-            label: "Enter select",
+            label: crate::locale::ctx()
+                .named_static_text("dashboard.hint.enter_select", "Enter select"),
             clickable: false,
             id: 2,
         },
         Shortcut {
-            label: "Esc close",
+            label: crate::locale::ctx()
+                .named_static_text("dashboard.hint.esc_close", "Esc close"),
             clickable: false,
             id: 3,
         },
@@ -688,7 +726,7 @@ fn render_location_picker(
     // Show `i search` in the footer when vim nav mode is active (the picker starts in input mode, but Esc drops to nav under vim)
     push_vim_nav_search_hint(&mut shortcuts, modal.picker.search_active);
     let config = ModalWindowConfig {
-        title: "Change directory",
+        title: crate::locale::ctx().named_static_text("dashboard.location.title", "Change directory"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing: ModalSizing::medium(),
@@ -746,7 +784,7 @@ fn render_location_picker(
             content_area.y,
             path_w,
             theme,
-            " path: ",
+            crate::locale::ctx().named_static_text("dashboard.location.path", " path: "),
             &modal.picker,
             /* active */ false,
             /* show_hint */ false,
@@ -805,8 +843,14 @@ fn render_location_picker(
     let badges: Vec<String> = visible
         .iter()
         .map(|c| match &c.worktree {
-            Some(name) if name == &c.label => "worktree".to_string(),
-            Some(name) => format!("worktree: {name}"),
+            Some(name) if name == &c.label => crate::locale::ctx()
+                .named_static_text("dashboard.location.worktree_badge", "worktree")
+                .to_string(),
+            Some(name) => crate::locale::ctx().format_named(
+                "dashboard.location.worktree_named",
+                "worktree: {name}",
+                &[("name", name)],
+            ),
             None => String::new(),
         })
         .collect();
@@ -1246,7 +1290,10 @@ fn render_rows_with_grouping(
                 let selected = state.selected_section == Some(key);
                 let hovered = state.hovered_section == Some(key);
                 render_group_header(
-                    buf, line_rect, theme, "Pinned", *count, collapsed, selected, hovered,
+                    buf, line_rect, theme,
+                    crate::locale::ctx()
+                        .named_static_text("dashboard.group.pinned", "Pinned"),
+                    *count, collapsed, selected, hovered,
                 );
                 mark(&mut line_bg, 0, theme.bg_base);
                 // Full-height hit rect (label and trailing gap): no hover/click dead zone between items
@@ -1492,9 +1539,15 @@ fn render_idle_overflow(
     }
     .bg(theme.bg_base);
     let label = if expanded {
-        "show fewer".to_string()
+        crate::locale::ctx()
+            .named_text("dashboard.overflow.show_fewer", "show fewer")
+            .into_owned()
     } else {
-        format!("{hidden} more")
+        crate::locale::ctx().format_named(
+            "dashboard.overflow.more",
+            "{hidden} more",
+            &[("hidden", &hidden.to_string()), ("count", &hidden.to_string())],
+        )
     };
     // A `+` / `-` expand indicator in the icon column and the label in the agent-name column, so the row aligns with the Idle rows above
     // Columns: marker (1) + gap (1) + icon + gap (1); the Idle group is top-level, so indent is 0
@@ -1824,12 +1877,14 @@ fn render_row(
         };
         // Fallback "New session #<id>" gets two-tone styling: the `New session` head in the primary colour, the ` #id` suffix dim
         // Detection requires the shared prefix plus a `#` so real titles that merely start with "New session" are not dimmed
+        // `new_session_label()` is localized, and the row builder composes its label from the same text
+        let new_session_head = super::row::new_session_label();
         let dim_suffix = (!row.is_more_placeholder)
-            .then(|| row.label.strip_prefix(super::row::NEW_SESSION_LABEL))
+            .then(|| row.label.strip_prefix(new_session_head.as_str()))
             .flatten()
             .filter(|rest| rest.starts_with(" #"));
         if let Some(suffix) = dim_suffix {
-            let head_trunc = truncate_str(super::row::NEW_SESSION_LABEL, title_avail as usize);
+            let head_trunc = truncate_str(&new_session_head, title_avail as usize);
             let head_w = UnicodeWidthStr::width(&head_trunc[..]) as u16;
             buf.set_string(cx, title_y, &head_trunc, label_style);
             cx += head_w;
@@ -2020,7 +2075,10 @@ fn render_narrow_rows_with_grouping(
                 let selected = state.selected_section == Some(key);
                 let hovered = state.hovered_section == Some(key);
                 render_group_header_narrow(
-                    buf, line_rect, theme, "Pinned", *count, collapsed, selected, hovered,
+                    buf, line_rect, theme,
+                    crate::locale::ctx()
+                        .named_static_text("dashboard.group.pinned", "Pinned"),
+                    *count, collapsed, selected, hovered,
                 );
                 state
                     .section_rects
@@ -2184,13 +2242,27 @@ fn render_no_match(buf: &mut Buffer, area: Rect, theme: &Theme, filter: &Filter)
         return;
     }
     let hint = match filter {
-        Filter::None => "No matching rows.".to_string(),
-        Filter::Agent(n) => format!("No agents match `a:{n}`. Press Esc to clear the filter."),
-        Filter::State(s) => format!(
-            "No agents in state `{}`: press Esc to clear the filter.",
-            s.group_label()
+        Filter::None => crate::locale::ctx()
+            .named_text("dashboard.filter.none", "No matching rows.")
+            .into_owned(),
+        Filter::Agent(n) => crate::locale::ctx().format_named(
+            "dashboard.filter.agent",
+            "No agents match `a:{n}`. Press Esc to clear the filter.",
+            &[("n", n), ("value", n)],
         ),
-        Filter::Substring(n) => format!("No rows match `{n}`: press Esc to clear the filter."),
+        Filter::State(s) => {
+            let label = s.group_label();
+            crate::locale::ctx().format_named(
+                "dashboard.filter.state",
+                "No agents in state `{}`: press Esc to clear the filter.",
+                &[("state", label)],
+            )
+        }
+        Filter::Substring(n) => crate::locale::ctx().format_named(
+            "dashboard.filter.substring",
+            "No rows match `{n}`: press Esc to clear the filter.",
+            &[("n", n), ("value", n)],
+        ),
     };
     let truncated = truncate_str(&hint, area.width.saturating_sub(2) as usize);
     // Explicit offset to avoid `area.y + 1.min(...)` precedence ambiguity
@@ -2211,9 +2283,12 @@ fn render_empty_state(buf: &mut Buffer, area: Rect, theme: &Theme, loading: bool
     // A single dim line: the dispatch input below is the call to action, so no multi-line onboarding is needed (but never render a blank screen)
     // While the local session roster is being fetched we show a loading hint so a fresh open doesn't flash the "no agents" copy before rows land
     let line = if loading {
-        "Loading sessions…"
+        crate::locale::ctx().named_static_text("dashboard.empty.loading", "Loading sessions…")
     } else {
-        "No agents yet, type a prompt to start one."
+        crate::locale::ctx().named_static_text(
+            "dashboard.empty.no_agents",
+            "No agents yet, type a prompt to start one.",
+        )
     };
     let truncated = truncate_str(line, area.width.saturating_sub(2) as usize);
     // See `render_no_match` for the precedence rationale.
@@ -2337,7 +2412,7 @@ pub(super) fn paint_record_badge(buf: &mut Buffer, area: Rect, theme: &Theme, li
         buf.set_string(
             area.x + 2,
             area.y,
-            " \u{25CF} rec ",
+            crate::locale::ctx().named_static_text("dashboard.recording.badge", " \u{25CF} rec "),
             Style::default()
                 .fg(theme.accent_error)
                 .bg(theme.bg_base)
@@ -2415,7 +2490,8 @@ fn render_dispatch(
     // The prefix makes it unmistakable that typing filters rows (Enter confirms) rather than dispatching
     // Chips and multiline are not rendered here
     if state.search_mode {
-        let prefix = "Search: ";
+        let prefix =
+            crate::locale::ctx().named_static_text("dashboard.search.prefix", "Search: ");
         let prefix_w = UnicodeWidthStr::width(prefix) as u16;
         let painted_prefix_w = prefix_w.min(content.width);
         buf.set_span(
@@ -2434,7 +2510,13 @@ fn render_dispatch(
         let avail = content.width - painted_prefix_w;
         let cursor_column = if state.dispatch.text().is_empty() {
             if avail > 0 {
-                let placeholder = truncate_str("Type to filter sessions\u{2026}", avail as usize);
+                let placeholder = truncate_str(
+                    crate::locale::ctx().named_static_text(
+                        "dashboard.search.placeholder",
+                        "Type to filter sessions\u{2026}",
+                    ),
+                    avail as usize,
+                );
                 buf.set_string(
                     editor_x,
                     content.y,
@@ -2499,7 +2581,8 @@ fn render_dispatch(
         // whatever row the overview cursor is on. It only paints while the input is UNFOCUSED (matching
         // `PromptWidget::draw`).
         if !input_focused {
-            let msg = "Dispatch a new agent";
+            let msg = crate::locale::ctx()
+                .named_static_text("dashboard.dispatch.placeholder", "Dispatch a new agent");
             let style = theme.dim().bg(theme.bg_base);
             let trunc = truncate_str(msg, content.width.saturating_sub(prefix_w) as usize);
             buf.set_string(content.x + prefix_w, content.y, trunc, style);
@@ -2770,6 +2853,42 @@ fn render_file_search_dropdown_for(
     Some(items_area)
 }
 
+/// Localized footer-hint label. The hint words are short verbs matched nowhere in code, so they
+/// localize at paint time; unknown words fall back to the input (defensive).
+fn hint_text(word: &'static str) -> &'static str {
+    let id = match word {
+        "confirm close" => "dashboard.hint.confirm_close",
+        "confirm archive" => "dashboard.hint.confirm_archive",
+        "confirm delete" => "dashboard.hint.confirm_delete",
+        "cancel" => "dashboard.hint.cancel",
+        "save" => "dashboard.hint.save",
+        "apply" => "dashboard.hint.apply",
+        "nav" => "dashboard.hint.nav",
+        "open" => "dashboard.hint.open",
+        "input" => "dashboard.hint.input",
+        "list" => "dashboard.hint.list",
+        "select" => "dashboard.hint.select",
+        "answer" => "dashboard.hint.answer",
+        "send" => "dashboard.hint.send",
+        "send+open" => "dashboard.hint.send_open",
+        "back" => "dashboard.hint.back",
+        "mode" => "dashboard.hint.mode",
+        "stop" => "dashboard.hint.stop",
+        "delete" => "dashboard.hint.delete",
+        "expand" => "dashboard.hint.expand",
+        "collapse" => "dashboard.hint.collapse",
+        "show fewer" => "dashboard.overflow.show_fewer",
+        "show all" => "dashboard.hint.show_all",
+        "shortcuts" => "dashboard.hint.shortcuts",
+        "New Agent" => "dashboard.hint.new_agent",
+        "stop this session" => "dashboard.confirm.stop",
+        "archive this session" => "dashboard.confirm.archive",
+        "delete this session" => "dashboard.confirm.delete",
+        _ => return word,
+    };
+    crate::locale::ctx().named_static_text(id, word)
+}
+
 /// There is no inline approve/reject yet; the dashboard is intentionally a navigator, not a
 /// permission UI. The. CtrlCtrl+x chip label follows the selected agent's state: `stop` for an agent
 /// with a live turn, `delete` otherwise.
@@ -2819,15 +2938,15 @@ fn render_footer(
         if state.list_focused {
             let confirm_label =
                 if matches!(state.selected_stop_action, Some(DashboardStopAction::Close)) {
-                    "confirm close"
+                    hint_text("confirm close")
                 } else if state.workspace_membership_mode {
-                    "confirm archive"
+                    hint_text("confirm archive")
                 } else {
-                    "confirm delete"
+                    hint_text("confirm delete")
                 };
             let hints = vec![
                 HintItem::new(key!('y'), confirm_label),
-                HintItem::new(key!('n'), "cancel"),
+                HintItem::new(key!('n'), hint_text("cancel")),
             ];
             ShortcutsBar::new(&hints)
                 .compact(4, None)
@@ -2840,11 +2959,11 @@ fn render_footer(
             let pending = PendingHint {
                 shortcut: stop_key,
                 label: if let Some(action) = state.selected_stop_action {
-                    action.confirmation_label().unwrap_or("stop this session")
+                    action.confirmation_label().unwrap_or(hint_text("stop this session"))
                 } else if state.workspace_membership_mode {
-                    "archive this session"
+                    hint_text("archive this session")
                 } else {
-                    "delete this session"
+                    hint_text("delete this session")
                 },
             };
             ShortcutsBar::new(&[])
@@ -2858,8 +2977,8 @@ fn render_footer(
     // The footer therefore shows exactly its two actions instead of the dispatch and nav hints
     if state.rename.is_some() {
         let hints = vec![
-            HintItem::new(key!(Enter), "save"),
-            HintItem::new(key!(Esc), "cancel"),
+            HintItem::new(key!(Enter), hint_text("save")),
+            HintItem::new(key!(Esc), hint_text("cancel")),
         ];
         ShortcutsBar::new(&hints)
             .compact(4, None)
@@ -2870,9 +2989,9 @@ fn render_footer(
     // Search mode owns the footer: show how to confirm or cancel the live filter rather than the dispatch and nav hints
     if state.search_mode {
         let hints = vec![
-            HintItem::paired(key!(Up), key!(Down), "nav"),
-            HintItem::new(key!(Enter), "apply"),
-            HintItem::new(key!(Esc), "cancel"),
+            HintItem::paired(key!(Up), key!(Down), hint_text("nav")),
+            HintItem::new(key!(Enter), hint_text("apply")),
+            HintItem::new(key!(Esc), hint_text("cancel")),
         ];
         ShortcutsBar::new(&hints)
             .compact(4, None)
@@ -2890,14 +3009,14 @@ fn render_footer(
     let stop_label = if state.workspace_membership_mode {
         state
             .selected_stop_action
-            .map_or("stop", |action| action.label())
+            .map_or(hint_text("stop"), |action| action.label())
     } else if matches!(
         selected_state,
         Some(RowState::Working | RowState::NeedsInput)
     ) {
-        "stop"
+        hint_text("stop")
     } else {
-        "delete"
+        hint_text("delete")
     };
 
     // Overview list focused (via Tab), navigation hints: arrows / j-k move between agents, Enter opens
@@ -2914,16 +3033,16 @@ fn render_footer(
         // The ↑/↓ (and vim j/k) nav chip is intentionally omitted.
         if state.selected_idle_overflow {
             let toggle = if state.idle_show_all {
-                "show fewer"
+                hint_text("show fewer")
             } else {
-                "show all"
+                hint_text("show all")
             };
             let hints = vec![
                 HintItem::new(key!(Enter), toggle),
-                HintItem::new(key!(Tab), "input"),
+                HintItem::new(key!(Tab), hint_text("input")),
             ];
             ShortcutsBar::new(&hints)
-                .compact(4, Some(HintItem::new(help, "shortcuts")))
+                .compact(4, Some(HintItem::new(help, hint_text("shortcuts"))))
                 .render(inner, buf);
             return;
         }
@@ -2931,16 +3050,16 @@ fn render_footer(
         // Tab hands focus back to the dispatch input (Esc does too, one tier at a time)
         if let Some(section) = state.selected_section {
             let toggle = if state.is_section_collapsed(section) {
-                "expand"
+                hint_text("expand")
             } else {
-                "collapse"
+                hint_text("collapse")
             };
             let hints = vec![
                 HintItem::new(key!(Enter), toggle),
-                HintItem::new(key!(Tab), "input"),
+                HintItem::new(key!(Tab), hint_text("input")),
             ];
             ShortcutsBar::new(&hints)
-                .compact(4, Some(HintItem::new(help, "shortcuts")))
+                .compact(4, Some(HintItem::new(help, hint_text("shortcuts"))))
                 .render(inner, buf);
             return;
         }
@@ -2951,22 +3070,22 @@ fn render_footer(
             if state.focused_new_agent_sends_draft() {
                 hints.push(HintItem::new(key!('s', CONTROL), "send+open"));
             }
-            hints.push(HintItem::new(key!(Tab), "input"));
+            hints.push(HintItem::new(key!(Tab), hint_text("input")));
             ShortcutsBar::new(&hints)
-                .compact(4, Some(HintItem::new(help, "shortcuts")))
+                .compact(4, Some(HintItem::new(help, hint_text("shortcuts"))))
                 .render(inner, buf);
             return;
         }
         let mut hints = vec![
             HintItem::new(key!(Enter), "open"),
-            HintItem::new(key!(Tab), "input"),
+            HintItem::new(key!(Tab), hint_text("input")),
         ];
         if show_ctrl_x {
             hints.push(HintItem::new(stop, stop_label).pinned());
         }
 
         ShortcutsBar::new(&hints)
-            .compact(4, Some(HintItem::new(help, "shortcuts")))
+            .compact(4, Some(HintItem::new(help, hint_text("shortcuts"))))
             .render(inner, buf);
         return;
     }
@@ -2995,7 +3114,7 @@ fn render_footer(
         key!('.', CONTROL),
     );
 
-    let help_hint = HintItem::new(help, "shortcuts");
+    let help_hint = HintItem::new(help, hint_text("shortcuts"));
 
     // Submit chord is `send_key` (Enter, or Shift/Alt+Enter in multiline). Ctrl+S is send+open.
     // Empty draft: create/open on the submit chord; non-empty: send
@@ -3018,7 +3137,7 @@ fn render_footer(
             .as_ref()
             .is_some_and(|p| p.selected_option.is_some());
         let reply_empty = state.peek_reply.text().trim().is_empty();
-        let esc_label = if reply_empty { "New Agent" } else { "back" };
+        let esc_label = if reply_empty { hint_text("New Agent") } else { hint_text("back") };
         // Pin Esc when it clears a draft (`back`) so compact doesn't drop it behind stop/help; that matches its importance in handle_peek_key
         let esc_hint = {
             let h = HintItem::new(esc, esc_label);
@@ -3028,11 +3147,11 @@ fn render_footer(
         // Two-focus model: Tab toggles between the reply and row nav. Vim opens the reply unfocused so j/k keep selecting.
         let peek_focused = state.peek.as_ref().map(|p| p.focused).unwrap_or(true);
         let question_focused = peek_focused && has_pending_question;
-        let tab_hint = HintItem::new(key!(Tab), if peek_focused { "list" } else { "input" });
+        let tab_hint = HintItem::new(key!(Tab), if peek_focused { hint_text("list") } else { hint_text("input") });
         // `1-9 select` hint for the question picker (no single bound key).
         let select_hint = HintItem {
             keys: vec![],
-            label: "select".into(),
+            label: hint_text("select").into(),
             custom_display: Some("1-9"),
             description: None,
             pinned: false,
@@ -3041,11 +3160,11 @@ fn render_footer(
             // An option is selected, so Enter answers
             // `Tab` unfocuses to the row list (the same two-focus toggle the other peek states show)
             // ↑/↓ still move within the options; the nav chip is dropped to save bottom-bar space
-            vec![HintItem::new(enter, "answer"), tab_hint, esc_hint]
+            vec![HintItem::new(enter, hint_text("answer")), tab_hint, esc_hint]
         } else if has_pending_question && peek_focused {
             // Question pending, focused, nothing selected: navigation and select
             let mut h = vec![
-                HintItem::new(enter, "open"),
+                HintItem::new(enter, hint_text("open")),
                 select_hint,
                 tab_hint,
                 esc_hint,
@@ -3059,9 +3178,9 @@ fn render_footer(
             // Right still attaches; show it so open stays discoverable
             // Pending question: keep 1-9 select (digits still work unfocused).
             let mut h = vec![
-                HintItem::new(enter, "input"),
+                HintItem::new(enter, hint_text("input")),
                 // Pin open: attach is the replacement for Enter in this mode.
-                HintItem::new(key!(Right), "open").pinned(),
+                HintItem::new(key!(Right), hint_text("open")).pinned(),
                 tab_hint,
                 esc_hint,
             ];
@@ -3069,7 +3188,7 @@ fn render_footer(
                 h.insert(2, select_hint);
             }
             if !reply_empty {
-                h.insert(1, HintItem::new(send_open, "send+open"));
+                h.insert(1, HintItem::new(send_open, hint_text("send+open")));
             }
             if show_ctrl_x {
                 h.push(HintItem::new(stop, stop_label).pinned());
@@ -3078,7 +3197,7 @@ fn render_footer(
         } else if has_pending_question {
             // Non-vim unfocused (or other) with a pending question: open and select
             let mut h = vec![
-                HintItem::new(enter, "open"),
+                HintItem::new(enter, hint_text("open")),
                 select_hint,
                 tab_hint,
                 esc_hint,
@@ -3089,16 +3208,16 @@ fn render_footer(
             h
         } else if peek_focused && !reply_empty {
             vec![
-                HintItem::new(send_key, "send"),
-                HintItem::new(send_open, "send+open"),
+                HintItem::new(send_key, hint_text("send")),
+                HintItem::new(send_open, hint_text("send+open")),
                 tab_hint,
-                HintItem::new(esc, "back").pinned(),
+                HintItem::new(esc, hint_text("back")).pinned(),
             ]
         } else {
             // Focused empty: open is on the submit chord (send_key)
             // Unfocused: bare Enter still attaches
             let open_key = if peek_focused { send_key } else { enter };
-            let mut h = vec![HintItem::new(open_key, "open"), tab_hint, esc_hint];
+            let mut h = vec![HintItem::new(open_key, hint_text("open")), tab_hint, esc_hint];
             if show_ctrl_x {
                 h.push(HintItem::new(stop, stop_label).pinned());
             }
@@ -3109,41 +3228,41 @@ fn render_footer(
         if prompt_empty {
             // ↑↓ navigate, Enter toggles collapse/expand, Esc returns to the `+ New Agent` button
             let toggle = if state.is_section_collapsed(section) {
-                "expand"
+                hint_text("expand")
             } else {
-                "collapse"
+                hint_text("collapse")
             };
             vec![
                 HintItem::new(enter, toggle),
-                HintItem::new(key!(Esc), "New Agent"),
+                HintItem::new(key!(Esc), hint_text("New Agent")),
             ]
         } else {
             // Typed text dispatches a NEW agent (a section header is never a reply target)
             // Show the same chips as the `+ New Agent` button with a draft
             // send_key sends (stays on the dashboard), Ctrl+S sends and opens detail, Shift+Tab cycles the dispatch mode
             vec![
-                HintItem::new(send_key, "send"),
-                HintItem::new(send_open, "send+open"),
-                HintItem::new(key!(BackTab), "mode"),
+                HintItem::new(send_key, hint_text("send")),
+                HintItem::new(send_open, hint_text("send+open")),
+                HintItem::new(key!(BackTab), hint_text("mode")),
             ]
         }
     } else if state.selected_idle_overflow {
         // The Idle overflow toggle is selected. Like a section header, there's no session under it, so no stop chip.
         if prompt_empty {
             let toggle = if state.idle_show_all {
-                "show fewer"
+                hint_text("show fewer")
             } else {
-                "show all"
+                hint_text("show all")
             };
             vec![
                 HintItem::new(enter, toggle),
-                HintItem::new(key!(Esc), "New Agent"),
+                HintItem::new(key!(Esc), hint_text("New Agent")),
             ]
         } else {
             vec![
-                HintItem::new(send_key, "send"),
-                HintItem::new(send_open, "send+open"),
-                HintItem::new(key!(BackTab), "mode"),
+                HintItem::new(send_key, hint_text("send")),
+                HintItem::new(send_open, hint_text("send+open")),
+                HintItem::new(key!(BackTab), hint_text("mode")),
             ]
         }
     } else if let Some(enter_label) = state.focused_action_label() {
@@ -3153,10 +3272,10 @@ fn render_footer(
             h.push(HintItem::new(send_key, enter_label));
             h.push(HintItem::new(key!(Tab), "list"));
         } else {
-            h.push(HintItem::new(send_key, "send"));
-            h.push(HintItem::new(send_open, "send+open"));
+            h.push(HintItem::new(send_key, hint_text("send")));
+            h.push(HintItem::new(send_open, hint_text("send+open")));
         }
-        h.push(HintItem::new(key!(BackTab), "mode"));
+        h.push(HintItem::new(key!(BackTab), hint_text("mode")));
         h
     } else if row_selected {
         let mut h: Vec<HintItem> = vec![];
@@ -3164,8 +3283,8 @@ fn render_footer(
             h.push(HintItem::new(send_key, "open"));
             h.push(HintItem::new(key!(Tab), "list"));
         } else {
-            h.push(HintItem::new(send_key, "send"));
-            h.push(HintItem::new(send_open, "send+open"));
+            h.push(HintItem::new(send_key, hint_text("send")));
+            h.push(HintItem::new(send_open, hint_text("send+open")));
         }
         if show_ctrl_x {
             h.push(HintItem::new(stop, stop_label).pinned());
@@ -3316,7 +3435,10 @@ pub fn render_popup_overlay(
         outline.render(area, buf);
         if area.height >= 3 && area.width >= 6 {
             let hint = truncate_str(
-                "(terminal too small: Esc to close)",
+                crate::locale::ctx().named_static_text(
+                    "dashboard.popup.too_small",
+                    "(terminal too small: Esc to close)",
+                ),
                 area.width.saturating_sub(2) as usize,
             );
             buf.set_string(

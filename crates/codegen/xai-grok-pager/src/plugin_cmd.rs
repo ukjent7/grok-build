@@ -201,6 +201,7 @@ fn kind_label(kind: &InstallKind) -> String {
 }
 
 fn print_component_summary(manifest: &PluginManifest, root: &Path) {
+    let ctx = crate::locale::ctx();
     let skills = manifest.skill_dirs(root);
     let commands = manifest.command_dirs(root);
     let agents = manifest.agent_dirs(root);
@@ -210,13 +211,40 @@ fn print_component_summary(manifest: &PluginManifest, root: &Path) {
     let has_lsp =
         manifest.lsp_config_path(root).is_some() || manifest.inline_lsp_servers().is_some();
     println!(
-        "  components: {} skill dir(s), {} command dir(s), {} agent dir(s){}{}{}",
-        skills.len(),
-        commands.len(),
-        agents.len(),
-        if has_hooks { ", hooks" } else { "" },
-        if has_mcp { ", MCP servers" } else { "" },
-        if has_lsp { ", LSP servers" } else { "" },
+        "{}",
+        ctx.format_named(
+            "plugin_cli.components",
+            "  components: {skills} skill dir(s), {commands} command dir(s), {agents} agent dir(s){hooks}{mcp}{lsp}",
+            &[
+                ("skills", &skills.len().to_string()),
+                ("commands", &commands.len().to_string()),
+                ("agents", &agents.len().to_string()),
+                (
+                    "hooks",
+                    &if has_hooks {
+                        ctx.named_text("plugin_cli.components.hooks", ", hooks").into_owned()
+                    } else {
+                        String::new()
+                    }
+                ),
+                (
+                    "mcp",
+                    &if has_mcp {
+                        ctx.named_text("plugin_cli.components.mcp", ", MCP servers").into_owned()
+                    } else {
+                        String::new()
+                    }
+                ),
+                (
+                    "lsp",
+                    &if has_lsp {
+                        ctx.named_text("plugin_cli.components.lsp", ", LSP servers").into_owned()
+                    } else {
+                        String::new()
+                    }
+                ),
+            ],
+        )
     );
 }
 
@@ -225,11 +253,10 @@ fn abbreviated_commit(c: Option<&str>) -> &str {
 }
 
 fn trust_prompt(subject: &str, source_arg: &str) -> String {
-    format!(
-        "Installing {subject} requires confirmation.\n\
-         Plugins can run hooks, MCP servers, and skills on your machine, so installation needs explicit trust.\n\
-         \n\
-         To proceed, re-run with --trust:\n  grok plugin install {source_arg} --trust"
+    crate::locale::ctx().format_named(
+        "plugin_cli.trust_prompt",
+        "Installing {subject} requires confirmation.\nPlugins can run hooks, MCP servers, and skills on your machine, so installation needs explicit trust.\n\nTo proceed, re-run with --trust:\n  grok plugin install {source_arg} --trust",
+        &[("subject", subject), ("source_arg", source_arg)],
     )
 }
 
@@ -272,7 +299,13 @@ fn cmd_list(json: bool, available: bool) -> Result<()> {
         }
         println!("{}", serde_json::to_string_pretty(&entries)?);
     } else if repos.is_empty() {
-        println!("No plugins installed. Run `grok plugin install --help` to get started.");
+        println!(
+            "{}",
+            crate::locale::ctx().named_text(
+                "plugin_cli.list_empty",
+                "No plugins installed. Run `grok plugin install --help` to get started."
+            )
+        );
     } else {
         for (repo_key, repo) in &repos {
             let mp = repo
@@ -413,8 +446,18 @@ fn cmd_install(source: &str, trust: bool) -> Result<()> {
     if !trust {
         use xai_grok_agent::plugins::git_install::{self, InstallSource};
         let subject = match git_install::parse_install_source(source, &cwd) {
-            InstallSource::Git { url, .. } => format!("from git repo {url}"),
-            InstallSource::Local { path, .. } => format!("from directory {}", path.display()),
+            InstallSource::Git { url, .. } => crate::locale::ctx()
+                .format_named(
+                    "plugin_cli.subject_git",
+                    "from git repo {url}",
+                    &[("url", url)],
+                ),
+            InstallSource::Local { path, .. } => crate::locale::ctx()
+                .format_named(
+                    "plugin_cli.subject_local",
+                    "from directory {path}",
+                    &[("path", &path.display().to_string())],
+                ),
         };
         eprintln!("{}", trust_prompt(&subject, source));
         std::process::exit(1);
@@ -427,9 +470,16 @@ fn cmd_install(source: &str, trust: bool) -> Result<()> {
             }
             log_plugin_installed(install_kind(!outcome.is_local), true, None);
             println!(
-                "Installed {} plugin(s) from {source}: {}",
-                outcome.plugin_names.len(),
-                outcome.plugin_names.join(", "),
+                "{}",
+                crate::locale::ctx().format_named(
+                    "plugin_cli.installed",
+                    "Installed {count} plugin(s) from {source}: {names}",
+                    &[
+                        ("count", &outcome.plugin_names.len().to_string()),
+                        ("source", source),
+                        ("names", &outcome.plugin_names.join(", ")),
+                    ],
+                )
             );
             Ok(())
         }
@@ -461,7 +511,11 @@ fn cmd_install_marketplace(
                 Err(e) => bail!("{e}"),
             },
         };
-        let subject = format!("\"{}\" from marketplace \"{from}\"", mref.name);
+        let subject = crate::locale::ctx().format_named(
+            "plugin_cli.subject_marketplace",
+            "\"{name}\" from marketplace \"{from}\"",
+            &[("name", &mref.name), ("from", &from)],
+        );
         eprintln!("{}", trust_prompt(&subject, source));
         std::process::exit(1);
     }
@@ -483,9 +537,16 @@ fn cmd_install_marketplace(
                     .map(String::as_str)
                     .unwrap_or(&mref.name);
                 println!(
-                    "Plugin \"{}\" is already installed from {}. \
-                     Run `grok plugin update {}` to update it.",
-                    mref.name, outcome.source_display_name, update_name,
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "plugin_cli.already_installed",
+                        "Plugin \"{name}\" is already installed from {source}. Run `grok plugin update {update_name}` to update it.",
+                        &[
+                            ("name", &mref.name),
+                            ("source", &outcome.source_display_name),
+                            ("update_name", update_name),
+                        ],
+                    )
                 );
                 return Ok(());
             }
@@ -494,10 +555,16 @@ fn cmd_install_marketplace(
                 println!("{note}");
             }
             println!(
-                "Installed {} plugin(s) from {}: {}",
-                outcome.plugin_names.len(),
-                outcome.source_display_name,
-                outcome.plugin_names.join(", "),
+                "{}",
+                crate::locale::ctx().format_named(
+                    "plugin_cli.installed",
+                    "Installed {count} plugin(s) from {source}: {names}",
+                    &[
+                        ("count", &outcome.plugin_names.len().to_string()),
+                        ("source", &outcome.source_display_name),
+                        ("names", &outcome.plugin_names.join(", ")),
+                    ],
+                )
             );
             Ok(())
         }
@@ -522,11 +589,24 @@ fn cmd_uninstall(name: &str, confirm: bool, keep_data: bool) -> Result<()> {
                     success: true,
                 },
             );
-            let suffix = if keep_data { " (data preserved)" } else { "" };
+            let suffix = if keep_data {
+                crate::locale::ctx()
+                    .named_text("plugin_cli.data_preserved", " (data preserved)")
+                    .into_owned()
+            } else {
+                String::new()
+            };
             println!(
-                "Uninstalled {} plugin(s): {}{suffix}",
-                outcome.removed_plugins.len(),
-                outcome.removed_plugins.join(", "),
+                "{}",
+                crate::locale::ctx().format_named(
+                    "plugin_cli.uninstalled",
+                    "Uninstalled {count} plugin(s): {names}{suffix}",
+                    &[
+                        ("count", &outcome.removed_plugins.len().to_string()),
+                        ("names", &outcome.removed_plugins.join(", ")),
+                        ("suffix", &suffix),
+                    ],
+                )
             );
             Ok(())
         }
@@ -536,15 +616,24 @@ fn cmd_uninstall(name: &str, confirm: bool, keep_data: bool) -> Result<()> {
             other_plugins,
             total,
         }) => bail!(
-            "Plugin \"{name}\" belongs to repo \"{repo_key}\" which also contains:\n\
-             {}\n\n\
-             Uninstalling will remove all {total} plugin(s). To proceed:\n\
-               grok plugin uninstall {name} --confirm",
-            other_plugins
-                .iter()
-                .map(|p| format!("  - {p}"))
-                .collect::<Vec<_>>()
-                .join("\n"),
+            "{}",
+            crate::locale::ctx().format_named(
+                "plugin_cli.uninstall_needs_confirm",
+                "Plugin \"{name}\" belongs to repo \"{repo_key}\" which also contains:\n{list}\n\nUninstalling will remove all {total} plugin(s). To proceed:\ngrok plugin uninstall {name} --confirm",
+                &[
+                    ("name", &name),
+                    ("repo_key", &repo_key),
+                    (
+                        "list",
+                        &other_plugins
+                            .iter()
+                            .map(|p| format!("  - {p}"))
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    ),
+                    ("total", &total.to_string()),
+                ],
+            )
         ),
         Err(
             e @ (UninstallError::NotFound { .. }
@@ -560,7 +649,13 @@ fn cmd_update(name: Option<&str>) -> Result<()> {
     let outcomes = plugin::update_plugins(name).map_err(|e| anyhow::anyhow!("{e}"))?;
 
     if outcomes.is_empty() {
-        println!("No installed plugins to update.");
+        println!(
+            "{}",
+            crate::locale::ctx().named_text(
+                "plugin_cli.update.none",
+                "No installed plugins to update."
+            )
+        );
         return Ok(());
     }
 
@@ -572,22 +667,57 @@ fn cmd_update(name: Option<&str>) -> Result<()> {
                 new_commit,
             } => {
                 println!(
-                    "{repo_key}: updated ({} -> {})",
-                    abbreviated_commit(old_commit.as_deref()),
-                    abbreviated_commit(new_commit.as_deref()),
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "plugin_cli.update.updated",
+                        "{repo_key}: updated ({old} -> {new})",
+                        &[
+                            ("repo_key", repo_key),
+                            ("old", abbreviated_commit(old_commit.as_deref())),
+                            ("new", abbreviated_commit(new_commit.as_deref())),
+                        ],
+                    )
                 );
             }
             RepoUpdateOutcome::AlreadyUpToDate { repo_key } => {
-                println!("{repo_key}: already up to date");
+                println!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "plugin_cli.update.up_to_date",
+                        "{repo_key}: already up to date",
+                        &[("repo_key", repo_key)],
+                    )
+                );
             }
             RepoUpdateOutcome::Pinned { repo_key, ref_name } => {
-                println!("{repo_key}: pinned to {ref_name}, skipping");
+                println!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "plugin_cli.update.pinned",
+                        "{repo_key}: pinned to {ref_name}, skipping",
+                        &[("repo_key", repo_key), ("ref_name", ref_name)],
+                    )
+                );
             }
             RepoUpdateOutcome::LiveLocal { repo_key } => {
-                println!("{repo_key}: local symlink, already live");
+                println!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "plugin_cli.update.live_local",
+                        "{repo_key}: local symlink, already live",
+                        &[("repo_key", repo_key)],
+                    )
+                );
             }
             RepoUpdateOutcome::Failed { repo_key, error } => {
-                eprintln!("{repo_key}: update failed: {error}");
+                eprintln!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "plugin_cli.update.failed",
+                        "{repo_key}: update failed: {error}",
+                        &[("repo_key", repo_key), ("error", error)],
+                    )
+                );
             }
         }
     }
@@ -604,81 +734,174 @@ fn update_failure_summary(outcomes: &[RepoUpdateOutcome]) -> Option<String> {
         .iter()
         .filter(|o| matches!(o, RepoUpdateOutcome::Failed { .. }))
         .count();
-    (failed > 0).then(|| format!("{failed} of {} plugin update(s) failed", outcomes.len()))
+    (failed > 0).then(|| {
+        crate::locale::ctx().format_named(
+            "plugin_cli.update.summary",
+            "{failed} of {total} plugin update(s) failed",
+            &[
+                ("failed", &failed.to_string()),
+                ("total", &outcomes.len().to_string()),
+            ],
+        )
+    })
+}
+
+fn plugin_not_found_error(name: &str) -> anyhow::Error {
+    anyhow::anyhow!(crate::locale::ctx().format_named(
+        "plugin_cli.not_found",
+        "Plugin \"{name}\" not found.\nRun `grok plugin list` to see installed plugins.",
+        &[("name", name)],
+    ))
 }
 
 fn cmd_enable(name: &str) -> Result<()> {
     let registry = InstallRegistry::load();
     if registry.find_plugin(name).is_none() {
-        bail!(
-            "Plugin \"{name}\" not found.\n\
-               Run `grok plugin list` to see installed plugins."
-        );
+        bail!("{}", plugin_not_found_error(name));
     }
     if let Err(e) = xai_grok_shell::config::remove_disabled_plugin(name) {
         tracing::warn!("failed to remove from disabled list: {e}");
     }
-    xai_grok_shell::config::add_enabled_plugin(name)
-        .map_err(|e| anyhow::anyhow!("Failed to enable plugin: {e}"))?;
-    println!("Enabled plugin: {name}");
+    xai_grok_shell::config::add_enabled_plugin(name).map_err(|e| {
+        anyhow::anyhow!(crate::locale::ctx().format_named(
+            "plugin_cli.enable_failed",
+            "Failed to enable plugin: {error}",
+            &[("error", &e.to_string())],
+        ))
+    })?;
+    println!(
+        "{}",
+        crate::locale::ctx().format_named(
+            "plugin_cli.enabled",
+            "Enabled plugin: {name}",
+            &[("name", name)],
+        )
+    );
     Ok(())
 }
 
 fn cmd_disable(name: &str) -> Result<()> {
     let registry = InstallRegistry::load();
     if registry.find_plugin(name).is_none() {
-        bail!(
-            "Plugin \"{name}\" not found.\n\
-               Run `grok plugin list` to see installed plugins."
-        );
+        bail!("{}", plugin_not_found_error(name));
     }
     if let Err(e) = xai_grok_shell::config::remove_enabled_plugin(name) {
         tracing::warn!("failed to remove from enabled list: {e}");
     }
-    xai_grok_shell::config::add_disabled_plugin(name)
-        .map_err(|e| anyhow::anyhow!("Failed to disable plugin: {e}"))?;
-    println!("Disabled plugin: {name}");
+    xai_grok_shell::config::add_disabled_plugin(name).map_err(|e| {
+        anyhow::anyhow!(crate::locale::ctx().format_named(
+            "plugin_cli.disable_failed",
+            "Failed to disable plugin: {error}",
+            &[("error", &e.to_string())],
+        ))
+    })?;
+    println!(
+        "{}",
+        crate::locale::ctx().format_named(
+            "plugin_cli.disabled",
+            "Disabled plugin: {name}",
+            &[("name", name)],
+        )
+    );
     Ok(())
 }
 
 fn cmd_details(name: &str) -> Result<()> {
+    let ctx = crate::locale::ctx();
     let registry = InstallRegistry::load();
-    let (repo_key, repo, _) = registry.find_plugin(name).ok_or_else(|| {
-        anyhow::anyhow!(
-            "Plugin \"{name}\" not found.\n\
-             Run `grok plugin list` to see installed plugins."
-        )
-    })?;
+    let (repo_key, repo, _) = registry
+        .find_plugin(name)
+        .ok_or_else(|| plugin_not_found_error(name))?;
 
     let mp = repo
         .marketplace
         .as_ref()
-        .map(|mp| format!("\n  source: {}", mp.source_display_name))
+        .map(|mp| {
+            ctx.format_named(
+                "plugin_cli.field.source",
+                "\n  source: {value}",
+                &[("value", &mp.source_display_name)],
+            )
+            .into_owned()
+        })
         .unwrap_or_default();
+    let mp = mp.as_str();
 
     println!("{repo_key}");
-    println!("  path: {}", repo.path.display());
-    println!("  kind: {}{mp}", kind_label(&repo.kind));
-    println!("  installed: {}", repo.installed_at);
-    println!("  updated: {}", repo.updated_at);
-    println!("  plugins ({}):", repo.plugins.len());
+    println!(
+        "{}",
+        ctx.format_named(
+            "plugin_cli.field.path",
+            "  path: {value}",
+            &[("value", &repo.path.display().to_string())],
+        )
+    );
+    println!(
+        "{}",
+        ctx.format_named(
+            "plugin_cli.field.kind",
+            "  kind: {value}",
+            &[("value", &format!("{}{mp}", kind_label(&repo.kind)))],
+        )
+    );
+    println!(
+        "{}",
+        ctx.format_named(
+            "plugin_cli.field.installed",
+            "  installed: {value}",
+            &[("value", &repo.installed_at)],
+        )
+    );
+    println!(
+        "{}",
+        ctx.format_named(
+            "plugin_cli.field.updated",
+            "  updated: {value}",
+            &[("value", &repo.updated_at)],
+        )
+    );
+    println!(
+        "{}",
+        ctx.format_named(
+            "plugin_cli.field.plugins",
+            "  plugins ({count}):",
+            &[("count", &repo.plugins.len().to_string())],
+        )
+    );
     for (pname, p) in &repo.plugins {
         let ver = p
             .version
             .as_deref()
-            .map(|v| format!(" v{v}"))
+            .map(|v| {
+                ctx.format_named("plugin_cli.field.version_suffix", " v{value}", &[("value", v)])
+                    .into_owned()
+            })
             .unwrap_or_default();
         let sub = p
             .subdir
             .as_deref()
-            .map(|s| format!(" (subdir: {s})"))
+            .map(|s| {
+                ctx.format_named(
+                    "plugin_cli.field.subdir_suffix",
+                    " (subdir: {value})",
+                    &[("value", s)],
+                )
+                .into_owned()
+            })
             .unwrap_or_default();
         println!("    {pname}{ver}{sub}");
     }
 
     if let Ok(ManifestLoadResult::Found(manifest)) = load_manifest(&repo.path) {
         if let Some(ref desc) = manifest.description {
-            println!("  description: {desc}");
+            println!(
+                "{}",
+                ctx.format_named(
+                    "plugin_cli.field.description",
+                    "  description: {value}",
+                    &[("value", desc)],
+                )
+            );
         }
         print_component_summary(&manifest, &repo.path);
     }
@@ -686,51 +909,119 @@ fn cmd_details(name: &str) -> Result<()> {
 }
 
 fn cmd_validate(path: &str) -> Result<()> {
+    let ctx = crate::locale::ctx();
     let root = PathBuf::from(path);
     if !root.is_dir() {
-        bail!("Not a directory: {path}");
+        bail!(
+            "{}",
+            ctx.format_named(
+                "plugin_cli.not_a_directory",
+                "Not a directory: {path}",
+                &[("path", path)],
+            )
+        );
     }
     match load_manifest(&root) {
         Ok(ManifestLoadResult::Found(manifest)) => {
-            manifest
-                .validate()
-                .map_err(|e| anyhow::anyhow!("Manifest validation failed: {e}"))?;
-            println!("Plugin manifest is valid.");
-            println!("  name: {}", manifest.name);
+            manifest.validate().map_err(|e| {
+                anyhow::anyhow!(ctx.format_named(
+                    "plugin_cli.manifest_invalid",
+                    "Manifest validation failed: {error}",
+                    &[("error", &e.to_string())],
+                ))
+            })?;
+            println!(
+                "{}",
+                ctx.named_text("plugin_cli.manifest_valid", "Plugin manifest is valid.")
+            );
+            println!(
+                "{}",
+                ctx.format_named(
+                    "plugin_cli.field.name",
+                    "  name: {value}",
+                    &[("value", &manifest.name)],
+                )
+            );
             if let Some(ref v) = manifest.version {
-                println!("  version: {v}");
+                println!(
+                    "{}",
+                    ctx.format_named(
+                        "plugin_cli.field.version",
+                        "  version: {value}",
+                        &[("value", v)],
+                    )
+                );
             }
             if let Some(ref d) = manifest.description {
-                println!("  description: {d}");
+                println!(
+                    "{}",
+                    ctx.format_named(
+                        "plugin_cli.field.description",
+                        "  description: {value}",
+                        &[("value", d)],
+                    )
+                );
             }
             print_component_summary(&manifest, &root);
             Ok(())
         }
         Ok(ManifestLoadResult::NotFound) => {
             println!(
-                "No plugin.json found. Grok discovers skills, agents, and hooks \
-                 automatically from standard directories. A manifest is only needed \
-                 for custom paths or metadata."
+                "{}",
+                ctx.named_text(
+                    "plugin_cli.no_manifest",
+                    "No plugin.json found. Grok discovers skills, agents, and hooks automatically from standard directories. A manifest is only needed for custom paths or metadata."
+                )
             );
             Ok(())
         }
-        Err(e) => bail!("Failed to load manifest: {e}"),
+        Err(e) => bail!(
+            "{}",
+            ctx.format_named(
+                "plugin_cli.manifest_load_failed",
+                "Failed to load manifest: {error}",
+                &[("error", &e.to_string())],
+            )
+        ),
     }
 }
 
 fn cmd_tag(path: &str, push: bool, force: bool, dry_run: bool) -> Result<()> {
+    let ctx = crate::locale::ctx();
     let root = PathBuf::from(path);
     if !root.is_dir() {
-        bail!("Not a directory: {path}");
+        bail!(
+            "{}",
+            ctx.format_named(
+                "plugin_cli.not_a_directory",
+                "Not a directory: {path}",
+                &[("path", path)],
+            )
+        );
     }
     let version = match load_manifest(&root) {
         Ok(ManifestLoadResult::Found(m)) => m.version.ok_or_else(|| {
-            anyhow::anyhow!(
+            anyhow::anyhow!(ctx.named_text(
+                "plugin_cli.tag.no_version",
                 "No `version` field in plugin.json. Set a version to use `grok plugin tag`."
-            )
+            ))
         })?,
-        Ok(ManifestLoadResult::NotFound) => bail!("No plugin.json found in {path}."),
-        Err(e) => bail!("Failed to load manifest: {e}"),
+        Ok(ManifestLoadResult::NotFound) => bail!(
+            "{}",
+            ctx.format_named(
+                "plugin_cli.tag.no_manifest_in_path",
+                "No plugin.json found in {path}.",
+                &[("path", path)],
+            )
+        ),
+        Err(e) => bail!(
+            "{}",
+            ctx.format_named(
+                "plugin_cli.manifest_load_failed",
+                "Failed to load manifest: {error}",
+                &[("error", &e.to_string())],
+            )
+        ),
     };
 
     let tag = format!(
@@ -747,14 +1038,30 @@ fn cmd_tag(path: &str, push: bool, force: bool, dry_run: bool) -> Result<()> {
             .current_dir(&root)
             .output()?;
         if !out.stdout.is_empty() {
-            bail!("Working tree is dirty. Commit changes first, or use --force.");
+            bail!(
+                "{}",
+                ctx.named_text(
+                    "plugin_cli.tag.dirty",
+                    "Working tree is dirty. Commit changes first, or use --force."
+                )
+            );
         }
     }
 
     if dry_run {
-        println!("Would create tag: {tag}");
+        println!(
+            "{}",
+            ctx.format_named(
+                "plugin_cli.tag.would_create",
+                "Would create tag: {tag}",
+                &[("tag", &tag)],
+            )
+        );
         if push {
-            println!("Would push tag to remote.");
+            println!(
+                "{}",
+                ctx.named_text("plugin_cli.tag.would_push", "Would push tag to remote.")
+            );
         }
         return Ok(());
     }
@@ -767,11 +1074,22 @@ fn cmd_tag(path: &str, push: bool, force: bool, dry_run: bool) -> Result<()> {
     let out = cmd.current_dir(&root).output()?;
     if !out.status.success() {
         bail!(
-            "Failed to create tag: {}",
-            String::from_utf8_lossy(&out.stderr)
+            "{}",
+            ctx.format_named(
+                "plugin_cli.tag.create_failed",
+                "Failed to create tag: {error}",
+                &[("error", &String::from_utf8_lossy(&out.stderr))],
+            )
         );
     }
-    println!("Created tag: {tag}");
+    println!(
+        "{}",
+        ctx.format_named(
+            "plugin_cli.tag.created",
+            "Created tag: {tag}",
+            &[("tag", &tag)],
+        )
+    );
 
     if push {
         let mut push_cmd = std::process::Command::new("git");
@@ -782,11 +1100,22 @@ fn cmd_tag(path: &str, push: bool, force: bool, dry_run: bool) -> Result<()> {
         let out = push_cmd.current_dir(&root).output()?;
         if !out.status.success() {
             bail!(
-                "Failed to push tag: {}",
-                String::from_utf8_lossy(&out.stderr)
+                "{}",
+                ctx.format_named(
+                    "plugin_cli.tag.push_failed",
+                    "Failed to push tag: {error}",
+                    &[("error", &String::from_utf8_lossy(&out.stderr))],
+                )
             );
         }
-        println!("Pushed tag {tag} to origin.");
+        println!(
+            "{}",
+            ctx.format_named(
+                "plugin_cli.tag.pushed",
+                "Pushed tag {tag} to origin.",
+                &[("tag", &tag)],
+            )
+        );
     }
     Ok(())
 }
@@ -835,8 +1164,11 @@ fn marketplace_list(
         println!("{}", serde_json::to_string_pretty(&entries)?);
     } else if sources.is_empty() {
         println!(
-            "No marketplace sources configured.\n\
-             Run `grok plugin marketplace add --help` to get started."
+            "{}",
+            crate::locale::ctx().named_text(
+                "plugin_cli.mp.list_empty",
+                "No marketplace sources configured.\nRun `grok plugin marketplace add --help` to get started."
+            )
         );
     } else {
         for s in sources {
@@ -851,7 +1183,10 @@ fn marketplace_add(url: &str, force: bool) -> Result<()> {
 
     let url = url.trim();
     if url.is_empty() {
-        bail!("URL cannot be empty.");
+        bail!(
+            "{}",
+            crate::locale::ctx().named_text("plugin_cli.mp.url_empty", "URL cannot be empty.")
+        );
     }
 
     let cwd = std::env::current_dir().unwrap_or_default();
@@ -862,8 +1197,12 @@ fn marketplace_add(url: &str, force: bool) -> Result<()> {
         && !path.is_dir()
     {
         bail!(
-            "Local marketplace path not found (or is not a directory): {}",
-            path.display()
+            "{}",
+            crate::locale::ctx().format_named(
+                "plugin_cli.mp.local_not_found",
+                "Local marketplace path not found (or is not a directory): {path}",
+                &[("path", &path.display().to_string())],
+            )
         );
     }
 
@@ -875,7 +1214,14 @@ fn marketplace_add(url: &str, force: bool) -> Result<()> {
     let allowlist =
         &xai_grok_workspace::permission::resolution::managed_settings().marketplace_allowlist;
     if let Some(reason) = allowlist.add_block_reason(&identity) {
-        bail!("Marketplace source blocked: {reason}");
+        bail!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "plugin_cli.mp.blocked",
+                "Marketplace source blocked: {reason}",
+                &[("reason", &reason)],
+            )
+        );
     }
 
     // Dedupe against the FULL unfiltered source list by canonical git-URL identity, mirroring the
@@ -895,14 +1241,25 @@ fn marketplace_add(url: &str, force: bool) -> Result<()> {
             .any(|s| matches!(&s.kind, SourceKind::Local { path: p } if p == path)),
     };
     if already_configured {
-        bail!("Marketplace source already configured: {identity}");
+        bail!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "plugin_cli.mp.already_configured",
+                "Marketplace source already configured: {identity}",
+                &[("identity", &identity)],
+            )
+        );
     }
 
     if !force && let MarketplaceAddInput::GitUrl(git_url) = &input {
         xai_grok_plugin_marketplace::git::probe_git_remote(git_url).map_err(|e| {
             anyhow::anyhow!(
-                "{e}\nNot adding \"{url}\": it doesn't look like a reachable git repository. \
-                 Re-run with --force to add it anyway (e.g. a host only reachable on VPN)."
+                "{}",
+                crate::locale::ctx().format_named(
+                    "plugin_cli.mp.unreachable",
+                    "{error}\nNot adding \"{url}\": it doesn't look like a reachable git repository. Re-run with --force to add it anyway (e.g. a host only reachable on VPN).",
+                    &[("error", &e.to_string()), ("url", url)],
+                )
             )
         })?;
     }
@@ -929,7 +1286,14 @@ fn marketplace_add(url: &str, force: bool) -> Result<()> {
         is_official,
     )?;
 
-    println!("Added marketplace source: {name} ({identity})");
+    println!(
+        "{}",
+        crate::locale::ctx().format_named(
+            "plugin_cli.mp.added",
+            "Added marketplace source: {name} ({identity})",
+            &[("name", &name), ("identity", &identity)],
+        )
+    );
     Ok(())
 }
 
@@ -947,9 +1311,10 @@ fn find_removal_source<'a>(
                 .filter(|s| s.name == input)
                 .map(|s| s.identity())
                 .collect();
-            return Err(format!(
-                "Multiple sources are named \"{input}\"; remove by URL/path instead: {}",
-                identities.join(", ")
+            return Err(crate::locale::ctx().format_named(
+                "plugin_cli.mp.duplicate",
+                "Multiple sources are named \"{input}\"; remove by URL/path instead: {identities}",
+                &[("input", input), ("identities", &identities.join(", "))],
             ));
         }
         return Ok(first);
@@ -982,11 +1347,16 @@ fn find_removal_source<'a>(
         .ok_or_else(|| {
             let names: Vec<&str> = sources.iter().map(|s| s.name.as_str()).collect();
             if names.is_empty() {
-                format!("Marketplace source \"{input}\" not found; no sources are configured.")
+                crate::locale::ctx().format_named(
+                    "plugin_cli.mp.not_found_none",
+                    "Marketplace source \"{input}\" not found; no sources are configured.",
+                    &[("input", input)],
+                )
             } else {
-                format!(
-                    "Marketplace source \"{input}\" not found. Configured sources: {}",
-                    names.join(", ")
+                crate::locale::ctx().format_named(
+                    "plugin_cli.mp.not_found",
+                    "Marketplace source \"{input}\" not found. Configured sources: {names}",
+                    &[("input", input), ("names", &names.join(", "))],
                 )
             }
         })
@@ -998,7 +1368,13 @@ fn marketplace_remove(
 ) -> Result<()> {
     let input = name_or_url.trim();
     if input.is_empty() {
-        bail!("Provide the source name, git URL, or local path to remove.");
+        bail!(
+            "{}",
+            crate::locale::ctx().named_text(
+                "plugin_cli.mp.provide",
+                "Provide the source name, git URL, or local path to remove."
+            )
+        );
     }
     let cwd = std::env::current_dir().unwrap_or_default();
     let source = find_removal_source(sources, input, &cwd).map_err(|e| anyhow::anyhow!("{e}"))?;
@@ -1020,18 +1396,34 @@ fn marketplace_remove(
         == plugin::MarketplaceSourceRemoval::NotFound
     {
         eprintln!(
-            "Warning: source was found but could not be removed from config files.\n\
-             It may be defined in a managed or read-only settings file."
+            "{}",
+            crate::locale::ctx().named_text(
+                "plugin_cli.mp.remove_warn",
+                "Warning: source was found but could not be removed from config files.\nIt may be defined in a managed or read-only settings file."
+            )
         );
     }
 
     if uninstalled.is_empty() {
-        println!("Removed marketplace source: {} ({identity})", source.name);
+        println!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "plugin_cli.mp.removed",
+                "Removed marketplace source: {name} ({identity})",
+                &[("name", &source.name), ("identity", &identity)],
+            )
+        );
     } else {
         println!(
-            "Removed marketplace source and uninstalled {} plugin(s): {}",
-            uninstalled.len(),
-            uninstalled.join(", "),
+            "{}",
+            crate::locale::ctx().format_named(
+                "plugin_cli.mp.removed_with_plugins",
+                "Removed marketplace source and uninstalled {count} plugin(s): {names}",
+                &[
+                    ("count", &uninstalled.len().to_string()),
+                    ("names", &uninstalled.join(", ")),
+                ],
+            )
         );
     }
     Ok(())
@@ -1071,7 +1463,14 @@ fn marketplace_update_with_cache_root(
                 cache_root,
             ) {
                 Ok(_) => {
-                    println!("  {}: synced", source.name);
+                    println!(
+                        "{}",
+                        crate::locale::ctx().format_named(
+                            "plugin_cli.mp.synced",
+                            "  {name}: synced",
+                            &[("name", &source.name)],
+                        )
+                    );
                     refreshed += 1;
                 }
                 Err(e) => errors.push(format!("{}: {e}", source.name)),
@@ -1082,20 +1481,54 @@ fn marketplace_update_with_cache_root(
     if refreshed == 0 && errors.is_empty() {
         if let Some(filter) = name {
             if name_matched {
-                println!("Source \"{filter}\" is local, nothing to sync.");
+                println!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "plugin_cli.mp.local_noop",
+                        "Source \"{filter}\" is local, nothing to sync.",
+                        &[("filter", filter)],
+                    )
+                );
             } else {
-                bail!("Marketplace source \"{filter}\" not found.");
+                bail!(
+                    "{}",
+                    crate::locale::ctx().format_named(
+                        "plugin_cli.mp.not_found_simple",
+                        "Marketplace source \"{filter}\" not found.",
+                        &[("filter", filter)],
+                    )
+                );
             }
         } else {
-            println!("No marketplace sources configured.");
+            println!(
+                "{}",
+                crate::locale::ctx().named_text(
+                    "plugin_cli.mp.none_configured",
+                    "No marketplace sources configured."
+                )
+            );
         }
     } else if errors.is_empty() {
-        println!("Refreshed {refreshed} source(s).");
+        println!(
+            "{}",
+            crate::locale::ctx().format_named(
+                "plugin_cli.mp.refreshed",
+                "Refreshed {count} source(s).",
+                &[("count", &refreshed.to_string())],
+            )
+        );
     } else {
         eprintln!(
-            "Refreshed {refreshed} source(s) with {} error(s): {}",
-            errors.len(),
-            errors.join("; "),
+            "{}",
+            crate::locale::ctx().format_named(
+                "plugin_cli.mp.refreshed_with_errors",
+                "Refreshed {count} source(s) with {errors_count} error(s): {errors}",
+                &[
+                    ("count", &refreshed.to_string()),
+                    ("errors_count", &errors.len().to_string()),
+                    ("errors", &errors.join("; ")),
+                ],
+            )
         );
     }
     Ok(())

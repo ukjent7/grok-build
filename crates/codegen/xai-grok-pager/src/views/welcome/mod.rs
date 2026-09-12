@@ -65,7 +65,10 @@ fn quit_hint_spans(theme: &Theme) -> Vec<Span<'static>> {
                 .fg(theme.accent_user)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled("  quit", Style::default().fg(theme.gray)),
+        Span::styled(
+            format!("  {}", crate::locale::ctx().named_static_text("auth.quit", "quit")),
+            Style::default().fg(theme.gray),
+        ),
     ]
 }
 
@@ -101,7 +104,14 @@ pub(super) fn render_pending_hint(
     let line = Line::from(vec![
         Span::styled(format!("  {}", pending.shortcut.display()), key_style),
         Span::styled(":", action_style),
-        Span::styled(format!("press again to {}", pending.label), action_style),
+        Span::styled(
+            crate::locale::ctx().format_named(
+                "welcome.pending.press_again",
+                "press again to {action}",
+                &[("action", pending.label)],
+            ),
+            action_style,
+        ),
     ]);
     buf.set_line(area.x, area.y, &line, area.width);
 }
@@ -539,14 +549,14 @@ pub(super) fn render_version_badge(
         } = &mode
     {
         spans.push(Span::styled(
-            format!("Tier: {tier}"),
+            crate::locale::ctx().format_named("welcome.tier", "Tier: {tier}", &[("tier", *tier)]),
             Style::default().fg(theme.gray),
         ));
         spans.push(sep.clone());
     }
     if show_api_key && is_api_key_auth {
         spans.push(Span::styled(
-            "Logged in with API key",
+            crate::locale::ctx().named_static_text("welcome.api_key_auth", "Logged in with API key"),
             Style::default().fg(theme.gray),
         ));
         spans.push(sep);
@@ -792,8 +802,13 @@ pub fn render_welcome(
     let mut result = match params.auth_state {
         AuthState::Pending { error } => {
             let label = params.login_label.unwrap_or("grok.com");
-            let login_text = format!("Login with {}", label);
-            let menu = [("l", login_text.as_str()), ("q", "Quit")];
+            let login_text = crate::locale::ctx().format_named(
+                "welcome.login_with",
+                "Login with {provider}",
+                &[("provider", label)],
+            );
+            let quit = crate::locale::ctx().named_static_text("welcome.quit", "Quit");
+            let menu = [("l", login_text.as_str()), ("q", quit)];
             let msg = error.as_deref().map(|e| (e, theme.accent_error));
             let info = PromptInfo {
                 model_name: params.model_name,
@@ -840,12 +855,20 @@ pub fn render_welcome(
             }
         }
         AuthState::Done if params.is_zdr_blocked => {
-            let menu = [("l", "Switch account"), ("q", "Quit")];
+            let quit = crate::locale::ctx().named_static_text("welcome.quit", "Quit");
+            let menu = [
+                (
+                    "l",
+                    crate::locale::ctx().named_static_text("welcome.switch_account", "Switch account"),
+                ),
+                ("q", quit),
+            ];
             let (menu_rects, post_flush_escapes) = render_welcome_blocked(
                 content_area,
                 buf,
                 Some((
-                    "Grok Build is not yet available for this account.",
+                    crate::locale::ctx()
+                        .named_static_text("welcome.unavailable", "Grok Build is not yet available for this account."),
                     theme.gray_bright,
                 )),
                 &menu,
@@ -1010,10 +1033,14 @@ fn render_welcome_trust(
     h_margin: u16,
     compact: bool,
 ) -> WelcomeRenderResult {
-    let menu_items = [("y", "Yes, proceed"), ("n", "No, quit")];
+    let ctx = crate::locale::ctx();
+    let menu_items = [
+        ("y", ctx.named_static_text("trust.yes_proceed", "Yes, proceed")),
+        ("n", ctx.named_static_text("trust.no_quit", "No, quit")),
+    ];
     let lines = vec![
         Line::from(Span::styled(
-            "Do you trust the contents of this directory?",
+            ctx.named_static_text("trust.question", "Do you trust the contents of this directory?"),
             Style::default().fg(theme.gray_bright),
         ))
         .alignment(Alignment::Center),
@@ -1025,12 +1052,15 @@ fn render_welcome_trust(
         Line::default(),
         // Two lines so the warning never clips at narrow / compact widths (a single ~78-char line would truncate "...posing security risks")
         Line::from(Span::styled(
-            "Grok Build may run or modify contents in this directory,",
+            ctx.named_static_text(
+                "trust.warning_1",
+                "Grok Build may run or modify contents in this directory,",
+            ),
             Style::default().fg(theme.gray),
         ))
         .alignment(Alignment::Center),
         Line::from(Span::styled(
-            "posing security risks.",
+            ctx.named_static_text("trust.warning_2", "posing security risks."),
             Style::default().fg(theme.gray),
         ))
         .alignment(Alignment::Center),
@@ -1098,30 +1128,45 @@ const AUTH_COPY_PREFIX: &str = "If it doesn't open, click ";
 const AUTH_COPY_HERE: &str = "here";
 const AUTH_COPY_SUFFIX: &str = " to copy.";
 
+/// Localized parts of the "click here to copy" line, in paint order.
+fn auth_copy_parts() -> (&'static str, &'static str, &'static str) {
+    let ctx = crate::locale::ctx();
+    (
+        ctx.named_static_text("auth.copy.prefix", AUTH_COPY_PREFIX),
+        ctx.named_static_text("auth.copy.link", AUTH_COPY_HERE),
+        ctx.named_static_text("auth.copy.suffix", AUTH_COPY_SUFFIX),
+    )
+}
+
 /// Build the "click here to copy" line with "here" underlined in accent color.
 fn auth_copy_line(theme: &Theme) -> Line<'static> {
+    let (prefix, link, suffix) = auth_copy_parts();
     Line::from(vec![
-        Span::styled(AUTH_COPY_PREFIX, Style::default().fg(theme.gray_bright)),
+        Span::styled(prefix, Style::default().fg(theme.gray_bright)),
         Span::styled(
-            AUTH_COPY_HERE,
+            link,
             Style::default()
                 .fg(theme.accent_user)
                 .add_modifier(Modifier::UNDERLINED),
         ),
-        Span::styled(AUTH_COPY_SUFFIX, Style::default().fg(theme.gray_bright)),
+        Span::styled(suffix, Style::default().fg(theme.gray_bright)),
     ])
     .alignment(Alignment::Center)
 }
 
 /// Number of physical rows the header and the blank row occupy before the copy line.
 fn auth_copy_preceding_rows(header: &str, inner_width: u16) -> u16 {
-    let header_rows = (header.len() as u16).div_ceil(inner_width);
+    let header_rows =
+        (unicode_width::UnicodeWidthStr::width(header) as u16).div_ceil(inner_width);
     header_rows + 1 // header + blank
 }
 
 /// Number of physical rows the copy line occupies when wrapped.
 fn auth_copy_line_rows(inner_width: u16) -> u16 {
-    let copy_len = AUTH_COPY_PREFIX.len() + AUTH_COPY_HERE.len() + AUTH_COPY_SUFFIX.len();
+    let (prefix, link, suffix) = auth_copy_parts();
+    let copy_len = unicode_width::UnicodeWidthStr::width(prefix)
+        + unicode_width::UnicodeWidthStr::width(link)
+        + unicode_width::UnicodeWidthStr::width(suffix);
     (copy_len as u16).div_ceil(inner_width)
 }
 
@@ -1130,7 +1175,7 @@ const AUTH_FALLBACK_TEXT: &str = "Copying not working? Click here to show full U
 /// Build the fallback "show full URL" link line.
 fn auth_fallback_line(theme: &Theme) -> Line<'static> {
     Line::from(Span::styled(
-        AUTH_FALLBACK_TEXT,
+        crate::locale::ctx().named_static_text("auth.copy.fallback", AUTH_FALLBACK_TEXT),
         Style::default()
             .fg(theme.gray)
             .add_modifier(Modifier::UNDERLINED),
@@ -1148,18 +1193,27 @@ fn push_auth_copy_block(
     lines.push(auth_copy_line(theme));
     lines.push(Line::default());
     lines.push(match clipboard_delivery {
-        Some(crate::clipboard::ClipboardDelivery::Confirmed) => {
-            Line::from(Span::styled("copied!", Style::default().fg(theme.gray)))
-                .alignment(Alignment::Center)
-        }
+        Some(crate::clipboard::ClipboardDelivery::Confirmed) => Line::from(Span::styled(
+            crate::locale::ctx().named_static_text("auth.copy.confirmed", "copied!"),
+            Style::default().fg(theme.gray),
+        ))
+        .alignment(Alignment::Center),
+        // New id instead of `auth.copy.unverified`: that catalog entry's en-US text
+        // ("copy sent—verify paste") differs from this string and would break the pinned
+        // delivery-state test; the pending entry keeps en-US on the original literal.
         Some(crate::clipboard::ClipboardDelivery::Unverified) => Line::from(Span::styled(
-            "copy sent: verify paste",
+            crate::locale::ctx()
+                .named_text("auth.copy.unverified_hint", "copy sent: verify paste")
+                .into_owned(),
             Style::default().fg(theme.gray),
         ))
         .alignment(Alignment::Center),
         Some(crate::clipboard::ClipboardDelivery::Failed) => {
-            Line::from(Span::styled("copy failed", Style::default().fg(theme.gray)))
-                .alignment(Alignment::Center)
+            Line::from(Span::styled(
+                crate::locale::ctx().named_static_text("auth.copy.failed", "copy failed"),
+                Style::default().fg(theme.gray),
+            ))
+            .alignment(Alignment::Center)
         }
         None => Line::default(),
     });
@@ -1229,7 +1283,10 @@ fn render_raw_url_mode(
 
     // Render hint above the URL.
     let hint = Line::from(Span::styled(
-        "Select the URL below with your mouse and copy manually.",
+        crate::locale::ctx().named_static_text(
+            "auth.raw_url_hint",
+            "Select the URL below with your mouse and copy manually.",
+        ),
         Style::default().fg(theme.gray),
     ))
     .alignment(Alignment::Center);
@@ -1277,7 +1334,13 @@ fn render_raw_url_mode(
                 .fg(theme.accent_user)
                 .add_modifier(Modifier::BOLD),
         ),
-        Span::styled("  go back", Style::default().fg(theme.gray)),
+        Span::styled(
+            format!(
+                "  {}",
+                crate::locale::ctx().named_static_text("auth.go_back", "go back")
+            ),
+            Style::default().fg(theme.gray),
+        ),
     ];
     let hints = Line::from(hint_spans).alignment(Alignment::Center);
     Paragraph::new(hints).render(hint_area, buf);
@@ -1317,18 +1380,27 @@ fn render_browser_status_arm(
     }
 
     // Device also parses the user code from the verification URL.
+    let ctx = crate::locale::ctx();
     let (header, waiting_text, user_code) = match kind {
-        BrowserStatusKind::Command => (AUTH_HEADER, "Waiting for login to complete...", None),
+        BrowserStatusKind::Command => (
+            ctx.named_static_text("auth.header", AUTH_HEADER),
+            ctx.named_static_text("auth.wait_login", "Waiting for login to complete..."),
+            None,
+        ),
         BrowserStatusKind::Device => (
-            DEVICE_AUTH_HEADER,
-            "Waiting for approval...",
+            ctx.named_static_text("auth.device.header", DEVICE_AUTH_HEADER),
+            ctx.named_static_text("auth.wait_approval", "Waiting for approval..."),
             auth_url.and_then(extract_user_code),
         ),
     };
+    let device_code_caption =
+        ctx.named_static_text("auth.device.caption", DEVICE_CODE_CAPTION);
 
-    let header_rows = (header.len() as u16).div_ceil(inner_width);
+    let header_rows = (unicode_width::UnicodeWidthStr::width(header) as u16).div_ceil(inner_width);
     let code_extra = if user_code.is_some() {
-        let caption_rows = (DEVICE_CODE_CAPTION.len() as u16).div_ceil(inner_width);
+        let caption_rows =
+            (unicode_width::UnicodeWidthStr::width(device_code_caption) as u16)
+                .div_ceil(inner_width);
         1 + 1 + 1 + caption_rows // blank + code + blank + caption
     } else {
         0
@@ -1371,7 +1443,7 @@ fn render_browser_status_arm(
         lines.push(Line::default());
         lines.push(
             Line::from(Span::styled(
-                DEVICE_CODE_CAPTION,
+                device_code_caption,
                 Style::default().fg(theme.gray),
             ))
             .alignment(Alignment::Center),
@@ -1435,8 +1507,12 @@ fn render_welcome_authenticating(
                 );
             }
 
+            let auth_header =
+                crate::locale::ctx().named_static_text("auth.header", AUTH_HEADER);
             let msg_height = if auth_url.is_some() {
-                let header_rows = (AUTH_HEADER.len() as u16).div_ceil(inner_width);
+                let header_rows =
+                    (unicode_width::UnicodeWidthStr::width(auth_header) as u16)
+                        .div_ceil(inner_width);
                 header_rows + auth_copy_block_rows(inner_width)
             } else {
                 1u16
@@ -1461,7 +1537,7 @@ fn render_welcome_authenticating(
             if auth_url.is_some() {
                 lines.push(
                     Line::from(Span::styled(
-                        AUTH_HEADER,
+                        auth_header,
                         Style::default().fg(theme.gray_bright),
                     ))
                     .alignment(Alignment::Center),
@@ -1470,7 +1546,10 @@ fn render_welcome_authenticating(
             } else {
                 lines.push(
                     Line::from(Span::styled(
-                        "Waiting for auth URL...",
+                        crate::locale::ctx().named_static_text(
+                            "auth.wait_url",
+                            "Waiting for auth URL...",
+                        ),
                         Style::default().fg(theme.gray),
                     ))
                     .alignment(Alignment::Center),
@@ -1482,7 +1561,7 @@ fn render_welcome_authenticating(
                 .render(msg_area, buf);
 
             let (click_rect, fallback_rect) = if auth_url.is_some() {
-                auth_hit_rects(msg_area, h_pad, inner_width, AUTH_HEADER, 0)
+                auth_hit_rects(msg_area, h_pad, inner_width, auth_header, 0)
             } else {
                 (None, None)
             };
@@ -1512,7 +1591,13 @@ fn render_welcome_authenticating(
                         .fg(theme.accent_user)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::styled("  submit    ", Style::default().fg(theme.gray)),
+                Span::styled(
+                    format!(
+                        "  {}    ",
+                        crate::locale::ctx().named_static_text("auth.submit", "submit")
+                    ),
+                    Style::default().fg(theme.gray),
+                ),
             ];
             hint_spans.extend(quit_hint_spans(theme));
             let hints = Line::from(hint_spans).alignment(Alignment::Center);
@@ -1561,7 +1646,7 @@ fn render_welcome_authenticating(
             render_logo(logo_area, buf, theme, content_area.height);
 
             let msg = Line::from(Span::styled(
-                "Connecting...",
+                crate::locale::ctx().named_static_text("auth.connecting", "Connecting..."),
                 Style::default().fg(theme.gray_bright),
             ))
             .alignment(Alignment::Center);
@@ -1622,7 +1707,7 @@ fn render_changelog_section(
             .fg(theme.gray_bright)
             .add_modifier(Modifier::DIM),
     );
-    let title = "Changelog";
+    let title = crate::locale::ctx().named_static_text("welcome.changelog", "Changelog");
     buf.set_span(
         centered.x,
         centered.y,
@@ -1701,6 +1786,17 @@ fn render_announcement_section(
     (Some(text_area), truncated, cta_rect)
 }
 
+/// Localize the well-known "Free" tier label; other tiers pass through untouched.
+fn localized_subscription_tier(tier: &str) -> String {
+    if tier.trim().eq_ignore_ascii_case("free") {
+        crate::locale::ctx()
+            .named_text("welcome.subscription.free", "Free")
+            .into_owned()
+    } else {
+        tier.to_owned()
+    }
+}
+
 /// Render the normal welcome screen (Done state, already authenticated).
 fn render_welcome_done(
     content_area: Rect,
@@ -1716,10 +1812,11 @@ fn render_welcome_done(
     // Plain compact mode keeps the normal welcome layout
     let welcome_compact = show_picker;
 
+    let ctx = crate::locale::ctx();
     let cta = p
         .gate
         .and_then(|g| g.label.as_deref())
-        .unwrap_or("Upgrade Subscription");
+        .unwrap_or(ctx.named_static_text("welcome.upgrade_subscription", "Upgrade Subscription"));
     let in_vscode_family = welcome_in_vscode_family();
     let (key_g, key_l, key_q) = (
         "ctrl+g",
@@ -1768,7 +1865,11 @@ fn render_welcome_done(
     let gate_menu;
     let owned_menu;
     let menu_items: &[(&str, &str)] = if !p.has_access {
-        gate_menu = [(key_g, cta), (key_l, "Logout"), (key_q, "Quit")];
+        gate_menu = [
+            (key_g, cta),
+            (key_l, ctx.named_static_text("welcome.logout", "Logout")),
+            (key_q, ctx.named_static_text("welcome.quit", "Quit")),
+        ];
         &gate_menu
     } else {
         let (key_w, key_resume, key_q, key_i_with_x) = (
@@ -1783,15 +1884,18 @@ fn render_welcome_done(
             // The trailing "[x]" is a clickable dismiss control
             // The welcome screen mouse handler treats clicks on the rightmost 3 cells of this row as dismiss instead of open. Keyboard: ctrl-shift-i.
             // The key string is right-aligned by render_menu, so [x] sits at the very end of the row
-            items.push((key_i_with_x, "Import Claude settings"));
+            items.push((
+                key_i_with_x,
+                ctx.named_static_text("welcome.import_claude_settings", "Import Claude settings"),
+            ));
         }
-        items.push((key_w, "New worktree"));
-        items.push((key_resume, "Resume session"));
+        items.push((key_w, ctx.named_static_text("session.new_worktree", "New worktree")));
+        items.push((key_resume, ctx.named_static_text("session.resume", "Resume session")));
         // "Changelog" above Quit; no shortcut, opened by click (row or block)
         if show_changelog_action {
-            items.push(("", "Changelog"));
+            items.push(("", ctx.named_static_text("welcome.changelog", "Changelog")));
         }
-        items.push((key_q, "Quit"));
+        items.push((key_q, ctx.named_static_text("welcome.quit", "Quit")));
         owned_menu = items;
         owned_menu.as_slice()
     };
@@ -2028,12 +2132,14 @@ fn render_welcome_done(
         .flex(Flex::Center)
         .areas(layout.prompt);
         // Show the user's current tier and a clickable refresh button above the gate message
-        let tier_label = p.subscription_tier.unwrap_or("Free");
-        let tier_prefix = format!("Tier: {tier_label}  ");
-        let refresh_text = "[Refresh]";
-        let total_width = tier_prefix.len() + refresh_text.len();
+        let tier_label = localized_subscription_tier(p.subscription_tier.unwrap_or("Free"));
+        let tier_prefix_label =
+            ctx.named_static_text("welcome.subscription.tier_prefix", "Tier: ");
+        let refresh_text = ctx.named_static_text("welcome.subscription.refresh", "[Refresh]");
+        let tier_prefix = format!("{tier_prefix_label}{tier_label}  ");
+        let total_width = tier_prefix.width() + refresh_text.width();
         let tier_line = Line::from(vec![
-            Span::styled("Tier: ", Style::default().fg(theme.gray)),
+            Span::styled(tier_prefix_label, Style::default().fg(theme.gray)),
             Span::styled(
                 tier_label,
                 Style::default()
@@ -2058,16 +2164,21 @@ fn render_welcome_done(
         // Compute the click rect for "[Refresh]" within the centered line.
         let line_start_x = tier_area.x + tier_area.width.saturating_sub(total_width as u16) / 2;
         refresh_hit_rect = Some(Rect {
-            x: line_start_x + tier_prefix.len() as u16,
+            x: line_start_x + tier_prefix.width() as u16,
             y: tier_area.y,
-            width: refresh_text.len() as u16,
+            width: refresh_text.width() as u16,
             height: 1,
         });
 
-        let gate_text = p
-            .gate
-            .map(|g| g.message.as_str())
-            .unwrap_or("SuperGrok subscription required");
+        let gate_text = match p.gate {
+            Some(g) if g.message == "SuperGrok subscription required" => crate::locale::ctx()
+                .named_text("welcome.subscription.required", g.message.as_str())
+                .into_owned(),
+            Some(g) => g.message.clone(),
+            None => crate::locale::ctx()
+                .named_text("welcome.subscription.required", "SuperGrok subscription required")
+                .into_owned(),
+        };
         let msg = Line::from(Span::styled(
             gate_text,
             Style::default().fg(theme.gray_bright),
@@ -2167,13 +2278,17 @@ fn render_welcome_done(
             let key_name = "ctrl+u";
             let line = Line::from(vec![
                 Span::styled(
-                    "Update: ",
+                    crate::locale::ctx().named_static_text("welcome.update.prefix", "Update: "),
                     Style::default()
                         .fg(theme.accent_user)
                         .add_modifier(Modifier::BOLD),
                 ),
                 Span::styled(
-                    format!("v{ver} available, press {key_name} to restart"),
+                    crate::locale::ctx().format_named(
+                        "welcome.update.available",
+                        "v{version} available, press {key} to restart",
+                        &[("version", ver), ("key", key_name)],
+                    ),
                     Style::default().fg(theme.accent_user),
                 ),
             ]);
@@ -2204,17 +2319,31 @@ fn render_welcome_done(
             };
             let mins = hint.age.as_secs() / 60;
             let when = if mins == 0 {
-                "moments ago".to_string()
+                crate::locale::ctx()
+                    .named_text("welcome.resume.moments_ago", "moments ago")
+                    .into_owned()
             } else {
-                format!("{mins}m ago")
+                let minutes = mins.to_string();
+                crate::locale::ctx().format_named(
+                    "welcome.resume.minutes_ago",
+                    "{minutes}m ago",
+                    &[("minutes", &minutes)],
+                )
             };
             let accent = Style::default().fg(theme.accent_user);
             let accent_bold = accent.add_modifier(Modifier::BOLD);
             let tool = crate::app::foreign_tool_display_label(hint.tool);
+            let coming_from = crate::locale::ctx()
+                .named_static_text("welcome.resume.coming_from", "Coming from ");
+            let resume_text = crate::locale::ctx().format_named(
+                "welcome.resume.question",
+                "? Resume your session from {when} using ",
+                &[("when", &when)],
+            );
             let line = Line::from(vec![
-                Span::styled("Coming from ", accent),
+                Span::styled(coming_from, accent),
                 Span::styled(tool, accent_bold),
-                Span::styled(format!("? Resume your session from {when} using "), accent),
+                Span::styled(resume_text, accent),
                 Span::styled("ctrl+u", accent_bold),
             ]);
             Paragraph::new(line)
@@ -2438,7 +2567,11 @@ pub(crate) fn render_session_picker_body(
             summary_lines: &[],
             dimmed: false,
             indent: 1,
-            badge: if has_snippet { "match" } else { "" },
+            badge: if has_snippet {
+                crate::locale::ctx().named_static_text("session.badge.match", "match")
+            } else {
+                ""
+            },
             badge_color: Some(theme.accent_user),
             collapsible: true,
             underline_last_desc: false,
@@ -2509,7 +2642,9 @@ pub(crate) fn render_session_picker_body(
     }
 
     let config = PickerConfig {
-        title: Some("Resume session"),
+        title: Some(
+            crate::locale::ctx().named_static_text("picker.title.resume_session", "Resume session"),
+        ),
         show_search_hint: true,
         expandable: true,
         esc_clears_query: true,
@@ -2573,6 +2708,15 @@ fn render_auth_input_box(
         let input_width = inner.width.saturating_sub(prompt_width);
         let (display, cursor_column) =
             masked_auth_token_view(input, cursor_byte, input_width as usize);
+        // Localize the empty-input placeholder here (not inside `masked_auth_token_view`,
+        // which is pinned to the English literal by tests).
+        let display = if input.is_empty() {
+            crate::locale::ctx()
+                .named_text("auth.token_placeholder", "Paste your token here...")
+                .into_owned()
+        } else {
+            display
+        };
 
         let style = if input.is_empty() {
             Style::default().fg(theme.gray_dim)
