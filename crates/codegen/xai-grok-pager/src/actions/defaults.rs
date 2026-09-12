@@ -72,14 +72,16 @@ pub(super) fn default_actions(
     // Shared by ToggleQueue (Ctrl+4 primary) and OpenDashboard (omit Ctrl+4 alt).
     let local_mac_vscode = in_vscode_family && !ctx.is_ssh && cfg!(target_os = "macos");
     let ctrl_dot_unreliable = ctrl_dot_unreliable();
+    // Minimal mode rebinds Ctrl+G to EditPromptExternal, so the two variants cannot share a
+    // catalog id: telling a minimal-mode user to press Ctrl+G would send them to the editor.
     let send_to_background_help = if screen_mode.is_minimal() {
         crate::locale::ctx().named_static_text(
-            "shortcuts.action.SendToBackground.long_help",
+            "shortcuts.action.SendToBackground.long_help.minimal",
             "Detaches the running foreground Execute so it keeps working in the background while you read, queue prompts, or start something else.\nTrack background work with /tasks.\nOnly meaningful while a foreground Execute is actually running.",
         )
     } else {
         crate::locale::ctx().named_static_text(
-            "shortcuts.action.SendToBackground.long_help",
+            "shortcuts.action.SendToBackground.long_help.tasks_pane",
             "Detaches the running foreground Execute so it keeps working in the background while you read, queue prompts, or start something else.\nTrack and resume it from the tasks pane (Ctrl+G).\nOnly meaningful while a foreground Execute is actually running.",
         )
     };

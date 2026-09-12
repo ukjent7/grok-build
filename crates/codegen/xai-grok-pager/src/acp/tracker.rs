@@ -125,8 +125,12 @@ impl WaitingReason {
             Self::TaskOutput { .. } => crate::locale::ctx()
                 .named_static_text("turn.waiting.task_output", "Waiting on task output…")
                 .to_string(),
-            Self::TasksComplete => "Waiting on tasks…".to_string(),
-            Self::Sleep => "Sleeping…".to_string(),
+            Self::TasksComplete => crate::locale::ctx()
+                .named_static_text("turn.waiting.tasks", "Waiting on tasks…")
+                .to_string(),
+            Self::Sleep => crate::locale::ctx()
+                .named_static_text("turn.waiting.sleep", "Sleeping…")
+                .to_string(),
             Self::Hooks { event_name, count } if *count > 1 => {
                 format!("Running {count} {event_name} hooks…")
             }

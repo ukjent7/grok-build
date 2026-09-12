@@ -15,6 +15,7 @@ pub(super) fn dispatch_import_claude(app: &mut AppView) -> Vec<Effect> {
             tracing::warn!(error = %e, "Failed to write Claude import marker");
         }
         app.has_claude_import = false;
+        // do-not-localize: startup warning messages are stored untranslated and filtered literally.
         app.startup_warnings
             .retain(|w| !w.message.contains("Claude settings"));
         app.startup_warnings.push(crate::startup::StartupWarning {

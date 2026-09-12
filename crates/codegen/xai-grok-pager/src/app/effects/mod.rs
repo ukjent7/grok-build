@@ -2103,6 +2103,7 @@ pub(crate) fn execute(
                             }
                         })
                         .await
+                        // do-not-localize: matched by `starts_with` in `app::dispatch::task_result`.
                         .map_err(|error| format!("Could not prepare the fix: {error}"))
                         .and_then(|result| result);
                     TaskResult::DoctorFixPlanned {
@@ -2118,6 +2119,7 @@ pub(crate) fn execute(
                             *plan,
                         ))
                         .await
+                        // do-not-localize: matched by `starts_with` in `app::dispatch::task_result`.
                         .map_err(|error| format!("Could not apply the fix: {error}"))
                         .and_then(|result| result.map_err(|error| error.to_string()));
                     TaskResult::DoctorFixApplied {

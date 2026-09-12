@@ -2769,6 +2769,7 @@ fn render_startup_warnings(
     // Skip the import-claude startup warning entirely
     // The import row in the menu carries the call-to-action with the same visual weight as every other welcome menu item
     // Showing the warning text in addition to the menu row would be redundant
+    // do-not-localize: startup warning messages are stored untranslated and matched literally.
     if w.message.starts_with("Import Claude settings")
         || w.message.starts_with("Claude settings detected")
     {

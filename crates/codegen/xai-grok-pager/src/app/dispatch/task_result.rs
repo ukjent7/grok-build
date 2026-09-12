@@ -1070,6 +1070,9 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
                         ),
                     );
                 }
+                // do-not-localize: these prefixes are matched with `starts_with` here and produced
+                // by the same literals in `app::effects`; translating either side breaks the pair
+                // and the message ends up wrapped twice.
                 Err(error) => deliver_doctor_message(
                     app,
                     target.agent_id,
@@ -1083,6 +1086,7 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
             vec![]
         }
         TaskResult::DoctorFixApplied { target, result } => {
+            // do-not-localize: same prefix contract as `Could not prepare the fix:` above.
             let message = match result {
                 Ok(outcome) => crate::diagnostics::format_fix_success(&outcome),
                 Err(error) if error.starts_with("Could not apply the fix:") => error,

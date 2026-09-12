@@ -1982,6 +1982,9 @@ fn main() {
         xai_grok_update::channel_name().unwrap_or_default(),
     ));
     let args = PagerArgs::parse_cli();
+    // Resolve the `[ui] locale` config once, before any UI is built; render code reads the
+    // result process-wide through `xai_grok_locale::ctx()`.
+    xai_grok_pager::init_locale_from_config();
     if dispatch_version_if_requested(&args) || dispatch_doctor_if_requested(&args) {
         return;
     }
