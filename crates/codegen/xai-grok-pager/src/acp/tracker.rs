@@ -212,7 +212,7 @@ impl WritingToolCall {
             ),
             Some(name) => {
                 use xai_grok_tools::types::tool::ToolKind;
-                let ordinal_arg = &[("ordinal", &ordinal)];
+                let ordinal_arg: &[(&str, &str)] = &[("ordinal", &ordinal)];
                 match xai_grok_tools::tool_taxonomy::writing_tool_kind(name) {
                     Some(ToolKind::Write) => {
                         ctx.format_named("turn.writing.file", "Writing file{ordinal}…", ordinal_arg)
