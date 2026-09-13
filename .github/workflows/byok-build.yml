@@ -30,6 +30,14 @@ env:
   RUSTUP_TOOLCHAIN: 1.98.1
   SCCACHE_GHA_ENABLED: "true"
   RUSTC_WRAPPER: "sccache"
+  # FORK(byok): cap sccache well below its 10G default. The free plan shares
+  # one 10G pool across CI target-dir archives, the registry cache, and the
+  # win+mac sccache entries; uncapped, the fresh working set alone exceeds
+  # the quota, LRU evicts what the next build needs, and every build stays
+  # cold (observed: ~0% hits). 3G holds the dependency closure (~1350 locked
+  # crates, the stable high-value part); workspace crates recompile on change
+  # anyway. Tune from the per-build `sccache --show-stats` output below.
+  SCCACHE_CACHE_SIZE: "3G"
   # The sccache server occasionally dies mid-build on huge crates
   # (observed: connection reset while compiling xai-grok-shell lib).
   # Fall back to local compilation instead of failing the whole build.
