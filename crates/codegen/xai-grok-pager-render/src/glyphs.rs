@@ -380,7 +380,8 @@ pub fn is_legacy_windows_console() -> bool {
         forced_legacy_console_override().unwrap_or_else(|| {
             // `env_brand`, not `brand`: bare ConHost detects as `Unknown`, but `brand` optimistically becomes `WindowsTerminal` on native Windows
             // Font capability needs the raw detection so legacy consoles still get the ASCII glyph fallback
-            decide_legacy_windows_console(HostOs::current(), terminal_context().env_brand)
+            let ctx = terminal_context();
+            decide_legacy_windows_console(HostOs::current(), ctx.env_brand, ctx.term_var.as_deref())
         })
     })
 }
@@ -403,7 +404,13 @@ fn parse_forced_legacy_console(value: Option<&str>) -> Option<bool> {
 /// Pure decision function so tests can drive (host, brand) pairs without touching ambient state.
 /// Default-deny on Windows: an unknown brand is treated as legacy.
 /// Bare `cmd.exe` / `powershell.exe` in ConHost sets no terminal env vars, so the brand probe returns `Unknown` in exactly the case we need to catch.
-fn decide_legacy_windows_console(host: HostOs, brand: TerminalName) -> bool {
+/// Mintty/MSYS shells, ConEmu-likes, and WT DefTerm handoffs (which omit WT_SESSION) all export a real `TERM`, so `TERM` presence lifts the deny:
+/// only `Unknown` with no usable `TERM` (unset, blank, or `dumb`) stays legacy.
+fn decide_legacy_windows_console(
+    host: HostOs,
+    brand: TerminalName,
+    term_var: Option<&str>,
+) -> bool {
     if host != HostOs::Windows {
         return false;
     }
@@ -420,7 +427,15 @@ fn decide_legacy_windows_console(host: HostOs, brand: TerminalName) -> bool {
             | TerminalName::Ghostty
             | TerminalName::Rio
             | TerminalName::GrokDesktop
-    )
+    ) && !has_usable_term(term_var)
+}
+
+/// A `TERM` value that evidences a terminfo-capable emulator rather than bare ConHost.
+fn has_usable_term(term_var: Option<&str>) -> bool {
+    term_var.is_some_and(|term| {
+        let term = term.trim();
+        !term.is_empty() && term != "dumb"
+    })
 }
 
 #[cfg(test)]
@@ -619,26 +634,45 @@ mod tests {
             TerminalName::Vte,
             TerminalName::WindowsTerminal,
         ] {
-            assert!(!decide_legacy_windows_console(HostOs::Macos, brand));
-            assert!(!decide_legacy_windows_console(HostOs::Linux, brand));
-            assert!(!decide_legacy_windows_console(HostOs::Other, brand));
+            assert!(!decide_legacy_windows_console(HostOs::Macos, brand, None));
+            assert!(!decide_legacy_windows_console(HostOs::Linux, brand, None));
+            assert!(!decide_legacy_windows_console(HostOs::Other, brand, None));
         }
     }
 
     #[test]
-    fn windows_unknown_is_legacy() {
+    fn windows_unknown_without_term_is_legacy() {
         // Realistic ConHost case: no terminal env vars set.
-        assert!(decide_legacy_windows_console(
-            HostOs::Windows,
-            TerminalName::Unknown
-        ));
+        for term_var in [None, Some(""), Some("   "), Some("dumb")] {
+            assert!(
+                decide_legacy_windows_console(HostOs::Windows, TerminalName::Unknown, term_var),
+                "term_var={term_var:?} must stay legacy"
+            );
+        }
+    }
+
+    #[test]
+    fn windows_unknown_with_term_is_not_legacy() {
+        // Mintty/MSYS shells, ConEmu-likes, and WT DefTerm handoffs export TERM while staying Unknown-brand.
+        for term_var in [
+            Some("xterm"),
+            Some("xterm-256color"),
+            Some("screen-256color"),
+            Some("tmux-256color"),
+        ] {
+            assert!(
+                !decide_legacy_windows_console(HostOs::Windows, TerminalName::Unknown, term_var),
+                "term_var={term_var:?} evidences a capable emulator"
+            );
+        }
     }
 
     #[test]
     fn windows_terminal_is_not_legacy() {
         assert!(!decide_legacy_windows_console(
             HostOs::Windows,
-            TerminalName::WindowsTerminal
+            TerminalName::WindowsTerminal,
+            None
         ));
     }
 
@@ -650,7 +684,7 @@ mod tests {
             TerminalName::Windsurf,
             TerminalName::Zed,
         ] {
-            assert!(!decide_legacy_windows_console(HostOs::Windows, brand));
+            assert!(!decide_legacy_windows_console(HostOs::Windows, brand, None));
         }
     }
 
@@ -664,7 +698,7 @@ mod tests {
             TerminalName::Rio,
             TerminalName::GrokDesktop,
         ] {
-            assert!(!decide_legacy_windows_console(HostOs::Windows, brand));
+            assert!(!decide_legacy_windows_console(HostOs::Windows, brand, None));
         }
     }
 
@@ -677,7 +711,7 @@ mod tests {
             TerminalName::Iterm2,
             TerminalName::WarpTerminal,
         ] {
-            assert!(decide_legacy_windows_console(HostOs::Windows, brand));
+            assert!(decide_legacy_windows_console(HostOs::Windows, brand, None));
         }
     }
 }
