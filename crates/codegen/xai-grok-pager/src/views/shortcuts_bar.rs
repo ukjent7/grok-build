@@ -154,6 +154,99 @@ pub struct CompactConfig {
     pub help_hint: Option<HintItem>,
 }
 
+/// Localized bottom-bar verb. Call sites pass bare English (`"send"`);
+/// unknown input (including already-translated text) passes through.
+fn localized_hint_label(label: &str) -> Cow<'_, str> {
+    let ctx = crate::locale::ctx();
+    let translated: &'static str = match label {
+        "accept" => ctx.named_static_text("shortcut.accept", "accept"),
+        "accept / toggle" => ctx.named_static_text("shortcut.accept_toggle", "accept / toggle"),
+        "accept suggestion" => {
+            ctx.named_static_text("shortcut.accept_suggestion", "accept suggestion")
+        }
+        "always-approve" => ctx.named_static_text("shortcut.always_approve", "always-approve"),
+        "answer" => ctx.named_static_text("shortcut.answer", "answer"),
+        "apply" => ctx.named_static_text("shortcut.apply", "apply"),
+        "approve" => ctx.named_static_text("shortcut.approve", "approve"),
+        "back" => ctx.named_static_text("shortcut.back", "back"),
+        "cancel" => ctx.named_static_text("shortcut.cancel", "cancel"),
+        "clear" => ctx.named_static_text("shortcut.clear", "clear"),
+        "clear search" => ctx.named_static_text("shortcut.clear_search", "clear search"),
+        "close" => ctx.named_static_text("shortcut.close", "close"),
+        "comment" => ctx.named_static_text("shortcut.comment", "comment"),
+        "confirm" => ctx.named_static_text("shortcut.confirm", "confirm"),
+        "copy" => ctx.named_static_text("shortcut.copy", "copy"),
+        "copy cmd" => ctx.named_static_text("shortcut.copy_command", "copy cmd"),
+        "copy output" => ctx.named_static_text("shortcut.copy_output", "copy output"),
+        "copy path" => ctx.named_static_text("shortcut.copy_path", "copy path"),
+        "copy pattern" => ctx.named_static_text("shortcut.copy_pattern", "copy pattern"),
+        "copy plan" => ctx.named_static_text("shortcut.copy_plan", "copy plan"),
+        "copy query" => ctx.named_static_text("shortcut.copy_query", "copy query"),
+        "copy url" => ctx.named_static_text("shortcut.copy_url", "copy url"),
+        "create" => ctx.named_static_text("shortcut.create", "create"),
+        "dashboard" => ctx.named_static_text("shortcut.dashboard", "dashboard"),
+        "decline" => ctx.named_static_text("shortcut.decline", "decline"),
+        "delete" => ctx.named_static_text("shortcut.delete", "delete"),
+        "delete row" => ctx.named_static_text("shortcut.delete_row", "delete row"),
+        "dismiss" => ctx.named_static_text("shortcut.dismiss", "dismiss"),
+        "drill" => ctx.named_static_text("shortcut.drill", "drill"),
+        "edit" => ctx.named_static_text("shortcut.edit", "edit"),
+        "edit pattern" => ctx.named_static_text("shortcut.edit_pattern", "edit pattern"),
+        "expand" => ctx.named_static_text("shortcut.expand", "expand"),
+        "filename" => ctx.named_static_text("shortcut.filename", "filename"),
+        "filter" => ctx.named_static_text("shortcut.filter", "filter"),
+        "fire" => ctx.named_static_text("shortcut.fire", "fire"),
+        "fullscreen" => ctx.named_static_text("shortcut.fullscreen", "fullscreen"),
+        "fwd" => ctx.named_static_text("shortcut.fwd", "fwd"),
+        "go" => ctx.named_static_text("shortcut.go", "go"),
+        "goto" => ctx.named_static_text("shortcut.goto", "goto"),
+        "input" => ctx.named_static_text("shortcut.input", "input"),
+        "keep filter" => ctx.named_static_text("shortcut.keep_filter", "keep filter"),
+        "kill" => ctx.named_static_text("shortcut.kill", "kill"),
+        "lines" => ctx.named_static_text("shortcut.lines", "lines"),
+        "list" => ctx.named_static_text("shortcut.list", "list"),
+        "mode" => ctx.named_static_text("shortcut.mode", "mode"),
+        "nav" => ctx.named_static_text("shortcut.nav", "nav"),
+        "navigate" => ctx.named_static_text("shortcut.navigate", "navigate"),
+        "New Agent" => ctx.named_static_text("shortcut.new_agent", "New Agent"),
+        "newline" => ctx.named_static_text("shortcut.newline", "newline"),
+        "next answer" => ctx.named_static_text("shortcut.next_answer", "next answer"),
+        "next choice" => ctx.named_static_text("shortcut.next_choice", "next choice"),
+        "next field" => ctx.named_static_text("shortcut.next_field", "next field"),
+        "next option" => ctx.named_static_text("shortcut.next_option", "next option"),
+        "next/prev" => ctx.named_static_text("shortcut.next_prev", "next/prev"),
+        "open" => ctx.named_static_text("shortcut.open", "open"),
+        "page" => ctx.named_static_text("shortcut.page", "page"),
+        "plan" => ctx.named_static_text("shortcut.plan", "plan"),
+        "prompt" => ctx.named_static_text("shortcut.prompt", "prompt"),
+        "quit" => ctx.named_static_text("shortcut.quit", "quit"),
+        "quit plan" => ctx.named_static_text("shortcut.quit_plan", "quit plan"),
+        "quote" => ctx.named_static_text("shortcut.quote", "quote"),
+        "raw" => ctx.named_static_text("shortcut.raw", "raw"),
+        "reorder" => ctx.named_static_text("shortcut.reorder", "reorder"),
+        "request changes" => ctx.named_static_text("shortcut.request_changes", "request changes"),
+        "save" => ctx.named_static_text("shortcut.save", "save"),
+        "save comment" => ctx.named_static_text("shortcut.save_comment", "save comment"),
+        "scope" => ctx.named_static_text("shortcut.scope", "scope"),
+        "search" => ctx.named_static_text("shortcut.search", "search"),
+        "select" => ctx.named_static_text("shortcut.select", "select"),
+        "send" => ctx.named_static_text("shortcut.send", "send"),
+        "send now" => ctx.named_static_text("shortcut.send_now", "send now"),
+        "send to bg" => ctx.named_static_text("shortcut.send_to_background", "send to bg"),
+        "send+open" => ctx.named_static_text("shortcut.send_open", "send+open"),
+        "shortcuts" => ctx.named_static_text("shortcut.shortcuts", "shortcuts"),
+        "show done" => ctx.named_static_text("shortcut.show_done", "show done"),
+        "hide done" => ctx.named_static_text("shortcut.hide_done", "hide done"),
+        "submit" => ctx.named_static_text("shortcut.submit", "submit"),
+        "top/btm" => ctx.named_static_text("shortcut.top_bottom", "top/btm"),
+        "turn" => ctx.named_static_text("shortcut.turn", "turn"),
+        "view" => ctx.named_static_text("shortcut.view", "view"),
+        "wrap" => ctx.named_static_text("shortcut.wrap", "wrap"),
+        _ => return Cow::Borrowed(label),
+    };
+    Cow::Borrowed(translated)
+}
+
 /// Info needed to render the "press again" hint.
 #[derive(Clone, Copy)]
 pub struct PendingHint {
@@ -286,11 +379,12 @@ impl Widget for ShortcutsBar<'_> {
             buf.set_span(x, area.y, &colon, 1);
             x += 1;
 
-            let action_span = Span::styled(hint.label.as_ref(), action_style);
-            let action_width = hint.label.width() as u16;
+            let display_label = localized_hint_label(hint.label.as_ref());
+            let action_width = display_label.width() as u16;
             if x + action_width > area.x + area.width {
                 break;
             }
+            let action_span = Span::styled(display_label.as_ref(), action_style);
             buf.set_span(x, area.y, &action_span, action_width);
             x += action_width;
         }

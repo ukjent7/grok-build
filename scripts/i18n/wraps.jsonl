@@ -1630,7 +1630,88 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.value.no_override", "kind": "named_text", "english": "(no override)"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.value.off", "kind": "named_static_text", "english": "off"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.value.on", "kind": "named_static_text", "english": "on"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.accept", "kind": "named_static_text", "english": "accept"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.accept_suggestion", "kind": "named_static_text", "english": "accept suggestion"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.accept_toggle", "kind": "named_static_text", "english": "accept / toggle"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.always_approve", "kind": "named_static_text", "english": "always-approve"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.answer", "kind": "named_static_text", "english": "answer"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.apply", "kind": "named_static_text", "english": "apply"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.approve", "kind": "named_static_text", "english": "approve"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.back", "kind": "named_static_text", "english": "back"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.cancel", "kind": "named_static_text", "english": "cancel"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.clear", "kind": "named_static_text", "english": "clear"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.clear_search", "kind": "named_static_text", "english": "clear search"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.close", "kind": "named_static_text", "english": "close"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.comment", "kind": "named_static_text", "english": "comment"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.confirm", "kind": "named_static_text", "english": "confirm"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.copy", "kind": "named_static_text", "english": "copy"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.copy_command", "kind": "named_static_text", "english": "copy cmd"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.copy_output", "kind": "named_static_text", "english": "copy output"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.copy_path", "kind": "named_static_text", "english": "copy path"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.copy_pattern", "kind": "named_static_text", "english": "copy pattern"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.copy_plan", "kind": "named_static_text", "english": "copy plan"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.copy_query", "kind": "named_static_text", "english": "copy query"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.copy_url", "kind": "named_static_text", "english": "copy url"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.create", "kind": "named_static_text", "english": "create"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.dashboard", "kind": "named_static_text", "english": "dashboard"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.decline", "kind": "named_static_text", "english": "decline"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.delete", "kind": "named_static_text", "english": "delete"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.delete_row", "kind": "named_static_text", "english": "delete row"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.dismiss", "kind": "named_static_text", "english": "dismiss"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.drill", "kind": "named_static_text", "english": "drill"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.edit", "kind": "named_static_text", "english": "edit"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.edit_pattern", "kind": "named_static_text", "english": "edit pattern"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.expand", "kind": "named_static_text", "english": "expand"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.filename", "kind": "named_static_text", "english": "filename"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.filter", "kind": "named_static_text", "english": "filter"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.fire", "kind": "named_static_text", "english": "fire"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.fullscreen", "kind": "named_static_text", "english": "fullscreen"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.fwd", "kind": "named_static_text", "english": "fwd"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.go", "kind": "named_static_text", "english": "go"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.goto", "kind": "named_static_text", "english": "goto"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.hide_done", "kind": "named_static_text", "english": "hide done"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.input", "kind": "named_static_text", "english": "input"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.keep_filter", "kind": "named_static_text", "english": "keep filter"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.kill", "kind": "named_static_text", "english": "kill"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.lines", "kind": "named_static_text", "english": "lines"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.list", "kind": "named_static_text", "english": "list"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.mode", "kind": "named_static_text", "english": "mode"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.nav", "kind": "named_static_text", "english": "nav"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.navigate", "kind": "named_static_text", "english": "navigate"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.new_agent", "kind": "named_static_text", "english": "New Agent"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.newline", "kind": "named_static_text", "english": "newline"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.next_answer", "kind": "named_static_text", "english": "next answer"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.next_choice", "kind": "named_static_text", "english": "next choice"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.next_field", "kind": "named_static_text", "english": "next field"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.next_option", "kind": "named_static_text", "english": "next option"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.next_prev", "kind": "named_static_text", "english": "next/prev"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.open", "kind": "named_static_text", "english": "open"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.page", "kind": "named_static_text", "english": "page"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.plan", "kind": "named_static_text", "english": "plan"}
 {"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.press_again", "kind": "format_named", "english": "press again to {action}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.prompt", "kind": "named_static_text", "english": "prompt"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.quit", "kind": "named_static_text", "english": "quit"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.quit_plan", "kind": "named_static_text", "english": "quit plan"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.quote", "kind": "named_static_text", "english": "quote"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.raw", "kind": "named_static_text", "english": "raw"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.reorder", "kind": "named_static_text", "english": "reorder"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.request_changes", "kind": "named_static_text", "english": "request changes"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.save", "kind": "named_static_text", "english": "save"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.save_comment", "kind": "named_static_text", "english": "save comment"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.scope", "kind": "named_static_text", "english": "scope"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.search", "kind": "named_static_text", "english": "search"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.select", "kind": "named_static_text", "english": "select"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.send", "kind": "named_static_text", "english": "send"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.send_now", "kind": "named_static_text", "english": "send now"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.send_open", "kind": "named_static_text", "english": "send+open"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.send_to_background", "kind": "named_static_text", "english": "send to bg"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.shortcuts", "kind": "named_static_text", "english": "shortcuts"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.show_done", "kind": "named_static_text", "english": "show done"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.submit", "kind": "named_static_text", "english": "submit"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.top_bottom", "kind": "named_static_text", "english": "top/btm"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.turn", "kind": "named_static_text", "english": "turn"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.view", "kind": "named_static_text", "english": "view"}
+{"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "shortcut.wrap", "kind": "named_static_text", "english": "wrap"}
 {"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_help.rs", "id": "shortcuts.footer.back", "kind": "named_static_text", "english": "Esc back"}
 {"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_help.rs", "id": "shortcuts.footer.close", "kind": "named_static_text", "english": "Esc close"}
 {"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_help.rs", "id": "shortcuts.footer.close_all", "kind": "named_static_text", "english": "Ctrl+./X close"}

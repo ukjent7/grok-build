@@ -118,16 +118,21 @@ pub struct SuggestionRow {
 }
 
 /// Localized dropdown description for a command row, keyed by the command's
-/// canonical name. Only pager-owned (builtin-sourced) commands are mapped so
-/// server-authored ACP/skill descriptions stay opaque. Unknown names fall back
-/// to the original English text.
-fn localized_command_description(source: CommandSource, canonical: &str, english: &str) -> String {
-    if source != CommandSource::Builtin {
-        return english.to_string();
+/// canonical name. Shell builtins (`memory`) and known skills (`review`)
+/// reuse the same catalog; unknown names fall back to the original English.
+fn localized_command_description(_source: CommandSource, canonical: &str, english: &str) -> String {
+    let ctx = crate::locale::ctx();
+    let hit = ctx.named_text(&format!("slash.command.{canonical}.description"), english);
+    if hit.as_ref() != english {
+        return hit.into_owned();
     }
-    crate::locale::ctx()
-        .named_text(&format!("slash.command.{canonical}.description"), english)
-        .into_owned()
+    if let Some((_, bare)) = canonical.rsplit_once(':') {
+        let hit = ctx.named_text(&format!("slash.command.{bare}.description"), english);
+        if hit.as_ref() != english {
+            return hit.into_owned();
+        }
+    }
+    english.to_string()
 }
 
 /// Localized display for a curated dropdown tag. Tag values are free-form;
