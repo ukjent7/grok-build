@@ -119,7 +119,9 @@ pub struct SuggestionRow {
 
 /// Localized dropdown description for a command row, keyed by the command's
 /// canonical name. Shell builtins (`memory`) and known skills (`review`)
-/// reuse the same catalog; unknown names fall back to the original English.
+/// reuse the same catalog; bundled skills (`skill-design-principles`,
+/// `statusline`, …) fall back to their `extensions.catalog.skill.*` copy
+/// (dashes become underscores); unknown names fall back to the original English.
 fn localized_command_description(_source: CommandSource, canonical: &str, english: &str) -> String {
     let ctx = crate::locale::ctx();
     let hit = ctx.named_text(&format!("slash.command.{canonical}.description"), english);
@@ -128,6 +130,30 @@ fn localized_command_description(_source: CommandSource, canonical: &str, englis
     }
     if let Some((_, bare)) = canonical.rsplit_once(':') {
         let hit = ctx.named_text(&format!("slash.command.{bare}.description"), english);
+        if hit.as_ref() != english {
+            return hit.into_owned();
+        }
+    }
+    // Skill bodies stay author-written; only the dropdown description localizes.
+    let bare = canonical
+        .rsplit_once(':')
+        .map(|(_, bare)| bare)
+        .unwrap_or(canonical);
+    for candidate in [canonical, bare] {
+        let normalized: String = candidate
+            .chars()
+            .map(|c| {
+                if c == '-' {
+                    '_'
+                } else {
+                    c.to_ascii_lowercase()
+                }
+            })
+            .collect();
+        let hit = ctx.named_text(
+            &format!("extensions.catalog.skill.{normalized}.description"),
+            english,
+        );
         if hit.as_ref() != english {
             return hit.into_owned();
         }
