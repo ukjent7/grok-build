@@ -239,7 +239,11 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         area,
                         y,
                         bottom,
-                        Line::from(Span::styled("Waiting for approval\u{2026}", gray)),
+                        Line::from(Span::styled(
+                            xai_grok_locale::ctx()
+                                .named_text("auth.wait_approval", "Waiting for approval\u{2026}"),
+                            gray,
+                        )),
                     );
                 }
                 None => {
@@ -285,13 +289,17 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
         }
         MinimalAuthHint::TrustFolder { workspace } => {
             // Mirrors `render_welcome_trust` copy, flush-left for minimal.
+            // Same catalog ids as the welcome screen so both stay in sync.
             y = put_line(
                 buf,
                 area,
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    "Do you trust the contents of this directory?",
+                    xai_grok_locale::ctx().named_text(
+                        "trust.question",
+                        "Do you trust the contents of this directory?",
+                    ),
                     bold,
                 )),
             );
@@ -310,7 +318,10 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    "Grok Build may run or modify contents in this directory,",
+                    xai_grok_locale::ctx().named_text(
+                        "trust.warning_1",
+                        "Grok Build may run or modify contents in this directory,",
+                    ),
                     gray,
                 )),
             );
@@ -319,7 +330,10 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 area,
                 y,
                 bottom,
-                Line::from(Span::styled("posing security risks.", gray)),
+                Line::from(Span::styled(
+                    xai_grok_locale::ctx().named_text("trust.warning_2", "posing security risks."),
+                    gray,
+                )),
             );
             y = put_line(buf, area, y, bottom, Line::default());
             y = put_line(
@@ -329,7 +343,13 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 bottom,
                 Line::from(vec![
                     Span::styled("y", bold),
-                    Span::styled("  Yes, proceed", gray),
+                    // Leading spaces stay outside the wrap so the zh-CN text
+                    // needs no padding to align with the "n" row below.
+                    Span::styled("  ", gray),
+                    Span::styled(
+                        xai_grok_locale::ctx().named_text("trust.yes_proceed", "Yes, proceed"),
+                        gray,
+                    ),
                 ]),
             );
             y = put_line(
@@ -339,7 +359,11 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 bottom,
                 Line::from(vec![
                     Span::styled("n", bold),
-                    Span::styled("  No, quit", gray),
+                    Span::styled("  ", gray),
+                    Span::styled(
+                        xai_grok_locale::ctx().named_text("trust.no_quit", "No, quit"),
+                        gray,
+                    ),
                 ]),
             );
             y = put_line(buf, area, y, bottom, Line::default());

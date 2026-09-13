@@ -348,6 +348,10 @@ fn apply_welcome_workspace_on_new_session(app: &mut AppView) -> Result<(), Vec<E
         Err(err) => {
             tracing::warn!("welcome workspace mode: {err}");
             let raw_error = err.to_string();
+            // One catalog id covers both English variants below on purpose: the
+            // anchor here is dynamic (`&raw_error`), so the wrap gate cannot
+            // baseline it. Do not split per variant without also matching on
+            // the resolved text, not the raw error.
             let display_error =
                 if raw_error == "local-workspace resolve returned no config after own-mode request"
                     || raw_error == "local-workspace resolve returned no config after ack"
