@@ -12,6 +12,8 @@ pub struct TutorialTopic {
     pub blurb: &'static str,
     /// Embedded markdown page content.
     pub content: &'static str,
+    /// zh-CN page content. English files stay untouched for upstream syncs.
+    pub content_zh: &'static str,
     /// Title of the primary how-to guide this page's "Go deeper" points at (must match a [`crate::docs`] title); `d` opens it in the overlay.
     pub go_deeper: Option<&'static str>,
 }
@@ -22,9 +24,21 @@ macro_rules! topic {
             title: $title,
             blurb: $blurb,
             content: include_str!(concat!("../docs/tutorial/", $file)),
+            content_zh: include_str!(concat!("../docs/tutorial/zh-CN/", $file)),
             go_deeper: $go_deeper,
         }
     };
+}
+
+impl TutorialTopic {
+    /// Page body for the active locale.
+    pub fn localized_content(&self) -> &'static str {
+        if crate::locale::ctx().is_zh_cn() {
+            self.content_zh
+        } else {
+            self.content
+        }
+    }
 }
 
 /// The tutorial topics, in display order, as a linear flow (the topic screen's `→` advances through them).
@@ -99,6 +113,16 @@ mod tests {
             assert!(
                 t.content.starts_with('#'),
                 "topic {} should start with a markdown header",
+                t.title
+            );
+            assert!(
+                !t.content_zh.is_empty(),
+                "topic {} is missing zh-CN content",
+                t.title
+            );
+            assert!(
+                t.content_zh.starts_with('#'),
+                "topic {} zh-CN content should start with a markdown header",
                 t.title
             );
         }

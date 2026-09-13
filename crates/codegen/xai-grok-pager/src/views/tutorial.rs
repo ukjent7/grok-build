@@ -369,7 +369,7 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
                     &format!("tutorial.topic.{}.title", index + 1),
                     topic.title,
                 ),
-                topic_body(topic.content),
+                topic_body(topic.localized_content()),
                 &mut st.scroll,
                 &mut st.cached_lines,
                 compact,
@@ -630,6 +630,7 @@ mod tests {
         // Every real topic starts with an H1, so every body drops it.
         for t in TUTORIAL_TOPICS {
             assert!(!topic_body(t.content).starts_with("# "), "{}", t.title);
+            assert!(!topic_body(t.content_zh).starts_with("# "), "{}", t.title);
         }
         // Content without a leading H1 passes through untouched.
         assert_eq!(topic_body("plain text"), "plain text");
