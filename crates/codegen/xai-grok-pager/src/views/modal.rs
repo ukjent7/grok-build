@@ -1328,7 +1328,6 @@ pub fn render_doc_viewer_overlay_with_shortcuts(
     theme: &Theme,
     shortcuts: &[super::modal_window::Shortcut<'_>],
 ) {
-    use ratatui::widgets::{Paragraph, Widget, Wrap};
     let modal_config = super::modal_window::ModalWindowConfig {
         title,
         tabs: None,
@@ -1365,14 +1364,23 @@ pub fn render_doc_viewer_overlay_with_shortcuts(
         let max_scroll = all_lines.len().saturating_sub(content_area.height as usize);
         *scroll = (*scroll as usize).min(max_scroll) as u16;
         let start = *scroll as usize;
-        let visible: Vec<ratatui::text::Line> = all_lines
+        // Lines from `MarkdownContent` already fit `w`; render them directly without a
+        // second `Paragraph` wrap (its width model can disagree on wide CJK runs) and
+        // pad each row to full width so a previous longer wide-char line cannot leave
+        // stale continuation cells behind as ghost text.
+        for (i, line) in all_lines
             .iter()
             .skip(start)
             .take(content_area.height as usize)
-            .cloned()
-            .collect();
-        let para = Paragraph::new(visible).wrap(Wrap { trim: false });
-        para.render(content_area, buf);
+            .enumerate()
+        {
+            let y = content_area.y.saturating_add(i as u16);
+            if y >= buf.area.bottom() {
+                break;
+            }
+            let fitted = crate::render::line_utils::fit_line_to_width(line.clone(), w as usize);
+            buf.set_line(content_area.x, y, &fitted, w);
+        }
     }
 }
 #[cfg(test)]
