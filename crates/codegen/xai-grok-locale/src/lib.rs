@@ -480,9 +480,11 @@ mod tests {
             "grok-4.5"
         );
         assert_eq!(context.named_text("context.tokens", "tokens"), "Token");
+        // Mode names stay English by design (they are canonical identifiers also
+        // shown in the prompt info-line); only the surrounding sentences translate.
         assert_eq!(
             context.named_text("mode.always_approve.label", "always-approve"),
-            "始终批准"
+            "always-approve"
         );
     }
 

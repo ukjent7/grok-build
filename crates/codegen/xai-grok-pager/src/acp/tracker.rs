@@ -189,49 +189,91 @@ pub struct WritingToolCall {
 impl WritingToolCall {
     /// User-facing spinner label.
     pub fn label(&self) -> String {
+        let ctx = crate::locale::ctx();
         let ordinal = match self.ordinal.get() {
             1 => String::new(),
             n => format!(" ({n})"),
         };
         match self.tool_name.as_deref() {
-            Some(name) if xai_grok_tools::is_task_tool_id(name) => {
-                format!("Writing subagent prompt{ordinal}…")
-            }
-            Some(xai_grok_tools::USE_TOOL_NAME) => {
-                format!("Preparing MCP tool{ordinal}…")
-            }
-            Some(xai_grok_tools::SEARCH_TOOL_NAME) => {
-                format!("Searching MCP tools{ordinal}…")
-            }
+            Some(name) if xai_grok_tools::is_task_tool_id(name) => ctx.format_named(
+                "turn.writing.subagent_prompt",
+                "Writing subagent prompt{ordinal}…",
+                &[("ordinal", &ordinal)],
+            ),
+            Some(xai_grok_tools::USE_TOOL_NAME) => ctx.format_named(
+                "turn.writing.mcp_tool",
+                "Preparing MCP tool{ordinal}…",
+                &[("ordinal", &ordinal)],
+            ),
+            Some(xai_grok_tools::SEARCH_TOOL_NAME) => ctx.format_named(
+                "turn.writing.search_mcp_tools",
+                "Searching MCP tools{ordinal}…",
+                &[("ordinal", &ordinal)],
+            ),
             Some(name) => {
                 use xai_grok_tools::types::tool::ToolKind;
-                let copy =
-                    xai_grok_tools::tool_taxonomy::writing_tool_kind(name).and_then(|kind| {
-                        match kind {
-                            ToolKind::Write => Some("Writing file"),
-                            ToolKind::Edit => Some("Writing edit"),
-                            ToolKind::Execute => Some("Writing command"),
-                            ToolKind::Plan => Some("Updating todo list"),
-                            ToolKind::Workflow => Some("Writing workflow"),
-                            ToolKind::Feedback => Some("Writing feedback draft"),
-                            ToolKind::ImageGen => Some("Writing image prompt"),
-                            ToolKind::ImageToVideo | ToolKind::ReferenceToVideo => {
-                                Some("Writing video prompt")
-                            }
-                            ToolKind::AskUser => Some("Preparing question"),
-                            _ => None,
-                        }
-                    });
-                match copy {
-                    Some(copy) => format!("{copy}{ordinal}…"),
-                    None => {
+                let ordinal_arg = &[("ordinal", &ordinal)];
+                match xai_grok_tools::tool_taxonomy::writing_tool_kind(name) {
+                    Some(ToolKind::Write) => {
+                        ctx.format_named("turn.writing.file", "Writing file{ordinal}…", ordinal_arg)
+                    }
+                    Some(ToolKind::Edit) => {
+                        ctx.format_named("turn.writing.edit", "Writing edit{ordinal}…", ordinal_arg)
+                    }
+                    Some(ToolKind::Execute) => ctx.format_named(
+                        "turn.writing.command",
+                        "Writing command{ordinal}…",
+                        ordinal_arg,
+                    ),
+                    Some(ToolKind::Plan) => ctx.format_named(
+                        "turn.writing.todo",
+                        "Updating todo list{ordinal}…",
+                        ordinal_arg,
+                    ),
+                    Some(ToolKind::Workflow) => ctx.format_named(
+                        "turn.writing.workflow",
+                        "Writing workflow{ordinal}…",
+                        ordinal_arg,
+                    ),
+                    Some(ToolKind::Feedback) => ctx.format_named(
+                        "turn.writing.feedback",
+                        "Writing feedback draft{ordinal}…",
+                        ordinal_arg,
+                    ),
+                    Some(ToolKind::ImageGen) => ctx.format_named(
+                        "turn.writing.image_prompt",
+                        "Writing image prompt{ordinal}…",
+                        ordinal_arg,
+                    ),
+                    Some(ToolKind::ImageToVideo | ToolKind::ReferenceToVideo) => ctx.format_named(
+                        "turn.writing.video_prompt",
+                        "Writing video prompt{ordinal}…",
+                        ordinal_arg,
+                    ),
+                    Some(ToolKind::AskUser) => ctx.format_named(
+                        "turn.writing.question",
+                        "Preparing question{ordinal}…",
+                        ordinal_arg,
+                    ),
+                    _ => {
                         let name =
                             xai_grok_workspace::permission::mcp_pretty_name_if_qualified(name);
-                        format!("Preparing {}{ordinal}…", clamp_activity_subject(&name))
+                        ctx.format_named(
+                            "turn.writing.preparing_subject",
+                            "Preparing {subject}{ordinal}…",
+                            &[
+                                ("subject", &clamp_activity_subject(&name)),
+                                ("ordinal", &ordinal),
+                            ],
+                        )
                     }
                 }
             }
-            None => format!("Preparing tool call{ordinal}…"),
+            None => ctx.format_named(
+                "turn.writing.tool_call",
+                "Preparing tool call{ordinal}…",
+                &[("ordinal", &ordinal)],
+            ),
         }
     }
 }

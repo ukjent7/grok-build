@@ -113,12 +113,22 @@ pub enum AgentCommand {
 impl AgentCommand {
     /// Human-readable label for the status line (e.g., "Compacting").
     pub fn display_name(&self) -> &'static str {
+        let ctx = crate::locale::ctx();
         match self {
-            Self::Compact => "Compacting",
-            Self::CreateWorktree => "Creating worktree",
-            Self::RestoreWorktree => "Restoring session in worktree",
-            Self::RestoreCode => "Restoring code",
-            Self::ForkSession => "Forking session",
+            Self::Compact => ctx.named_static_text("turn.command.compacting", "Compacting"),
+            Self::CreateWorktree => {
+                ctx.named_static_text("turn.command.creating_worktree", "Creating worktree")
+            }
+            Self::RestoreWorktree => ctx.named_static_text(
+                "turn.command.restoring_worktree",
+                "Restoring session in worktree",
+            ),
+            Self::RestoreCode => {
+                ctx.named_static_text("turn.command.restoring_code", "Restoring code")
+            }
+            Self::ForkSession => {
+                ctx.named_static_text("turn.command.forking_session", "Forking session")
+            }
         }
     }
     /// The raw command text (e.g., "/compact").

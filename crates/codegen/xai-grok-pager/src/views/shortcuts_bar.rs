@@ -173,6 +173,10 @@ fn localized_hint_label(label: &str) -> Cow<'_, str> {
         "clear" => ctx.named_static_text("shortcut.clear", "clear"),
         "clear search" => ctx.named_static_text("shortcut.clear_search", "clear search"),
         "close" => ctx.named_static_text("shortcut.close", "close"),
+        "collapse" => ctx.named_static_text("shortcut.collapse", "collapse"),
+        "collapse thinking" => {
+            ctx.named_static_text("shortcut.collapse_thinking", "collapse thinking")
+        }
         "comment" => ctx.named_static_text("shortcut.comment", "comment"),
         "confirm" => ctx.named_static_text("shortcut.confirm", "confirm"),
         "copy" => ctx.named_static_text("shortcut.copy", "copy"),
@@ -193,6 +197,7 @@ fn localized_hint_label(label: &str) -> Cow<'_, str> {
         "edit" => ctx.named_static_text("shortcut.edit", "edit"),
         "edit pattern" => ctx.named_static_text("shortcut.edit_pattern", "edit pattern"),
         "expand" => ctx.named_static_text("shortcut.expand", "expand"),
+        "expand thinking" => ctx.named_static_text("shortcut.expand_thinking", "expand thinking"),
         "filename" => ctx.named_static_text("shortcut.filename", "filename"),
         "filter" => ctx.named_static_text("shortcut.filter", "filter"),
         "fire" => ctx.named_static_text("shortcut.fire", "fire"),
