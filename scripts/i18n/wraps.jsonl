@@ -293,6 +293,12 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "mode.commenting.line", "kind": "format_named", "english": "commenting L{line}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "mode.commenting.range", "kind": "format_named", "english": "commenting L{start}-{end}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "prompt.editing_queued", "kind": "format_named", "english": "editing queued #{position}"}
+{"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "shortcut.copy", "kind": "named_static_text", "english": "copy"}
+{"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "shortcut.edit", "kind": "named_static_text", "english": "edit"}
+{"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "shortcut.navigate", "kind": "named_static_text", "english": "navigate"}
+{"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "shortcut.question", "kind": "named_static_text", "english": "question"}
+{"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "shortcut.select", "kind": "named_static_text", "english": "select"}
+{"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "shortcut.submit", "kind": "named_static_text", "english": "submit"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "voice.recording.label", "kind": "named_static_text", "english": "Recording"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/session.rs", "id": "turn.waiting.subagent.subject_activity_prefix", "kind": "named_static_text", "english": "Subagent ("}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/session.rs", "id": "turn.waiting.subagent.subject_activity_separator", "kind": "named_static_text", "english": "): "}
@@ -1394,6 +1400,10 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.copy_path", "kind": "named_static_text", "english": "y copy path"}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.delete", "kind": "named_static_text", "english": "x delete"}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.exit_filter", "kind": "named_static_text", "english": "Esc exit filter"}
+{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.fullscreen", "kind": "named_static_text", "english": "^F fullscreen"}
+{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.navigate", "kind": "named_static_text", "english": "\\u{2191}/\\u{2193} nav"}
+{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.normal", "kind": "named_static_text", "english": "^F normal"}
+{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.search", "kind": "named_static_text", "english": "/ search"}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.toggle_off", "kind": "named_static_text", "english": "t toggle (off)"}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.toggle_on", "kind": "named_static_text", "english": "t toggle (on)"}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.type_filter", "kind": "named_static_text", "english": "type to filter"}

@@ -779,22 +779,38 @@ impl AgentView {
         hint_style: Style,
         hint_key: Style,
     ) -> Vec<Span<'static>> {
+        let ctx = crate::locale::ctx();
         let mut left_spans: Vec<Span<'static>> = Vec::new();
         if qv.questions.len() > 1 {
             let counter = format!("[{}/{}] ", qv.active_tab + 1, qv.questions.len());
             left_spans.push(Span::styled(counter, hint_style));
         }
+        // Verbs reuse the bottom-bar `shortcut.*` catalog entries; the leading
+        // space is its own span so a locale that needs no word separator (CJK)
+        // doesn't inherit one from the translated string.
         left_spans.push(Span::styled("\u{2191}/\u{2193}", hint_key));
-        left_spans.push(Span::styled(" navigate", hint_style));
+        left_spans.push(Span::styled(" ", hint_style));
+        left_spans.push(Span::styled(
+            ctx.named_static_text("shortcut.navigate", "navigate"),
+            hint_style,
+        ));
         if qv.questions.len() > 1 {
             left_spans.push(Span::styled(" \u{b7} ", hint_style));
             left_spans.push(Span::styled("\u{2190}/\u{2192}", hint_key));
-            left_spans.push(Span::styled(" question", hint_style));
+            left_spans.push(Span::styled(" ", hint_style));
+            left_spans.push(Span::styled(
+                ctx.named_static_text("shortcut.question", "question"),
+                hint_style,
+            ));
         }
         if !qv.is_prompt_blocked() {
             left_spans.push(Span::styled(" \u{b7} ", hint_style));
             left_spans.push(Span::styled("y", hint_key));
-            left_spans.push(Span::styled(" copy", hint_style));
+            left_spans.push(Span::styled(" ", hint_style));
+            left_spans.push(Span::styled(
+                ctx.named_static_text("shortcut.copy", "copy"),
+                hint_style,
+            ));
         }
         left_spans
     }
@@ -2884,12 +2900,13 @@ impl AgentView {
                     let avail_w = footer_w.saturating_sub(3);
                     buf.set_line_safe(content_x, footer_y, &left_line, avail_w);
                     let is_last = qv.active_tab >= qv.questions.len().saturating_sub(1);
+                    let ctx = crate::locale::ctx();
                     let enter_label = if qv.is_on_freeform_row() {
-                        "edit"
+                        ctx.named_static_text("shortcut.edit", "edit")
                     } else if is_last {
-                        "submit"
+                        ctx.named_static_text("shortcut.submit", "submit")
                     } else {
-                        "select"
+                        ctx.named_static_text("shortcut.select", "select")
                     };
                     let btn_key = "Enter";
                     let btn_bg = theme.bg_base;
@@ -2899,7 +2916,10 @@ impl AgentView {
                         .add_modifier(Modifier::BOLD);
                     let blabel_style = Style::default().fg(theme.gray).bg(btn_bg);
                     let bpad_style = Style::default().bg(btn_bg);
-                    let bw = (1 + btn_key.len() + 1 + enter_label.len() + 1) as u16;
+                    // A CJK label occupies fewer cells than bytes, so the button
+                    // has to be sized by display width, not `str::len`.
+                    let enter_w = unicode_width::UnicodeWidthStr::width(enter_label) as u16;
+                    let bw = 1 + btn_key.len() as u16 + 1 + enter_w + 1;
                     let btn_x = footer_x + footer_w.saturating_sub(3).saturating_sub(bw);
                     if btn_x > content_x {
                         buf.set_span_safe(btn_x, footer_y, &Span::styled(" ", bpad_style), 1);
@@ -2915,10 +2935,10 @@ impl AgentView {
                             cx + 1,
                             footer_y,
                             &Span::styled(enter_label, blabel_style),
-                            enter_label.len() as u16,
+                            enter_w,
                         );
                         buf.set_span_safe(
-                            cx + 1 + enter_label.len() as u16,
+                            cx + 1 + enter_w,
                             footer_y,
                             &Span::styled(" ", bpad_style),
                             1,

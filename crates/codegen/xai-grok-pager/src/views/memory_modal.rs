@@ -1063,12 +1063,14 @@ fn build_shortcuts(
             };
             let mut shortcuts = vec![
                 Shortcut {
-                    label: "\u{2191}/\u{2193} nav",
+                    label: crate::locale::ctx()
+                        .named_static_text("memory.shortcut.navigate", "\u{2191}/\u{2193} nav"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
-                    label: "/ search",
+                    label: crate::locale::ctx()
+                        .named_static_text("memory.shortcut.search", "/ search"),
                     clickable: false,
                     id: 0,
                 },
@@ -1091,9 +1093,11 @@ fn build_shortcuts(
                 },
                 Shortcut {
                     label: if fullscreen {
-                        "^F normal"
+                        crate::locale::ctx()
+                            .named_static_text("memory.shortcut.normal", "^F normal")
                     } else {
-                        "^F fullscreen"
+                        crate::locale::ctx()
+                            .named_static_text("memory.shortcut.fullscreen", "^F fullscreen")
                     },
                     clickable: false,
                     id: 0,
