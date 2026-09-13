@@ -39,22 +39,32 @@ if ! command -v protoc >/dev/null 2>&1 && [ -z "${PROTOC:-}" ]; then
     echo "warning: protoc not on PATH and \$PROTOC unset; the build may fall back to DotSlash (needs 'dotslash' on PATH)." >&2
 fi
 
-echo "==> cargo check (sampler + shell + sampling-types + update + pager + proto-build, incl. test targets)"
-cargo check -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-proto-build --all-targets --keep-going
+echo "==> cargo check (sampler + shell + sampling-types + update + pager + pager-minimal + pager-render + pager-bin + locale + shared + shell-base + proto-build, incl. test targets)"
+cargo check --locked -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-grok-pager-minimal -p xai-grok-pager-render -p xai-grok-pager-bin -p xai-grok-locale -p xai-grok-shared -p xai-grok-shell-base -p xai-proto-build --all-targets --keep-going
 
 if [ "$SKIP_TESTS" -eq 0 ]; then
+    echo "==> i18n wrap check"
+    python3 scripts/i18n/wrap-check.py check
+    echo "==> cargo test -p xai-grok-locale"
+    cargo test --locked -p xai-grok-locale --no-fail-fast
     echo "==> cargo test -p xai-grok-sampler"
-    cargo test -p xai-grok-sampler --no-fail-fast
+    cargo test --locked -p xai-grok-sampler --no-fail-fast
     echo "==> cargo test -p xai-grok-update"
-    cargo test -p xai-grok-update --no-fail-fast
+    cargo test --locked -p xai-grok-update --no-fail-fast
     echo "==> cargo test -p xai-grok-pager (usage status blocks)"
-    cargo test -p xai-grok-pager --no-fail-fast -- app::status_blocks
+    cargo test --locked -p xai-grok-pager --no-fail-fast -- app::status_blocks
+    echo "==> cargo test -p xai-grok-pager (localized mismatch guard)"
+    cargo test --locked -p xai-grok-pager --no-fail-fast -- version_mismatch reconnect_guard
+    echo "==> cargo test -p xai-grok-pager-minimal"
+    cargo test --locked -p xai-grok-pager-minimal --no-fail-fast
+    echo "==> cargo test -p xai-grok-pager-render (overlays only)"
+    cargo test --locked -p xai-grok-pager-render --no-fail-fast -- image_overlay preview_overlay
     echo "==> cargo test -p xai-proto-build"
-    cargo test -p xai-proto-build --no-fail-fast
+    cargo test --locked -p xai-proto-build --no-fail-fast
     echo "==> cargo test -p xai-grok-sampling-types (endpoint_trust only)"
-    cargo test -p xai-grok-sampling-types --no-fail-fast -- endpoint_trust
+    cargo test --locked -p xai-grok-sampling-types --no-fail-fast -- endpoint_trust
     echo "==> cargo test -p xai-grok-shell (config/model layers)"
-    cargo test -p xai-grok-shell --no-fail-fast -- agent::config agent::model_providers
+    cargo test --locked -p xai-grok-shell --no-fail-fast -- agent::config agent::model_providers model_overrides
 fi
 
 # install.ps1 is validated in CI (pwsh parse step); mirror it locally when pwsh exists.
