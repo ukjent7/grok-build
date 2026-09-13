@@ -1512,6 +1512,7 @@
   "scrollback.tool.imagine_edit": "编辑图像",
   "scrollback.tool.image_to_video": "图生视频",
   "scrollback.tool.reference_to_video": "参考图生视频",
+  "scrollback.tool.ask.label": "询问",
   "scrollback.tool.mcp.github.actions_get": "获取 Actions 资源详情",
   "scrollback.tool.mcp.github.actions_list": "列出 Actions 资源",
   "scrollback.tool.mcp.github.actions_run_trigger": "触发 Actions 运行",

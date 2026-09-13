@@ -772,6 +772,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/mod.rs", "id": "scrollback.verb_group.verb.send.completed", "kind": "named_static_text", "english": "Sent"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/mod.rs", "id": "scrollback.verb_group.verb.send.running", "kind": "named_static_text", "english": "Sending"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/other.rs", "id": "scrollback.question.no_answer", "kind": "named_text", "english": "     (no answer)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/other.rs", "id": "scrollback.tool.ask.label", "kind": "named_static_text", "english": "Ask"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/read.rs", "id": "scrollback.tool.read.empty", "kind": "named_text", "english": " (empty)"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/read.rs", "id": "scrollback.tool.read.image", "kind": "named_text", "english": " (image)"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/read.rs", "id": "scrollback.tool.read.label", "kind": "named_text", "english": "Read "}

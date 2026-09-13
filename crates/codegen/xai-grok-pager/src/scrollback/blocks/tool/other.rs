@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use ratatui::text::{Line, Span};
 
 use crate::appearance::AppearanceConfig;
@@ -129,13 +131,14 @@ impl OtherToolCallBlock {
         };
         let bold_style = text_style.add_modifier(ratatui::style::Modifier::BOLD);
 
-        let mut spans = if let Some((label, content)) = self.name.split_once(": ") {
+        let title = localized_title(&self.name);
+        let mut spans = if let Some((label, content)) = title.split_once(": ") {
             vec![
                 Span::styled(format!("{} ", label), bold_style),
                 Span::styled(content.to_string(), text_style),
             ]
         } else {
-            vec![Span::styled(self.name.clone(), bold_style)]
+            vec![Span::styled(title.into_owned(), bold_style)]
         };
 
         if !self.summary.is_empty() {
@@ -160,6 +163,23 @@ impl OtherToolCallBlock {
         } else {
             line
         }
+    }
+}
+
+/// Display title for a tool-call block, with the shell-authored verb localized.
+///
+/// The shell builds a handful of titles and ships them over ACP (`Ask: <question>`,
+/// `Ask <n> questions`), so the leading verb is UI copy while the rest is data. Only that
+/// verb is translated, matching what the turn-status line does with the same titles; every
+/// other title is a real tool name (frequently an MCP one) and has to stay verbatim.
+fn localized_title(name: &str) -> Cow<'_, str> {
+    let verb = crate::locale::ctx().named_static_text("scrollback.tool.ask.label", "Ask");
+    if let Some(rest) = name.strip_prefix("Ask: ") {
+        Cow::Owned(format!("{verb}: {rest}"))
+    } else if let Some(rest) = name.strip_prefix("Ask ") {
+        Cow::Owned(format!("{verb} {rest}"))
+    } else {
+        Cow::Borrowed(name)
     }
 }
 
