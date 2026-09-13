@@ -63,17 +63,41 @@ ZH_CATALOGS = [
 # Direct wrap forms. `english` is the fallback that stays at the call site, so it
 # doubles as the anchor for re-application. `fixed` is
 # `app/error_display.rs`'s one-line constructor for `FixedCopy { id, english }`.
+# Id segments allow uppercase: action-table ids derive from `ActionId` variants
+# (`shortcuts.action.OpenPrevLink.label`), and a lowercase-only pattern silently
+# skipped all 186 of them. The first segment allows `_` too (`startup_failure.*`,
+# `plugin_cli.*`); without it a whole screen stayed invisible to the gate.
+ID = r"[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z0-9_]+)+"
 CALL = re.compile(
     r'(?P<kind>named_static_text|named_text|format_named|fixed)\(\s*'
-    r'"(?P<id>[a-z][a-z0-9]*(?:\.[a-z0-9_]+)+)"\s*,\s*'
+    r'"(?P<id>' + ID + r')"\s*,\s*'
     r'"(?P<english>(?:[^"\\]|\\.)*)"'
 )
+# Same forms, but the anchor is a same-file `const` (`named_text("plan.empty",
+# EMPTY_PLAN_SCROLLBACK)`). Resolved against the file's const table below; an
+# unresolvable const (imported from elsewhere) is recorded anchor-less under a
+# `kind+const` kind so disappearance still fails the check.
+CALL_CONST = re.compile(
+    r'(?P<kind>named_static_text|named_text|format_named|fixed)\(\s*'
+    r'"(?P<id>' + ID + r')"\s*,\s*'
+    r'(?P<const>[A-Z][A-Z0-9_]*)'
+)
+CONST_DEF = re.compile(
+    r'^\s*(?:pub(?:\([^)]*\))?\s+)?const\s+([A-Z][A-Z0-9_]*)\s*(?::\s*[^=;]+)?=\s*"((?:[^"\\]|\\.)*)"',
+    re.MULTILINE,
+)
+# A trailing `\` splices the next line into a string literal
+# (`const X: &str = "\` + newline + `  continued";`). Join before const
+# extraction; a non-string const (e.g. `[&str; N]`) never matches CONST_DEF
+# and stays on the `kind+const` fallback by design.
+CONTINUED_STRING = re.compile(r'\\\r?\n\s*')
+CONST_KIND_SUFFIX = "+const"
 # Indirect form: the `"<english>" => "<id>"` lookup tables in dashboard/slash/
 # settings render code, whose arms feed a `named_*` call with the id they pick.
 # The left-hand side is the canonical label and is what has to be re-read when
 # upstream rewords a state/hint/section name.
 TABLE = re.compile(
-    r'"(?P<english>(?:[^"\\]|\\.){1,90})"\s*=>\s*"(?P<id>[a-z][a-z0-9]*(?:\.[a-z0-9_]+)+)"'
+    r'"(?P<english>(?:[^"\\]|\\.){1,90})"\s*=>\s*"(?P<id>' + ID + r')"'
 )
 TABLE_KIND = "table"
 
@@ -84,14 +108,9 @@ def is_excluded(rel: str) -> bool:
     return any(rel.startswith(d + "/") for d in EXCLUDED_DIRS)
 
 
-def scan():
-    """Every wrap currently in the tree, keyed by (file, id, kind, english).
-
-    The anchor is part of the key: a handful of ids are called twice with
-    different anchors (singular/plural, or a different placeholder set), and
-    keying on (file, id) alone silently dropped one of them.
-    """
-    found = {}
+def read_sources():
+    """All scanned (rel, src) pairs, locale crate excluded."""
+    out = []
     for root in ROOTS:
         base = REPO / root
         if not base.exists():
@@ -101,11 +120,53 @@ def scan():
             if is_excluded(rel):
                 continue
             try:
-                src = path.read_text(encoding="utf-8", errors="ignore")
+                out.append((rel, path.read_text(encoding="utf-8", errors="ignore")))
             except OSError:
                 continue
+    return out
+
+
+def scan():
+    """Every wrap currently in the tree, keyed by (file, id, kind, english).
+
+    The anchor is part of the key: a handful of ids are called twice with
+    different anchors (singular/plural, or a different placeholder set), and
+    keying on (file, id) alone silently dropped one of them. Anchors passed
+    as consts resolve to the const value (same file first, then crate-wide
+    when the name is unambiguous); an unresolvable const degrades to a
+    `kind+const` entry that still tracks disappearance.
+    """
+    sources = read_sources()
+    # Crate-wide const table for anchors imported from another file
+    # (e.g. MODAL_TITLE). A name with conflicting values stays unresolved.
+    global_consts = {}
+    conflicted = set()
+    for _, src in sources:
+        for name, value in CONST_DEF.findall(CONTINUED_STRING.sub("", src)):
+            if name in conflicted:
+                continue
+            if name in global_consts and global_consts[name] != value:
+                del global_consts[name]
+                conflicted.add(name)
+            else:
+                global_consts[name] = value
+    found = {}
+    for rel, src in sources:
             matches = [(m.group("kind"), m.group("id"), m.group("english")) for m in CALL.finditer(src)]
             matches += [(TABLE_KIND, m.group("id"), m.group("english")) for m in TABLE.finditer(src)]
+            consts = dict(CONST_DEF.findall(CONTINUED_STRING.sub("", src)))
+            for m in CALL_CONST.finditer(src):
+                # Disjoint from CALL above by construction (opening `"` vs
+                # uppercase initial), so no double counting. Lowercase variables
+                # (`named_text(id, &dynamic)`) deliberately do not match: a
+                # runtime value is not a stable anchor.
+                kind, id_, name = m.group("kind"), m.group("id"), m.group("const")
+                if name in consts:
+                    matches.append((kind, id_, consts[name]))
+                elif name in global_consts:
+                    matches.append((kind, id_, global_consts[name]))
+                else:
+                    matches.append((kind + CONST_KIND_SUFFIX, id_, name))
             for kind, id_, english in matches:
                 # No unicode_escape round-trip: the anchor has to compare byte-for-byte
                 # with what the source says. Decoding it used to mangle non-ASCII
