@@ -113,10 +113,14 @@ impl WaitingReason {
     /// User-facing spinner label.
     pub fn label(&self) -> String {
         match self {
-            Self::Model => "Waiting for response…".to_string(),
+            Self::Model => crate::locale::ctx()
+                .named_static_text("turn.waiting.response", "Waiting for response…")
+                .to_string(),
             Self::Subagent { display } => match display.as_deref().map(clamp_activity_subject) {
                 Some(display) if !display.is_empty() => format!("{display}…"),
-                _ => "Waiting on subagent…".to_string(),
+                _ => crate::locale::ctx()
+                    .named_static_text("turn.waiting.subagent", "Waiting on subagent…")
+                    .to_string(),
             },
             Self::TaskOutput {
                 subject: Some(subject),
@@ -132,10 +136,24 @@ impl WaitingReason {
                 .named_static_text("turn.waiting.sleep", "Sleeping…")
                 .to_string(),
             Self::Hooks { event_name, count } if *count > 1 => {
-                format!("Running {count} {event_name} hooks…")
+                let count = count.to_string();
+                crate::locale::ctx().format_named(
+                    "turn.waiting.hooks_many",
+                    "Running {count} {event_name} hooks…",
+                    &[("count", &count), ("event_name", event_name)],
+                )
             }
-            Self::Hooks { event_name, .. } => format!("Running {event_name} hook…"),
-            Self::PromptAck => "Waiting for the agent to accept the prompt…".to_string(),
+            Self::Hooks { event_name, .. } => crate::locale::ctx().format_named(
+                "turn.waiting.hooks_one",
+                "Running {event_name} hook…",
+                &[("event_name", event_name)],
+            ),
+            Self::PromptAck => crate::locale::ctx()
+                .named_static_text(
+                    "turn.waiting.prompt_ack",
+                    "Waiting for the agent to accept the prompt…",
+                )
+                .to_string(),
         }
     }
     /// Short, stable snake_case label for telemetry / phase-transition logs.

@@ -34,7 +34,12 @@
 {"file": "crates/codegen/xai-grok-pager/src/acp/model_state.rs", "id": "reasoning.error.unknown_options", "kind": "format_named", "english": "unknown effort level '{token}'; use one of: {options}"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/model_state.rs", "id": "reasoning.error.unsupported", "kind": "named_text", "english": "current model does not support reasoning effort"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/spawn.rs", "id": "session.finishing", "kind": "named_static_text", "english": "Finishing session…"}
+{"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "turn.waiting.hooks_many", "kind": "format_named", "english": "Running {count} {event_name} hooks…"}
+{"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "turn.waiting.hooks_one", "kind": "format_named", "english": "Running {event_name} hook…"}
+{"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "turn.waiting.prompt_ack", "kind": "named_static_text", "english": "Waiting for the agent to accept the prompt…"}
+{"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "turn.waiting.response", "kind": "named_static_text", "english": "Waiting for response…"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "turn.waiting.sleep", "kind": "named_static_text", "english": "Sleeping…"}
+{"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "turn.waiting.subagent", "kind": "named_static_text", "english": "Waiting on subagent…"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "turn.waiting.task_output", "kind": "named_static_text", "english": "Waiting on task output…"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "turn.waiting.tasks", "kind": "named_static_text", "english": "Waiting on tasks…"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/version_mismatch.rs", "id": "acp.version_mismatch", "kind": "format_named", "english": "⚠ {VERSION_MISMATCH_MARKER} client {client_version}, leader {leader_version}. Restart grok to match"}
