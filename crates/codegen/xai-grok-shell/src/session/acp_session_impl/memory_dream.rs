@@ -851,14 +851,8 @@ impl SessionActor {
             ConversationItem::user(user_msg),
         ];
 
-        // FORK(byok): use the session's own model rather than the compiled-in default;
-        // third-party endpoints may not serve the xAI-only slug.
-        let model = self
-            .chat_state_handle
-            .get_sampling_config()
-            .await
-            .map(|c| c.model)
-            .unwrap_or_default();
+        // FORK(byok): endpoint-aware fallback; see [`Self::side_request_model`].
+        let model = self.side_request_model(None).await;
 
         let request = ConversationRequest {
             items,

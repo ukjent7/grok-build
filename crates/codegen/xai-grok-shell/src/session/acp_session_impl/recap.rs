@@ -486,6 +486,23 @@ impl SessionActor {
         .await;
     }
 
+    /// Model for a one-shot side request (`/recap`-style helpers), mirroring the
+    /// endpoint split in `MvpAgent::build_summary_client`: third-party endpoints may
+    /// not serve the xAI-only compiled slug, so they take the session's own model;
+    /// first-party endpoints keep the compiled default.
+    pub(super) async fn side_request_model(&self, model_override: Option<&str>) -> String {
+        if let Some(model) = model_override {
+            return model.to_owned();
+        }
+        let session = self.chat_state_handle.get_sampling_config().await;
+        match session.filter(|config| {
+            xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(&config.base_url)
+        }) {
+            Some(config) => config.model,
+            None => crate::models::default_session_summary_model().to_owned(),
+        }
+    }
+
     /// Handle an AI-powered shell command suggestion request.
     ///
     /// Builds a minimal prompt from the prefix and CWD, calls the sampler with low temperature and small max_tokens, and returns the suggestion.
@@ -508,17 +525,8 @@ impl SessionActor {
             ConversationItem::user(user_msg),
         ];
 
-        // FORK(byok): fall back to the session's own model rather than the compiled-in
-        // default; third-party endpoints may not serve the xAI-only slug.
-        let model = match model_override {
-            Some(m) => m.to_owned(),
-            None => self
-                .chat_state_handle
-                .get_sampling_config()
-                .await
-                .map(|c| c.model)
-                .unwrap_or_default(),
-        };
+        // FORK(byok): endpoint-aware fallback; see [`Self::side_request_model`].
+        let model = self.side_request_model(model_override).await;
 
         let request = ConversationRequest {
             items,
