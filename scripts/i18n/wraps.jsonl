@@ -1016,61 +1016,34 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/peek.rs", "id": "dashboard.peek.status.web_search", "kind": "table", "english": "Web search"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/peek.rs", "id": "dashboard.peek.status.workflow", "kind": "table", "english": "Workflow"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/peek.rs", "id": "dashboard.peek.status.working", "kind": "table", "english": "Working"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.banner.awaiting", "kind": "format_named", "english": "{count} awaiting"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.banner.empty", "kind": "named_static_text", "english": " No sessions yet. Esc to dispatch one. "}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.banner.title", "kind": "named_text", "english": "Dashboard"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.banner.working", "kind": "format_named", "english": "{count} working"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.confirm.archive", "kind": "table", "english": "archive this session"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.confirm.delete", "kind": "table", "english": "delete this session"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.confirm.stop", "kind": "table", "english": "stop this session"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.dispatch.placeholder", "kind": "named_static_text", "english": "Dispatch a new agent"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.empty.loading", "kind": "named_static_text", "english": "Loading sessions…"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.empty.no_agents", "kind": "named_static_text", "english": "No agents yet, type a prompt to start one."}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.filter.agent", "kind": "format_named", "english": "No agents match `a:{n}`. Press Esc to clear the filter."}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.filter.none", "kind": "named_text", "english": "No matching rows."}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.filter.state", "kind": "format_named", "english": "No agents in state `{state}`: press Esc to clear the filter."}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.filter.substring", "kind": "format_named", "english": "No rows match `{n}`: press Esc to clear the filter."}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.group.pinned", "kind": "named_static_text", "english": "Pinned"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.answer", "kind": "table", "english": "answer"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.apply", "kind": "table", "english": "apply"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.back", "kind": "table", "english": "back"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.cancel", "kind": "table", "english": "cancel"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.collapse", "kind": "table", "english": "collapse"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.confirm_archive", "kind": "table", "english": "confirm archive"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.confirm_close", "kind": "table", "english": "confirm close"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.confirm_delete", "kind": "table", "english": "confirm delete"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.delete", "kind": "table", "english": "delete"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.enter_select", "kind": "named_static_text", "english": "Enter select"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.esc_close", "kind": "named_static_text", "english": "Esc close"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.expand", "kind": "table", "english": "expand"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.input", "kind": "table", "english": "input"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.list", "kind": "table", "english": "list"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.mode", "kind": "table", "english": "mode"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.nav", "kind": "table", "english": "nav"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.new_agent", "kind": "table", "english": "New Agent"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.open", "kind": "table", "english": "open"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.save", "kind": "table", "english": "save"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.select", "kind": "table", "english": "select"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.send", "kind": "table", "english": "send"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.send_open", "kind": "table", "english": "send+open"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.shortcuts", "kind": "table", "english": "shortcuts"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.show_all", "kind": "table", "english": "show all"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.stop", "kind": "table", "english": "stop"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.tab_complete", "kind": "named_static_text", "english": "Tab complete"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": " No sessions yet. Esc to dispatch one. ", "kind": "tr_static", "english": " No sessions yet. Esc to dispatch one. "}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": " path: ", "kind": "tr_static", "english": " path: "}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "(terminal too small: Esc to close)", "kind": "tr_static", "english": "(terminal too small: Esc to close)"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Change directory", "kind": "tr_static", "english": "Change directory"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Dashboard", "kind": "tr", "english": "Dashboard"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Dispatch a new agent", "kind": "tr_static", "english": "Dispatch a new agent"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Enter select", "kind": "tr_static", "english": "Enter select"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Esc close", "kind": "tr_static", "english": "Esc close"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Loading sessions…", "kind": "tr_static", "english": "Loading sessions…"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "No agents in state `{state}`: press Esc to clear the filter.", "kind": "tr_format", "english": "No agents in state `{state}`: press Esc to clear the filter."}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "No agents match `a:{n}`. Press Esc to clear the filter.", "kind": "tr_format", "english": "No agents match `a:{n}`. Press Esc to clear the filter."}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "No agents yet, type a prompt to start one.", "kind": "tr_static", "english": "No agents yet, type a prompt to start one."}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "No matching rows.", "kind": "tr", "english": "No matching rows."}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "No rows match `{n}`: press Esc to clear the filter.", "kind": "tr_format", "english": "No rows match `{n}`: press Esc to clear the filter."}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Pinned", "kind": "tr_static", "english": "Pinned"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Search: ", "kind": "tr_static", "english": "Search: "}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Subagent not loaded", "kind": "tr_static", "english": "Subagent not loaded"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "Tab complete", "kind": "tr_static", "english": "Tab complete"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.hint.up_down_nav", "kind": "named_static_text", "english": "\\u{2191}\\u{2193} nav"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.location.path", "kind": "named_static_text", "english": " path: "}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.location.title", "kind": "named_static_text", "english": "Change directory"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.location.worktree_badge", "kind": "named_static_text", "english": "worktree"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.location.worktree_named", "kind": "format_named", "english": "worktree: {name}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.overflow.more", "kind": "format_named", "english": "{hidden} more"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.overflow.show_fewer", "kind": "named_text", "english": "show fewer"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.overflow.show_fewer", "kind": "table", "english": "show fewer"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.peek.subagent_not_loaded", "kind": "named_static_text", "english": "Subagent not loaded"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.popup.too_small", "kind": "named_static_text", "english": "(terminal too small: Esc to close)"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.recording.badge", "kind": "named_static_text", "english": " \\u{25CF} rec "}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.rename.prefix", "kind": "named_static_text", "english": "rename: "}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.search.placeholder", "kind": "named_static_text", "english": "Type to filter sessions\\u{2026}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "dashboard.search.prefix", "kind": "named_static_text", "english": "Search: "}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "rename: ", "kind": "tr_static", "english": "rename: "}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "show fewer", "kind": "tr", "english": "show fewer"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "worktree: {name}", "kind": "tr_format", "english": "worktree: {name}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "{count} awaiting", "kind": "tr_format", "english": "{count} awaiting"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "{count} working", "kind": "tr_format", "english": "{count} working"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "{hidden} more", "kind": "tr_format", "english": "{hidden} more"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "dashboard.badge.worktree", "kind": "named_static_text", "english": "worktree"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "dashboard.row.awaiting_input", "kind": "named_text", "english": "Awaiting input"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "dashboard.row.awaiting_your_input", "kind": "named_text", "english": "Awaiting your input"}
@@ -1286,53 +1259,53 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/file_search/line_viewer.rs", "id": "file_search.plan.request_changes", "kind": "named_text", "english": "request changes"}
 {"file": "crates/codegen/xai-grok-pager/src/views/file_search/line_viewer.rs", "id": "file_search.plan.send", "kind": "named_text", "english": "send"}
 {"file": "crates/codegen/xai-grok-pager/src/views/file_search/line_viewer.rs", "id": "shortcut.copy_plan", "kind": "named_text", "english": "copy plan"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.budget.summary", "kind": "format_named", "english": "Budget: {budget}{percent}  Elapsed: {elapsed}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.budget.tokens_only", "kind": "format_named", "english": "{tokens} tokens"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.budget.tokens_pair", "kind": "format_named", "english": "{used} / {budget} tokens"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.classifier.achieved", "kind": "named_static_text", "english": "Achieved"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.classifier.attempts", "kind": "named_text", "english": "  Attempts: "}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.classifier.last_verdict", "kind": "named_text", "english": "  Last verdict: "}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.classifier.not_achieved", "kind": "named_static_text", "english": "Not Achieved"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.classifier.not_evaluated", "kind": "named_static_text", "english": "Not yet evaluated"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.classifier.title", "kind": "named_text", "english": "Completion review:"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.budget_exceeded", "kind": "named_text", "english": "Budget exceeded"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.cleared", "kind": "named_text", "english": "Cleared"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.completed", "kind": "named_text", "english": "Completed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.context_rotated", "kind": "named_text", "english": "Context rotated"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.created", "kind": "named_text", "english": "Goal created"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.paused", "kind": "named_text", "english": "Paused"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.paused_detail", "kind": "format_named", "english": "Paused: {detail}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.planning_completed", "kind": "named_text", "english": "Planning completed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.planning_failed", "kind": "named_text", "english": "Planning failed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.planning_started", "kind": "named_text", "english": "Planning started"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.resumed", "kind": "named_text", "english": "Resumed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.stopped_early", "kind": "named_text", "english": "Stopped early"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.stopped_early_detail", "kind": "format_named", "english": "Stopped early: {detail}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.worker_completed", "kind": "named_text", "english": "Worker completed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.worker_failed", "kind": "named_text", "english": "Worker failed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.event.worker_started", "kind": "named_text", "english": "Worker started"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.footer.commands", "kind": "named_text", "english": "Esc: close  /goal resume | pause | status | clear"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.footer.failed", "kind": "named_text", "english": "Esc: close  /goal clear, then start a new goal"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.hint.clear_after_failure", "kind": "format_named", "english": "Status: {status}. Type /goal clear, then start a new goal"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.hint.resume", "kind": "format_named", "english": "Status: {status}. Type /goal resume to continue"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.history.title", "kind": "named_text", "english": "Recent History:"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.label.status", "kind": "named_text", "english": "Status: "}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.progress.empty", "kind": "named_text", "english": "No progress items yet"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.progress.title", "kind": "named_text", "english": "Progress:"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.reason.template", "kind": "format_named", "english": "Reason: {reason}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.status.active", "kind": "named_static_text", "english": "Active"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.status.budget_limited", "kind": "named_static_text", "english": "Budget Limited"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.status.complete", "kind": "named_static_text", "english": "Complete"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.status.failed", "kind": "named_static_text", "english": "Failed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.status.interrupted", "kind": "named_static_text", "english": "Interrupted"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.subagent.active", "kind": "named_text", "english": "Active Subagent: "}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.subagent.context", "kind": "format_named", "english": "Context: {percent}%"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.subagent.round", "kind": "format_named", "english": " (round {round})"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.subagent.tokens", "kind": "format_named", "english": "Tokens: {tokens}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.subagent.tools", "kind": "format_named", "english": "Tools: {count}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.subagent.turns", "kind": "format_named", "english": "Turns: {count}"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.title.active", "kind": "named_text", "english": "Active Goal"}
-{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "goal.tokens.summary", "kind": "format_named", "english": "Tokens: {tokens}  Elapsed: {elapsed}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "  Attempts: ", "kind": "tr", "english": "  Attempts: "}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "  Last verdict: ", "kind": "tr", "english": "  Last verdict: "}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": " (round {round})", "kind": "tr_format", "english": " (round {round})"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Achieved", "kind": "tr_static", "english": "Achieved"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Active", "kind": "tr_static", "english": "Active"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Active Goal", "kind": "tr", "english": "Active Goal"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Active Subagent: ", "kind": "tr", "english": "Active Subagent: "}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Budget Limited", "kind": "tr_static", "english": "Budget Limited"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Budget exceeded", "kind": "tr", "english": "Budget exceeded"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Budget: {budget}{percent}  Elapsed: {elapsed}", "kind": "tr_format", "english": "Budget: {budget}{percent}  Elapsed: {elapsed}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Cleared", "kind": "tr", "english": "Cleared"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Complete", "kind": "tr_static", "english": "Complete"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Completed", "kind": "tr", "english": "Completed"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Completion review:", "kind": "tr", "english": "Completion review:"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Context rotated", "kind": "tr", "english": "Context rotated"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Context: {percent}%", "kind": "tr_format", "english": "Context: {percent}%"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Esc: close  /goal clear, then start a new goal", "kind": "tr", "english": "Esc: close  /goal clear, then start a new goal"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Esc: close  /goal resume | pause | status | clear", "kind": "tr", "english": "Esc: close  /goal resume | pause | status | clear"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Failed", "kind": "tr_static", "english": "Failed"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Goal created", "kind": "tr", "english": "Goal created"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Interrupted", "kind": "tr_static", "english": "Interrupted"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "No progress items yet", "kind": "tr", "english": "No progress items yet"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Not Achieved", "kind": "tr_static", "english": "Not Achieved"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Not yet evaluated", "kind": "tr_static", "english": "Not yet evaluated"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Paused", "kind": "tr", "english": "Paused"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Paused: {detail}", "kind": "tr_format", "english": "Paused: {detail}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Planning completed", "kind": "tr", "english": "Planning completed"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Planning failed", "kind": "tr", "english": "Planning failed"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Planning started", "kind": "tr", "english": "Planning started"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Progress:", "kind": "tr", "english": "Progress:"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Reason: {reason}", "kind": "tr_format", "english": "Reason: {reason}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Recent History:", "kind": "tr", "english": "Recent History:"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Resumed", "kind": "tr", "english": "Resumed"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Status: ", "kind": "tr", "english": "Status: "}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Status: {status}. Type /goal clear, then start a new goal", "kind": "tr_format", "english": "Status: {status}. Type /goal clear, then start a new goal"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Status: {status}. Type /goal resume to continue", "kind": "tr_format", "english": "Status: {status}. Type /goal resume to continue"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Stopped early", "kind": "tr", "english": "Stopped early"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Stopped early: {detail}", "kind": "tr_format", "english": "Stopped early: {detail}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Tokens: {tokens}", "kind": "tr_format", "english": "Tokens: {tokens}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Tokens: {tokens}  Elapsed: {elapsed}", "kind": "tr_format", "english": "Tokens: {tokens}  Elapsed: {elapsed}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Tools: {count}", "kind": "tr_format", "english": "Tools: {count}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Turns: {count}", "kind": "tr_format", "english": "Turns: {count}"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Worker completed", "kind": "tr", "english": "Worker completed"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Worker failed", "kind": "tr", "english": "Worker failed"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "Worker started", "kind": "tr", "english": "Worker started"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "{tokens} tokens", "kind": "tr_format", "english": "{tokens} tokens"}
+{"file": "crates/codegen/xai-grok-pager/src/views/goal_detail.rs", "id": "{used} / {budget} tokens", "kind": "tr_format", "english": "{used} / {budget} tokens"}
 {"file": "crates/codegen/xai-grok-pager/src/views/import_claude_modal.rs", "id": "import.category.env_vars", "kind": "named_static_text", "english": "Env vars"}
 {"file": "crates/codegen/xai-grok-pager/src/views/import_claude_modal.rs", "id": "import.category.hooks", "kind": "named_static_text", "english": "Hooks"}
 {"file": "crates/codegen/xai-grok-pager/src/views/import_claude_modal.rs", "id": "import.category.mcp_servers", "kind": "named_static_text", "english": "MCP servers"}
@@ -1598,29 +1571,43 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/session_title.rs", "id": "session_title.fallback_session", "kind": "format_named", "english": "session {short}"}
 {"file": "crates/codegen/xai-grok-pager/src/views/session_title.rs", "id": "session_title.loading", "kind": "named_text", "english": "loading..."}
 {"file": "crates/codegen/xai-grok-pager/src/views/session_title.rs", "id": "session_title.time.seconds_ago", "kind": "format_named", "english": "{value}s ago"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "(no override)", "kind": "tr", "english": "(no override)"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "/ search", "kind": "tr_static", "english": "/ search"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "<empty: uses shell default>", "kind": "tr", "english": "<empty: uses shell default>"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "<type a value>", "kind": "tr", "english": "<type a value>"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Admin Managed", "kind": "tr", "english": "Admin Managed"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Backspace edit", "kind": "tr_static", "english": "Backspace edit"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Enter commit", "kind": "tr_static", "english": "Enter commit"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Enter edit", "kind": "tr_static", "english": "Enter edit"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Enter select", "kind": "tr_static", "english": "Enter select"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Enter toggle", "kind": "tr_static", "english": "Enter toggle"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Esc back", "kind": "tr_static", "english": "Esc back"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Esc cancel", "kind": "tr_static", "english": "Esc cancel"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Esc clear", "kind": "tr_static", "english": "Esc clear"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Esc revert", "kind": "tr_static", "english": "Esc revert"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "F2 cancel", "kind": "tr_static", "english": "F2 cancel"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "F2/Esc close", "kind": "tr_static", "english": "F2/Esc close"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Space toggle", "kind": "tr_static", "english": "Space toggle"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Space/Enter toggle", "kind": "tr_static", "english": "Space/Enter toggle"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Tip · Ask Grok to change a setting", "kind": "tr_static", "english": "Tip · Ask Grok to change a setting"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "d reset", "kind": "tr_static", "english": "d reset"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "double-click select", "kind": "tr_static", "english": "double-click select"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "g/G top/btm", "kind": "tr_static", "english": "g/G top/btm"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "n cancel", "kind": "tr_static", "english": "n cancel"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "no read mapping", "kind": "tr", "english": "no read mapping"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "note: clamped at {cols} cols", "kind": "tr_format", "english": "note: clamped at {cols} cols"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "off", "kind": "tr_static", "english": "off"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "on", "kind": "tr_static", "english": "on"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "palette.settings", "kind": "named_static_text", "english": "Settings"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "preview", "kind": "tr_static", "english": "preview"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "restart", "kind": "tr", "english": "restart"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.docs_footer.long", "kind": "named_static_text", "english": "Tip · Ask Grok: \\\"change theme to grokday\\\" or \\\"what does compact mode do?\\\""}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.docs_footer.short", "kind": "named_static_text", "english": "Tip · Ask Grok to change a setting"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.no_matches", "kind": "format_named", "english": "No matches for \\\"{query}\\\""}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.preview.max_thoughts_width.sample", "kind": "named_text", "english": "Let me trace through the call sites. First, I'll need to look at how the dispatch flow handles the new variant. Then I'll verify the rollback path preserves the previous state correctly."}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.arrows_cursor", "kind": "named_static_text", "english": "\\u{2190}/\\u{2192} cursor"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.arrows_jk_nav", "kind": "named_static_text", "english": "\\u{2191}/\\u{2193}/j/k nav"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.arrows_nav", "kind": "named_static_text", "english": "\\u{2191}/\\u{2193} nav"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.arrows_try", "kind": "named_static_text", "english": "\\u{2191}/\\u{2193} try"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.backspace_edit", "kind": "named_static_text", "english": "Backspace edit"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.d_reset", "kind": "named_static_text", "english": "d reset"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.double_click_select", "kind": "named_static_text", "english": "double-click select"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.enter_commit", "kind": "named_static_text", "english": "Enter commit"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.enter_edit", "kind": "named_static_text", "english": "Enter edit"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.enter_select", "kind": "named_static_text", "english": "Enter select"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.enter_toggle", "kind": "named_static_text", "english": "Enter toggle"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.esc_back", "kind": "named_static_text", "english": "Esc back"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.esc_cancel", "kind": "named_static_text", "english": "Esc cancel"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.esc_clear", "kind": "named_static_text", "english": "Esc clear"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.esc_revert", "kind": "named_static_text", "english": "Esc revert"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.f2_cancel", "kind": "named_static_text", "english": "F2 cancel"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.f2_esc_close", "kind": "named_static_text", "english": "F2/Esc close"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.gg_top_bottom", "kind": "named_static_text", "english": "g/G top/btm"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.int_step.horizontal_1", "kind": "named_static_text", "english": "\\u{2190}/\\u{2192} +/-1"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.int_step.horizontal_10", "kind": "named_static_text", "english": "\\u{2190}/\\u{2192} +/-10"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.int_step.horizontal_5", "kind": "named_static_text", "english": "\\u{2190}/\\u{2192} +/-5"}
@@ -1628,28 +1615,14 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.int_step.vertical_1", "kind": "named_static_text", "english": "\\u{2191}/\\u{2193} +/-1"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.int_step.vertical_5", "kind": "named_static_text", "english": "\\u{2191}/\\u{2193} +/-5"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.int_step.vertical_step", "kind": "named_static_text", "english": "\\u{2191}/\\u{2193} step"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.n_cancel", "kind": "named_static_text", "english": "n cancel"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.right_expand", "kind": "named_static_text", "english": "\\u{2192} expand"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.slash_search", "kind": "named_static_text", "english": "/ search"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.space_enter_toggle", "kind": "named_static_text", "english": "Space/Enter toggle"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.space_toggle", "kind": "named_static_text", "english": "Space toggle"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.type_edit", "kind": "named_static_text", "english": "type to edit"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.type_filter", "kind": "named_static_text", "english": "type to filter"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.y_reset", "kind": "named_static_text", "english": "y reset"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.clamped", "kind": "format_named", "english": "note: clamped at {cols} cols"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.empty_use_default", "kind": "named_text", "english": "<empty: uses shell default>"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.lock.team", "kind": "table", "english": "Managed by your team admin."}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.lock.zdr", "kind": "table", "english": "Your team has Zero Data Retention."}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.more", "kind": "format_named", "english": "\\u{2026} {count} more"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.no_read_mapping", "kind": "named_text", "english": "no read mapping"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.preview", "kind": "named_static_text", "english": "preview"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.restart", "kind": "named_text", "english": "restart"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.type_value", "kind": "named_text", "english": "<type a value>"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.validation.unknown_model", "kind": "format_named", "english": "Unknown model: \\\"{model}\\\""}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.value.admin_managed", "kind": "named_text", "english": "Admin Managed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.value.no_override", "kind": "named_text", "english": "(no override)"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.value.off", "kind": "named_static_text", "english": "off"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.value.on", "kind": "named_static_text", "english": "on"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "type to edit", "kind": "tr_static", "english": "type to edit"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "y reset", "kind": "tr_static", "english": "y reset"}
 {"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "New Agent", "kind": "tr_static", "english": "New Agent"}
 {"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "accept", "kind": "tr_static", "english": "accept"}
 {"file": "crates/codegen/xai-grok-pager/src/views/shortcuts_bar.rs", "id": "accept / toggle", "kind": "tr_static", "english": "accept / toggle"}

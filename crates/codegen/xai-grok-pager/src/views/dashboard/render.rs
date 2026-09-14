@@ -322,9 +322,7 @@ pub(crate) fn render_dashboard(
                     .is_some_and(|p| p.subagent_views.contains_key(child_session_id));
                 if parent_ok && !loaded {
                     (
-                        Some(crate::locale::ctx().named_static_text(
-                            "dashboard.peek.subagent_not_loaded",
-                            "Subagent not loaded",
+                        Some(crate::locale::ctx().tr_static("Subagent not loaded",
                         )),
                         false,
                     )
@@ -509,7 +507,7 @@ pub(crate) fn render_dashboard(
 /// Localized rename editor prefix. A function rather than a const: the text is localized, and the
 /// editor's caret offset and width budget are computed from the same call.
 fn rename_prefix() -> &'static str {
-    crate::locale::ctx().named_static_text("dashboard.rename.prefix", "rename: ")
+    crate::locale::ctx().tr_static("rename: ")
 }
 
 fn rename_editor_view(draft: &RenameDraft, width: u16) -> (&str, u16) {
@@ -621,21 +619,17 @@ fn render_dashboard_banner(
     );
     let mut title_parts: Vec<String> = vec![
         crate::locale::ctx()
-            .named_text("dashboard.banner.title", "Dashboard")
+            .tr("Dashboard")
             .into_owned(),
         agent_part,
     ];
     if working > 0 {
-        title_parts.push(crate::locale::ctx().format_named(
-            "dashboard.banner.working",
-            "{count} working",
+        title_parts.push(crate::locale::ctx().tr_format("{count} working",
             &[("count", &working.to_string())],
         ));
     }
     if needs_input > 0 {
-        title_parts.push(crate::locale::ctx().format_named(
-            "dashboard.banner.awaiting",
-            "{count} awaiting",
+        title_parts.push(crate::locale::ctx().tr_format("{count} awaiting",
             &[("count", &needs_input.to_string())],
         ));
     }
@@ -665,9 +659,7 @@ fn render_dashboard_banner(
         return;
     }
     if rows.is_empty() {
-        let hint: &str = crate::locale::ctx().named_static_text(
-            "dashboard.banner.empty",
-            " No sessions yet. Esc to dispatch one. ",
+        let hint: &str = crate::locale::ctx().tr_static(" No sessions yet. Esc to dispatch one. ",
         );
         let trunc = truncate_str(hint, inner.width as usize);
         buf.set_string(inner.x, inner.y, trunc, theme.dim().bg(theme.bg_base));
@@ -706,19 +698,19 @@ fn render_location_picker(
         },
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("dashboard.hint.tab_complete", "Tab complete"),
+                .tr_static("Tab complete"),
             clickable: false,
             id: 1,
         },
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("dashboard.hint.enter_select", "Enter select"),
+                .tr_static("Enter select"),
             clickable: false,
             id: 2,
         },
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("dashboard.hint.esc_close", "Esc close"),
+                .tr_static("Esc close"),
             clickable: false,
             id: 3,
         },
@@ -726,7 +718,7 @@ fn render_location_picker(
     // Show `i search` in the footer when vim nav mode is active (the picker starts in input mode, but Esc drops to nav under vim)
     push_vim_nav_search_hint(&mut shortcuts, modal.picker.search_active);
     let config = ModalWindowConfig {
-        title: crate::locale::ctx().named_static_text("dashboard.location.title", "Change directory"),
+        title: crate::locale::ctx().tr_static("Change directory"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing: ModalSizing::medium(),
@@ -784,7 +776,7 @@ fn render_location_picker(
             content_area.y,
             path_w,
             theme,
-            crate::locale::ctx().named_static_text("dashboard.location.path", " path: "),
+            crate::locale::ctx().tr_static(" path: "),
             &modal.picker,
             /* active */ false,
             /* show_hint */ false,
@@ -846,9 +838,7 @@ fn render_location_picker(
             Some(name) if name == &c.label => crate::locale::ctx()
                 .named_static_text("dashboard.location.worktree_badge", "worktree")
                 .to_string(),
-            Some(name) => crate::locale::ctx().format_named(
-                "dashboard.location.worktree_named",
-                "worktree: {name}",
+            Some(name) => crate::locale::ctx().tr_format("worktree: {name}",
                 &[("name", name)],
             ),
             None => String::new(),
@@ -1292,7 +1282,7 @@ fn render_rows_with_grouping(
                 render_group_header(
                     buf, line_rect, theme,
                     crate::locale::ctx()
-                        .named_static_text("dashboard.group.pinned", "Pinned"),
+                        .tr_static("Pinned"),
                     *count, collapsed, selected, hovered,
                 );
                 mark(&mut line_bg, 0, theme.bg_base);
@@ -1540,12 +1530,10 @@ fn render_idle_overflow(
     .bg(theme.bg_base);
     let label = if expanded {
         crate::locale::ctx()
-            .named_text("dashboard.overflow.show_fewer", "show fewer")
+            .tr("show fewer")
             .into_owned()
     } else {
-        crate::locale::ctx().format_named(
-            "dashboard.overflow.more",
-            "{hidden} more",
+        crate::locale::ctx().tr_format("{hidden} more",
             &[("hidden", &hidden.to_string()), ("count", &hidden.to_string())],
         )
     };
@@ -2077,7 +2065,7 @@ fn render_narrow_rows_with_grouping(
                 render_group_header_narrow(
                     buf, line_rect, theme,
                     crate::locale::ctx()
-                        .named_static_text("dashboard.group.pinned", "Pinned"),
+                        .tr_static("Pinned"),
                     *count, collapsed, selected, hovered,
                 );
                 state
@@ -2243,24 +2231,18 @@ fn render_no_match(buf: &mut Buffer, area: Rect, theme: &Theme, filter: &Filter)
     }
     let hint = match filter {
         Filter::None => crate::locale::ctx()
-            .named_text("dashboard.filter.none", "No matching rows.")
+            .tr("No matching rows.")
             .into_owned(),
-        Filter::Agent(n) => crate::locale::ctx().format_named(
-            "dashboard.filter.agent",
-            "No agents match `a:{n}`. Press Esc to clear the filter.",
+        Filter::Agent(n) => crate::locale::ctx().tr_format("No agents match `a:{n}`. Press Esc to clear the filter.",
             &[("n", n), ("value", n)],
         ),
         Filter::State(s) => {
             let label = s.group_label();
-            crate::locale::ctx().format_named(
-                "dashboard.filter.state",
-                "No agents in state `{state}`: press Esc to clear the filter.",
+            crate::locale::ctx().tr_format("No agents in state `{state}`: press Esc to clear the filter.",
                 &[("state", label)],
             )
         }
-        Filter::Substring(n) => crate::locale::ctx().format_named(
-            "dashboard.filter.substring",
-            "No rows match `{n}`: press Esc to clear the filter.",
+        Filter::Substring(n) => crate::locale::ctx().tr_format("No rows match `{n}`: press Esc to clear the filter.",
             &[("n", n), ("value", n)],
         ),
     };
@@ -2283,11 +2265,9 @@ fn render_empty_state(buf: &mut Buffer, area: Rect, theme: &Theme, loading: bool
     // A single dim line: the dispatch input below is the call to action, so no multi-line onboarding is needed (but never render a blank screen)
     // While the local session roster is being fetched we show a loading hint so a fresh open doesn't flash the "no agents" copy before rows land
     let line = if loading {
-        crate::locale::ctx().named_static_text("dashboard.empty.loading", "Loading sessions…")
+        crate::locale::ctx().tr_static("Loading sessions…")
     } else {
-        crate::locale::ctx().named_static_text(
-            "dashboard.empty.no_agents",
-            "No agents yet, type a prompt to start one.",
+        crate::locale::ctx().tr_static("No agents yet, type a prompt to start one.",
         )
     };
     let truncated = truncate_str(line, area.width.saturating_sub(2) as usize);
@@ -2491,7 +2471,7 @@ fn render_dispatch(
     // Chips and multiline are not rendered here
     if state.search_mode {
         let prefix =
-            crate::locale::ctx().named_static_text("dashboard.search.prefix", "Search: ");
+            crate::locale::ctx().tr_static("Search: ");
         let prefix_w = UnicodeWidthStr::width(prefix) as u16;
         let painted_prefix_w = prefix_w.min(content.width);
         buf.set_span(
@@ -2582,7 +2562,7 @@ fn render_dispatch(
         // `PromptWidget::draw`).
         if !input_focused {
             let msg = crate::locale::ctx()
-                .named_static_text("dashboard.dispatch.placeholder", "Dispatch a new agent");
+                .tr_static("Dispatch a new agent");
             let style = theme.dim().bg(theme.bg_base);
             let trunc = truncate_str(msg, content.width.saturating_sub(prefix_w) as usize);
             buf.set_string(content.x + prefix_w, content.y, trunc, style);
@@ -2855,38 +2835,17 @@ fn render_file_search_dropdown_for(
 
 /// Localized footer-hint label. The hint words are short verbs matched nowhere in code, so they
 /// localize at paint time; unknown words fall back to the input (defensive).
+///
+/// Same-English different-Chinese collisions (`collapse`/`input`/`mode`) keep
+/// explicit arms; everything else goes through the English-keyed catalog so a
+/// new hint word needs no match arm to translate.
 fn hint_text(word: &'static str) -> &'static str {
-    let id = match word {
-        "confirm close" => "dashboard.hint.confirm_close",
-        "confirm archive" => "dashboard.hint.confirm_archive",
-        "confirm delete" => "dashboard.hint.confirm_delete",
-        "cancel" => "dashboard.hint.cancel",
-        "save" => "dashboard.hint.save",
-        "apply" => "dashboard.hint.apply",
-        "nav" => "dashboard.hint.nav",
-        "open" => "dashboard.hint.open",
-        "input" => "dashboard.hint.input",
-        "list" => "dashboard.hint.list",
-        "select" => "dashboard.hint.select",
-        "answer" => "dashboard.hint.answer",
-        "send" => "dashboard.hint.send",
-        "send+open" => "dashboard.hint.send_open",
-        "back" => "dashboard.hint.back",
-        "mode" => "dashboard.hint.mode",
-        "stop" => "dashboard.hint.stop",
-        "delete" => "dashboard.hint.delete",
-        "expand" => "dashboard.hint.expand",
-        "collapse" => "dashboard.hint.collapse",
-        "show fewer" => "dashboard.overflow.show_fewer",
-        "show all" => "dashboard.hint.show_all",
-        "shortcuts" => "dashboard.hint.shortcuts",
-        "New Agent" => "dashboard.hint.new_agent",
-        "stop this session" => "dashboard.confirm.stop",
-        "archive this session" => "dashboard.confirm.archive",
-        "delete this session" => "dashboard.confirm.delete",
-        _ => return word,
-    };
-    crate::locale::ctx().named_static_text(id, word)
+    match word {
+        "collapse" => crate::locale::ctx().named_static_text("dashboard.hint.collapse", word),
+        "input" => crate::locale::ctx().named_static_text("dashboard.hint.input", word),
+        "mode" => crate::locale::ctx().named_static_text("dashboard.hint.mode", word),
+        _ => crate::locale::ctx().tr_static(word),
+    }
 }
 
 /// There is no inline approve/reject yet; the dashboard is intentionally a navigator, not a
@@ -3435,9 +3394,7 @@ pub fn render_popup_overlay(
         outline.render(area, buf);
         if area.height >= 3 && area.width >= 6 {
             let hint = truncate_str(
-                crate::locale::ctx().named_static_text(
-                    "dashboard.popup.too_small",
-                    "(terminal too small: Esc to close)",
+                crate::locale::ctx().tr_static("(terminal too small: Esc to close)",
                 ),
                 area.width.saturating_sub(2) as usize,
             );

@@ -90,7 +90,7 @@ fn localized_validation_error(err: &str) -> std::borrow::Cow<'_, str> {
 fn localized_restart_pill() -> String {
     format!(
         " \u{00B7} {}",
-        crate::locale::ctx().named_text("settings.ui.restart", "restart")
+        crate::locale::ctx().tr("restart")
     )
 }
 
@@ -409,22 +409,22 @@ fn build_reset_confirm_shortcuts() -> Vec<Shortcut<'static>> {
     let locale = crate::locale::ctx();
     vec![
         Shortcut {
-            label: locale.named_static_text("settings.shortcut.y_reset", "y reset"),
+            label: locale.tr_static("y reset"),
             clickable: true,
             id: RESET_CONFIRM_YES_ID,
         },
         Shortcut {
-            label: locale.named_static_text("settings.shortcut.n_cancel", "n cancel"),
+            label: locale.tr_static("n cancel"),
             clickable: true,
             id: RESET_CONFIRM_NO_ID,
         },
         Shortcut {
-            label: locale.named_static_text("settings.shortcut.esc_cancel", "Esc cancel"),
+            label: locale.tr_static("Esc cancel"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: locale.named_static_text("settings.shortcut.f2_cancel", "F2 cancel"),
+            label: locale.tr_static("F2 cancel"),
             clickable: false,
             id: 0,
         },
@@ -513,9 +513,7 @@ pub(super) fn render_docs_footer(buf: &mut Buffer, area: Rect, theme: &Theme) {
         "settings.docs_footer.long",
         "Tip · Ask Grok: \"change theme to grokday\" or \"what does compact mode do?\"",
     );
-    let short = crate::locale::ctx().named_static_text(
-        "settings.docs_footer.short",
-        "Tip · Ask Grok to change a setting",
+    let short = crate::locale::ctx().tr_static("Tip · Ask Grok to change a setting",
     );
     let text = modal_window::fit_tip_line(&[long, short], area.width as usize);
     modal_window::render_centered_tip_footer(buf, area, theme, text.as_ref());
@@ -1441,9 +1439,9 @@ fn render_picking_group(
         // Value read live from the snapshot (refreshed after each toggle).
         let on = matches!(state.value_for(child_key), Some(SettingValue::Bool(true)));
         let value_text = if on {
-            crate::locale::ctx().named_static_text("settings.ui.value.on", "on")
+            crate::locale::ctx().tr_static("on")
         } else {
-            crate::locale::ctx().named_static_text("settings.ui.value.off", "off")
+            crate::locale::ctx().tr_static("off")
         };
         let value_style = if on {
             Style::default().fg(theme.accent_user).bg(bg)
@@ -1787,12 +1785,10 @@ pub(super) fn render_editing_value(
     if buffer.is_empty() {
         let placeholder: std::borrow::Cow<'static, str> = match &meta.kind {
             SettingKind::String { validator, .. } => match validator {
-                StringValidator::KnownModel => crate::locale::ctx().named_text(
-                    "settings.ui.empty_use_default",
-                    "<empty: uses shell default>",
+                StringValidator::KnownModel => crate::locale::ctx().tr("<empty: uses shell default>",
                 ),
                 StringValidator::NonEmptyToken | StringValidator::Any => {
-                    crate::locale::ctx().named_text("settings.ui.type_value", "<type a value>")
+                    crate::locale::ctx().tr("<type a value>")
                 }
             },
             _ => std::borrow::Cow::Borrowed(""),
@@ -2092,7 +2088,7 @@ fn render_preview_block(
     // Title is always plain lowercase `preview`
     // The previous implementation appended ` · clamped to N cols` to the title when the preview clamped to a narrower terminal width
     // The clamp signal now lives in a note row below the content, so the title carries the same shape regardless of clamp state
-    let title_text: &str = crate::locale::ctx().named_static_text("settings.ui.preview", "preview");
+    let title_text: &str = crate::locale::ctx().tr_static("preview");
     let title_text_truncated: std::borrow::Cow<'_, str> =
         if title_text.width() <= effective_width as usize {
             std::borrow::Cow::Borrowed(title_text)
@@ -2153,9 +2149,7 @@ fn render_preview_block(
             .saturating_add(1);
         let area_end_y = area.y.saturating_add(area.height);
         if note_y < area_end_y {
-            let note_text = crate::locale::ctx().format_named(
-                "settings.ui.clamped",
-                "note: clamped at {cols} cols",
+            let note_text = crate::locale::ctx().tr_format("note: clamped at {cols} cols",
                 &[("cols", &effective_width.to_string())],
             );
             let note_text_truncated: std::borrow::Cow<'_, str> =
@@ -2271,7 +2265,7 @@ pub(super) fn value_display(
         SettingValue::String(s) => {
             if s.is_empty() && matches!(meta.kind, SettingKind::DynamicEnum { .. }) {
                 locale
-                    .named_text("settings.ui.value.no_override", "(no override)")
+                    .tr("(no override)")
                     .into_owned()
             } else {
                 s.clone()
@@ -2286,7 +2280,7 @@ pub(super) fn value_display(
         SettingValue::Int(i) => i.to_string(),
     };
     if lock == Some(CodingDataSharingLock::TeamManaged) {
-        let suffix = locale.named_text("settings.ui.value.admin_managed", "Admin Managed");
+        let suffix = locale.tr("Admin Managed");
         display.push_str(" \u{00B7} ");
         display.push_str(suffix.as_ref());
     }
@@ -2688,7 +2682,7 @@ fn render_setting_row_no_value(
         std::borrow::Cow::Owned(truncate_str(label.as_ref(), label_max_w as usize))
     };
     let no_read_mapping =
-        crate::locale::ctx().named_text("settings.ui.no_read_mapping", "no read mapping");
+        crate::locale::ctx().tr("no read mapping");
     let text = format!(" !   {label_truncated} ({no_read_mapping})");
     let w = text.width() as u16;
     buf.set_span(
@@ -2773,9 +2767,9 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                 .is_some_and(|(key, _)| state.row_lock(key).is_some());
             let enter_label = match state.focused_setting() {
                 Some((_, meta)) if matches!(meta.kind, SettingKind::Bool { .. }) => {
-                    locale.named_static_text("settings.shortcut.enter_toggle", "Enter toggle")
+                    locale.tr_static("Enter toggle")
                 }
-                _ => locale.named_static_text("settings.shortcut.enter_edit", "Enter edit"),
+                _ => locale.tr_static("Enter edit"),
             };
             let mut shortcuts = vec![
                 Shortcut {
@@ -2785,14 +2779,14 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                     id: 0,
                 },
                 Shortcut {
-                    label: locale.named_static_text("settings.shortcut.gg_top_bottom", "g/G top/btm"),
+                    label: locale.tr_static("g/G top/btm"),
                     clickable: false,
                     id: 0,
                 },
             ];
             if !locked {
                 shortcuts.push(Shortcut {
-                    label: locale.named_static_text("settings.shortcut.space_toggle", "Space toggle"),
+                    label: locale.tr_static("Space toggle"),
                     clickable: false,
                     id: 0,
                 });
@@ -2810,20 +2804,20 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                     id: 0,
                 },
                 Shortcut {
-                    label: locale.named_static_text("settings.shortcut.slash_search", "/ search"),
+                    label: locale.tr_static("/ search"),
                     clickable: false,
                     id: 0,
                 },
             ]);
             if !locked {
                 shortcuts.push(Shortcut {
-                    label: locale.named_static_text("settings.shortcut.d_reset", "d reset"),
+                    label: locale.tr_static("d reset"),
                     clickable: false,
                     id: 0,
                 });
             }
             shortcuts.push(Shortcut {
-                label: locale.named_static_text("settings.shortcut.f2_esc_close", "F2/Esc close"),
+                label: locale.tr_static("F2/Esc close"),
                 clickable: false,
                 id: 0,
             });
@@ -2845,17 +2839,17 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
             },
             Shortcut {
                 label: locale
-                    .named_static_text("settings.shortcut.backspace_edit", "Backspace edit"),
+                    .tr_static("Backspace edit"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: locale.named_static_text("settings.shortcut.enter_commit", "Enter commit"),
+                label: locale.tr_static("Enter commit"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: locale.named_static_text("settings.shortcut.esc_clear", "Esc clear"),
+                label: locale.tr_static("Esc clear"),
                 clickable: false,
                 id: 0,
             },
@@ -2872,9 +2866,9 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                 locale.named_static_text("settings.shortcut.arrows_nav", "\u{2191}/\u{2193} nav")
             };
             let esc_label = if *sp {
-                locale.named_static_text("settings.shortcut.esc_revert", "Esc revert")
+                locale.tr_static("Esc revert")
             } else {
-                locale.named_static_text("settings.shortcut.esc_cancel", "Esc cancel")
+                locale.tr_static("Esc cancel")
             };
             let consent = crate::settings::is_consent_chooser(key);
             let mut shortcuts = vec![
@@ -2886,13 +2880,13 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                 // A chooser picks one of the offered answers, so Enter "selects"
                 // The filter bar and the value editors, where Enter really does commit typed input, keep that wording
                 Shortcut {
-                    label: locale.named_static_text("settings.shortcut.enter_select", "Enter select"),
+                    label: locale.tr_static("Enter select"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
                     label: locale
-                        .named_static_text("settings.shortcut.double_click_select", "double-click select"),
+                        .tr_static("double-click select"),
                     clickable: false,
                     id: 0,
                 },
@@ -2905,7 +2899,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
             // Consent choosers hide reset; the key is disabled there too, so this stays a description of what actually works on the pane
             if !consent {
                 shortcuts.push(Shortcut {
-                    label: locale.named_static_text("settings.shortcut.d_reset", "d reset"),
+                    label: locale.tr_static("d reset"),
                     clickable: false,
                     id: 0,
                 });
@@ -2927,17 +2921,17 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                     id: 0,
                 },
                 Shortcut {
-                    label: locale.named_static_text("settings.shortcut.enter_commit", "Enter commit"),
+                    label: locale.tr_static("Enter commit"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
-                    label: locale.named_static_text("settings.shortcut.esc_cancel", "Esc cancel"),
+                    label: locale.tr_static("Esc cancel"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
-                    label: locale.named_static_text("settings.shortcut.d_reset", "d reset"),
+                    label: locale.tr_static("d reset"),
                     clickable: false,
                     id: 0,
                 },
@@ -2945,7 +2939,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
         }
         SettingsMode::EditingString { .. } => vec![
             Shortcut {
-                label: locale.named_static_text("settings.shortcut.type_edit", "type to edit"),
+                label: locale.tr_static("type to edit"),
                 clickable: false,
                 id: 0,
             },
@@ -2956,12 +2950,12 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                 id: 0,
             },
             Shortcut {
-                label: locale.named_static_text("settings.shortcut.enter_commit", "Enter commit"),
+                label: locale.tr_static("Enter commit"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: locale.named_static_text("settings.shortcut.esc_cancel", "Esc cancel"),
+                label: locale.tr_static("Esc cancel"),
                 clickable: false,
                 id: 0,
             },
@@ -2975,12 +2969,12 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
             },
             Shortcut {
                 label: locale
-                    .named_static_text("settings.shortcut.space_enter_toggle", "Space/Enter toggle"),
+                    .tr_static("Space/Enter toggle"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: locale.named_static_text("settings.shortcut.esc_back", "Esc back"),
+                label: locale.tr_static("Esc back"),
                 clickable: false,
                 id: 0,
             },

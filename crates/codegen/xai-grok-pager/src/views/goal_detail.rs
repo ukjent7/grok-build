@@ -75,7 +75,7 @@ fn status_label(goal: &GoalDisplayState) -> (&'static str, Color, String) {
     let ctx = crate::locale::ctx();
     match goal.status {
         GoalDisplayStatus::Active => (
-            ctx.named_static_text("goal.status.active", "Active"),
+            ctx.tr_static("Active"),
             theme.accent_success,
             active_phase_label(goal),
         ),
@@ -85,22 +85,22 @@ fn status_label(goal: &GoalDisplayState) -> (&'static str, Color, String) {
         | GoalDisplayStatus::InfraPaused
         | GoalDisplayStatus::Blocked => (goal.status.pause_label(), theme.warning, String::new()),
         GoalDisplayStatus::Failed => (
-            ctx.named_static_text("goal.status.failed", "Failed"),
+            ctx.tr_static("Failed"),
             theme.accent_error,
             String::new(),
         ),
         GoalDisplayStatus::Interrupted => (
-            ctx.named_static_text("goal.status.interrupted", "Interrupted"),
+            ctx.tr_static("Interrupted"),
             theme.accent_error,
             String::new(),
         ),
         GoalDisplayStatus::BudgetLimited => (
-            ctx.named_static_text("goal.status.budget_limited", "Budget Limited"),
+            ctx.tr_static("Budget Limited"),
             theme.accent_error,
             String::new(),
         ),
         GoalDisplayStatus::Complete => (
-            ctx.named_static_text("goal.status.complete", "Complete"),
+            ctx.tr_static("Complete"),
             theme.accent_success,
             String::new(),
         ),
@@ -235,9 +235,7 @@ fn sanitize_title(s: &str) -> String {
 /// [`wrap_pause_message_lines`] splits on the kept newlines for multi-line block reasons, so they never reach a rendered row.
 /// Shared by the height calc and the render so they wrap identical text.
 fn format_pause_reason(msg: &str) -> String {
-    crate::locale::ctx().format_named(
-        "goal.reason.template",
-        "Reason: {reason}",
+    crate::locale::ctx().tr_format("Reason: {reason}",
         &[("reason", &strip_control_chars(msg, true))],
     )
 }
@@ -269,13 +267,13 @@ fn classifier_details_display(path: Option<&str>, exists: bool) -> &str {
 fn classifier_verdict_label(verdict: Option<GoalClassifierVerdict>) -> &'static str {
     match verdict {
         Some(GoalClassifierVerdict::Achieved) => {
-            crate::locale::ctx().named_static_text("goal.classifier.achieved", "Achieved")
+            crate::locale::ctx().tr_static("Achieved")
         }
         Some(GoalClassifierVerdict::NotAchieved) => {
-            crate::locale::ctx().named_static_text("goal.classifier.not_achieved", "Not Achieved")
+            crate::locale::ctx().tr_static("Not Achieved")
         }
         None => {
-            crate::locale::ctx().named_static_text("goal.classifier.not_evaluated", "Not yet evaluated")
+            crate::locale::ctx().tr_static("Not yet evaluated")
         }
     }
 }
@@ -288,77 +286,73 @@ fn humanize_goal_event(event: &str, detail: Option<&str>) -> String {
     let phrase = |d: Option<&str>| d.map(|s| strip_control_chars(&s.replace('_', " "), false));
     match event {
         "goal_created" => {
-            crate::locale::ctx().named_text("goal.event.created", "Goal created").into_owned()
+            crate::locale::ctx().tr("Goal created").into_owned()
         }
         "planning_started" => {
             crate::locale::ctx()
-                .named_text("goal.event.planning_started", "Planning started")
+                .tr("Planning started")
                 .into_owned()
         }
         "planning_completed" => {
             crate::locale::ctx()
-                .named_text("goal.event.planning_completed", "Planning completed")
+                .tr("Planning completed")
                 .into_owned()
         }
         "planning_failed" => {
             crate::locale::ctx()
-                .named_text("goal.event.planning_failed", "Planning failed")
+                .tr("Planning failed")
                 .into_owned()
         }
         "worker_started" => {
             crate::locale::ctx()
-                .named_text("goal.event.worker_started", "Worker started")
+                .tr("Worker started")
                 .into_owned()
         }
         "worker_completed" => {
             crate::locale::ctx()
-                .named_text("goal.event.worker_completed", "Worker completed")
+                .tr("Worker completed")
                 .into_owned()
         }
         "worker_failed" => {
             crate::locale::ctx()
-                .named_text("goal.event.worker_failed", "Worker failed")
+                .tr("Worker failed")
                 .into_owned()
         }
         "context_rotated" => {
             crate::locale::ctx()
-                .named_text("goal.event.context_rotated", "Context rotated")
+                .tr("Context rotated")
                 .into_owned()
         }
         // A plain user pause has no extra cause worth showing.
         "goal_paused" => match phrase(detail).filter(|d| d != "user") {
-            Some(d) => crate::locale::ctx().format_named(
-                "goal.event.paused_detail",
-                "Paused: {detail}",
+            Some(d) => crate::locale::ctx().tr_format("Paused: {detail}",
                 &[("detail", &d)],
             ),
             None => {
-                crate::locale::ctx().named_text("goal.event.paused", "Paused").into_owned()
+                crate::locale::ctx().tr("Paused").into_owned()
             }
         },
         "goal_resumed" => {
-            crate::locale::ctx().named_text("goal.event.resumed", "Resumed").into_owned()
+            crate::locale::ctx().tr("Resumed").into_owned()
         }
         "goal_completed" => {
-            crate::locale::ctx().named_text("goal.event.completed", "Completed").into_owned()
+            crate::locale::ctx().tr("Completed").into_owned()
         }
         "goal_cleared" => {
-            crate::locale::ctx().named_text("goal.event.cleared", "Cleared").into_owned()
+            crate::locale::ctx().tr("Cleared").into_owned()
         }
         "budget_exceeded" => {
             crate::locale::ctx()
-                .named_text("goal.event.budget_exceeded", "Budget exceeded")
+                .tr("Budget exceeded")
                 .into_owned()
         }
         "premature_stop_detected" => match phrase(detail) {
-            Some(d) => crate::locale::ctx().format_named(
-                "goal.event.stopped_early_detail",
-                "Stopped early: {detail}",
+            Some(d) => crate::locale::ctx().tr_format("Stopped early: {detail}",
                 &[("detail", &d)],
             ),
             None => {
                 crate::locale::ctx()
-                    .named_text("goal.event.stopped_early", "Stopped early")
+                    .tr("Stopped early")
                     .into_owned()
             }
         },
@@ -566,7 +560,7 @@ pub fn render_goal_detail(
     let cleaned = sanitize_title(&goal.objective);
     let objective = if cleaned.is_empty() {
         crate::locale::ctx()
-            .named_text("goal.title.active", "Active Goal")
+            .tr("Active Goal")
             .into_owned()
     } else {
         truncate_to_width(&cleaned, objective_budget)
@@ -608,7 +602,7 @@ pub fn render_goal_detail(
     let mut status_spans = vec![
         Span::styled(
             crate::locale::ctx()
-                .named_text("goal.label.status", "Status: ")
+                .tr("Status: ")
                 .into_owned(),
             Style::default().fg(theme.gray),
         ),
@@ -634,9 +628,7 @@ pub fn render_goal_detail(
     }
 
     if goal.status.is_paused() {
-        let hint = crate::locale::ctx().format_named(
-            "goal.hint.resume",
-            "Status: {status}. Type /goal resume to continue",
+        let hint = crate::locale::ctx().tr_format("Status: {status}. Type /goal resume to continue",
             &[("status", &goal.status.pause_label().to_string())],
         );
         buf.set_line_safe(
@@ -652,16 +644,14 @@ pub fn render_goal_detail(
     ) {
         let label = if goal.status == GoalDisplayStatus::Interrupted {
             crate::locale::ctx()
-                .named_static_text("goal.status.interrupted", "Interrupted")
+                .tr_static("Interrupted")
                 .to_string()
         } else {
             crate::locale::ctx()
-                .named_static_text("goal.status.failed", "Failed")
+                .tr_static("Failed")
                 .to_string()
         };
-        let hint = crate::locale::ctx().format_named(
-            "goal.hint.clear_after_failure",
-            "Status: {status}. Type /goal clear, then start a new goal",
+        let hint = crate::locale::ctx().tr_format("Status: {status}. Type /goal clear, then start a new goal",
             &[("status", &label)],
         );
         buf.set_line_safe(
@@ -709,16 +699,12 @@ pub fn render_goal_detail(
         let live = goal.live_tokens_used(context_used, active_subagent_tokens);
         let p = (live as f64 / budget as f64).min(1.0) as f32;
         let budget_str = format_tokens_compact(budget);
-        let pair = crate::locale::ctx().format_named(
-            "goal.budget.tokens_pair",
-            "{used} / {budget} tokens",
+        let pair = crate::locale::ctx().tr_format("{used} / {budget} tokens",
             &[("used", &tokens_str), ("budget", &budget_str)],
         );
         (p, pair)
     } else {
-        let only = crate::locale::ctx().format_named(
-            "goal.budget.tokens_only",
-            "{tokens} tokens",
+        let only = crate::locale::ctx().tr_format("{tokens} tokens",
             &[("tokens", &tokens_str)],
         );
         (0.0, only)
@@ -726,9 +712,7 @@ pub fn render_goal_detail(
     let has_budget = goal.token_budget.is_some_and(|b| b > 0);
     let budget_label = if has_budget {
         let pct_display = format!(" ({:.0}%)", pct * 100.0);
-        crate::locale::ctx().format_named(
-            "goal.budget.summary",
-            "Budget: {budget}{percent}  Elapsed: {elapsed}",
+        crate::locale::ctx().tr_format("Budget: {budget}{percent}  Elapsed: {elapsed}",
             &[
                 ("budget", &budget_display),
                 ("percent", &pct_display),
@@ -736,9 +720,7 @@ pub fn render_goal_detail(
             ],
         )
     } else {
-        crate::locale::ctx().format_named(
-            "goal.tokens.summary",
-            "Tokens: {tokens}  Elapsed: {elapsed}",
+        crate::locale::ctx().tr_format("Tokens: {tokens}  Elapsed: {elapsed}",
             &[("tokens", &budget_display), ("elapsed", &elapsed_str)],
         )
     };
@@ -793,7 +775,7 @@ pub fn render_goal_detail(
             y,
             &Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_text("goal.progress.empty", "No progress items yet")
+                    .tr("No progress items yet")
                     .into_owned(),
                 Style::default().fg(theme.gray),
             )),
@@ -806,7 +788,7 @@ pub fn render_goal_detail(
             y,
             &Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_text("goal.progress.title", "Progress:")
+                    .tr("Progress:")
                     .into_owned(),
                 Style::default()
                     .fg(theme.text_primary)
@@ -869,7 +851,7 @@ pub fn render_goal_detail(
         let mut subagent_spans = vec![
             Span::styled(
                 crate::locale::ctx()
-                    .named_text("goal.subagent.active", "Active Subagent: ")
+                    .tr("Active Subagent: ")
                     .into_owned(),
                 Style::default().fg(theme.gray),
             ),
@@ -883,9 +865,7 @@ pub fn render_goal_detail(
         let rounds = goal.total_worker_rounds + goal.total_verify_rounds;
         if rounds > 0 {
             subagent_spans.push(Span::styled(
-                crate::locale::ctx().format_named(
-                    "goal.subagent.round",
-                    " (round {round})",
+                crate::locale::ctx().tr_format(" (round {round})",
                     &[("round", &rounds.to_string())],
                 ),
                 Style::default().fg(theme.gray),
@@ -900,33 +880,25 @@ pub fn render_goal_detail(
             let locale = crate::locale::ctx();
             if let Some(tok) = goal.live_subagent_tokens {
                 let tokens = format_tokens_compact(tok.min(i64::MAX as u64) as i64);
-                detail_parts.push(locale.format_named(
-                    "goal.subagent.tokens",
-                    "Tokens: {tokens}",
+                detail_parts.push(locale.tr_format("Tokens: {tokens}",
                     &[("tokens", &tokens)],
                 ));
             }
             if let Some(ctx_pct) = goal.live_context_pct {
                 let ctx_str = ctx_pct.to_string();
-                detail_parts.push(locale.format_named(
-                    "goal.subagent.context",
-                    "Context: {percent}%",
+                detail_parts.push(locale.tr_format("Context: {percent}%",
                     &[("percent", &ctx_str)],
                 ));
             }
             if let Some(turns) = goal.live_turn_count {
                 let turns_str = turns.to_string();
-                detail_parts.push(locale.format_named(
-                    "goal.subagent.turns",
-                    "Turns: {count}",
+                detail_parts.push(locale.tr_format("Turns: {count}",
                     &[("count", &turns_str)],
                 ));
             }
             if let Some(tools) = goal.live_tool_call_count {
                 let tools_str = tools.to_string();
-                detail_parts.push(locale.format_named(
-                    "goal.subagent.tools",
-                    "Tools: {count}",
+                detail_parts.push(locale.tr_format("Tools: {count}",
                     &[("count", &tools_str)],
                 ));
             }
@@ -1001,7 +973,7 @@ pub fn render_goal_detail(
             y,
             &Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_text("goal.classifier.title", "Completion review:")
+                    .tr("Completion review:")
                     .into_owned(),
                 Style::default()
                     .fg(theme.text_primary)
@@ -1019,7 +991,7 @@ pub fn render_goal_detail(
                 &Line::from(vec![
                     Span::styled(
                         crate::locale::ctx()
-                            .named_text("goal.classifier.last_verdict", "  Last verdict: ")
+                            .tr("  Last verdict: ")
                             .into_owned(),
                         Style::default().fg(theme.gray),
                     ),
@@ -1044,7 +1016,7 @@ pub fn render_goal_detail(
                 &Line::from(vec![
                     Span::styled(
                         crate::locale::ctx()
-                            .named_text("goal.classifier.attempts", "  Attempts: ")
+                            .tr("  Attempts: ")
                             .into_owned(),
                         Style::default().fg(theme.gray),
                     ),
@@ -1092,7 +1064,7 @@ pub fn render_goal_detail(
             y,
             &Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_text("goal.history.title", "Recent History:")
+                    .tr("Recent History:")
                     .into_owned(),
                 Style::default()
                     .fg(theme.text_primary)
@@ -1133,16 +1105,12 @@ pub fn render_goal_detail(
             GoalDisplayStatus::Failed | GoalDisplayStatus::Interrupted
         ) {
             crate::locale::ctx()
-                .named_text(
-                    "goal.footer.failed",
-                    "Esc: close  /goal clear, then start a new goal",
+                .tr("Esc: close  /goal clear, then start a new goal",
                 )
                 .into_owned()
         } else {
             crate::locale::ctx()
-                .named_text(
-                    "goal.footer.commands",
-                    "Esc: close  /goal resume | pause | status | clear",
+                .tr("Esc: close  /goal resume | pause | status | clear",
                 )
                 .into_owned()
         };
