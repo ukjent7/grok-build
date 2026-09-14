@@ -18,8 +18,8 @@ fn mode_ctrl_g_action(screen_mode: crate::app::ScreenMode) -> ActionDef {
     if screen_mode.is_minimal() {
         ActionDef {
             id: ActionId::EditPromptExternal,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.EditPromptExternal.label", "edit prompt"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.EditPromptExternal.description", "Edit prompt in external editor"),
+            label: crate::locale::ctx().tr_static("edit prompt"),
+            description: crate::locale::ctx().tr_static("Edit prompt in external editor"),
             default_key: key!('g', CONTROL),
             alt_keys: vec![],
             category: Category::Input,
@@ -37,8 +37,8 @@ fn mode_ctrl_g_action(screen_mode: crate::app::ScreenMode) -> ActionDef {
     } else {
         ActionDef {
             id: ActionId::ToggleTasks,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleTasks.label", "tasks"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleTasks.description", "Toggle tasks pane"),
+            label: crate::locale::ctx().tr_static("tasks"),
+            description: crate::locale::ctx().tr_static("Toggle tasks pane"),
             default_key: key!('g', CONTROL),
             alt_keys: vec![],
             category: Category::Panels,
@@ -90,8 +90,8 @@ pub(super) fn default_actions(
         // ── Navigation (scrollback) ─────────────────────────────────
         ActionDef {
             id: ActionId::SelectNext,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.SelectNext.label", "nav"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.SelectNext.description", "Select next entry"),
+            label: crate::locale::ctx().tr_static("nav"),
+            description: crate::locale::ctx().tr_static("Select next entry"),
             default_key: key!('j'),
             alt_keys: vec![key!(Down)],
             category: Category::ConversationNav,
@@ -103,8 +103,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::SelectPrev,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.SelectPrev.label", "nav"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.SelectPrev.description", "Select previous entry"),
+            label: crate::locale::ctx().tr_static("nav"),
+            description: crate::locale::ctx().tr_static("Select previous entry"),
             default_key: key!('k'),
             alt_keys: vec![key!(Up)],
             category: Category::ConversationNav,
@@ -117,7 +117,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::NextTurn,
             label: crate::locale::ctx().named_static_text("shortcuts.action.NextTurn.label", "turn"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.NextTurn.description", "Next turn"),
+            description: crate::locale::ctx().tr_static("Next turn"),
             default_key: key!('L'),
             alt_keys: vec![key!(Right, SHIFT)],
             category: Category::ConversationNav,
@@ -130,7 +130,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::PrevTurn,
             label: crate::locale::ctx().named_static_text("shortcuts.action.PrevTurn.label", "turn"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.PrevTurn.description", "Previous turn"),
+            description: crate::locale::ctx().tr_static("Previous turn"),
             default_key: key!('H'),
             alt_keys: vec![key!(Left, SHIFT)],
             category: Category::ConversationNav,
@@ -143,7 +143,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::NextResponse,
             label: crate::locale::ctx().named_static_text("shortcuts.action.NextResponse.label", "turn"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.NextResponse.description", "Jump to next turn at viewport top"),
+            description: crate::locale::ctx().tr_static("Jump to next turn at viewport top"),
             default_key: key!('J'),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -156,7 +156,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::PrevResponse,
             label: crate::locale::ctx().named_static_text("shortcuts.action.PrevResponse.label", "turn"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.PrevResponse.description", "Jump to previous turn at viewport top"),
+            description: crate::locale::ctx().tr_static("Jump to previous turn at viewport top"),
             default_key: key!('K'),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -168,8 +168,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::GotoTop,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.GotoTop.label", "top/btm"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.GotoTop.description", "Go to top"),
+            label: crate::locale::ctx().tr_static("top/btm"),
+            description: crate::locale::ctx().tr_static("Go to top"),
             default_key: key!('g'),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -181,8 +181,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::GotoBottom,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.GotoBottom.label", "bottom"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.GotoBottom.description", "Go to bottom"),
+            label: crate::locale::ctx().tr_static("bottom"),
+            description: crate::locale::ctx().tr_static("Go to bottom"),
             default_key: key!('G'),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -194,8 +194,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::ScrollUp,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ScrollUp.label", "scroll up"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ScrollUp.description", "Scroll up one line"),
+            label: crate::locale::ctx().tr_static("scroll up"),
+            description: crate::locale::ctx().tr_static("Scroll up one line"),
             default_key: key!('k', CONTROL),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -207,8 +207,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::ScrollDown,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ScrollDown.label", "scroll down"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ScrollDown.description", "Scroll down one line"),
+            label: crate::locale::ctx().tr_static("scroll down"),
+            description: crate::locale::ctx().tr_static("Scroll down one line"),
             default_key: key!('j', CONTROL),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -220,8 +220,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::HalfPageUp,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.HalfPageUp.label", "half page up"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.HalfPageUp.description", "Scroll up half page"),
+            label: crate::locale::ctx().tr_static("half page up"),
+            description: crate::locale::ctx().tr_static("Scroll up half page"),
             default_key: key!('u', CONTROL),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -233,8 +233,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::HalfPageDown,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.HalfPageDown.label", "half page down"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.HalfPageDown.description", "Scroll down half page"),
+            label: crate::locale::ctx().tr_static("half page down"),
+            description: crate::locale::ctx().tr_static("Scroll down half page"),
             default_key: if in_vscode {
                 key!('D')
             } else {
@@ -250,8 +250,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::PageUp,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.PageUp.label", "page up"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.PageUp.description", "Scroll up one page"),
+            label: crate::locale::ctx().tr_static("page up"),
+            description: crate::locale::ctx().tr_static("Scroll up one page"),
             default_key: key!(PageUp),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -263,8 +263,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::PageDown,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.PageDown.label", "page down"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.PageDown.description", "Scroll down one page"),
+            label: crate::locale::ctx().tr_static("page down"),
+            description: crate::locale::ctx().tr_static("Scroll down one page"),
             default_key: key!(PageDown),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -278,7 +278,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::Collapse,
             label: crate::locale::ctx().named_static_text("shortcuts.action.Collapse.label", "fold"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.Collapse.description", "Collapse selected entry"),
+            description: crate::locale::ctx().tr_static("Collapse selected entry"),
             default_key: key!('h'),
             alt_keys: vec![key!(Left)],
             category: Category::ConversationAction,
@@ -291,7 +291,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::Expand,
             label: crate::locale::ctx().named_static_text("shortcuts.action.Expand.label", "fold"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.Expand.description", "Expand selected entry"),
+            description: crate::locale::ctx().tr_static("Expand selected entry"),
             default_key: key!('l'),
             alt_keys: vec![key!(Right)],
             category: Category::ConversationAction,
@@ -304,7 +304,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::ToggleFold,
             label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleFold.label", "fold"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleFold.description", "Expand / collapse"),
+            description: crate::locale::ctx().tr_static("Expand / collapse"),
             default_key: key!('e'),
             alt_keys: vec![],
             category: Category::ConversationAction,
@@ -321,8 +321,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::ToggleExpandAll,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleExpandAll.label", "all"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleExpandAll.description", "Expand all / collapse all"),
+            label: crate::locale::ctx().tr_static("all"),
+            description: crate::locale::ctx().tr_static("Expand all / collapse all"),
             default_key: key!('E'),
             alt_keys: vec![],
             category: Category::ConversationAction,
@@ -339,8 +339,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::ExpandAllThinking,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ExpandAllThinking.label", "expand/collapse thinking"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ExpandAllThinking.description", "Toggle all thinking blocks"),
+            label: crate::locale::ctx().tr_static("expand/collapse thinking"),
+            description: crate::locale::ctx().tr_static("Toggle all thinking blocks"),
             default_key: key!('e', CONTROL),
             alt_keys: vec![],
             category: Category::ConversationAction,
@@ -357,8 +357,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::ToggleRaw,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleRaw.label", "raw"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleRaw.description", "Toggle raw markdown"),
+            label: crate::locale::ctx().tr_static("raw"),
+            description: crate::locale::ctx().tr_static("Toggle raw markdown"),
             default_key: key!('r'),
             alt_keys: vec![],
             category: Category::ConversationAction,
@@ -376,8 +376,8 @@ pub(super) fn default_actions(
         // ── Block content ────────────────────────────────────────────
         ActionDef {
             id: ActionId::CopyBlockContent,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.CopyBlockContent.label", "copy"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.CopyBlockContent.description", "Copy content"),
+            label: crate::locale::ctx().tr_static("copy"),
+            description: crate::locale::ctx().tr_static("Copy content"),
             default_key: key!('y'),
             alt_keys: vec![],
             category: Category::ConversationAction,
@@ -394,8 +394,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::CopyBlockMeta,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.CopyBlockMeta.label", "copy cmd"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.CopyBlockMeta.description", "Copy command / path"),
+            label: crate::locale::ctx().tr_static("copy cmd"),
+            description: crate::locale::ctx().tr_static("Copy command / path"),
             default_key: key!('Y'),
             alt_keys: vec![],
             category: Category::ConversationAction,
@@ -412,8 +412,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::OpenBlockViewer,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.OpenBlockViewer.label", "view"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.OpenBlockViewer.description", "Open in viewer"),
+            label: crate::locale::ctx().tr_static("view"),
+            description: crate::locale::ctx().tr_static("Open in viewer"),
             default_key: key!(Enter),
             alt_keys: vec![key!('f', CONTROL)],
             category: Category::ConversationAction,
@@ -431,8 +431,8 @@ pub(super) fn default_actions(
         // ── Link navigation ─────────────────────────────────────────
         ActionDef {
             id: ActionId::OpenNextLink,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.OpenNextLink.label", "link"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.OpenNextLink.description", "Next link"),
+            label: crate::locale::ctx().tr_static("link"),
+            description: crate::locale::ctx().tr_static("Next link"),
             default_key: key!('o'),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -444,8 +444,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::OpenPrevLink,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.OpenPrevLink.label", "link"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.OpenPrevLink.description", "Previous link"),
+            label: crate::locale::ctx().tr_static("link"),
+            description: crate::locale::ctx().tr_static("Previous link"),
             default_key: key!('O'),
             alt_keys: vec![],
             category: Category::ConversationNav,
@@ -458,8 +458,8 @@ pub(super) fn default_actions(
         // ── Scrollback (contextual, block-type-dependent) ────────────
         ActionDef {
             id: ActionId::Rewind,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.Rewind.label", "rewind"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.Rewind.description", "Rewind to selected turn"),
+            label: crate::locale::ctx().tr_static("rewind"),
+            description: crate::locale::ctx().tr_static("Rewind to selected turn"),
             default_key: key!(Null),
             alt_keys: vec![],
             category: Category::ConversationAction,
@@ -476,8 +476,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::KillBgTask,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.KillBgTask.label", "kill"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.KillBgTask.description", "Kill background task"),
+            label: crate::locale::ctx().tr_static("kill"),
+            description: crate::locale::ctx().tr_static("Kill background task"),
             default_key: key!('x'),
             alt_keys: vec![],
             category: Category::ConversationAction,
@@ -495,8 +495,8 @@ pub(super) fn default_actions(
         // ── Essentials ────────────────────────────────────────────────
         ActionDef {
             id: ActionId::SendPrompt,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.SendPrompt.label", "send"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.SendPrompt.description", "Send"),
+            label: crate::locale::ctx().tr_static("send"),
+            description: crate::locale::ctx().tr_static("Send"),
             default_key: key!(Enter),
             alt_keys: vec![],
             category: Category::GettingStarted,
@@ -509,7 +509,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::FocusPrompt,
             label: crate::locale::ctx().named_static_text("shortcuts.action.FocusPrompt.label", "prompt"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.FocusPrompt.description", "Focus prompt"),
+            description: crate::locale::ctx().tr_static("Focus prompt"),
             default_key: key!(Tab),
             alt_keys: vec![key!('i'), key!(' ')],
             category: Category::GettingStarted,
@@ -521,8 +521,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::FocusScrollback,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.FocusScrollback.label", "scrollback"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.FocusScrollback.description", "Focus scrollback"),
+            label: crate::locale::ctx().tr_static("scrollback"),
+            description: crate::locale::ctx().tr_static("Focus scrollback"),
             default_key: key!(Tab),
             alt_keys: vec![],
             category: Category::GettingStarted,
@@ -539,8 +539,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::CancelTurn,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.CancelTurn.label", "cancel"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.CancelTurn.description", "Cancel turn"),
+            label: crate::locale::ctx().tr_static("cancel"),
+            description: crate::locale::ctx().tr_static("Cancel turn"),
             default_key: key!('c', CONTROL),
             alt_keys: vec![],
             category: Category::GettingStarted,
@@ -558,7 +558,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::CycleMode,
             label: crate::locale::ctx().named_static_text("shortcuts.action.CycleMode.label", "mode"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.CycleMode.description", "Cycle mode (Normal / Plan / Always-approve)"),
+            description: crate::locale::ctx().tr_static("Cycle mode (Normal / Plan / Always-approve)"),
             // All Shift+Tab encodings; see `input::key::shift_tab_keys()`
             default_key: crate::input::key::shift_tab_keys()[0],
             alt_keys: crate::input::key::shift_tab_keys()[1..].to_vec(),
@@ -578,8 +578,8 @@ pub(super) fn default_actions(
         mode_ctrl_g_action(screen_mode),
         ActionDef {
             id: ActionId::ToggleTodos,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleTodos.label", "todos"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleTodos.description", "Toggle todo pane"),
+            label: crate::locale::ctx().tr_static("todos"),
+            description: crate::locale::ctx().tr_static("Toggle todo pane"),
             default_key: key!('t', CONTROL),
             alt_keys: vec![],
             category: Category::Panels,
@@ -596,8 +596,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::ToggleQueue,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleQueue.label", "queue"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleQueue.description", "Toggle prompt queue"),
+            label: crate::locale::ctx().tr_static("queue"),
+            description: crate::locale::ctx().tr_static("Toggle prompt queue"),
             // Local macOS VS Code family only: ; / ' often never arrive (saw Ctrl+4 in input-debug)
             // SSH and non-Mac keep ; with ' as alt
             // Win/Linux VS maps Ctrl+4 to focusFourthEditorGroup
@@ -627,8 +627,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::OpenSessions,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.OpenSessions.label", "sessions"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.OpenSessions.description", "Open sessions"),
+            label: crate::locale::ctx().tr_static("sessions"),
+            description: crate::locale::ctx().tr_static("Open sessions"),
             default_key: key!('r', CONTROL),
             alt_keys: vec![],
             category: Category::Session,
@@ -645,8 +645,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::OpenExtensions,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.OpenExtensions.label", "extensions"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.OpenExtensions.description", "Open extensions"),
+            label: crate::locale::ctx().tr_static("extensions"),
+            description: crate::locale::ctx().tr_static("Open extensions"),
             // VS Code family: Ctrl+L is interject; plugins via /plugins (no chord here).
             default_key: if in_vscode_family {
                 key!(Null)
@@ -669,7 +669,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::SendToBackground,
             label: crate::locale::ctx().named_static_text("shortcuts.action.SendToBackground.label", "send to bg"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.SendToBackground.description", "Send running task to background"),
+            description: crate::locale::ctx().tr_static("Send running task to background"),
             default_key: key!('b', CONTROL),
             alt_keys: vec![],
             category: Category::Panels,
@@ -683,8 +683,8 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::InterjectPrompt,
             // "send now" label: Enter queues a follow-up while a turn runs; this chord stops the current turn and runs the message as the next one
-            label: crate::locale::ctx().named_static_text("shortcuts.action.InterjectPrompt.label", "send now"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.InterjectPrompt.description", "Send now while running (cancels the current turn)"),
+            label: crate::locale::ctx().tr_static("send now"),
+            description: crate::locale::ctx().tr_static("Send now while running (cancels the current turn)"),
             default_key: if in_apple_terminal {
                 key!('o', CONTROL)
             } else if in_vscode_family {
@@ -716,8 +716,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::EnableVoiceMode,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.EnableVoiceMode.label", "voice mode"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.EnableVoiceMode.description", "Start voice dictation (Ctrl+Space / F8)"),
+            label: crate::locale::ctx().tr_static("voice mode"),
+            description: crate::locale::ctx().tr_static("Start voice dictation (Ctrl+Space / F8)"),
             // No key binding (`KeyCode::Null`): dispatched directly by the voice chord's hold-to-talk press in the event loop, not via the registry
             default_key: key!(Null),
             alt_keys: vec![],
@@ -732,8 +732,8 @@ pub(super) fn default_actions(
             // Voice capture chord (the same capture as `/voice`; Esc/Enter stop). Ctrl+Space decodes on every terminal
             // (without the Kitty protocol it collapses to NUL, reported as `Char(' ')`+CONTROL).
             id: ActionId::VoiceToggle,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.VoiceToggle.label", "mic"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.VoiceToggle.description", "Voice dictation (Ctrl+Space / F8)"),
+            label: crate::locale::ctx().tr_static("mic"),
+            description: crate::locale::ctx().tr_static("Voice dictation (Ctrl+Space / F8)"),
             default_key: key!(' ', CONTROL),
             alt_keys: vec![key!(F(8))],
             category: Category::Input,
@@ -754,7 +754,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::ToggleMultiline,
             label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleMultiline.label", "multiline"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleMultiline.description", "Toggle multiline"),
+            description: crate::locale::ctx().tr_static("Toggle multiline"),
             default_key: key!('m', CONTROL),
             alt_keys: vec![],
             category: Category::Input,
@@ -771,8 +771,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::StashPrompt,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.StashPrompt.label", "stash"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.StashPrompt.description", "Stash / pop prompt draft"),
+            label: crate::locale::ctx().tr_static("stash"),
+            description: crate::locale::ctx().tr_static("Stash / pop prompt draft"),
             default_key: key!('s', CONTROL),
             // The escape hatch for terminals that swallow Ctrl+S as XOFF.
             alt_keys: vec![key!('s', ALT)],
@@ -790,8 +790,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::BashMode,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.BashMode.label", "shell"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.BashMode.description", "Shell mode (type ! on empty prompt)"),
+            label: crate::locale::ctx().tr_static("shell"),
+            description: crate::locale::ctx().tr_static("Shell mode (type ! on empty prompt)"),
             default_key: key!('!'),
             alt_keys: vec![],
             category: Category::Input,
@@ -809,8 +809,8 @@ pub(super) fn default_actions(
         // ── Agent ────────────────────────────────────────────────────
         ActionDef {
             id: ActionId::ToggleYolo,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleYolo.label", "yolo"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleYolo.description", "Toggle always-approve"),
+            label: crate::locale::ctx().tr_static("yolo"),
+            description: crate::locale::ctx().tr_static("Toggle always-approve"),
             default_key: key!('o', CONTROL),
             alt_keys: vec![],
             category: Category::Session,
@@ -845,8 +845,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::Quit,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.Quit.label", "quit"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.Quit.description", "Quit"),
+            label: crate::locale::ctx().tr_static("quit"),
+            description: crate::locale::ctx().tr_static("Quit"),
             default_key: if in_vscode {
                 key!('d', CONTROL)
             } else {
@@ -872,7 +872,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::CommandPalette,
             label: crate::locale::ctx().named_static_text("shortcuts.action.CommandPalette.label", "commands"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.CommandPalette.description", "Command palette"),
+            description: crate::locale::ctx().tr_static("Command palette"),
             default_key: key!('p', CONTROL),
             alt_keys: vec![key!('?')],
             category: Category::GettingStarted,
@@ -889,8 +889,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::ShortcutsHelp,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ShortcutsHelp.label", "shortcuts"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ShortcutsHelp.description", "Keyboard shortcuts"),
+            label: crate::locale::ctx().tr_static("shortcuts"),
+            description: crate::locale::ctx().tr_static("Keyboard shortcuts"),
             default_key: if ctrl_dot_unreliable {
                 key!('x', CONTROL)
             } else {
@@ -915,8 +915,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::ModelPicker,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ModelPicker.label", "model"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ModelPicker.description", "Pick model"),
+            label: crate::locale::ctx().tr_static("model"),
+            description: crate::locale::ctx().tr_static("Pick model"),
             default_key: key!('m', CONTROL),
             alt_keys: vec![],
             category: Category::Session,
@@ -933,8 +933,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::OpenSettings,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.OpenSettings.label", "settings"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.OpenSettings.description", "Open the settings modal"),
+            label: crate::locale::ctx().tr_static("settings"),
+            description: crate::locale::ctx().tr_static("Open the settings modal"),
             default_key: key!(F(2)),
             alt_keys: vec![key!(',', CONTROL), key!(',', SUPER)],
             category: Category::GettingStarted,
@@ -951,8 +951,8 @@ pub(super) fn default_actions(
     if mouse_reporting_toggle_enabled {
         actions.push(ActionDef {
             id: ActionId::ToggleMouseCapture,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.ToggleMouseCapture.label", "mouse reporting"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.ToggleMouseCapture.description", "Toggle mouse reporting (native copy/paste)"),
+            label: crate::locale::ctx().tr_static("mouse reporting"),
+            description: crate::locale::ctx().tr_static("Toggle mouse reporting (native copy/paste)"),
             default_key: key!('r', CONTROL),
             alt_keys: vec![],
             category: Category::Panels,
@@ -970,8 +970,8 @@ pub(super) fn default_actions(
     actions.extend([
         ActionDef {
             id: ActionId::OpenDashboard,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.OpenDashboard.label", "dashboard"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.OpenDashboard.description", "Open the Agent Dashboard"),
+            label: crate::locale::ctx().tr_static("dashboard"),
+            description: crate::locale::ctx().tr_static("Open the Agent Dashboard"),
             default_key: key!('\\', CONTROL),
             // Classic C0 FS (0x1c): without KKP, Ctrl+\ arrives as Char('4')+CONTROL (e.g. Apple Terminal).
             // Omit when ToggleQueue already owns Ctrl+4
@@ -997,8 +997,8 @@ pub(super) fn default_actions(
         // rebind any of them through `~/.grok/config.toml`.
         ActionDef {
             id: ActionId::DashboardSelectNext,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardSelectNext.label", "next"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardSelectNext.description", "Select next row"),
+            label: crate::locale::ctx().tr_static("next"),
+            description: crate::locale::ctx().tr_static("Select next row"),
             default_key: key!(Down),
             alt_keys: vec![key!('j')],
             category: Category::Dashboard,
@@ -1010,8 +1010,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardSelectPrev,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardSelectPrev.label", "prev"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardSelectPrev.description", "Select previous row"),
+            label: crate::locale::ctx().tr_static("prev"),
+            description: crate::locale::ctx().tr_static("Select previous row"),
             default_key: key!(Up),
             alt_keys: vec![key!('k')],
             category: Category::Dashboard,
@@ -1023,8 +1023,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardTogglePin,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardTogglePin.label", "pin"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardTogglePin.description", "Pin / unpin agent"),
+            label: crate::locale::ctx().tr_static("pin"),
+            description: crate::locale::ctx().tr_static("Pin / unpin agent"),
             default_key: key!('t', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1041,8 +1041,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardBeginRename,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardBeginRename.label", "rename"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardBeginRename.description", "Rename agent"),
+            label: crate::locale::ctx().tr_static("rename"),
+            description: crate::locale::ctx().tr_static("Rename agent"),
             default_key: key!('r', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1054,8 +1054,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardStop,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardStop.label", "delete"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardStop.description", "Stop / Delete agent"),
+            label: crate::locale::ctx().tr_static("delete"),
+            description: crate::locale::ctx().tr_static("Stop / Delete agent"),
             default_key: key!('x', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1073,7 +1073,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::DashboardCycleMode,
             label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardCycleMode.label", "mode"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardCycleMode.description", "Cycle dispatch mode"),
+            description: crate::locale::ctx().tr_static("Cycle dispatch mode"),
             // All Shift+Tab encodings; see `input::key::shift_tab_keys()`
             // Registry `matches` is exact-modifier, so the SHIFT-bearing forms must be alts
             default_key: crate::input::key::shift_tab_keys()[0],
@@ -1092,8 +1092,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardToggleGrouping,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardToggleGrouping.label", "group"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardToggleGrouping.description", "Toggle row grouping"),
+            label: crate::locale::ctx().tr_static("group"),
+            description: crate::locale::ctx().tr_static("Toggle row grouping"),
             // `Ctrl+G` ("group")
             // `Ctrl+S` was reassigned to the peek / dispatch "send + open" chord so `Shift+Enter` could be freed for newline insertion
             // (`Ctrl+G` also has a mode-specific `When::AgentScreen` action, a context that never overlaps the dashboard.)
@@ -1113,8 +1113,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardReorderUp,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardReorderUp.label", "reorder up"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardReorderUp.description", "Reorder agent up"),
+            label: crate::locale::ctx().tr_static("reorder up"),
+            description: crate::locale::ctx().tr_static("Reorder agent up"),
             default_key: key!(Up, SHIFT),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1126,8 +1126,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardReorderDown,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardReorderDown.label", "reorder down"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardReorderDown.description", "Reorder agent down"),
+            label: crate::locale::ctx().tr_static("reorder down"),
+            description: crate::locale::ctx().tr_static("Reorder agent down"),
             default_key: key!(Down, SHIFT),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1139,8 +1139,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardShortcutsHelp,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardShortcutsHelp.label", "shortcuts"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardShortcutsHelp.description", "Show shortcuts overlay"),
+            label: crate::locale::ctx().tr_static("shortcuts"),
+            description: crate::locale::ctx().tr_static("Show shortcuts overlay"),
             // Ctrl+. / `?` dual-bound; primary follows ctrl_dot_unreliable.
             // Ctrl+X is DashboardStop, never an alt here
             default_key: if ctrl_dot_unreliable {
@@ -1165,8 +1165,8 @@ pub(super) fn default_actions(
         // works because the cascade is keyed on `KeyCode::Esc` directly. The contract is therefore: "Esc always cascades.
         ActionDef {
             id: ActionId::DashboardExit,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardExit.label", "exit"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardExit.description", "Close dashboard"),
+            label: crate::locale::ctx().tr_static("exit"),
+            description: crate::locale::ctx().tr_static("Close dashboard"),
             default_key: key!(Esc),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1186,7 +1186,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::DashboardToggleAutoApprove,
             label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardToggleAutoApprove.label", "always-approve"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardToggleAutoApprove.description", "Toggle always-approve"),
+            description: crate::locale::ctx().tr_static("Toggle always-approve"),
             default_key: key!('o', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1205,8 +1205,8 @@ pub(super) fn default_actions(
         // Ctrl+L ("location") is free under `DashboardFocused` (it only binds OpenExtensions under `AgentScreen`, a different context)
         ActionDef {
             id: ActionId::DashboardOpenLocationPicker,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOpenLocationPicker.label", "location"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOpenLocationPicker.description", "Change working directory for new agents"),
+            label: crate::locale::ctx().tr_static("location"),
+            description: crate::locale::ctx().tr_static("Change working directory for new agents"),
             default_key: key!('l', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1226,7 +1226,7 @@ pub(super) fn default_actions(
         ActionDef {
             id: ActionId::DashboardToggleWorktree,
             label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardToggleWorktree.label", "worktree"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardToggleWorktree.description", "Toggle worktree mode for new agents"),
+            description: crate::locale::ctx().tr_static("Toggle worktree mode for new agents"),
             default_key: key!('w', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1246,8 +1246,8 @@ pub(super) fn default_actions(
         // The cheatsheet uses it to dim them on the dashboard list (where they don't apply) while keeping them lit inside the overlay
         ActionDef {
             id: ActionId::DashboardOverlayExit,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOverlayExit.label", "close overlay"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOverlayExit.description", "Back to dashboard"),
+            label: crate::locale::ctx().tr_static("close overlay"),
+            description: crate::locale::ctx().tr_static("Back to dashboard"),
             // The primary back-out shortcuts are reached through different routes. A `[✗]` click, routed via this action by
             // the mouse handler The `default_key` mirrors the primary route, Ctrl+\ (OpenDashboard, treated as overlay-exit),
             // so the cheatsheet hint is accurate (Ctrl+W is not used here.
@@ -1267,8 +1267,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardOverlayPrev,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOverlayPrev.label", "prev session"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOverlayPrev.description", "Previous session"),
+            label: crate::locale::ctx().tr_static("prev session"),
+            description: crate::locale::ctx().tr_static("Previous session"),
             default_key: key!('[', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1280,8 +1280,8 @@ pub(super) fn default_actions(
         },
         ActionDef {
             id: ActionId::DashboardOverlayNext,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOverlayNext.label", "next session"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOverlayNext.description", "Next session"),
+            label: crate::locale::ctx().tr_static("next session"),
+            description: crate::locale::ctx().tr_static("Next session"),
             default_key: key!(']', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
@@ -1295,8 +1295,8 @@ pub(super) fn default_actions(
         // Intentionally shadows the agent view's `ShortcutsHelp` alt binding (Ctrl+X) inside the overlay; Ctrl+. still opens the cheatsheet there.
         ActionDef {
             id: ActionId::DashboardOverlayStop,
-            label: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOverlayStop.label", "stop"),
-            description: crate::locale::ctx().named_static_text("shortcuts.action.DashboardOverlayStop.description", "Stop agent, close session (back to dashboard)"),
+            label: crate::locale::ctx().tr_static("stop"),
+            description: crate::locale::ctx().tr_static("Stop agent, close session (back to dashboard)"),
             default_key: key!('x', CONTROL),
             alt_keys: vec![],
             category: Category::Dashboard,
