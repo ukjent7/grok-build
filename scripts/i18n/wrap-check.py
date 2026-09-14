@@ -5,14 +5,14 @@ Why this exists
 ---------------
 The zh-CN localization wraps UI string literals in place, e.g.
 
-    ctx.named_static_text("shortcuts.action.SelectNext.label", "nav")
+    crate::locale::ctx().tr_static("nav")
 
-That touches ~148 upstream files, and upstream syncs every 1-3 days
-(310-1896 files per sync, 24-137 of them files we wrapped). When upstream
-rewrites a line we wrapped, a `git merge` conflicts and the usual way to
-clear it fast is to take the upstream side -- which silently drops the wrap.
-That loss is invisible at runtime (the fallback just renders English again),
-so it is never noticed until a user reports a half-English UI.
+The wrapped surface is whatever `wraps.jsonl` lists -- read it for the current
+scale rather than trusting a number here, which would rot on the next wrap.
+When upstream rewrites a line we wrapped, a `git merge` conflicts and the usual
+way to clear it fast is to take the upstream side -- which silently drops the
+wrap. That loss is invisible at runtime (the fallback just renders English
+again), so it is never noticed until a user reports a half-English UI.
 
 What it does
 ------------
