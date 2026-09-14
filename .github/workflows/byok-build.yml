@@ -240,6 +240,14 @@ jobs:
             git -c user.name="github-actions[bot]" \
               -c user.email="github-actions[bot]@users.noreply.github.com" \
               commit -m "chore: checksums for $TAG"
+            # Two tags released concurrently race on the `main` pointer.
+            # Retry with rebase so the second push does not drop the pointer.
+            for i in 1 2 3; do
+              if git push origin main; then break; fi
+              echo "push rejected (attempt $i/3), rebasing..."
+              git fetch origin main
+              git rebase origin/main
+            done
             git push origin main
           fi
 
@@ -252,3 +260,15 @@ jobs:
         continue-on-error: true
         run: |
           curl -fsSL --retry 3 "https://purge.jsdelivr.net/gh/${{ github.repository }}@main/checksums/latest"
+          # Same 6x10s read-back as byok-purge-jsdelivr.yml: a flaky purge
+          # must not silently leave `@main/checksums/latest` stale at N-1.
+          expected=$(tr -d ' \r\n' < checksums/latest)
+          for i in 1 2 3 4 5 6; do
+            actual=$(curl -fsSL "https://cdn.jsdelivr.net/gh/${{ github.repository }}@main/checksums/latest" | tr -d ' \r\n' || true)
+            if [ "$actual" = "$expected" ]; then
+              echo "CDN is fresh for checksums/latest."
+              break
+            fi
+            echo "checksums/latest still stale (attempt $i/6), retrying..."
+            sleep 10
+          done

@@ -112,6 +112,10 @@ struct GhRelease {
     tag_name: String,
     #[serde(default)]
     draft: bool,
+    // GitHub prerelease flag is independent of the version string: a
+    // `byok-v0.2.0` with no hyphen can still be marked prerelease in the UI.
+    #[serde(default)]
+    prerelease: bool,
 }
 
 async fn fetch_all_tags(repo: &str) -> Result<Vec<String>> {
@@ -149,7 +153,7 @@ async fn fetch_tags_once(url: &str) -> Result<Vec<String>> {
     let releases: Vec<GhRelease> = resp.json().await?;
     Ok(releases
         .into_iter()
-        .filter(|r| !r.draft)
+        .filter(|r| !r.draft && !r.prerelease)
         .map(|r| r.tag_name)
         .collect())
 }
