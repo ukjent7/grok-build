@@ -42,6 +42,12 @@ on:
       - 'scripts/byok.sh'
       - '.github/workflows/byok-build.yml'
   workflow_dispatch:
+    inputs:
+      # A dispatch carries no "before" commit, so this is the only way to run
+      # the added-copy scan below on demand (e.g. point it at the last sync).
+      diff_base:
+        description: 'Scan for i18n-unwrapped copy added since this rev (blank = skip)'
+        required: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -63,7 +69,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
+      # Full history on purpose: the added-copy scan below diffs against the
+      # commit the branch pointed at before the push, and checkout's default
+      # depth-1 clone does not contain it. The pack is ~52 MB, i.e. seconds.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       # xai-grok-tools-api runs proto codegen in its build script;
       # prefer a PATH protoc over the DotSlash-bundled one.
@@ -139,6 +150,27 @@ jobs:
       # after intentional edits.
       - name: Check i18n wraps
         run: python3 scripts/i18n/wrap-check.py check
+
+      # FORK(i18n): the mirror image of the step above. That one proves the
+      # wraps we already had survived; this one looks at the copy this push
+      # *added* and reports any that landed unlocalized -- the same silent
+      # English fallback, just from the other direction (a new upstream string,
+      # not a lost wrap). Base is wherever the branch pointed before the push,
+      # so a sync arrives as one reviewable list instead of a wall of strings
+      # that were already there.
+      #
+      # Advisory on purpose: "is this literal screen copy" is a heuristic, and
+      # a gate that cries wolf gets switched off. Add `--fail-on-diff` once a
+      # few syncs have come through with an empty list.
+      - name: Scan for unwrapped copy added by this push
+        env:
+          BEFORE: ${{ github.event.before || github.event.pull_request.base.sha || inputs.diff_base }}
+        run: |
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "no base revision for this event (new branch or dispatch); scan skipped"
+            exit 0
+          fi
+          python3 scripts/i18n/wrap-check.py diff --diff-base "$BEFORE"
 
       # FORK(i18n): catalog resolution, the blank-value invariant, the
       # intentional-blank plural sentinel, and locale precedence.
