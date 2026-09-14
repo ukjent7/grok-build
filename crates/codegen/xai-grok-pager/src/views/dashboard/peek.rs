@@ -262,7 +262,7 @@ pub fn compute_peek_fields(
                         opts.push((
                             "__other__".to_string(),
                             crate::locale::ctx()
-                                .named_static_text("dashboard.peek.other", "Other")
+                                .tr_static("Other")
                                 .to_string(),
                         ));
                         Some(opts.len() - 1)
@@ -562,14 +562,10 @@ pub fn render_peek_panel(
                         // Permission reject vs. ask-tool "Other" free-text.
                         // Painted manually (not via the widget's unfocused-only placeholder) so the hint stays visible while the caret sits on the row
                         let placeholder_text = if panel.is_ask_question() {
-                            crate::locale::ctx().named_static_text(
-                                "dashboard.peek.other_placeholder",
-                                "Other (type your own answer)",
+                            crate::locale::ctx().tr_static("Other (type your own answer)",
                             )
                         } else {
-                            crate::locale::ctx().named_static_text(
-                                "dashboard.peek.reject_placeholder",
-                                "No, reject (type to add feedback)",
+                            crate::locale::ctx().tr_static("No, reject (type to add feedback)",
                             )
                         };
                         let placeholder = truncate_str(placeholder_text, avail as usize);
@@ -656,9 +652,7 @@ pub fn render_peek_panel(
             if middle_h > 0 {
                 if scrollback.is_empty() {
                     if let Some(hint) =
-                        empty_hint.or(Some(crate::locale::ctx().named_static_text(
-                            "dashboard.peek.no_activity_yet",
-                            "No activity yet",
+                        empty_hint.or(Some(crate::locale::ctx().tr_static("No activity yet",
                         )))
                     {
                         let trunc = truncate_str(hint, inner.width as usize);
@@ -760,38 +754,17 @@ pub fn reply_row_count(
 
 /// Localized peek status word for display. The stored `response_type` stays English because it is
 /// matched against `"Working"` and asserted in tests; only the painted label goes through here.
+///
+/// `Compacting` keeps an explicit arm (same English, different Chinese elsewhere);
+/// everything else goes through the English-keyed catalog so a new status word
+/// needs no match arm to translate.
 pub(crate) fn localize_status_word(word: &str) -> String {
-    let id = match word {
-        "Thinking" => "dashboard.peek.status.thinking",
-        "Response" => "dashboard.peek.status.response",
-        "Compacting" => "dashboard.peek.status.compacting",
-        "Retrying" => "dashboard.peek.status.retrying",
-        "Preparing" => "dashboard.peek.status.preparing",
-        "Message" => "dashboard.peek.status.message",
-        "Working" => "dashboard.peek.status.working",
-        "Thought" => "dashboard.peek.status.thought",
-        "Idle" => "dashboard.peek.status.idle",
-        "Awaiting your input" => "dashboard.peek.status.awaiting_input",
-        "Bash" => "dashboard.peek.status.bash",
-        "Read" => "dashboard.peek.status.read",
-        "Edit" => "dashboard.peek.status.edit",
-        "List" => "dashboard.peek.status.list",
-        "Search" => "dashboard.peek.status.search",
-        "Fetch" => "dashboard.peek.status.fetch",
-        "Web search" => "dashboard.peek.status.web_search",
-        "Tool search" => "dashboard.peek.status.tool_search",
-        "Tool" => "dashboard.peek.status.tool",
-        "Memory" => "dashboard.peek.status.memory",
-        "Skill" => "dashboard.peek.status.skill",
-        "Subagent" => "dashboard.peek.status.subagent",
-        "Workflow" => "dashboard.peek.status.workflow",
-        "Task" => "dashboard.peek.status.task",
-        "Btw" => "dashboard.peek.status.btw",
-        "Context" => "dashboard.peek.status.context",
-        "Credit limit" => "dashboard.peek.status.credit_limit",
-        _ => return word.to_string(),
-    };
-    crate::locale::ctx().named_text(id, word).into_owned()
+    if word == "Compacting" {
+        return crate::locale::ctx()
+            .named_text("dashboard.peek.status.compacting", word)
+            .into_owned();
+    }
+    crate::locale::ctx().tr(word).into_owned()
 }
 
 /// It mirrors the agent view's turn-status line so the peek never dwells on a stale completed
