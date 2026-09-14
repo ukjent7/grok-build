@@ -1,7 +1,11 @@
 //! FORK(byok): third-party (BYOK) payload compat lives here, not in `client.rs`.
 //! `client.rs` keeps only the `byok_compat` flag derivation plus call sites,
 //! so upstream refactors of the request pipeline rarely conflict with the fork.
-//! First-party requests never enter these helpers.
+//! First-party requests never enter the payload-rewriting helpers here; every
+//! one of them is called behind `byok_compat`. `is_ignorable_response_event` is
+//! the exception and is deliberately ungated -- a tagged event enum with no
+//! `#[serde(other)]` arm turns a keep-alive frame into a non-retryable error
+//! that ends the turn, on any endpoint.
 //! NOTE: this file is covered by BYOK CI (`cargo test -p xai-grok-sampler`).
 
 use xai_grok_sampling_types::{
@@ -224,7 +228,6 @@ pub(crate) enum ScreenedMessagePayload {
 /// classifies as a non-retryable Serialization error and kills the whole turn.
 /// Third-party gateways do send such frames: opencode zen/go reports stream errors as
 /// `event: error` + `data: {}`, and relays inject typeless `{}` placeholder heartbeats.
-/// The old grok-gateway-proxy repaired exactly these frames with the same policy.
 /// Unknown-type and non-JSON payloads stay on the strict path so a real protocol
 /// break remains loud rather than being silently guessed away.
 pub(crate) fn screen_message_payload(event_name: &str, data: &str) -> ScreenedMessagePayload {

@@ -1540,7 +1540,10 @@ impl SamplingClient {
                         };
                         if swallow {
                             Some(None)
-                        // FORK(byok): third-party keep-alive: skip without touching the stream.
+                        // FORK(byok): keep-alive `ping` frames: untagged data fails the
+                        // `#[serde(tag = "type")]` enum as a non-retryable error and ends the
+                        // turn, so skip it on any endpoint. Deliberately not behind
+                        // `byok_compat` -- see the note in `client_third_party`.
                         } else if is_ignorable_response_event(&event.event, data) {
                             Some(None)
                         } else if let Some(stream_error) = try_parse_stream_error(data) {
