@@ -1,18 +1,25 @@
 //! Centralized UI localization for Grok Build.
 //!
-//! Two embedded catalogs back the fork's zh-CN interface:
+//! Four embedded catalogs back the fork's zh-CN interface, reached through two
+//! lookup paths:
 //!
-//! * `en-US.json` / `zh-CN.json` — a small typed catalog (`app.name`,
-//!   `trust.question`, `reconnect.*`, …) shared by both locales.
-//! * `zh-CN-metadata.json` — the large, upstream-owned metadata catalog
-//!   (settings labels, command metadata, picker choices). Its ids are the ones
-//!   the UI code already uses, so no parallel id space had to be invented.
+//! * **English-keyed** — [`LocaleContext::tr`], [`LocaleContext::tr_static`] and
+//!   [`LocaleContext::tr_format`] look the English literal itself up in
+//!   `en-to-zh.json`. There is no id to invent or re-baseline, so upstream
+//!   rewording simply misses the map and falls back to English. Nearly every
+//!   call site takes this path; `scripts/i18n/wraps.jsonl` carries the counts.
+//! * **id-keyed** — [`LocaleContext::named_text`], [`LocaleContext::named_static_text`]
+//!   and [`LocaleContext::format_named`] resolve a stable id against
+//!   `zh-CN-metadata.json` first (the large upstream-owned surface: settings
+//!   labels, command metadata, picker choices) and then `zh-CN.json` (a small
+//!   typed catalog — `app.name`, `trust.question`, `reconnect.*` — whose ids
+//!   mirror `en-US.json`). These ids are the ones the UI code already uses, so
+//!   no parallel id space had to be invented.
 //!
-//! Consumers call [`LocaleContext::named_text`] / [`LocaleContext::named_static_text`]
-//! with the upstream English literal as an explicit fallback. A missing catalog
-//! entry therefore renders English instead of blank — which also means a dropped
-//! translation is invisible at runtime, so `scripts/i18n/wrap-check.py` gates both
-//! the wraps and the catalog coverage in CI.
+//! Both paths take the upstream English literal as an explicit fallback, so a
+//! missing catalog entry renders English instead of blank — which also means a
+//! dropped translation is invisible at runtime, and `scripts/i18n/wrap-check.py`
+//! gates the wraps and the catalog coverage in CI.
 //!
 //! # Process-wide context
 //!
