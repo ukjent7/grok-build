@@ -132,7 +132,7 @@ pub(crate) fn format_still_running<'a>(
         return None;
     }
     label.push(' ');
-    label.push_str(&ctx.named_text("turn.watcher.still_running", "still running"));
+    label.push_str(&ctx.tr("still running"));
     Some(label)
 }
 
@@ -147,16 +147,16 @@ fn still_running_label(watchers: Watchers) -> Option<String> {
         ),
         (
             watchers.monitors,
-            ctx.named_static_text("turn.watcher.monitor", "monitor"),
+            ctx.tr_static("monitor"),
         ),
-        (watchers.loops, ctx.named_static_text("turn.watcher.loop", "loop")),
+        (watchers.loops, ctx.tr_static("loop")),
         (
             watchers.subagents,
             ctx.named_static_text("turn.watcher.subagent", "subagent"),
         ),
         (
             watchers.workflows,
-            ctx.named_static_text("turn.watcher.workflow", "workflow"),
+            ctx.tr_static("workflow"),
         ),
     ])
 }
@@ -258,7 +258,7 @@ pub fn render_turn_status(
         // Pulsing diamond in accent_user, blending toward bg.
         let diamond_color = pending_diamond_color(&theme, theme.accent_user, tick);
         let idle_label = crate::locale::ctx()
-            .named_text("turn.idle_waiting_edit", "agent idle ~ waiting on your edit")
+            .tr("agent idle ~ waiting on your edit")
             .into_owned();
         let spans = vec![
             Span::styled(
@@ -300,7 +300,7 @@ pub fn render_turn_status(
             (Some(label), false) => Some(label),
             (None, true) => Some(format!(
                 "{}{parked_suffix}",
-                crate::locale::ctx().named_text("turn.waiting", "waiting")
+                crate::locale::ctx().tr("waiting")
             )),
             (None, false) => None,
         };
@@ -378,7 +378,7 @@ pub fn render_turn_status(
     let bg_str = if show_bg {
         if bg_hovered {
             crate::locale::ctx()
-                .named_static_text("turn.button.send_to_background", " [send to bg]")
+                .tr_static(" [send to bg]")
         } else {
             " [\u{2193}]"
         }
@@ -394,11 +394,11 @@ pub fn render_turn_status(
         (false, _) => "",
         (true, true) => {
             crate::locale::ctx()
-                .named_static_text("turn.button.stop", "[stop]")
+                .tr_static("[stop]")
         }
         (true, false) => {
             crate::locale::ctx()
-                .named_static_text("turn.button.stop_spaced", " [stop]")
+                .tr_static(" [stop]")
         }
     };
     let cancel_width = cancel_str.width();
@@ -482,9 +482,7 @@ pub fn render_turn_status(
                     .strip_prefix("Ask: ")
                     .or_else(|| title.strip_prefix("Ask "))
                     .unwrap_or(title.as_str());
-                let msg = crate::locale::ctx().format_named(
-                    "turn.waiting_answers",
-                    "Waiting on answers for {detail}",
+                let msg = crate::locale::ctx().tr_format("Waiting on answers for {detail}",
                     &[("detail", detail)],
                 );
                 let display = truncate_str(&msg, available_for_label);
@@ -501,7 +499,7 @@ pub fn render_turn_status(
                 left_spans.push(Span::styled(display, activity_style));
             } else if let Some(query) = title.strip_prefix("Web search: ") {
                 // Web search renders "Search " (muted) then the query (yellow)
-                let prefix = crate::locale::ctx().named_static_text("turn.prefix.search", "Search ");
+                let prefix = crate::locale::ctx().tr_static("Search ");
                 let prefix_width = prefix.width();
                 let query = query.trim_matches('"');
                 let max_query = available_for_label.saturating_sub(prefix_width).max(5);
@@ -510,7 +508,7 @@ pub fn render_turn_status(
                 left_spans.push(Span::styled(display, Style::default().fg(theme.command)));
             } else if let Some(url) = title.strip_prefix("Fetch: ") {
                 // Fetch tools render "Fetch " (muted) then the URL (yellow)
-                let prefix = crate::locale::ctx().named_static_text("turn.prefix.fetch", "Fetch ");
+                let prefix = crate::locale::ctx().tr_static("Fetch ");
                 let prefix_width = prefix.width();
                 let max_url = available_for_label.saturating_sub(prefix_width).max(5);
                 let display = truncate_str(url, max_url);
@@ -519,7 +517,7 @@ pub fn render_turn_status(
             } else {
                 // Normal tools render "Run " (muted) then the command (syntax-highlighted). Prettify it to
                 // `(Server) Action` so the spinner doesn't show the raw delimiter form.
-                let prefix = crate::locale::ctx().named_static_text("turn.prefix.run", "Run ");
+                let prefix = crate::locale::ctx().tr_static("Run ");
                 let pretty = mcp_pretty_name_if_qualified(title.as_str());
                 let detail = pretty.as_str();
                 let prefix_width = prefix.width();
@@ -535,15 +533,11 @@ pub fn render_turn_status(
         let suffix = if held_queue > 0 && is_sendable_wait(activity) {
             let count = held_queue.to_string();
             if held_queue_top_sendable {
-                crate::locale::ctx().format_named(
-                    "turn.queue.send_now",
-                    " · {count} queued, Enter to send now",
+                crate::locale::ctx().tr_format(" · {count} queued, Enter to send now",
                     &[("count", &count)],
                 )
             } else {
-                crate::locale::ctx().format_named(
-                    "turn.queue.queued",
-                    " · {count} queued",
+                crate::locale::ctx().tr_format(" · {count} queued",
                     &[("count", &count)],
                 )
             }
@@ -642,7 +636,7 @@ fn compute_activity(
         (AgentState::TurnCancelling | AgentState::CommandCancelling { .. }, _) => (
             Style::default().fg(theme.accent_error),
             crate::locale::ctx()
-                .named_text("turn.cancelling", "Cancelling…")
+                .tr("Cancelling…")
                 .into_owned(),
             false,
         ),
@@ -652,7 +646,7 @@ fn compute_activity(
         (AgentState::TurnRunning, _) if goal_verifying => (
             Style::default().fg(theme.text_secondary),
             crate::locale::ctx()
-                .named_text("turn.verifying", "Verifying…")
+                .tr("Verifying…")
                 .into_owned(),
             false,
         ),
@@ -666,7 +660,7 @@ fn compute_activity(
         (AgentState::TurnRunning, Some(TurnActivity::Responding)) => (
             Style::default().fg(theme.text_secondary),
             crate::locale::ctx()
-                .named_text("turn.responding", "Responding…")
+                .tr("Responding…")
                 .into_owned(),
             false,
         ),
@@ -689,7 +683,7 @@ fn compute_activity(
         (AgentState::TurnRunning, Some(TurnActivity::AutoCompacting)) => (
             Style::default().fg(theme.text_secondary),
             crate::locale::ctx()
-                .named_text("turn.compacting", "Compacting…")
+                .tr("Compacting…")
                 .into_owned(),
             false,
         ),
@@ -728,7 +722,7 @@ fn compute_activity(
             // Bash turn: not inference, show generic "Running…".
             Style::default().fg(theme.text_secondary),
             crate::locale::ctx()
-                .named_text("turn.running", "Running…")
+                .tr("Running…")
                 .into_owned(),
             false,
         ),
@@ -737,7 +731,7 @@ fn compute_activity(
             // The view resolves this gap into Waiting(Model/Subagent) before render, so this is a rarely-hit safety net
             Style::default().fg(theme.text_secondary),
             crate::locale::ctx()
-                .named_text("turn.waiting_generic", "Waiting…")
+                .tr("Waiting…")
                 .into_owned(),
             false,
         ),
@@ -789,7 +783,7 @@ fn render_starting_session(
         Span::styled(format!("{} ", frames[frame_idx]), style),
         Span::styled(
             crate::locale::ctx()
-                .named_static_text("turn.starting_session", "Starting session…"),
+                .tr_static("Starting session…"),
             style,
         ),
         Span::styled(timer_str, style),

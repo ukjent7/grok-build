@@ -269,9 +269,7 @@ impl MemoryModalState {
                     Ok(meta) if meta.len() > MAX_PREVIEW_BYTES => {
                         Some(MarkdownContent::new(
                         crate::locale::ctx()
-                            .named_text(
-                                "memory.preview.too_large",
-                                "*(File too large to preview)*",
+                            .tr("*(File too large to preview)*",
                             )
                             .into_owned(),
                     ))
@@ -373,19 +371,19 @@ pub fn build_entries(
     };
     push_section(
         crate::locale::ctx()
-            .named_text("memory.section.global", "Global")
+            .tr("Global")
             .as_ref(),
         global,
     );
     push_section(
         crate::locale::ctx()
-            .named_text("memory.section.workspace", "Workspace")
+            .tr("Workspace")
             .as_ref(),
         workspace,
     );
     push_section(
         crate::locale::ctx()
-            .named_text("memory.section.sessions", "Sessions")
+            .tr("Sessions")
             .as_ref(),
         session,
     );
@@ -401,7 +399,7 @@ pub fn render_memory_modal(
     let theme = Theme::current();
     let shortcuts = build_shortcuts(&state.mode, state.memory_enabled, state.fullscreen);
 
-    let title = crate::locale::ctx().named_text("memory.title", "Memory").into_owned();
+    let title = crate::locale::ctx().tr("Memory").into_owned();
     let modal_config = ModalWindowConfig {
         title: &title,
         tabs: None,
@@ -499,11 +497,11 @@ fn render_file_list(buf: &mut Buffer, area: Rect, state: &mut MemoryModalState, 
     if state.query().is_empty() {
         let placeholder = if filter_focused {
             crate::locale::ctx()
-                .named_text("memory.filter.type", "type to filter...")
+                .tr("type to filter...")
                 .into_owned()
         } else {
             crate::locale::ctx()
-                .named_text("memory.filter.slash", "/ to filter...")
+                .tr("/ to filter...")
                 .into_owned()
         };
         buf.set_span(
@@ -669,7 +667,7 @@ fn render_preview(buf: &mut Buffer, area: Rect, state: &mut MemoryModalState, th
         state.preview_total_lines = 0;
         state.preview_scrollbar_area = None;
         let msg = crate::locale::ctx()
-            .named_text("memory.preview.no_file", "No file selected")
+            .tr("No file selected")
             .into_owned();
         let style = Style::default().fg(theme.gray_dim).bg(theme.bg_base);
         let cy = area.y + area.height / 2;
@@ -1056,10 +1054,10 @@ fn build_shortcuts(
         MemoryModalMode::Browse => {
             let toggle_label = if memory_enabled {
                 crate::locale::ctx()
-                    .named_static_text("memory.shortcut.toggle_on", "t toggle (on)")
+                    .tr_static("t toggle (on)")
             } else {
                 crate::locale::ctx()
-                    .named_static_text("memory.shortcut.toggle_off", "t toggle (off)")
+                    .tr_static("t toggle (off)")
             };
             let mut shortcuts = vec![
                 Shortcut {
@@ -1070,19 +1068,19 @@ fn build_shortcuts(
                 },
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("memory.shortcut.search", "/ search"),
+                        .tr_static("/ search"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("memory.shortcut.copy_path", "y copy path"),
+                        .tr_static("y copy path"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("memory.shortcut.delete", "x delete"),
+                        .tr_static("x delete"),
                     clickable: false,
                     id: 0,
                 },
@@ -1094,17 +1092,17 @@ fn build_shortcuts(
                 Shortcut {
                     label: if fullscreen {
                         crate::locale::ctx()
-                            .named_static_text("memory.shortcut.normal", "^F normal")
+                            .tr_static("^F normal")
                     } else {
                         crate::locale::ctx()
-                            .named_static_text("memory.shortcut.fullscreen", "^F fullscreen")
+                            .tr_static("^F fullscreen")
                     },
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("memory.shortcut.close", "Esc close"),
+                        .tr_static("Esc close"),
                     clickable: false,
                     id: 0,
                 },
@@ -1122,7 +1120,7 @@ fn build_shortcuts(
             },
             Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("memory.shortcut.exit_filter", "Esc exit filter"),
+                    .tr_static("Esc exit filter"),
                 clickable: false,
                 id: 0,
             },
@@ -1130,13 +1128,13 @@ fn build_shortcuts(
         MemoryModalMode::ConfirmingDelete { .. } => vec![
             Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("memory.shortcut.confirm_delete", "x confirm delete"),
+                    .tr_static("x confirm delete"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("memory.shortcut.any_cancel", "any key cancel"),
+                    .tr_static("any key cancel"),
                 clickable: false,
                 id: 0,
             },
@@ -1161,25 +1159,25 @@ fn file_label(path: &str) -> String {
 fn format_modified(epoch_secs: Option<u64>, now_secs: u64) -> String {
     let ctx = crate::locale::ctx();
     let Some(modified) = epoch_secs else {
-        return ctx.named_text("memory.time.unknown", "unknown").into_owned();
+        return ctx.tr("unknown").into_owned();
     };
     if now_secs <= modified {
-        return ctx.named_text("memory.time.just_now", "just now").into_owned();
+        return ctx.tr("just now").into_owned();
     }
     let delta = now_secs - modified;
     if delta < 60 {
-        return ctx.named_text("memory.time.just_now", "just now").into_owned();
+        return ctx.tr("just now").into_owned();
     }
     if delta < 3600 {
         let mins = (delta / 60).to_string();
-        return ctx.format_named("memory.time.minutes_ago", "{value}m ago", &[("value", &mins)]);
+        return ctx.tr_format("{value}m ago", &[("value", &mins)]);
     }
     if delta < 86400 {
         let hours = (delta / 3600).to_string();
-        return ctx.format_named("memory.time.hours_ago", "{value}h ago", &[("value", &hours)]);
+        return ctx.tr_format("{value}h ago", &[("value", &hours)]);
     }
     let days = (delta / 86400).to_string();
-    ctx.format_named("memory.time.days_ago", "{value}d ago", &[("value", &days)])
+    ctx.tr_format("{value}d ago", &[("value", &days)])
 }
 
 fn load_fullscreen_pref() -> bool {

@@ -167,36 +167,28 @@ impl SessionEvent {
                 elapsed: Some(elapsed),
             } => {
                 let duration = format_duration(*elapsed);
-                locale.format_named(
-                    "scrollback.session_event.turn_completed_duration",
-                    "Worked for {duration}",
+                locale.tr_format("Worked for {duration}",
                     &[("duration", &duration)],
                 )
             }
             SessionEvent::TurnCompleted { elapsed: None } => locale
-                .named_text("scrollback.session_event.turn_completed", "Turn completed.")
+                .tr("Turn completed.")
                 .into_owned(),
             SessionEvent::TurnCancelled { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.format_named(
-                    "scrollback.session_event.turn_cancelled",
-                    "Turn cancelled by user in {duration}.",
+                locale.tr_format("Turn cancelled by user in {duration}.",
                     &[("duration", &duration)],
                 )
             }
             SessionEvent::TurnBlockedByHook { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.format_named(
-                    "scrollback.session_event.turn_blocked_by_hook",
-                    "Turn blocked by a hook in {duration}.",
+                locale.tr_format("Turn blocked by a hook in {duration}.",
                     &[("duration", &duration)],
                 )
             }
             SessionEvent::TurnHalted { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.format_named(
-                    "scrollback.session_event.turn_halted",
-                    "Agent was unable to make progress. Turn ended in {duration}.",
+                locale.tr_format("Agent was unable to make progress. Turn ended in {duration}.",
                     &[("duration", &duration)],
                 )
             }
@@ -205,23 +197,17 @@ impl SessionEvent {
                 elapsed: Some(elapsed),
             } => {
                 let duration = format_duration(*elapsed);
-                locale.format_named(
-                    "scrollback.session_event.turn_failed_duration",
-                    "Turn failed in {duration}: {error}",
+                locale.tr_format("Turn failed in {duration}: {error}",
                     &[("duration", &duration), ("error", error)],
                 )
             }
             SessionEvent::TurnFailed {
                 error,
                 elapsed: None,
-            } => locale.format_named(
-                "scrollback.session_event.turn_failed",
-                "Turn failed: {error}",
+            } => locale.tr_format("Turn failed: {error}",
                 &[("error", error)],
             ),
-            SessionEvent::CompactionStarted { percentage } => locale.format_named(
-                "scrollback.session_event.compaction_started",
-                "Context {percentage}% full. Compacting…",
+            SessionEvent::CompactionStarted { percentage } => locale.tr_format("Context {percentage}% full. Compacting…",
                 &[("percentage", &percentage.to_string())],
             ),
             SessionEvent::CompactionCompleted {
@@ -234,24 +220,18 @@ impl SessionEvent {
                 let body = match tokens_before {
                     Some(before) if *before > 0 => {
                         let before = format_tokens(*before);
-                        locale.format_named(
-                            "scrollback.session_event.compaction_completed_before_after",
-                            "Context compacted: {before} → {after} tokens",
+                        locale.tr_format("Context compacted: {before} → {after} tokens",
                             &[("before", &before), ("after", &after)],
                         )
                     }
-                    _ => locale.format_named(
-                        "scrollback.session_event.compaction_completed_after",
-                        "Context compacted → {after} tokens",
+                    _ => locale.tr_format("Context compacted → {after} tokens",
                         &[("after", &after)],
                     ),
                 };
                 if let Some(ms) = elapsed_ms {
                     let secs = *ms as f64 / 1000.0;
                     let duration = format!("{secs:.1}s");
-                    locale.format_named(
-                        "scrollback.session_event.duration_suffix",
-                        "{body} ({duration})",
+                    locale.tr_format("{body} ({duration})",
                         &[("body", &body), ("duration", &duration)],
                     )
                 } else {
@@ -261,24 +241,18 @@ impl SessionEvent {
             SessionEvent::CompactionFailed { error } => {
                 if error.trim().is_empty() {
                     locale
-                        .named_text(
-                            "scrollback.session_event.compaction_failed_empty",
-                            "Compaction failed.",
+                        .tr("Compaction failed.",
                         )
                         .into_owned()
                 } else {
                     // Multi-line errors (guidance and detail) split in `output`; old one-line replays render unchanged
-                    locale.format_named(
-                        "scrollback.session_event.compaction_failed",
-                        "Compaction failed - {error}",
+                    locale.tr_format("Compaction failed - {error}",
                         &[("error", error)],
                     )
                 }
             }
             SessionEvent::CompactionCancelled => locale
-                .named_text(
-                    "scrollback.session_event.compaction_cancelled",
-                    "Compaction cancelled.",
+                .tr("Compaction cancelled.",
                 )
                 .into_owned(),
             SessionEvent::RetryFailed { error, error_type } => {
@@ -287,15 +261,11 @@ impl SessionEvent {
                     == WireErrorType::EncryptedContentMismatch
                 {
                     locale
-                        .named_text(
-                            "scrollback.session_event.history_incompatible",
-                            "This session's conversation history is incompatible with the current model. Please start a new session.",
+                        .tr("This session's conversation history is incompatible with the current model. Please start a new session.",
                         )
                         .into_owned()
                 } else {
-                    locale.format_named(
-                        "scrollback.session_event.retry_failed",
-                        "Retry failed: {error}",
+                    locale.tr_format("Retry failed: {error}",
                         &[("error", error)],
                     )
                 }
@@ -304,15 +274,11 @@ impl SessionEvent {
                 headline, detail, ..
             } => crate::app::error_display::banner_message(headline, detail),
             SessionEvent::ReAuthRequired => locale
-                .named_text(
-                    "scrollback.session_event.reauth_required",
-                    "Authentication required: your session has expired or your credentials were rejected. Run /login to re-authenticate, then resend your message.",
+                .tr("Authentication required: your session has expired or your credentials were rejected. Run /login to re-authenticate, then resend your message.",
                 )
                 .into_owned(),
             SessionEvent::ContextTooLarge => locale
-                .named_text(
-                    "scrollback.session_event.context_too_large",
-                    "This conversation is too large for the model's context window. Use /new to start a new session.",
+                .tr("This conversation is too large for the model's context window. Use /new to start a new session.",
                 )
                 .into_owned(),
             SessionEvent::DiskFull => locale
@@ -323,16 +289,12 @@ impl SessionEvent {
                 .into_owned(),
             // No "Context N% full." prefix; that phrasing is the auto marker's
             SessionEvent::CompactStarted => locale
-                .named_text(
-                    "scrollback.session_event.compact_started",
-                    "Compacting conversation…",
+                .tr("Compacting conversation…",
                 )
                 .into_owned(),
             SessionEvent::CompactCompleted { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.format_named(
-                    "scrollback.session_event.compact_completed",
-                    "Compaction completed in {duration}.",
+                locale.tr_format("Compaction completed in {duration}.",
                     &[("duration", &duration)],
                 )
             }
@@ -364,23 +326,17 @@ impl SessionEvent {
             }
             SessionEvent::GoalCompleted { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.format_named(
-                    "scrollback.session_event.goal_completed",
-                    "Goal complete in {duration} end-to-end.",
+                locale.tr_format("Goal complete in {duration} end-to-end.",
                     &[("duration", &duration)],
                 )
             }
             SessionEvent::Recap { summary, auto: _ } => {
                 // Always "Recap:" (manual `/recap` and auto return-from-away).
-                locale.format_named(
-                    "scrollback.session_event.recap",
-                    "Recap: {summary}",
+                locale.tr_format("Recap: {summary}",
                     &[("summary", summary)],
                 )
             }
-            SessionEvent::PlanModeEnteredByAgent { permission } => locale.format_named(
-                "scrollback.session_event.plan_mode_entered",
-                "Agent entered plan mode · active permission mode: {permission} · file edits outside session plan.md blocked until plan mode exits",
+            SessionEvent::PlanModeEnteredByAgent { permission } => locale.tr_format("Agent entered plan mode · active permission mode: {permission} · file edits outside session plan.md blocked until plan mode exits",
                 &[("permission", &permission.to_string())],
             ),
             SessionEvent::PlanReviewClosed {
@@ -388,18 +344,12 @@ impl SessionEvent {
                 permission,
             } => {
                 let verdict = match outcome {
-                    PlanReviewOutcome::Approved => locale.named_text(
-                        "scrollback.session_event.plan_verdict.approved",
-                        "approved",
+                    PlanReviewOutcome::Approved => locale.tr("approved",
                     ),
-                    PlanReviewOutcome::Abandoned => locale.named_text(
-                        "scrollback.session_event.plan_verdict.abandoned",
-                        "abandoned",
+                    PlanReviewOutcome::Abandoned => locale.tr("abandoned",
                     ),
                 };
-                locale.format_named(
-                    "scrollback.session_event.plan_review_closed",
-                    "Plan {verdict} · plan mode off · active permission mode: {permission}",
+                locale.tr_format("Plan {verdict} · plan mode off · active permission mode: {permission}",
                     &[("verdict", &verdict), ("permission", &permission.to_string())],
                 )
             }
@@ -493,7 +443,7 @@ impl SessionEventBlock {
         let header_line =
             || BlockLine::separator(Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("scrollback.session_event.recap_label", "Recap")
+                    .tr_static("Recap")
                     .to_string(),
                 header_style,
             )));
@@ -509,7 +459,7 @@ impl SessionEventBlock {
             DisplayMode::Collapsed => {
                 let mut spans = vec![Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("scrollback.session_event.recap_label", "Recap")
+                        .tr_static("Recap")
                         .to_string(),
                     header_style,
                 )];
