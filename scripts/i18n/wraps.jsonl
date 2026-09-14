@@ -610,7 +610,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/status_blocks.rs", "id": "  Note: usage is incomplete and may under-count.", "kind": "tr", "english": "  Note: usage is incomplete and may under-count."}
 {"file": "crates/codegen/xai-grok-pager/src/app/status_blocks.rs", "id": "  Output tokens:  {output} ({reasoning} reasoning)", "kind": "tr_format", "english": "  Output tokens:  {output} ({reasoning} reasoning)"}
 {"file": "crates/codegen/xai-grok-pager/src/app/status_blocks.rs", "id": "  Total tokens:   {total}", "kind": "tr_format", "english": "  Total tokens:   {total}"}
-{"file": "crates/codegen/xai-grok-pager/src/app/status_blocks.rs", "id": " · 1 agent", "kind": "tr_format", "english": " · 1 agent"}
+{"file": "crates/codegen/xai-grok-pager/src/app/status_blocks.rs", "id": " · 1 agent", "kind": "tr", "english": " · 1 agent"}
 {"file": "crates/codegen/xai-grok-pager/src/app/status_blocks.rs", "id": " · {count} agents", "kind": "tr_format", "english": " · {count} agents"}
 {"file": "crates/codegen/xai-grok-pager/src/app/status_blocks.rs", "id": "(+{count} more line{s})", "kind": "tr_format", "english": "(+{count} more line{s})"}
 {"file": "crates/codegen/xai-grok-pager/src/app/status_blocks.rs", "id": "Monitor", "kind": "tr_static", "english": "Monitor"}

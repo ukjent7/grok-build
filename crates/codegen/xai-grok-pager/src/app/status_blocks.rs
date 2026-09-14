@@ -58,9 +58,7 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
         let active = run.active_agent_count();
         let agents = match active {
             0 => String::new(),
-            1 => crate::locale::ctx().tr_format(" · 1 agent",
-                &[("count", "1")],
-            ),
+            1 => crate::locale::ctx().tr(" · 1 agent").into_owned(),
             n => crate::locale::ctx().tr_format(" · {count} agents",
                 &[("count", &n.to_string())],
             ),

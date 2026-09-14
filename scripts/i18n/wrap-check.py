@@ -19,7 +19,7 @@ What it does
   baseline  Scan the tree, rewrite scripts/i18n/wraps.jsonl from what is there.
   check     Compare the tree against the baseline; non-zero exit on drift.
 
-Four failure classes, all fatal on `check`:
+Five failure classes, all fatal on `check`:
   1. missing      a wrap the baseline has and the tree no longer does (dropped
                   by a merge resolution).
   2. added        a wrap the tree has and the baseline does not. Intentional
@@ -32,6 +32,15 @@ Four failure classes, all fatal on `check`:
                   `tr_format` substitute named `{placeholder}` only, so `{}` would
                   reach the screen verbatim. Rejected by design (see
                   `english_fallback_survives_an_unknown_id_verbatim`).
+  5. placeholder_mismatch  an `en-to-zh.json` value uses a `{name}` the English
+                  key lacks. `tr_format` substitutes by name, so the extra
+                  placeholder would reach the screen verbatim. Convention is
+                  single-name: rename, never dual-pass (see `tr_format` docs).
+
+English-keyed (`tr`) anchors are stored decoded to their runtime value: source
+`"a\nb"` and `"a<newline>b"` are the same lookup. `rust_unescape` below must
+stay in sync with the Rust string escapes the tree actually uses; unknown
+escapes fall back to raw so the gate never crashes on new syntax.
 
 Classes 1-2 are reported pairwise as `rewritten` when the same (file, id, kind)
 appears on both sides -- that is the shape of "upstream rewrote the line".
@@ -115,6 +124,45 @@ TR_CALL = re.compile(
     r'"(?P<english>(?:[^"\\]|\\.)*)"'
 )
 
+# Matches one `{name}` placeholder; shared by the parity check.
+PLACEHOLDER = re.compile(r"\{([A-Za-z0-9_]+)\}")
+
+
+def rust_unescape(raw: str) -> str:
+    """Decode a Rust string literal body to its runtime value.
+
+    Covers the escapes the tree uses (`\\n \\r \\t \\\\ \\" \\' \\0 \\xNN
+    \\u{XXXX}`); anything else falls back to raw so the gate never crashes
+    on syntax it does not know.
+    """
+
+    def replace(match: re.Match) -> str:
+        escape = match.group(1)
+        simple = {
+            "n": "\n",
+            "r": "\r",
+            "t": "\t",
+            "\\": "\\",
+            '"': '"',
+            "'": "'",
+            "0": "\0",
+        }
+        if escape in simple:
+            return simple[escape]
+        if escape.startswith("x"):
+            try:
+                return chr(int(escape[1:], 16))
+            except ValueError:
+                return match.group(0)
+        if escape.startswith("u{") and escape.endswith("}"):
+            try:
+                return chr(int(escape[2:-1], 16))
+            except ValueError:
+                return match.group(0)
+        return match.group(0)
+
+    return re.sub(r"\\(u\{[0-9a-fA-F]+\}|x[0-9a-fA-F]{2}|.)", replace, raw, flags=re.DOTALL)
+
 MAX_SHOWN = 12
 
 
@@ -168,9 +216,10 @@ def scan():
     for rel, src in sources:
             matches = [(m.group("kind"), m.group("id"), m.group("english")) for m in CALL.finditer(src)]
             matches += [(TABLE_KIND, m.group("id"), m.group("english")) for m in TABLE.finditer(src)]
-            # English-keyed: id is the English text itself.
+            # English-keyed: id is the decoded English text itself, matching the
+            # runtime lookup key in `en-to-zh.json`.
             matches += [
-                (m.group("kind"), m.group("english"), m.group("english"))
+                (m.group("kind"), rust_unescape(m.group("english")), rust_unescape(m.group("english")))
                 for m in TR_CALL.finditer(src)
             ]
             consts = dict(CONST_DEF.findall(CONTINUED_STRING.sub("", src)))
@@ -227,9 +276,10 @@ def load_zh_catalog_ids():
 def load_en_to_zh_keys():
     path = REPO / EN_TO_ZH_CATALOG
     if not path.exists():
-        return set()
+        return {}
     with open(path, encoding="utf-8") as fh:
-        return set(json.load(fh))
+        data = json.load(fh)
+        return data if isinstance(data, dict) else {}
 
 
 def cmd_baseline():
@@ -269,10 +319,27 @@ def cmd_check():
     ]
     bare_braces = [w for w in new.values() if "{}" in w["english"]]
 
+    # A translated value must not introduce `{name}` the English key lacks;
+    # `tr_format` substitutes by name, so the extra placeholder would render
+    # verbatim. Dropping a name (e.g. the `{s}` plural suffix, absent in
+    # Chinese) is safe: unknown arguments are ignored.
+    placeholder_mismatch = sorted(
+        {
+            w["english"]
+            for w in new.values()
+            if w["kind"] in TR_KINDS
+            and w["english"] in en_to_zh
+            and not set(PLACEHOLDER.findall(en_to_zh[w["english"]])) <= set(
+                PLACEHOLDER.findall(w["english"])
+            )
+        }
+    )
+
     print(f"baseline {len(old)} wraps | now {len(new)}")
     print(
         f"missing {len(missing)} | added {len(added)} | rewritten {len(rewritten)}"
         f" | untranslated {len(orphans)} | bare-brace {len(bare_braces)}"
+        f" | placeholder-mismatch {len(placeholder_mismatch)}"
     )
 
     if rewritten:
@@ -317,7 +384,12 @@ def cmd_check():
         for w in bare_braces[:MAX_SHOWN]:
             print(f'  {w["file"]}: {w["id"]}  <- "{w["english"][:70]}"')
 
-    failed = bool(missing or added or orphans or bare_braces)
+    if placeholder_mismatch:
+        print("\n=== en-to-zh.json values using a {name} the English key lacks ===")
+        for key in placeholder_mismatch[:MAX_SHOWN]:
+            print(f'  "{key[:70]}" -> "{en_to_zh[key][:70]}"')
+
+    failed = bool(missing or added or orphans or bare_braces or placeholder_mismatch)
     if not failed:
         print("\nOK: wraps intact")
     return 1 if failed else 0

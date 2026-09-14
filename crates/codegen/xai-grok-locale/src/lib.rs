@@ -325,6 +325,10 @@ impl LocaleContext {
 
     /// English-keyed format with named `{placeholder}` substitution.
     /// Unknown arguments are ignored; missing ones stay visible.
+    /// Convention is single-name: the translation must not introduce a
+    /// `{name}` the English template lacks (gated in CI). Dropping a name
+    /// the English has (e.g. the `{s}` plural suffix, absent in Chinese)
+    /// is safe.
     pub fn tr_format(&self, english: &str, arguments: &[(&str, &str)]) -> String {
         let mut output = self.tr(english).into_owned();
         for (name, value) in arguments {
