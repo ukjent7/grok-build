@@ -91,13 +91,13 @@ ZH_CATALOGS = [
     "crates/codegen/xai-grok-locale/locales/zh-CN.json",
 ]
 EN_TO_ZH_CATALOG = "crates/codegen/xai-grok-locale/locales/en-to-zh.json"
-TR_KINDS = {"tr", "tr_static", "tr_format", "tr_ctx"}
+TR_KINDS = {"tr", "tr_static", "tr_format"}
 
 # Direct wrap forms. `english` is the fallback that stays at the call site, so it
 # doubles as the anchor for re-application. (`fixed`, the old one-line
 # constructor for `FixedCopy { id, english }`, is gone: error_display.rs now
 # holds English-keyed copy. The alternation keeps it so history still scans.)
-# English-keyed forms (`tr`, `tr_static`, `tr_format`, `tr_ctx`) are the
+# English-keyed forms (`tr`, `tr_static`, `tr_format`) are the
 # preferred tier going forward: no invented id, upstream rewording falls back
 # to English without a baseline entry to update. Fragments and identifiers
 # stay in English by design and are not wrapped at all.
@@ -139,10 +139,10 @@ TABLE = re.compile(
 )
 TABLE_KIND = "table"
 # English-keyed forms: `.tr("literal")`, `.tr_static("literal")`,
-# `.tr_format("literal with {name}", ...)`, `.tr_ctx("literal", "context")`.
+# `.tr_format("literal with {name}", ...)`.
 # No id; the English text is the key into `en-to-zh.json`.
 TR_CALL = re.compile(
-    r'\.(?P<kind>tr_static|tr_format|tr|tr_ctx)\(\s*'
+    r'\.(?P<kind>tr_static|tr_format|tr)\(\s*'
     r'"(?P<english>(?:[^"\\]|\\.)*)"'
 )
 # Same forms with a same-file `const` anchor (`tr_static(MODAL_TITLE)`).

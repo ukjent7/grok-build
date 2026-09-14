@@ -102,8 +102,9 @@ def read_source(path):
 
     The fork's working tree is CRLF (`core.autocrlf=true`) while the repository
     stores LF, and text-mode reads normalise the difference away. Writing has to
-    put the convention back, or `--apply` turns every touched file into a
-    whole-file line-ending diff.
+    put the convention back: `--apply` touches a handful of lines, but an LF
+    write replaces *every* line ending in the file on disk. Git hides that under
+    `core.autocrlf=true`, editors and `diff` do not.
     """
     with open(path, encoding="utf-8", errors="ignore", newline="") as fh:
         raw = fh.read()
@@ -290,7 +291,7 @@ def section_a(baseline, current, apply):
         if not path.exists():
             manual.extend((rec, "file is gone") for rec in by_file[rel])
             continue
-        src = path.read_text(encoding="utf-8", errors="ignore")
+        src, crlf = read_source(path)
         replacements, count, refused = plan_restore(rel, src, by_file[rel])
         manual.extend(refused)
         if not replacements:
@@ -300,7 +301,7 @@ def section_a(baseline, current, apply):
         restored += count
         touched.append(rel)
         if apply:
-            path.write_text(src, encoding="utf-8", newline="\n")
+            write_source(path, src, crlf)
     return restored, manual, touched
 
 

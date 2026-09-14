@@ -336,20 +336,6 @@ impl LocaleContext {
         }
         output
     }
-
-    /// Context-disambiguated lookup for the rare same-English-different-Chinese
-    /// case. Keyed as `"{context}\u{1f}{english}"` in `en-to-zh.json`.
-    pub fn tr_ctx<'a>(&self, english: &'a str, context: &str) -> Cow<'a, str> {
-        if self.is_zh_cn() {
-            let key = format!("{context}\u{1f}{english}");
-            EN_TO_ZH
-                .get(&key)
-                .map(|value| Cow::Borrowed(value.as_str()))
-                .unwrap_or_else(|| self.tr(english))
-        } else {
-            Cow::Borrowed(english)
-        }
-    }
 }
 
 fn setting_choice_catalog_key(setting_key: &str) -> &str {
