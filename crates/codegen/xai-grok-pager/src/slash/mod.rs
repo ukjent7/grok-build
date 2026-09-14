@@ -164,25 +164,20 @@ fn localized_command_description(_source: CommandSource, canonical: &str, englis
 /// Localized display for a curated dropdown tag. Tag values are free-form;
 /// unknown values pass through unchanged.
 fn localized_tag(tag: String) -> String {
-    let key = match tag.as_str() {
-        "new" => "slash.tag.new",
-        "beta" => "slash.tag.beta",
-        _ => return tag,
-    };
-    crate::locale::ctx().named_text(key, &tag).into_owned()
+    // `new` keeps an explicit arm (same English, different Chinese elsewhere);
+    // everything else goes through the English-keyed catalog.
+    if tag == "new" {
+        return crate::locale::ctx()
+            .named_text("slash.tag.new", &tag)
+            .into_owned();
+    }
+    crate::locale::ctx().tr(&tag).into_owned()
 }
 
 /// Localized args placeholder for the composer. Only fixed, pager-owned
 /// placeholder texts are mapped; unknown placeholders pass through unchanged.
 fn localized_arg_placeholder(placeholder: String) -> String {
-    let key = match placeholder.as_str() {
-        "<name> [--agent-budget N] [--effort LEVEL] [args] | runs | pause|resume|stop|save [name]" => {
-            "slash.command.workflow.arg_placeholder"
-        }
-        "[feedback text]" => "slash.command.feedback.arg_placeholder",
-        _ => return placeholder,
-    };
-    crate::locale::ctx().named_text(key, &placeholder).into_owned()
+    crate::locale::ctx().tr(&placeholder).into_owned()
 }
 
 /// Localized description for an arg-suggestion row. Only fixed, pager-owned

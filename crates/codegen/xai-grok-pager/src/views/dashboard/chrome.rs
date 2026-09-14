@@ -27,15 +27,7 @@ pub struct HeaderUpgradeCta<'a> {
 
 /// Localized text for a header chip's state word (`awaiting`, `working`, …); the pushed id stays English.
 fn chip_label(label: &'static str) -> &'static str {
-    let id = match label {
-        "awaiting" => "dashboard.state.awaiting",
-        "working" => "dashboard.state.working",
-        "idle" => "dashboard.state.idle",
-        "done" => "dashboard.state.done",
-        "failed" => "dashboard.state.failed",
-        _ => return label,
-    };
-    crate::locale::ctx().named_static_text(id, label)
+    crate::locale::ctx().tr_static(label)
 }
 
 /// Render the dashboard header row:

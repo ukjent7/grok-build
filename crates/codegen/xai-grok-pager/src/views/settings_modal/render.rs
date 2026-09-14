@@ -55,12 +55,7 @@ fn localized_category_label(category: SettingCategory) -> &'static str {
 
 /// Localized lock reason shown in place of an expanded description.
 fn localized_lock_reason(reason: &'static str) -> std::borrow::Cow<'static, str> {
-    let id = match reason {
-        "Your team has Zero Data Retention." => "settings.ui.lock.zdr",
-        "Managed by your team admin." => "settings.ui.lock.team",
-        _ => return std::borrow::Cow::Borrowed(reason),
-    };
-    crate::locale::ctx().named_text(id, reason)
+    crate::locale::ctx().tr(reason)
 }
 
 /// Localized inline-editor validation error. Only the fixed lead-ins are

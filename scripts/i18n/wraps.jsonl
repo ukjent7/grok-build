@@ -791,9 +791,6 @@
 {"file": "crates/codegen/xai-grok-pager/src/slash/commands/usage.rs", "id": "Unknown argument: {argument}. Use {hint}", "kind": "tr_format", "english": "Unknown argument: {argument}. Use {hint}"}
 {"file": "crates/codegen/xai-grok-pager/src/slash/mod.rs", "id": "Open \"{title}\"", "kind": "tr", "english": "Open \"{title}\""}
 {"file": "crates/codegen/xai-grok-pager/src/slash/mod.rs", "id": "auto (follow system)", "kind": "tr", "english": "auto (follow system)"}
-{"file": "crates/codegen/xai-grok-pager/src/slash/mod.rs", "id": "slash.command.feedback.arg_placeholder", "kind": "table", "english": "[feedback text]"}
-{"file": "crates/codegen/xai-grok-pager/src/slash/mod.rs", "id": "slash.tag.beta", "kind": "table", "english": "beta"}
-{"file": "crates/codegen/xai-grok-pager/src/slash/mod.rs", "id": "slash.tag.new", "kind": "table", "english": "new"}
 {"file": "crates/codegen/xai-grok-pager/src/slash/mode_support.rs", "id": "/{token} isn't available in {current} mode: {instead}.", "kind": "tr_format", "english": "/{token} isn't available in {current} mode: {instead}."}
 {"file": "crates/codegen/xai-grok-pager/src/slash/mode_support.rs", "id": "You're already in {current} mode.", "kind": "tr_format", "english": "You're already in {current} mode."}
 {"file": "crates/codegen/xai-grok-pager/src/tips/clear_detector.rs", "id": " to undo", "kind": "tr_static", "english": " to undo"}
@@ -942,11 +939,6 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/chrome.rs", "id": "Disable Worktree", "kind": "tr_static", "english": "Disable Worktree"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/chrome.rs", "id": "Open Previous", "kind": "tr_static", "english": "Open Previous"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/chrome.rs", "id": "Worktree", "kind": "tr_static", "english": "Worktree"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/chrome.rs", "id": "dashboard.state.awaiting", "kind": "table", "english": "awaiting"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/chrome.rs", "id": "dashboard.state.done", "kind": "table", "english": "done"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/chrome.rs", "id": "dashboard.state.failed", "kind": "table", "english": "failed"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/chrome.rs", "id": "dashboard.state.idle", "kind": "table", "english": "idle"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/chrome.rs", "id": "dashboard.state.working", "kind": "table", "english": "working"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/peek.rs", "id": "No activity yet", "kind": "tr_static", "english": "No activity yet"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/peek.rs", "id": "No, reject (type to add feedback)", "kind": "tr_static", "english": "No, reject (type to add feedback)"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/peek.rs", "id": "Other", "kind": "tr_static", "english": "Other"}
@@ -1542,8 +1534,6 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "preview", "kind": "tr_static", "english": "preview"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "restart", "kind": "tr", "english": "restart"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.type_filter", "kind": "named_static_text", "english": "type to filter"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.lock.team", "kind": "table", "english": "Managed by your team admin."}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.lock.zdr", "kind": "table", "english": "Your team has Zero Data Retention."}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "type to edit", "kind": "tr_static", "english": "type to edit"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "y reset", "kind": "tr_static", "english": "y reset"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "… {count} more", "kind": "tr_format", "english": "… {count} more"}
