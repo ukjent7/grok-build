@@ -161,7 +161,9 @@ jobs:
       #
       # Advisory on purpose: "is this literal screen copy" is a heuristic, and
       # a gate that cries wolf gets switched off. Add `--fail-on-diff` once a
-      # few syncs have come through with an empty list.
+      # few syncs have come through with an empty list -- and move this step up
+      # next to checkout at the same time, so a failure costs seconds instead
+      # of a full build.
       - name: Scan for unwrapped copy added by this push
         env:
           BEFORE: ${{ github.event.before || github.event.pull_request.base.sha || inputs.diff_base }}
