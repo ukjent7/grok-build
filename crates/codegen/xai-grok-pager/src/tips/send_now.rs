@@ -21,13 +21,13 @@ pub fn send_now_tip() -> EphemeralTip {
         Line::from(vec![
             Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("tip.ephemeral.send_now.lead", "Queued · "),
+                    .tr_static("Queued · "),
                 dim,
             ),
             Span::styled("Enter", key_style),
             Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("tip.ephemeral.send_now.tail", " to send now"),
+                    .tr_static(" to send now"),
                 dim,
             ),
         ]),

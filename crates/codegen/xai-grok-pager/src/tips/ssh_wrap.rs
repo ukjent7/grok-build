@@ -41,14 +41,12 @@ pub fn ssh_wrap_tip() -> EphemeralTip {
             Line::from(vec![
                 Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("tip.ephemeral.ssh_wrap.lead", "Run "),
+                        .tr_static("Run "),
                     dim,
                 ),
                 Span::styled("/doctor", command),
                 Span::styled(
-                    crate::locale::ctx().named_static_text(
-                        "tip.ephemeral.ssh_wrap.tail",
-                        " for details and fixes.",
+                    crate::locale::ctx().tr_static(" for details and fixes.",
                     ),
                     dim,
                 ),

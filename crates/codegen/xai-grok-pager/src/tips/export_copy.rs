@@ -104,19 +104,19 @@ pub fn export_copy_tip() -> EphemeralTip {
             Line::from(vec![
                 Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("tip.export_copy.lead", "Copying a lot? "),
+                        .tr_static("Copying a lot? "),
                     dim,
                 ),
                 Span::styled("/copy", key_style),
                 Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("tip.export_copy.last_reply", " last reply · "),
+                        .tr_static(" last reply · "),
                     dim,
                 ),
                 Span::styled("/export", key_style),
                 Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("tip.export_copy.full_transcript", " full transcript"),
+                        .tr_static(" full transcript"),
                     dim,
                 ),
             ]),

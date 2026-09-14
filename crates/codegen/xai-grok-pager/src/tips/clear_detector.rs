@@ -45,13 +45,13 @@ pub fn undo_tip() -> EphemeralTip {
         Line::from(vec![
             Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("tip.ephemeral.undo.lead", "Input cleared · "),
+                    .tr_static("Input cleared · "),
                 dim,
             ),
             Span::styled(undo_chord_label(), chord),
             Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("tip.ephemeral.undo.tail", " to undo"),
+                    .tr_static(" to undo"),
                 dim,
             ),
         ]),

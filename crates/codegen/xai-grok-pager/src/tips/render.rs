@@ -33,7 +33,7 @@ fn tip_line(tip: &str) -> Line<'_> {
     let theme = Theme::current();
     Line::from(vec![
         Span::styled(
-            crate::locale::ctx().named_static_text("tips.prefix", "Tip: "),
+            crate::locale::ctx().tr_static("Tip: "),
             Style::default().fg(theme.gray).add_modifier(Modifier::BOLD),
         ),
         Span::styled(tip, Style::default().fg(theme.gray)),

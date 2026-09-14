@@ -43,7 +43,7 @@ pub fn small_screen_tip() -> EphemeralTip {
         Line::from(vec![
             Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("tip.ephemeral.small_screen.lead", "Tight on space? Try "),
+                    .tr_static("Tight on space? Try "),
                 dim,
             ),
             Span::styled("/compact-mode", command),

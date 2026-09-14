@@ -39,24 +39,20 @@ pub fn word_select_tip() -> EphemeralTip {
             WORD_SELECT_TIP_KEY,
             Line::from(vec![
                 Span::styled(
-                    crate::locale::ctx().named_static_text(
-                        "tip.ephemeral.word_select.lead",
-                        "Want double-click to select? ",
+                    crate::locale::ctx().tr_static("Want double-click to select? ",
                     ),
                     dim,
                 ),
                 Span::styled("/settings", key_style),
                 Span::styled(
-                    crate::locale::ctx().named_static_text(
-                        "tip.ephemeral.word_select.middle",
-                        " → Text selection · ",
+                    crate::locale::ctx().tr_static(" → Text selection · ",
                     ),
                     dim,
                 ),
                 Span::styled(WORD_SELECT_ACCEPT_CHORD, key_style),
                 Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("tip.ephemeral.word_select.tail", ": enable now"),
+                        .tr_static(": enable now"),
                     dim,
                 ),
             ]),
