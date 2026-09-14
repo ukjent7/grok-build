@@ -159,10 +159,10 @@ impl SearchToolCallBlock {
         if self.match_count == 0 {
             return match self.meta.output_mode {
                 SearchOutputMode::FilesWithMatches => locale
-                    .named_text("scrollback.tool.search.summary.no_files", "(no files)")
+                    .tr("(no files)")
                     .into_owned(),
                 _ => locale
-                    .named_text("scrollback.tool.search.summary.no_matches", "(no matches)")
+                    .tr("(no matches)")
                     .into_owned(),
             };
         }
@@ -172,19 +172,17 @@ impl SearchToolCallBlock {
                 if file_count > 1 {
                     let count = self.match_count.to_string();
                     let files = file_count.to_string();
-                    locale.format_named(
-                        "scrollback.tool.search.summary.matches_in_files",
+                    locale.tr_format(
                         "({count} matches in {files} files)",
                         &[("count", &count), ("files", &files)],
                     )
                 } else if self.match_count == 1 {
                     locale
-                        .named_text("scrollback.tool.search.summary.one_match", "(1 match)")
+                        .tr("(1 match)")
                         .into_owned()
                 } else {
                     let count = self.match_count.to_string();
-                    locale.format_named(
-                        "scrollback.tool.search.summary.matches",
+                    locale.tr_format(
                         "({count} matches)",
                         &[("count", &count)],
                     )
@@ -194,12 +192,11 @@ impl SearchToolCallBlock {
                 let n = self.match_count; // match_count = # of files in this mode
                 if n == 1 {
                     locale
-                        .named_text("scrollback.tool.search.summary.one_file", "(1 file)")
+                        .tr("(1 file)")
                         .into_owned()
                 } else {
                     let count = n.to_string();
-                    locale.format_named(
-                        "scrollback.tool.search.summary.files",
+                    locale.tr_format(
                         "({count} files)",
                         &[("count", &count)],
                     )
@@ -210,19 +207,17 @@ impl SearchToolCallBlock {
                 if file_count > 1 {
                     let count = self.match_count.to_string();
                     let files = file_count.to_string();
-                    locale.format_named(
-                        "scrollback.tool.search.summary.matches_across_files",
+                    locale.tr_format(
                         "({count} matches across {files} files)",
                         &[("count", &count), ("files", &files)],
                     )
                 } else if self.match_count == 1 {
                     locale
-                        .named_text("scrollback.tool.search.summary.one_match", "(1 match)")
+                        .tr("(1 match)")
                         .into_owned()
                 } else {
                     let count = self.match_count.to_string();
-                    locale.format_named(
-                        "scrollback.tool.search.summary.matches",
+                    locale.tr_format(
                         "({count} matches)",
                         &[("count", &count)],
                     )
@@ -268,9 +263,7 @@ impl SearchToolCallBlock {
         };
 
         let mut spans = vec![Span::styled(
-            crate::locale::ctx()
-                .named_static_text("scrollback.tool.search.label", "Search ")
-                .to_string(),
+            "Search ".to_string(),
             bold_style,
         )];
 
@@ -287,9 +280,7 @@ impl SearchToolCallBlock {
             // Case 2: glob shown as the first "in" scope (string-styled, not path-styled)
             if let Some(ref glob) = self.meta.glob {
                 spans.push(Span::styled(
-                    crate::locale::ctx()
-                        .named_static_text("scrollback.tool.search.in", " in ")
-                        .to_string(),
+                    " in ".to_string(),
                     text_style,
                 ));
                 spans.push(Span::styled(glob.to_string(), pattern_style));
@@ -300,9 +291,7 @@ impl SearchToolCallBlock {
         // When width is constrained, shorten the path the way the fish shell does
         if let Some(ref path) = self.meta.path {
             spans.push(Span::styled(
-                crate::locale::ctx()
-                    .named_static_text("scrollback.tool.search.in", " in ")
-                    .to_string(),
+                " in ".to_string(),
                 text_style,
             ));
             if let Some(w) = width {
@@ -376,24 +365,17 @@ impl SearchToolCallBlock {
 
         let mut parts: Vec<Vec<Span<'static>>> = Vec::new();
 
-        // Mode comes first so the user sees what kind of search this is
-        let locale = crate::locale::ctx();
+        // Mode comes first so the user sees what kind of search this is.
+        // Fragments stay in English by design: translating `mode:`/`pattern`
+        // labels costs a merge conflict per line for near-zero user value.
         let mode_str = match self.meta.output_mode {
-            SearchOutputMode::Content => {
-                locale.named_static_text("scrollback.tool.search.mode.pattern", "pattern")
-            }
-            SearchOutputMode::FilesWithMatches => {
-                locale.named_static_text("scrollback.tool.search.mode.files", "files")
-            }
-            SearchOutputMode::Count => {
-                locale.named_static_text("scrollback.tool.search.mode.count", "count")
-            }
+            SearchOutputMode::Content => "pattern",
+            SearchOutputMode::FilesWithMatches => "files",
+            SearchOutputMode::Count => "count",
         };
         parts.push(vec![
             Span::styled(
-                locale
-                    .named_text("scrollback.tool.search.metadata.mode", "mode: ")
-                    .into_owned(),
+                "mode: ".to_owned(),
                 label_style,
             ),
             Span::styled(mode_str.to_string(), value_style),
@@ -402,9 +384,7 @@ impl SearchToolCallBlock {
         if let Some(ref ft) = self.meta.file_type {
             parts.push(vec![
                 Span::styled(
-                    locale
-                        .named_text("scrollback.tool.search.metadata.type", "type: ")
-                        .into_owned(),
+                    "type: ".to_owned(),
                     label_style,
                 ),
                 Span::styled(ft.to_string(), value_style),
@@ -413,18 +393,11 @@ impl SearchToolCallBlock {
         if self.meta.case_insensitive {
             parts.push(vec![
                 Span::styled(
-                    locale
-                        .named_text(
-                            "scrollback.tool.search.metadata.case_insensitive",
-                            "case-insensitive: ",
-                        )
-                        .into_owned(),
+                    "case-insensitive: ".to_owned(),
                     label_style,
                 ),
                 Span::styled(
-                    locale
-                        .named_text("scrollback.tool.boolean.true", "true")
-                        .into_owned(),
+                    "true".to_owned(),
                     value_style,
                 ),
             ]);
@@ -432,15 +405,11 @@ impl SearchToolCallBlock {
         if self.meta.multiline {
             parts.push(vec![
                 Span::styled(
-                    locale
-                        .named_text("scrollback.tool.search.metadata.multiline", "multiline: ")
-                        .into_owned(),
+                    "multiline: ".to_owned(),
                     label_style,
                 ),
                 Span::styled(
-                    locale
-                        .named_text("scrollback.tool.boolean.true", "true")
-                        .into_owned(),
+                    "true".to_owned(),
                     value_style,
                 ),
             ]);
@@ -498,7 +467,7 @@ impl BlockContent for SearchToolCallBlock {
                     lines.push(
                         Line::from(Span::styled(
                             crate::locale::ctx()
-                                .named_text("scrollback.tool.no_results", "  (no results)")
+                                .tr("  (no results)")
                                 .into_owned(),
                             theme.muted(),
                         ))

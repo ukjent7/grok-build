@@ -1,0 +1,11 @@
+{
+  "(1 file)": "（1 个文件）",
+  "(1 match)": "（1 个匹配项）",
+  "(no files)": "（无文件）",
+  "(no matches)": "（无匹配项）",
+  "({count} files)": "（{count} 个文件）",
+  "({count} matches)": "（{count} 个匹配项）",
+  "({count} matches across {files} files)": "（{count} 个匹配项，跨 {files} 个文件）",
+  "({count} matches in {files} files)": "（{count} 个匹配项，位于 {files} 个文件）",
+  "  (no results)": "  （无结果）"
+}

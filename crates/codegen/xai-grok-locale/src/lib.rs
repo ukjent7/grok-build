@@ -36,6 +36,11 @@ use std::sync::{LazyLock, OnceLock};
 const EN_US_SOURCE: &str = include_str!("../locales/en-US.json");
 const ZH_CN_SOURCE: &str = include_str!("../locales/zh-CN.json");
 const ZH_CN_METADATA_SOURCE: &str = include_str!("../locales/zh-CN-metadata.json");
+// English-keyed overlay for migrated call sites. `tr("literal")` looks up the
+// English text itself so upstream rewording falls back to English without an
+// id to re-baseline. Seeded from high-value sentence templates only;
+// fragments and identifiers stay in English by design.
+const EN_TO_ZH_SOURCE: &str = include_str!("../locales/en-to-zh.json");
 
 static EN_US: LazyLock<BTreeMap<String, String>> =
     LazyLock::new(|| parse_catalog("en-US", EN_US_SOURCE));
@@ -43,6 +48,8 @@ static ZH_CN: LazyLock<BTreeMap<String, String>> =
     LazyLock::new(|| parse_catalog("zh-CN", ZH_CN_SOURCE));
 static ZH_CN_METADATA: LazyLock<BTreeMap<String, String>> =
     LazyLock::new(|| parse_catalog("zh-CN metadata", ZH_CN_METADATA_SOURCE));
+static EN_TO_ZH: LazyLock<BTreeMap<String, String>> =
+    LazyLock::new(|| parse_catalog("en-to-zh", EN_TO_ZH_SOURCE));
 
 fn parse_catalog(name: &str, source: &str) -> BTreeMap<String, String> {
     serde_json::from_str(source)
@@ -207,7 +214,7 @@ impl LocaleContext {
     /// the canonical config/TOML identifier and is never translated.
     ///
     /// The per-call `format!` is deliberate: the catalogs are flat, and rebuilding
-    /// ~3.5k entries into a nested index to save one short `String` per rendered
+    /// them into a nested index to save one short `String` per rendered
     /// settings row would cost more code (and memory) than the allocation.
     pub fn setting_label<'a>(&self, setting_key: &str, english: &'a str) -> Cow<'a, str> {
         self.named_text(&format!("settings.setting.{setting_key}.label"), english)
@@ -290,6 +297,54 @@ impl LocaleContext {
             output = output.replace(&format!("{{{name}}}"), value);
         }
         output
+    }
+
+    /// English-keyed lookup for migrated call sites. No invented id: upstream
+    /// rewording misses the map and falls back to `english`, same as `named_*`.
+    /// Only sentence templates belong here; fragments and identifiers stay in
+    /// English by design (see `en-to-zh.json`).
+    pub fn tr<'a>(&self, english: &'a str) -> Cow<'a, str> {
+        if self.is_zh_cn() {
+            EN_TO_ZH
+                .get(english)
+                .map(|value| Cow::Borrowed(value.as_str()))
+                .unwrap_or_else(|| Cow::Borrowed(english))
+        } else {
+            Cow::Borrowed(english)
+        }
+    }
+
+    /// Static variant of [`Self::tr`] for labels stored in borrowed structures.
+    pub fn tr_static(&self, english: &'static str) -> &'static str {
+        if self.is_zh_cn() {
+            EN_TO_ZH.get(english).map(String::as_str).unwrap_or(english)
+        } else {
+            english
+        }
+    }
+
+    /// English-keyed format with named `{placeholder}` substitution.
+    /// Unknown arguments are ignored; missing ones stay visible.
+    pub fn tr_format(&self, english: &str, arguments: &[(&str, &str)]) -> String {
+        let mut output = self.tr(english).into_owned();
+        for (name, value) in arguments {
+            output = output.replace(&format!("{{{name}}}"), value);
+        }
+        output
+    }
+
+    /// Context-disambiguated lookup for the rare same-English-different-Chinese
+    /// case. Keyed as `"{context}\u{1f}{english}"` in `en-to-zh.json`.
+    pub fn tr_ctx<'a>(&self, english: &'a str, context: &str) -> Cow<'a, str> {
+        if self.is_zh_cn() {
+            let key = format!("{context}\u{1f}{english}");
+            EN_TO_ZH
+                .get(&key)
+                .map(|value| Cow::Borrowed(value.as_str()))
+                .unwrap_or_else(|| self.tr(english))
+        } else {
+            Cow::Borrowed(english)
+        }
     }
 }
 
@@ -518,6 +573,22 @@ mod tests {
             ),
             "使用 grok.com 登录"
         );
+    }
+
+    #[test]
+    fn english_keyed_lookup_falls_back_without_an_id() {
+        let zh = LocaleContext::new(ResolvedLocale {
+            locale: UiLocale::ZhCn,
+            source: LocaleSource::Config,
+        });
+        assert_eq!(zh.tr("(no matches)"), "（无匹配项）");
+        assert_eq!(
+            zh.tr_format("({count} matches)", &[("count", "3")]),
+            "（3 个匹配项）"
+        );
+        // Unknown English stays verbatim; English locale never translates.
+        assert_eq!(zh.tr("untranslated sentence"), "untranslated sentence");
+        assert_eq!(LocaleContext::default().tr("(no matches)"), "(no matches)");
     }
 
     #[test]

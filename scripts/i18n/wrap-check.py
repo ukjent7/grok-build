@@ -27,10 +27,11 @@ Four failure classes, all fatal on `check`:
                   still tell a dropped wrap from an untouched one.
   3. untranslated a wrap whose id has no zh-CN entry. It renders English, so the
                   interface goes half-Chinese with nothing else to notice it.
-  4. bare_braces  a bare `{}` in the English anchor. `named_*`/`format_named`
-                  substitute named `{placeholder}` only, so `{}` would reach the
-                  screen verbatim (and in English too, since a catalog miss falls
-                  back to the anchor). Cost three live bugs once.
+                  English-keyed `tr` wraps check against `en-to-zh.json` instead.
+  4. bare_braces  a bare `{}` in the English anchor. `named_*`/`format_named`/
+                  `tr_format` substitute named `{placeholder}` only, so `{}` would
+                  reach the screen verbatim. Rejected by design (see
+                  `english_fallback_survives_an_unknown_id_verbatim`).
 
 Classes 1-2 are reported pairwise as `rewritten` when the same (file, id, kind)
 appears on both sides -- that is the shape of "upstream rewrote the line".
@@ -59,10 +60,16 @@ ZH_CATALOGS = [
     "crates/codegen/xai-grok-locale/locales/zh-CN-metadata.json",
     "crates/codegen/xai-grok-locale/locales/zh-CN.json",
 ]
+EN_TO_ZH_CATALOG = "crates/codegen/xai-grok-locale/locales/en-to-zh.json"
+TR_KINDS = {"tr", "tr_static", "tr_format", "tr_ctx"}
 
 # Direct wrap forms. `english` is the fallback that stays at the call site, so it
 # doubles as the anchor for re-application. `fixed` is
 # `app/error_display.rs`'s one-line constructor for `FixedCopy { id, english }`.
+# English-keyed forms (`tr`, `tr_static`, `tr_format`, `tr_ctx`) are the
+# preferred tier going forward: no invented id, upstream rewording falls back
+# to English without a baseline entry to update. Fragments and identifiers
+# stay in English by design and are not wrapped at all.
 # Id segments allow uppercase: action-table ids derive from `ActionId` variants
 # (`shortcuts.action.OpenPrevLink.label`), and a lowercase-only pattern silently
 # skipped all 186 of them. The first segment allows `_` too (`startup_failure.*`,
@@ -100,6 +107,13 @@ TABLE = re.compile(
     r'"(?P<english>(?:[^"\\]|\\.){1,90})"\s*=>\s*"(?P<id>' + ID + r')"'
 )
 TABLE_KIND = "table"
+# English-keyed forms: `.tr("literal")`, `.tr_static("literal")`,
+# `.tr_format("literal with {name}", ...)`, `.tr_ctx("literal", "context")`.
+# No id; the English text is the key into `en-to-zh.json`.
+TR_CALL = re.compile(
+    r'\.(?P<kind>tr_static|tr_format|tr|tr_ctx)\(\s*'
+    r'"(?P<english>(?:[^"\\]|\\.)*)"'
+)
 
 MAX_SHOWN = 12
 
@@ -154,6 +168,11 @@ def scan():
     for rel, src in sources:
             matches = [(m.group("kind"), m.group("id"), m.group("english")) for m in CALL.finditer(src)]
             matches += [(TABLE_KIND, m.group("id"), m.group("english")) for m in TABLE.finditer(src)]
+            # English-keyed: id is the English text itself.
+            matches += [
+                (m.group("kind"), m.group("english"), m.group("english"))
+                for m in TR_CALL.finditer(src)
+            ]
             consts = dict(CONST_DEF.findall(CONTINUED_STRING.sub("", src)))
             for m in CALL_CONST.finditer(src):
                 # Disjoint from CALL above by construction (opening `"` vs
@@ -205,6 +224,14 @@ def load_zh_catalog_ids():
     return ids
 
 
+def load_en_to_zh_keys():
+    path = REPO / EN_TO_ZH_CATALOG
+    if not path.exists():
+        return set()
+    with open(path, encoding="utf-8") as fh:
+        return set(json.load(fh))
+
+
 def cmd_baseline():
     wraps = scan()
     with open(BASELINE, "w", encoding="utf-8", newline="\n") as fh:
@@ -218,6 +245,7 @@ def cmd_check():
     old = load_baseline()
     new = scan()
     catalog = load_zh_catalog_ids()
+    en_to_zh = load_en_to_zh_keys()
 
     missing = [w for k, w in old.items() if k not in new]
     added = [w for k, w in new.items() if k not in old]
@@ -234,7 +262,11 @@ def cmd_check():
     ]
     rewritten_sites = {(o["file"], o["id"], o["kind"]) for o, _ in rewritten}
 
-    orphans = [w for w in new.values() if w["id"] not in catalog]
+    orphans = [
+        w
+        for w in new.values()
+        if (w["english"] not in en_to_zh if w["kind"] in TR_KINDS else w["id"] not in catalog)
+    ]
     bare_braces = [w for w in new.values() if "{}" in w["english"]]
 
     print(f"baseline {len(old)} wraps | now {len(new)}")

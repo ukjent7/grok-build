@@ -779,25 +779,15 @@
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/read.rs", "id": "scrollback.tool.read.pages", "kind": "format_named", "english": " ({count} pages)"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/read.rs", "id": "scrollback.tool.read.range_of", "kind": "format_named", "english": " ({range} of {total})"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/read.rs", "id": "scrollback.tool.read.skill", "kind": "named_static_text", "english": "Skill "}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.boolean.true", "kind": "named_text", "english": "true"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.no_results", "kind": "named_text", "english": "  (no results)"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.in", "kind": "named_static_text", "english": " in "}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.label", "kind": "named_static_text", "english": "Search "}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.metadata.case_insensitive", "kind": "named_text", "english": "case-insensitive: "}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.metadata.mode", "kind": "named_text", "english": "mode: "}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.metadata.multiline", "kind": "named_text", "english": "multiline: "}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.metadata.type", "kind": "named_text", "english": "type: "}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.mode.count", "kind": "named_static_text", "english": "count"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.mode.files", "kind": "named_static_text", "english": "files"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.mode.pattern", "kind": "named_static_text", "english": "pattern"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.summary.files", "kind": "format_named", "english": "({count} files)"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.summary.matches", "kind": "format_named", "english": "({count} matches)"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.summary.matches_across_files", "kind": "format_named", "english": "({count} matches across {files} files)"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.summary.matches_in_files", "kind": "format_named", "english": "({count} matches in {files} files)"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.summary.no_files", "kind": "named_text", "english": "(no files)"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.summary.no_matches", "kind": "named_text", "english": "(no matches)"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.summary.one_file", "kind": "named_text", "english": "(1 file)"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "scrollback.tool.search.summary.one_match", "kind": "named_text", "english": "(1 match)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "  (no results)", "kind": "tr", "english": "  (no results)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "(1 file)", "kind": "tr", "english": "(1 file)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "(1 match)", "kind": "tr", "english": "(1 match)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "(no files)", "kind": "tr", "english": "(no files)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "(no matches)", "kind": "tr", "english": "(no matches)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "({count} files)", "kind": "tr_format", "english": "({count} files)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "({count} matches across {files} files)", "kind": "tr_format", "english": "({count} matches across {files} files)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "({count} matches in {files} files)", "kind": "tr_format", "english": "({count} matches in {files} files)"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search.rs", "id": "({count} matches)", "kind": "tr_format", "english": "({count} matches)"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search_tool.rs", "id": "scrollback.tool.search_tools.label", "kind": "named_text", "english": "Search Tools "}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search_tool.rs", "id": "scrollback.tool.search_tools.no_results_found", "kind": "named_text", "english": "  (no results found)"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search_tool.rs", "id": "scrollback.tool.search_tools.results", "kind": "format_named", "english": " ({count} results)"}
