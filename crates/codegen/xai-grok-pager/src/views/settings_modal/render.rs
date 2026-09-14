@@ -95,7 +95,7 @@ fn localized_restart_pill() -> String {
 /// Localized modal title ("Settings"). Shared with `ActiveModal::Settings::message`,
 /// which renders the same title into the modal footer.
 pub(crate) fn localized_modal_title() -> &'static str {
-    crate::locale::ctx().named_static_text("palette.settings", MODAL_TITLE)
+    crate::locale::ctx().tr_static(MODAL_TITLE)
 }
 
 /// Overlay for the reset-confirm dialog.
@@ -1999,9 +1999,7 @@ fn render_max_thoughts_width_preview(
     }
     // Defensive guard: catch future editors who add `\n` / `\t` (or any other control char that bypasses word_wrap_line's flow) to the sample
     // `wrap_description` has the same debug_assert for the same reason
-    let preview_sample = crate::locale::ctx().named_text(
-        "settings.preview.max_thoughts_width.sample",
-        MAX_THOUGHTS_WIDTH_PREVIEW_SAMPLE,
+    let preview_sample = crate::locale::ctx().tr(MAX_THOUGHTS_WIDTH_PREVIEW_SAMPLE,
     );
     debug_assert!(
         !preview_sample.contains('\n') && !preview_sample.contains('\t'),

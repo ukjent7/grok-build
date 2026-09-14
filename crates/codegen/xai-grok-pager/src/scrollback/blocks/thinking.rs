@@ -19,7 +19,7 @@ use crate::appearance::AppearanceConfig;
 const EXPAND_HINT: &str = "ctrl+e to expand";
 
 fn expand_hint() -> &'static str {
-    crate::locale::ctx().named_static_text("scrollback.thinking.expand_hint", EXPAND_HINT)
+    crate::locale::ctx().tr_static(EXPAND_HINT)
 }
 
 const EXPAND_HINT_GAP: &str = "  ";

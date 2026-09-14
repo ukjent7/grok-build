@@ -297,9 +297,7 @@ resume a conversation or start a new chat (/chat)";
 /// Localized [`CHAT_MODE_LOCAL_BUILD_REFUSAL`] for UI surfaces (toasts, startup warnings).
 pub fn chat_mode_local_build_refusal() -> String {
     crate::locale::ctx()
-        .named_text(
-            "session.chat.local_build_refusal",
-            CHAT_MODE_LOCAL_BUILD_REFUSAL,
+        .tr(CHAT_MODE_LOCAL_BUILD_REFUSAL,
         )
         .into_owned()
 }
@@ -982,9 +980,7 @@ async fn resolve_existing_session(
         {
             anyhow::bail!(
                 "{}",
-                crate::locale::ctx().named_text(
-                    "session.startup.remote_restore.needs_worktree",
-                    REMOTE_RESTORE_NEEDS_WORKTREE,
+                crate::locale::ctx().tr(REMOTE_RESTORE_NEEDS_WORKTREE,
                 )
             );
         }
@@ -1038,9 +1034,7 @@ async fn resolve_existing_session(
             if !ctx.restore_code {
                 eprintln!(
                     "{}",
-                    crate::locale::ctx().named_text(
-                        "session.startup.remote_restore.worktree_no_code",
-                        WORKTREE_NO_RESTORE_CODE_NOTICE,
+                    crate::locale::ctx().tr(WORKTREE_NO_RESTORE_CODE_NOTICE,
                     )
                 );
             }
@@ -1056,18 +1050,14 @@ async fn resolve_existing_session(
             if title_miss_hint {
                 anyhow::bail!(
                     "{}; {}",
-                    crate::locale::ctx().named_text(
-                        "session.startup.remote_restore.needs_worktree",
-                        REMOTE_RESTORE_NEEDS_WORKTREE,
+                    crate::locale::ctx().tr(REMOTE_RESTORE_NEEDS_WORKTREE,
                     ),
                     super::session_title_resolve::title_miss_hint(session_id)
                 );
             }
             anyhow::bail!(
                 "{}",
-                crate::locale::ctx().named_text(
-                    "session.startup.remote_restore.needs_worktree",
-                    REMOTE_RESTORE_NEEDS_WORKTREE,
+                crate::locale::ctx().tr(REMOTE_RESTORE_NEEDS_WORKTREE,
                 )
             )
         }

@@ -3381,9 +3381,7 @@ pub fn render_extensions_modal(
                                     fields.push((
                                         crate::locale::ctx().tr("provides")
                                             .into_owned(),
-                                        crate::locale::ctx().named_text(
-                                            "extensions.components.none_detectable",
-                                            NO_DETECTABLE_COMPONENTS,
+                                        crate::locale::ctx().tr(NO_DETECTABLE_COMPONENTS,
                                         )
                                         .into_owned(),
                                     ));
@@ -3752,9 +3750,7 @@ pub fn render_extensions_modal(
         }
         // Same non-clickable hint as the list footer; the painted URL is the mouse target.
         shortcuts.push(Shortcut {
-            label: crate::locale::ctx().named_static_text(
-                "extensions.shortcut.open_connectors",
-                MCP_SERVERS_OPEN_CONNECTORS_FOOTER,
+            label: crate::locale::ctx().tr_static(MCP_SERVERS_OPEN_CONNECTORS_FOOTER,
             ),
             clickable: false,
             id: 0,
@@ -3828,9 +3824,7 @@ pub fn render_extensions_modal(
         }
         if state.active_tab == ExtensionsTab::McpServers {
             shortcuts.push(Shortcut {
-                label: crate::locale::ctx().named_static_text(
-                    "extensions.shortcut.open_connectors",
-                    MCP_SERVERS_OPEN_CONNECTORS_FOOTER,
+                label: crate::locale::ctx().tr_static(MCP_SERVERS_OPEN_CONNECTORS_FOOTER,
                 ),
                 clickable: false,
                 id: 0,

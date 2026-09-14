@@ -294,15 +294,15 @@ fn affordance_buttons(start_col: u16) -> [AffordanceButton; 3] {
     let ctx = crate::locale::ctx();
     let specs = [
         (
-            ctx.named_static_text("mermaid.open_image", AFFORDANCE_OPEN),
+            ctx.tr_static(AFFORDANCE_OPEN),
             AffordanceKind::Open,
         ),
         (
-            ctx.named_static_text("mermaid.copy_image_path", AFFORDANCE_COPY_PATH),
+            ctx.tr_static(AFFORDANCE_COPY_PATH),
             AffordanceKind::CopyPath,
         ),
         (
-            ctx.named_static_text("mermaid.copy_source", AFFORDANCE_COPY_SOURCE),
+            ctx.tr_static(AFFORDANCE_COPY_SOURCE),
             AffordanceKind::CopySource,
         ),
     ];
@@ -318,7 +318,7 @@ fn affordance_buttons(start_col: u16) -> [AffordanceButton; 3] {
 /// The leading `◇ mermaid` label, the three (always-clickable) buttons shifted past it, and the trailing `rendering…` hint when `rendering` is true.
 /// One source of truth shared by the painter and hit-testing, so the painted columns and click hit-rects align.
 pub(crate) fn affordance_row(rendering: bool) -> AffordanceRow {
-    let label = crate::locale::ctx().named_static_text("mermaid.label", MERMAID_LABEL);
+    let label = crate::locale::ctx().tr_static(MERMAID_LABEL);
     let buttons_start = UnicodeWidthStr::width(label) as u16 + AFFORDANCE_GAP;
     let buttons = affordance_buttons(buttons_start);
     let status = rendering.then(|| {
@@ -326,7 +326,7 @@ pub(crate) fn affordance_row(rendering: bool) -> AffordanceRow {
         let after = last.col + UnicodeWidthStr::width(last.label) as u16 + AFFORDANCE_GAP;
         (
             after,
-            crate::locale::ctx().named_static_text("mermaid.rendering", MERMAID_RENDERING),
+            crate::locale::ctx().tr_static(MERMAID_RENDERING),
         )
     });
     AffordanceRow {

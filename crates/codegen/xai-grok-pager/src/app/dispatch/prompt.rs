@@ -463,9 +463,7 @@ pub(super) fn dispatch_send_prompt_submission(
     app.pending_action = None;
 
     if app.reconnect_pending {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "reconnect.wait",
-            RECONNECTING_NOTICE,
+        app.show_toast(crate::locale::ctx().tr_static(RECONNECTING_NOTICE,
         ));
         return vec![];
     }
@@ -1060,9 +1058,7 @@ pub(super) fn dispatch_send_prompt_submission(
 /// Bash commands go through the same enqueue/drain pipeline as normal prompts, just with `QueueEntryKind::BashCommand`. No scrollback block is pushed here; the execute block from the shell IS the visual entry.
 pub(super) fn dispatch_send_bash_command(app: &mut AppView, command: String) -> Vec<Effect> {
     if app.reconnect_pending {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "reconnect.wait",
-            RECONNECTING_NOTICE,
+        app.show_toast(crate::locale::ctx().tr_static(RECONNECTING_NOTICE,
         ));
         return vec![];
     }

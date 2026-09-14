@@ -849,7 +849,7 @@ impl FeedbackModalState {
             EnterOutcome::Submit => {
                 self.error = Some(
                     crate::locale::ctx()
-                        .named_text("feedback.empty_submit", FEEDBACK_EMPTY_SUBMIT_ERROR)
+                        .tr(FEEDBACK_EMPTY_SUBMIT_ERROR)
                         .into_owned(),
                 );
                 return FeedbackModalOutcome::Changed;

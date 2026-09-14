@@ -1144,9 +1144,9 @@ const AUTH_COPY_SUFFIX: &str = " to copy.";
 fn auth_copy_parts() -> (&'static str, &'static str, &'static str) {
     let ctx = crate::locale::ctx();
     (
-        ctx.named_static_text("auth.copy.prefix", AUTH_COPY_PREFIX),
-        ctx.named_static_text("auth.copy.link", AUTH_COPY_HERE),
-        ctx.named_static_text("auth.copy.suffix", AUTH_COPY_SUFFIX),
+        ctx.tr_static(AUTH_COPY_PREFIX),
+        ctx.tr_static(AUTH_COPY_HERE),
+        ctx.tr_static(AUTH_COPY_SUFFIX),
     )
 }
 
@@ -1187,7 +1187,7 @@ const AUTH_FALLBACK_TEXT: &str = "Copying not working? Click here to show full U
 /// Build the fallback "show full URL" link line.
 fn auth_fallback_line(theme: &Theme) -> Line<'static> {
     Line::from(Span::styled(
-        crate::locale::ctx().named_static_text("auth.copy.fallback", AUTH_FALLBACK_TEXT),
+        crate::locale::ctx().tr_static(AUTH_FALLBACK_TEXT),
         Style::default()
             .fg(theme.gray)
             .add_modifier(Modifier::UNDERLINED),
@@ -1393,18 +1393,18 @@ fn render_browser_status_arm(
     let ctx = crate::locale::ctx();
     let (header, waiting_text, user_code) = match kind {
         BrowserStatusKind::Command => (
-            ctx.named_static_text("auth.header", AUTH_HEADER),
+            ctx.tr_static(AUTH_HEADER),
             ctx.tr_static("Waiting for login to complete..."),
             None,
         ),
         BrowserStatusKind::Device => (
-            ctx.named_static_text("auth.device.header", DEVICE_AUTH_HEADER),
+            ctx.tr_static(DEVICE_AUTH_HEADER),
             ctx.tr_static("Waiting for approval..."),
             auth_url.and_then(extract_user_code),
         ),
     };
     let device_code_caption =
-        ctx.named_static_text("auth.device.caption", DEVICE_CODE_CAPTION);
+        ctx.tr_static(DEVICE_CODE_CAPTION);
 
     let header_rows = (unicode_width::UnicodeWidthStr::width(header) as u16).div_ceil(inner_width);
     let code_extra = if user_code.is_some() {
@@ -1518,7 +1518,7 @@ fn render_welcome_authenticating(
             }
 
             let auth_header =
-                crate::locale::ctx().named_static_text("auth.header", AUTH_HEADER);
+                crate::locale::ctx().tr_static(AUTH_HEADER);
             let msg_height = if auth_url.is_some() {
                 let header_rows =
                     (unicode_width::UnicodeWidthStr::width(auth_header) as u16)

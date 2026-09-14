@@ -372,9 +372,7 @@ pub(super) fn set_yolo_mode(app: &mut AppView, new: bool) -> Vec<Effect> {
     // YOLO ON gets a weightier visual; under an active plan mode, say the plan edit gate stays binding
     // "All tool actions auto-run" would overpromise while the shell rejects non-plan-file edits
     if new && effective_plan {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "toast.permission.always_approve_on_under_plan",
-            YOLO_ON_UNDER_PLAN_TOAST,
+        app.show_toast(crate::locale::ctx().tr_static(YOLO_ON_UNDER_PLAN_TOAST,
         ));
     } else {
         app.show_toast(&yolo_toast(new));
@@ -444,9 +442,7 @@ pub(super) fn set_permission_mode(
 
     // Toast on every save (plan-aware for AlwaysApprove, mirroring `set_yolo_mode`; the plan edit gate stays binding under yolo)
     if kind.is_always_approve() && effective_plan {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "toast.permission.always_approve_on_under_plan",
-            YOLO_ON_UNDER_PLAN_TOAST,
+        app.show_toast(crate::locale::ctx().tr_static(YOLO_ON_UNDER_PLAN_TOAST,
         ));
     } else {
         app.show_toast(&permission_mode_toast(kind));

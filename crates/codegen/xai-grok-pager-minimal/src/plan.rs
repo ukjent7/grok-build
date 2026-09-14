@@ -48,7 +48,7 @@ fn plan_header(has_plan: bool) -> &'static str {
 
 /// Localized empty-plan notice; falls back to [`EMPTY_PLAN_SCROLLBACK`].
 fn empty_plan_scrollback() -> &'static str {
-    xai_grok_locale::ctx().named_static_text("plan.empty", EMPTY_PLAN_SCROLLBACK)
+    xai_grok_locale::ctx().tr_static(EMPTY_PLAN_SCROLLBACK)
 }
 
 /// Body committed into native scrollback for a parked plan approval.

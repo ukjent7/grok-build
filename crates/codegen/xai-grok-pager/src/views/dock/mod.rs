@@ -33,7 +33,7 @@ const STOP_LABEL: &str = "[stop]";
 
 /// Localized kill control (falls back to [`STOP_LABEL`]); reuses the turn-button term.
 fn stop_label() -> &'static str {
-    crate::locale::ctx().named_static_text("turn.button.stop", STOP_LABEL)
+    crate::locale::ctx().tr_static(STOP_LABEL)
 }
 
 /// Seeded at startup and on `x.ai/settings/update` from Feature::Dock.

@@ -264,7 +264,7 @@ impl TaskEntry {
                 .map(|d| d.replace('\n', " "))
                 .unwrap_or_else(|| task.command.trim().replace('\n', " "));
             const TAG: &str = "Monitor";
-            let tag = crate::locale::ctx().named_static_text("tasks.kind.monitor", TAG);
+            let tag = crate::locale::ctx().tr_static(TAG);
             let desc_style = if running {
                 Style::default().fg(theme.text_secondary)
             } else {
@@ -284,7 +284,7 @@ impl TaskEntry {
             // The tag makes the entry type identifiable at a glance, the same way subagent rows lead with their persona/role label
             // The prefix is included in `label` so it is searchable (the tasks-pane filter matches against `label`)
             const PREFIX: &str = "Task ";
-            let prefix = crate::locale::ctx().named_static_text("tasks.kind.task_prefix", PREFIX);
+            let prefix = crate::locale::ctx().tr_static(PREFIX);
             let desc_style = if running {
                 Style::default().fg(theme.text_primary)
             } else {

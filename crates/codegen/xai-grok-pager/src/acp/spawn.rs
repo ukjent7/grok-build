@@ -224,7 +224,7 @@ fn join_agent_thread(handle: thread::JoinHandle<Result<()>>, timeout: Duration) 
 fn write_join_notice(w: &mut impl Write) -> bool {
     crate::best_effort_stderr::write_line(
         w,
-        crate::locale::ctx().named_static_text("session.finishing", JOIN_NOTICE),
+        crate::locale::ctx().tr_static(JOIN_NOTICE),
     )
 }
 

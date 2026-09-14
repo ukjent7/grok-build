@@ -278,7 +278,7 @@ pub(super) fn maybe_show_x11_primary_paste_hint(
     show_clipboard_toast(
         target,
         &crate::locale::ctx()
-            .named_text("clipboard.x11_primary_paste_hint", X11_PRIMARY_PASTE_HINT)
+            .tr(X11_PRIMARY_PASTE_HINT)
             .into_owned(),
         app,
     );

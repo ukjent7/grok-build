@@ -43,7 +43,7 @@ const STASH_CAPTION: &str = "Stashed";
 
 /// Localized stash caption (falls back to [`STASH_CAPTION`]).
 fn stash_caption() -> &'static str {
-    crate::locale::ctx().named_static_text("prompt.stash.caption", STASH_CAPTION)
+    crate::locale::ctx().tr_static(STASH_CAPTION)
 }
 
 impl AgentView {

@@ -135,13 +135,13 @@ pub(super) fn format_acp_error(err: &acp::Error, is_api_key_auth: bool) -> Strin
         let message = format_rate_limited_user_message(detail.as_deref(), is_api_key_auth);
         let localized = match message.as_str() {
             RATE_LIMITED_USER_MESSAGE_OAUTH => crate::locale::ctx()
-                .named_text("session.rate_limit.oauth", RATE_LIMITED_USER_MESSAGE_OAUTH)
+                .tr(RATE_LIMITED_USER_MESSAGE_OAUTH)
                 .into_owned(),
             RATE_LIMITED_USER_MESSAGE_API_KEY => crate::locale::ctx()
-                .named_text("session.rate_limit.api_key", RATE_LIMITED_USER_MESSAGE_API_KEY)
+                .tr(RATE_LIMITED_USER_MESSAGE_API_KEY)
                 .into_owned(),
             FREE_USAGE_USER_MESSAGE => crate::locale::ctx()
-                .named_text("session.rate_limit.free_usage", FREE_USAGE_USER_MESSAGE)
+                .tr(FREE_USAGE_USER_MESSAGE)
                 .into_owned(),
             _ => message,
         };

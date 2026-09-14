@@ -25,7 +25,7 @@
 {"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "loading…", "kind": "tr", "english": "loading…"}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "↑/↓ navigate · enter confirm · esc cancel", "kind": "tr_static", "english": "↑/↓ navigate · enter confirm · esc cancel"}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "↑/↓ navigate · space enable/disable · r refresh · enter expand · esc cancel", "kind": "tr_static", "english": "↑/↓ navigate · space enable/disable · r refresh · enter expand · esc cancel"}
-{"file": "crates/codegen/xai-grok-pager-minimal/src/plan.rs", "id": "plan.empty", "kind": "named_static_text", "english": "No plan written yet.\n\nApprove to leave plan mode and start implementing, request changes to send the agent back to planning, or quit to abandon."}
+{"file": "crates/codegen/xai-grok-pager-minimal/src/plan.rs", "id": "No plan written yet.\n\nApprove to leave plan mode and start implementing, request changes to send the agent back to planning, or quit to abandon.", "kind": "tr_static", "english": "No plan written yet.\n\nApprove to leave plan mode and start implementing, request changes to send the agent back to planning, or quit to abandon."}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/welcome.rs", "id": "/help for commands", "kind": "tr", "english": "/help for commands"}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/welcome.rs", "id": "Model · {model}", "kind": "tr_format", "english": "Model · {model}"}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/welcome.rs", "id": "app.name", "kind": "named_text", "english": "Grok Build"}
@@ -33,7 +33,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/acp/model_state.rs", "id": "no active model to apply effort to", "kind": "tr", "english": "no active model to apply effort to"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/model_state.rs", "id": "unknown effort level '{token}'; this model has no selectable effort levels", "kind": "tr_format", "english": "unknown effort level '{token}'; this model has no selectable effort levels"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/model_state.rs", "id": "unknown effort level '{token}'; use one of: {options}", "kind": "tr_format", "english": "unknown effort level '{token}'; use one of: {options}"}
-{"file": "crates/codegen/xai-grok-pager/src/acp/spawn.rs", "id": "session.finishing", "kind": "named_static_text", "english": "Finishing session…"}
+{"file": "crates/codegen/xai-grok-pager/src/acp/spawn.rs", "id": "Finishing session…", "kind": "tr_static", "english": "Finishing session…"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "Preparing MCP tool{ordinal}…", "kind": "tr_format", "english": "Preparing MCP tool{ordinal}…"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "Preparing question{ordinal}…", "kind": "tr_format", "english": "Preparing question{ordinal}…"}
 {"file": "crates/codegen/xai-grok-pager/src/acp/tracker.rs", "id": "Preparing tool call{ordinal}…", "kind": "tr_format", "english": "Preparing tool call{ordinal}…"}
@@ -284,8 +284,8 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/prompt.rs", "id": "Press {key} to cancel the turn", "kind": "tr_format", "english": "Press {key} to cancel the turn"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/prompt.rs", "id": "clear", "kind": "tr_static", "english": "clear"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/prompt_stash.rs", "id": "Draft stashed. Press the stash key again to restore it.", "kind": "tr", "english": "Draft stashed. Press the stash key again to restore it."}
+{"file": "crates/codegen/xai-grok-pager/src/app/agent_view/prompt_stash.rs", "id": "Stashed", "kind": "tr_static", "english": "Stashed"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/prompt_stash.rs", "id": "Stashed draft restored.", "kind": "tr", "english": "Stashed draft restored."}
-{"file": "crates/codegen/xai-grok-pager/src/app/agent_view/prompt_stash.rs", "id": "prompt.stash.caption", "kind": "named_static_text", "english": "Stashed"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "Recording", "kind": "tr_static", "english": "Recording"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "commenting L{line}", "kind": "tr_format", "english": "commenting L{line}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/agent_view/render.rs", "id": "commenting L{start}-{end}", "kind": "tr_format", "english": "commenting L{start}-{end}"}
@@ -376,8 +376,8 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/interject.rs", "id": "Reconnecting, please wait...", "kind": "tr_static", "english": "Reconnecting, please wait..."}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/jump.rs", "id": "Nothing to jump to yet", "kind": "tr_static", "english": "Nothing to jump to yet"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/modes.rs", "id": "Already in plan mode. Use /view-plan to view the current plan.", "kind": "tr_static", "english": "Already in plan mode. Use /view-plan to view the current plan."}
-{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/modes.rs", "id": "toast.permission.always_approve_on_under_plan", "kind": "named_static_text", "english": "\\u{26A0} Always-approve ON: plan mode still blocks file edits until you exit plan mode"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/modes.rs", "id": "⚠ Always-approve ON: all tool actions auto-run", "kind": "tr", "english": "⚠ Always-approve ON: all tool actions auto-run"}
+{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/modes.rs", "id": "⚠ Always-approve ON: plan mode still blocks file edits until you exit plan mode", "kind": "tr_static", "english": "⚠ Always-approve ON: plan mode still blocks file edits until you exit plan mode"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Apply", "kind": "tr_static", "english": "Apply"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Apply this fix?", "kind": "tr_static", "english": "Apply this fix?"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Cancel", "kind": "tr_static", "english": "Cancel"}
@@ -385,12 +385,12 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Do not change the configuration.", "kind": "tr_static", "english": "Do not change the configuration."}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Error: {error}", "kind": "tr_format", "english": "Error: {error}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Make the changes shown above.", "kind": "tr_static", "english": "Make the changes shown above."}
+{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Reconnecting, please wait...", "kind": "tr_static", "english": "Reconnecting, please wait..."}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Turn complete in {duration}.", "kind": "tr_format", "english": "Turn complete in {duration}."}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "Turn complete.", "kind": "tr", "english": "Turn complete."}
-{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/prompt.rs", "id": "reconnect.wait", "kind": "named_static_text", "english": "Reconnecting, please wait..."}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/queue.rs", "id": "Images removed (skill prompt)", "kind": "tr_static", "english": "Images removed (skill prompt)"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/rewind.rs", "id": "No undoable prompts", "kind": "tr_static", "english": "No undoable prompts"}
-{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/rewind.rs", "id": "rewind.reverted.conversation", "kind": "named_static_text", "english": "Reverted conversation"}
+{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/rewind.rs", "id": "Reverted conversation", "kind": "tr_static", "english": "Reverted conversation"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/router.rs", "id": "Applying {fix}…", "kind": "tr_format", "english": "Applying {fix}…"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/router.rs", "id": "Deleting chat conversations isn't supported yet", "kind": "tr_static", "english": "Deleting chat conversations isn't supported yet"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/router.rs", "id": "Deleting session…", "kind": "tr_static", "english": "Deleting session…"}
@@ -450,10 +450,10 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/session/modal.rs", "id": "Cannot close the only session -- use /home to exit", "kind": "tr_static", "english": "Cannot close the only session -- use /home to exit"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/setters.rs", "id": "{message} (auto-compact active on small terminal)", "kind": "tr_format", "english": "{message} (auto-compact active on small terminal)"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "Mouse reporting on", "kind": "tr_static", "english": "Mouse reporting on"}
+{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "Settings rolled back, but local state may be out of sync: restart to reload", "kind": "tr_static", "english": "Settings rolled back, but local state may be out of sync: restart to reload"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "Vim mode: off", "kind": "tr_static", "english": "Vim mode: off"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "Vim mode: on", "kind": "tr_static", "english": "Vim mode: on"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "cleared", "kind": "tr_static", "english": "cleared"}
-{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "settings.toast.rollback_out_of_sync", "kind": "named_static_text", "english": "Settings rolled back, but local state may be out of sync: restart to reload"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "{label}: already at default", "kind": "tr", "english": "{label}: already at default"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "{message} (restart to apply)", "kind": "tr", "english": "{message} (restart to apply)"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/settings/ui.rs", "id": "✓ {label}: {value}", "kind": "tr", "english": "✓ {label}: {value}"}
@@ -467,7 +467,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/status.rs", "id": "✗ Data sharing is controlled by your team admin", "kind": "tr", "english": "✗ Data sharing is controlled by your team admin"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/task_result.rs", "id": "Couldn't load session usage: {error}", "kind": "tr_format", "english": "Couldn't load session usage: {error}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/task_result.rs", "id": "Session deleted", "kind": "tr_static", "english": "Session deleted"}
-{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/task_result.rs", "id": "clipboard.x11_primary_paste_hint", "kind": "named_text", "english": "Try Shift+Insert to paste selected text"}
+{"file": "crates/codegen/xai-grok-pager/src/app/dispatch/task_result.rs", "id": "Try Shift+Insert to paste selected text", "kind": "tr", "english": "Try Shift+Insert to paste selected text"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/task_result.rs", "id": "doctor.fix.cancelled_session_changed", "kind": "named_text", "english": "This fix was cancelled because the session changed. Run `/doctor fix` again."}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/task_result.rs", "id": "✗ Could not save your answer, so this notice returns next launch", "kind": "tr_static", "english": "✗ Could not save your answer, so this notice returns next launch"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/transcript.rs", "id": " ({chars} chars, {lines} line)", "kind": "tr_format", "english": " ({chars} chars, {lines} line)"}
@@ -495,10 +495,10 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/transcript.rs", "id": "transcript.view.write_failed", "kind": "format_named", "english": "Failed to write transcript: {error}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/transcript.rs", "id": "transcript.write_file_failed", "kind": "format_named", "english": "Failed to write file: {error}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/dispatch/voice.rs", "id": "/voice requires SuperGrok: upgrade at {url}", "kind": "tr_format", "english": "/voice requires SuperGrok: upgrade at {url}"}
+{"file": "crates/codegen/xai-grok-pager/src/app/effects/helpers.rs", "id": "You’ve hit the rate limit for your plan. Upgrade your account or try again later.", "kind": "tr", "english": "You’ve hit the rate limit for your plan. Upgrade your account or try again later."}
+{"file": "crates/codegen/xai-grok-pager/src/app/effects/helpers.rs", "id": "You’ve hit your team’s API rate limit. Ask a team admin to purchase more credits for higher limits, or try again later. See https://docs.x.ai/developers/rate-limits#rate-limit-tiers", "kind": "tr", "english": "You’ve hit your team’s API rate limit. Ask a team admin to purchase more credits for higher limits, or try again later. See https://docs.x.ai/developers/rate-limits#rate-limit-tiers"}
+{"file": "crates/codegen/xai-grok-pager/src/app/effects/helpers.rs", "id": "You’ve reached your free Grok Build usage limit for now. Get SuperGrok for much higher limits, or try again later: https://grok.com/supergrok?referrer=grok-build", "kind": "tr", "english": "You’ve reached your free Grok Build usage limit for now. Get SuperGrok for much higher limits, or try again later: https://grok.com/supergrok?referrer=grok-build"}
 {"file": "crates/codegen/xai-grok-pager/src/app/effects/helpers.rs", "id": "couldn't load server list", "kind": "tr", "english": "couldn't load server list"}
-{"file": "crates/codegen/xai-grok-pager/src/app/effects/helpers.rs", "id": "session.rate_limit.api_key", "kind": "named_text", "english": "You\\u{2019}ve hit your team\\u{2019}s API rate limit. Ask a team admin to purchase more credits for higher limits, or try again later. See https://docs.x.ai/developers/rate-limits#rate-limit-tiers"}
-{"file": "crates/codegen/xai-grok-pager/src/app/effects/helpers.rs", "id": "session.rate_limit.free_usage", "kind": "named_text", "english": "You\\u{2019}ve reached your free Grok Build usage limit for now. Get SuperGrok for much higher limits, or try again later: https://grok.com/supergrok?referrer=grok-build"}
-{"file": "crates/codegen/xai-grok-pager/src/app/effects/helpers.rs", "id": "session.rate_limit.oauth", "kind": "named_text", "english": "You\\u{2019}ve hit the rate limit for your plan. Upgrade your account or try again later."}
 {"file": "crates/codegen/xai-grok-pager/src/app/effects/mod.rs", "id": "Code restored ({detail}).", "kind": "tr_format", "english": "Code restored ({detail})."}
 {"file": "crates/codegen/xai-grok-pager/src/app/effects/mod.rs", "id": "Downloading session archives...", "kind": "tr_static", "english": "Downloading session archives..."}
 {"file": "crates/codegen/xai-grok-pager/src/app/effects/mod.rs", "id": "Downloads finished ({elapsed}).", "kind": "tr_format", "english": "Downloads finished ({elapsed})."}
@@ -569,14 +569,14 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/queue_edit.rs", "id": "Editing a queued prompt: press Enter to save, Esc to discard", "kind": "tr_static", "english": "Editing a queued prompt: press Enter to save, Esc to discard"}
 {"file": "crates/codegen/xai-grok-pager/src/app/queue_edit.rs", "id": "Images can't be attached when editing a shared queued prompt", "kind": "tr", "english": "Images can't be attached when editing a shared queued prompt"}
 {"file": "crates/codegen/xai-grok-pager/src/app/queue_edit.rs", "id": "Queued prompt is no longer in the queue", "kind": "tr_static", "english": "Queued prompt is no longer in the queue"}
-{"file": "crates/codegen/xai-grok-pager/src/app/queue_edit.rs", "id": "prompt.queue.still_queueing", "kind": "named_static_text", "english": "Still queueing, try again in a moment"}
+{"file": "crates/codegen/xai-grok-pager/src/app/queue_edit.rs", "id": "Still queueing, try again in a moment", "kind": "tr_static", "english": "Still queueing, try again in a moment"}
+{"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "--restore-code on a remote session requires --worktree (refusing to check out snapshot code into the current directory)", "kind": "tr", "english": "--restore-code on a remote session requires --worktree (refusing to check out snapshot code into the current directory)"}
 {"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "Failed to restore session from remote: conversation history was unavailable.", "kind": "tr_static", "english": "Failed to restore session from remote: conversation history was unavailable."}
 {"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "No session found for current directory. Use 'grok' to start a new session.", "kind": "tr_static", "english": "No session found for current directory. Use 'grok' to start a new session."}
 {"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "Session does not exist", "kind": "tr_static", "english": "Session does not exist"}
 {"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "Session does not exist: {hint}", "kind": "tr_format", "english": "Session does not exist: {hint}"}
-{"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "session.chat.local_build_refusal", "kind": "named_text", "english": "cannot open a local Build session while --chat is active; resume a conversation or start a new chat (/chat)"}
-{"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "session.startup.remote_restore.needs_worktree", "kind": "named_text", "english": "--restore-code on a remote session requires --worktree (refusing to check out snapshot code into the current directory)"}
-{"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "session.startup.remote_restore.worktree_no_code", "kind": "named_text", "english": "Snapshot code will not be restored into the worktree; pass --restore-code to restore it."}
+{"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "Snapshot code will not be restored into the worktree; pass --restore-code to restore it.", "kind": "tr", "english": "Snapshot code will not be restored into the worktree; pass --restore-code to restore it."}
+{"file": "crates/codegen/xai-grok-pager/src/app/session_startup.rs", "id": "cannot open a local Build session while --chat is active; resume a conversation or start a new chat (/chat)", "kind": "tr", "english": "cannot open a local Build session while --chat is active; resume a conversation or start a new chat (/chat)"}
 {"file": "crates/codegen/xai-grok-pager/src/app/startup_failure/render.rs", "id": "Check your network connection, then start Grok again.", "kind": "tr_static", "english": "Check your network connection, then start Grok again."}
 {"file": "crates/codegen/xai-grok-pager/src/app/startup_failure/render.rs", "id": "Couldn't start Grok: startup timed out after {seconds}.\n\n{explanation}", "kind": "tr_format", "english": "Couldn't start Grok: startup timed out after {seconds}.\n\n{explanation}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/startup_failure/render.rs", "id": "Grok spent the first {seconds} on the {target}.", "kind": "tr_format", "english": "Grok spent the first {seconds} on the {target}."}
@@ -670,11 +670,11 @@
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/context_info.rs", "id": "Tool definitions", "kind": "tr", "english": "Tool definitions"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/context_info.rs", "id": "Turns: {turns} · Tool calls: {tool_calls} · Compactions: {compactions}", "kind": "tr_format", "english": "Turns: {turns} · Tool calls: {tool_calls} · Compactions: {compactions}"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/context_info.rs", "id": "context.free", "kind": "named_text", "english": "Free"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "mermaid.copy_image_path", "kind": "named_static_text", "english": "[Copy Image Path]"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "mermaid.copy_source", "kind": "named_static_text", "english": "[Copy Source]"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "mermaid.label", "kind": "named_static_text", "english": "\\u{25c7} mermaid"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "mermaid.open_image", "kind": "named_static_text", "english": "[Open Image]"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "mermaid.rendering", "kind": "named_static_text", "english": "rendering diagram\\u{2026}"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "[Copy Image Path]", "kind": "tr_static", "english": "[Copy Image Path]"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "[Copy Source]", "kind": "tr_static", "english": "[Copy Source]"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "[Open Image]", "kind": "tr_static", "english": "[Open Image]"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "rendering diagram…", "kind": "tr_static", "english": "rendering diagram…"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/mermaid_content.rs", "id": "◇ mermaid", "kind": "tr_static", "english": "◇ mermaid"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "Agent entered plan mode · active permission mode: {permission} · file edits outside session plan.md blocked until plan mode exits", "kind": "tr_format", "english": "Agent entered plan mode · active permission mode: {permission} · file edits outside session plan.md blocked until plan mode exits"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "Agent was unable to make progress. Turn ended in {duration}.", "kind": "tr_format", "english": "Agent was unable to make progress. Turn ended in {duration}."}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "Authentication required: your session has expired or your credentials were rejected. Run /login to re-authenticate, then resend your message.", "kind": "tr", "english": "Authentication required: your session has expired or your credentials were rejected. Run /login to re-authenticate, then resend your message."}
@@ -712,7 +712,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/subagent.rs", "id": "started: ", "kind": "tr", "english": "started: "}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/thinking.rs", "id": " for {duration}", "kind": "tr_format", "english": " for {duration}"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/thinking.rs", "id": "Thought", "kind": "tr_static", "english": "Thought"}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/thinking.rs", "id": "scrollback.thinking.expand_hint", "kind": "named_static_text", "english": "ctrl+e to expand"}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/thinking.rs", "id": "ctrl+e to expand", "kind": "tr_static", "english": "ctrl+e to expand"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/thinking.rs", "id": "scrollback.thinking.running", "kind": "named_static_text", "english": "Thinking…"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/edit.rs", "id": " ({count} edits)", "kind": "tr_format", "english": " ({count} edits)"}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/edit.rs", "id": "Creating ", "kind": "tr_static", "english": "Creating "}
@@ -1051,11 +1051,11 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "Subagents", "kind": "tr_static", "english": "Subagents"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "Tasks", "kind": "tr_static", "english": "Tasks"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "Watchers", "kind": "tr_static", "english": "Watchers"}
+{"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "[stop]", "kind": "tr_static", "english": "[stop]"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "dock.section.subagents", "kind": "named_static_text", "english": "subagents"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "queued", "kind": "tr_static", "english": "queued"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "show {count} more", "kind": "tr_format", "english": "show {count} more"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "tasks", "kind": "tr_static", "english": "tasks"}
-{"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "turn.button.stop", "kind": "named_static_text", "english": "[stop]"}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "watchers", "kind": "tr_static", "english": "watchers"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": " +{count} more", "kind": "tr_format", "english": " +{count} more"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": " back", "kind": "tr_static", "english": " back"}
@@ -1116,14 +1116,13 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "category", "kind": "tr", "english": "category"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "close", "kind": "tr_static", "english": "close"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "contents shown after install", "kind": "tr", "english": "contents shown after install"}
+{"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "ctrl-o open", "kind": "tr_static", "english": "ctrl-o open"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "description", "kind": "tr", "english": "description"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "esc back", "kind": "tr_static", "english": "esc back"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "expand", "kind": "tr_static", "english": "expand"}
-{"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "extensions.components.none_detectable", "kind": "named_text", "english": "no detectable components"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "extensions.field.commands", "kind": "named_static_text", "english": "commands"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "extensions.field.skills", "kind": "named_static_text", "english": "skills"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "extensions.field.tools", "kind": "named_text", "english": "tools"}
-{"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "extensions.shortcut.open_connectors", "kind": "named_static_text", "english": "ctrl-o open"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "extensions.tab.marketplace", "kind": "named_static_text", "english": "Marketplace"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "hooks", "kind": "tr_static", "english": "hooks"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "https://... or command [args...]", "kind": "tr", "english": "https://... or command [args...]"}
@@ -1131,6 +1130,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "lsp servers", "kind": "tr_static", "english": "lsp servers"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "mcp servers", "kind": "tr_static", "english": "mcp servers"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "nav", "kind": "tr_static", "english": "nav"}
+{"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "no detectable components", "kind": "tr", "english": "no detectable components"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "no tools (server may not be connected)", "kind": "tr", "english": "no tools (server may not be connected)"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "no tools — server is disabled", "kind": "tr", "english": "no tools — server is disabled"}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": "no tools — {status}", "kind": "tr_format", "english": "no tools — {status}"}
@@ -1172,6 +1172,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/enum_picker.rs", "id": "Esc back", "kind": "tr_static", "english": "Esc back"}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/enum_picker.rs", "id": "type filter", "kind": "tr_static", "english": "type filter"}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/enum_picker.rs", "id": "↑↓ move", "kind": "tr_static", "english": "↑↓ move"}
+{"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/mod.rs", "id": "Add feedback text or an image before sending.", "kind": "tr", "english": "Add feedback text or an image before sending."}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/mod.rs", "id": "Attach this session's trace to give this idea context?", "kind": "tr_static", "english": "Attach this session's trace to give this idea context?"}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/mod.rs", "id": "Attach this session's trace to help us debug this bug?", "kind": "tr_static", "english": "Attach this session's trace to help us debug this bug?"}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/mod.rs", "id": "Attach this session's trace to show what was missing?", "kind": "tr_static", "english": "Attach this session's trace to show what was missing?"}
@@ -1195,7 +1196,6 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/mod.rs", "id": "Type: (choose)", "kind": "tr", "english": "Type: (choose)"}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/mod.rs", "id": "Type: {value}", "kind": "tr_format", "english": "Type: {value}"}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/mod.rs", "id": "Write", "kind": "tr_static", "english": "Write"}
-{"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/mod.rs", "id": "feedback.empty_submit", "kind": "named_text", "english": "Add feedback text or an image before sending."}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/render.rs", "id": "/ search", "kind": "tr_static", "english": "/ search"}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/render.rs", "id": "Delete the stored recovery copy? Your current edits will remain.", "kind": "tr_static", "english": "Delete the stored recovery copy? Your current edits will remain."}
 {"file": "crates/codegen/xai-grok-pager/src/views/feedback_modal/render.rs", "id": "Delete this feedback draft?", "kind": "tr_static", "english": "Delete this feedback draft?"}
@@ -1560,7 +1560,9 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Esc revert", "kind": "tr_static", "english": "Esc revert"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "F2 cancel", "kind": "tr_static", "english": "F2 cancel"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "F2/Esc close", "kind": "tr_static", "english": "F2/Esc close"}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Let me trace through the call sites. First, I'll need to look at how the dispatch flow handles the new variant. Then I'll verify the rollback path preserves the previous state correctly.", "kind": "tr", "english": "Let me trace through the call sites. First, I'll need to look at how the dispatch flow handles the new variant. Then I'll verify the rollback path preserves the previous state correctly."}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "No matches for \"{query}\"", "kind": "tr_format", "english": "No matches for \"{query}\""}
+{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Settings", "kind": "tr_static", "english": "Settings"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Space toggle", "kind": "tr_static", "english": "Space toggle"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Space/Enter toggle", "kind": "tr_static", "english": "Space/Enter toggle"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "Tip · Ask Grok to change a setting", "kind": "tr_static", "english": "Tip · Ask Grok to change a setting"}
@@ -1574,10 +1576,8 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "note: clamped at {cols} cols", "kind": "tr_format", "english": "note: clamped at {cols} cols"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "off", "kind": "tr_static", "english": "off"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "on", "kind": "tr_static", "english": "on"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "palette.settings", "kind": "named_static_text", "english": "Settings"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "preview", "kind": "tr_static", "english": "preview"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "restart", "kind": "tr", "english": "restart"}
-{"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.preview.max_thoughts_width.sample", "kind": "named_text", "english": "Let me trace through the call sites. First, I'll need to look at how the dispatch flow handles the new variant. Then I'll verify the rollback path preserves the previous state correctly."}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.shortcut.type_filter", "kind": "named_static_text", "english": "type to filter"}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.lock.team", "kind": "table", "english": "Managed by your team admin."}
 {"file": "crates/codegen/xai-grok-pager/src/views/settings_modal/render.rs", "id": "settings.ui.lock.zdr", "kind": "table", "english": "Your team has Zero Data Retention."}
@@ -1719,17 +1719,17 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": " (starting)", "kind": "tr", "english": " (starting)"}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": " to show all.", "kind": "tr", "english": " to show all."}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "1 agent", "kind": "tr", "english": "1 agent"}
+{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Monitor", "kind": "tr_static", "english": "Monitor"}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "No running tasks. Press ", "kind": "tr", "english": "No running tasks. Press "}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "No tasks or agents.", "kind": "tr_static", "english": "No tasks or agents."}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Subagents", "kind": "tr_static", "english": "Subagents"}
+{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Task ", "kind": "tr_static", "english": "Task "}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Tasks", "kind": "tr_static", "english": "Tasks"}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Watchers", "kind": "tr_static", "english": "Watchers"}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Workflow ", "kind": "tr", "english": "Workflow "}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Workflows", "kind": "tr_static", "english": "Workflows"}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "killing… ", "kind": "tr", "english": "killing… "}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "running", "kind": "tr", "english": "running"}
-{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "tasks.kind.monitor", "kind": "named_static_text", "english": "Monitor"}
-{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "tasks.kind.task_prefix", "kind": "named_static_text", "english": "Task "}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "{count} agents", "kind": "tr_format", "english": "{count} agents"}
 {"file": "crates/codegen/xai-grok-pager/src/views/todo_pane.rs", "id": "All done.", "kind": "tr", "english": "All done."}
 {"file": "crates/codegen/xai-grok-pager/src/views/todo_pane.rs", "id": "No todo items.", "kind": "tr", "english": "No todo items."}
@@ -1799,21 +1799,27 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/usage_modal.rs", "id": "usage.modal.no_billing", "kind": "named_text", "english": "No billing data available."}
 {"file": "crates/codegen/xai-grok-pager/src/views/usage_modal.rs", "id": "y copy all", "kind": "tr_static", "english": "y copy all"}
 {"file": "crates/codegen/xai-grok-pager/src/views/usage_modal.rs", "id": "↑/↓ scroll", "kind": "tr_static", "english": "↑/↓ scroll"}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/consent.rs", "id": "Enlarge the window to read this notice", "kind": "tr_static", "english": "Enlarge the window to read this notice"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/consent.rs", "id": "Quit", "kind": "tr_static", "english": "Quit"}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/consent.rs", "id": "consent.too_small", "kind": "named_static_text", "english": "Enlarge the window to read this notice"}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/consent.rs", "id": "consent.too_small_narrow", "kind": "named_static_text", "english": "Window too small"}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/hero_box.rs", "id": "welcome.hero.subtitle", "kind": "named_static_text", "english": "Thanks for trying Grok Build, give feedback with /feedback!"}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/consent.rs", "id": "Window too small", "kind": "tr_static", "english": "Window too small"}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/hero_box.rs", "id": "Thanks for trying Grok Build, give feedback with /feedback!", "kind": "tr_static", "english": "Thanks for trying Grok Build, give feedback with /feedback!"}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": " to copy.", "kind": "tr_static", "english": " to copy."}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "? Resume your session from {when} using ", "kind": "tr_format", "english": "? Resume your session from {when} using "}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "A browser window will open for authentication.", "kind": "tr_static", "english": "A browser window will open for authentication."}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Approve in your browser to finish signing in.", "kind": "tr_static", "english": "Approve in your browser to finish signing in."}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Changelog", "kind": "tr_static", "english": "Changelog"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Coming from ", "kind": "tr_static", "english": "Coming from "}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Connecting...", "kind": "tr_static", "english": "Connecting..."}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Copying not working? Click here to show full URL.", "kind": "tr_static", "english": "Copying not working? Click here to show full URL."}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Do you trust the contents of this directory?", "kind": "tr_static", "english": "Do you trust the contents of this directory?"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Grok Build is not yet available for this account.", "kind": "tr_static", "english": "Grok Build is not yet available for this account."}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Grok Build may run or modify contents in this directory,", "kind": "tr_static", "english": "Grok Build may run or modify contents in this directory,"}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "If it doesn't open, click ", "kind": "tr_static", "english": "If it doesn't open, click "}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Import Claude settings", "kind": "tr_static", "english": "Import Claude settings"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Logged in with API key", "kind": "tr_static", "english": "Logged in with API key"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Login with {provider}", "kind": "tr_format", "english": "Login with {provider}"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Logout", "kind": "tr_static", "english": "Logout"}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Make sure your browser shows this code.", "kind": "tr_static", "english": "Make sure your browser shows this code."}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "New worktree", "kind": "tr_static", "english": "New worktree"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "No, quit", "kind": "tr_static", "english": "No, quit"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Paste your token here...", "kind": "tr", "english": "Paste your token here..."}
@@ -1832,17 +1838,11 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "Yes, proceed", "kind": "tr_static", "english": "Yes, proceed"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "[Refresh]", "kind": "tr_static", "english": "[Refresh]"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "alpha", "kind": "tr", "english": "alpha"}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "auth.copy.fallback", "kind": "named_static_text", "english": "Copying not working? Click here to show full URL."}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "auth.copy.link", "kind": "named_static_text", "english": "here"}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "auth.copy.prefix", "kind": "named_static_text", "english": "If it doesn't open, click "}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "auth.copy.suffix", "kind": "named_static_text", "english": " to copy."}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "auth.device.caption", "kind": "named_static_text", "english": "Make sure your browser shows this code."}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "auth.device.header", "kind": "named_static_text", "english": "Approve in your browser to finish signing in."}
-{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "auth.header", "kind": "named_static_text", "english": "A browser window will open for authentication."}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "copied!", "kind": "tr_static", "english": "copied!"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "copy failed", "kind": "tr_static", "english": "copy failed"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "copy sent: verify paste", "kind": "tr", "english": "copy sent: verify paste"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "go back", "kind": "tr_static", "english": "go back"}
+{"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "here", "kind": "tr_static", "english": "here"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "match", "kind": "tr_static", "english": "match"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "moments ago", "kind": "tr", "english": "moments ago"}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/mod.rs", "id": "posing security risks.", "kind": "tr_static", "english": "posing security risks."}

@@ -123,6 +123,13 @@ TR_CALL = re.compile(
     r'\.(?P<kind>tr_static|tr_format|tr|tr_ctx)\(\s*'
     r'"(?P<english>(?:[^"\\]|\\.)*)"'
 )
+# Same forms with a same-file `const` anchor (`tr_static(MODAL_TITLE)`).
+# Resolved and decoded exactly like CALL_CONST below; unresolvable names
+# degrade to a `kind+const` entry so disappearance still fails the check.
+TR_CALL_CONST = re.compile(
+    r'\.(?P<kind>tr_static|tr_format|tr)\(\s*'
+    r'(?P<const>[A-Z][A-Z0-9_]*)'
+)
 
 # Matches one `{name}` placeholder; shared by the parity check.
 PLACEHOLDER = re.compile(r"\{([A-Za-z0-9_]+)\}")
@@ -235,6 +242,17 @@ def scan():
                     matches.append((kind, id_, global_consts[name]))
                 else:
                     matches.append((kind + CONST_KIND_SUFFIX, id_, name))
+            for m in TR_CALL_CONST.finditer(src):
+                # Disjoint from TR_CALL above by the same `"`-vs-uppercase split.
+                kind, name = m.group("kind"), m.group("const")
+                if name in consts:
+                    value = rust_unescape(consts[name])
+                    matches.append((kind, value, value))
+                elif name in global_consts:
+                    value = rust_unescape(global_consts[name])
+                    matches.append((kind, value, value))
+                else:
+                    matches.append((kind + CONST_KIND_SUFFIX, name, name))
             for kind, id_, english in matches:
                 # No unicode_escape round-trip: the anchor has to compare byte-for-byte
                 # with what the source says. Decoding it used to mangle non-ASCII

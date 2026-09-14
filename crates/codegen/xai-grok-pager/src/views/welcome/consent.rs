@@ -67,9 +67,9 @@ pub fn render_consent(
     } else {
         // Title dropped: on a screen this small, why the notice is unreadable matters more.
         let text = if message.width < NARROW_COLS {
-            crate::locale::ctx().named_static_text("consent.too_small_narrow", TOO_SMALL_NARROW)
+            crate::locale::ctx().tr_static(TOO_SMALL_NARROW)
         } else {
-            crate::locale::ctx().named_static_text("consent.too_small", TOO_SMALL)
+            crate::locale::ctx().tr_static(TOO_SMALL)
         };
         paint_centered(message, buf, Style::default().fg(theme.gray), text);
         Vec::new()

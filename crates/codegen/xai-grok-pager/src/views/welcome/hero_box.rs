@@ -30,7 +30,7 @@ const HERO_SUBTITLE: &str = "Thanks for trying Grok Build, give feedback with /f
 
 /// Localized "thanks" subtitle (falls back to [`HERO_SUBTITLE`]).
 fn hero_subtitle() -> &'static str {
-    crate::locale::ctx().named_static_text("welcome.hero.subtitle", HERO_SUBTITLE)
+    crate::locale::ctx().tr_static(HERO_SUBTITLE)
 }
 
 use super::logo::LogoTier;

@@ -217,9 +217,7 @@ impl AgentView {
         if let Some(sid) = row.as_ref().and_then(|r| r.server_id.as_deref())
             && self.optimistic_queue_ids.contains(sid)
         {
-            self.show_toast(crate::locale::ctx().named_static_text(
-                "prompt.queue.still_queueing",
-                STILL_QUEUEING_TOAST,
+            self.show_toast(crate::locale::ctx().tr_static(STILL_QUEUEING_TOAST,
             ));
             return;
         }
