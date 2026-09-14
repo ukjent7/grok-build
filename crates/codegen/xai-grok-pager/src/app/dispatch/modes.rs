@@ -485,9 +485,7 @@ fn yolo_toast(new: bool) -> String {
     if new {
         // Warning glyph and consequence; only post-commit feedback
         crate::locale::ctx()
-            .named_text(
-                "toast.permission.always_approve_on",
-                "\u{26A0} Always-approve ON: all tool actions auto-run",
+            .tr("\u{26A0} Always-approve ON: all tool actions auto-run",
             )
             .into_owned()
     } else {

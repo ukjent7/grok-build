@@ -319,9 +319,7 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
                 return;
             };
             let next_hint = match TUTORIAL_TOPICS.get(index + 1) {
-                Some(next) => crate::locale::ctx().format_named(
-                    "tutorial.next",
-                    "\u{2192} next: {title}",
+                Some(next) => crate::locale::ctx().tr_format("\u{2192} next: {title}",
                     &[(
                         "title",
                         crate::locale::ctx().named_static_text(
@@ -331,13 +329,13 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
                     )],
                 ),
                 None => crate::locale::ctx()
-                    .named_static_text("tutorial.done", "\u{2192} done")
+                    .tr_static("\u{2192} done")
                     .to_owned(),
             };
             let mut shortcuts = vec![
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("tutorial.scroll", "\u{2191}/\u{2193} scroll"),
+                        .tr_static("\u{2191}/\u{2193} scroll"),
                     clickable: false,
                     id: 0,
                 },
@@ -417,7 +415,7 @@ fn render_list(buf: &mut Buffer, area: Rect, st: &mut TutorialState, compact: bo
         },
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("tutorial.navigate", "\u{2191}/\u{2193} navigate"),
+                .tr_static("\u{2191}/\u{2193} navigate"),
             clickable: false,
             id: 0,
         },

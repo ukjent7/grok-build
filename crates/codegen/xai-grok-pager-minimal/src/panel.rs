@@ -131,17 +131,13 @@ fn render_dim_line(buf: &mut Buffer, row: Rect, theme: &Theme, text: &str) {
 
 /// `/resume` session picker: Enter picks a session.
 fn resume_footer() -> &'static str {
-    xai_grok_locale::ctx().named_static_text(
-        "panel.resume_footer",
-        "\u{2191}/\u{2193} navigate \u{00b7} enter confirm \u{00b7} esc cancel",
+    xai_grok_locale::ctx().tr_static("\u{2191}/\u{2193} navigate \u{00b7} enter confirm \u{00b7} esc cancel",
     )
 }
 
 /// `/mcps` list: Enter expands tools; reconnect is space (off then on); `r` re-lists status.
 fn mcps_footer() -> &'static str {
-    xai_grok_locale::ctx().named_static_text(
-        "panel.mcps_footer",
-        "\u{2191}/\u{2193} navigate \u{00b7} space enable/disable \u{00b7} r refresh \u{00b7} enter expand \u{00b7} esc cancel",
+    xai_grok_locale::ctx().tr_static("\u{2191}/\u{2193} navigate \u{00b7} space enable/disable \u{00b7} r refresh \u{00b7} enter expand \u{00b7} esc cancel",
     )
 }
 
@@ -436,7 +432,7 @@ fn render_mcps(
             }
             TabDataState::Loading => {
                 subtitle = xai_grok_locale::ctx()
-                    .named_text("panel.loading", "loading\u{2026}")
+                    .tr("loading\u{2026}")
                     .into_owned();
                 labels = vec![];
                 group_keys = vec![];

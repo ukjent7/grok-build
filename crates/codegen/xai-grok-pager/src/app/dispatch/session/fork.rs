@@ -254,9 +254,7 @@ pub(in crate::app::dispatch) fn dispatch_fork_resolved(
         if worktree {
             agent
                 .scrollback
-                .push_block(RenderBlock::system(crate::locale::ctx().named_static_text(
-                    "session.worktree.creating",
-                    "Creating worktree\u{2026}",
+                .push_block(RenderBlock::system(crate::locale::ctx().tr_static("Creating worktree\u{2026}",
                 )));
         }
         agent.pending_first_prompt = directive;
@@ -482,18 +480,14 @@ pub(in crate::app::dispatch) fn handle_worktree_forked(
         match (code_restored, restore_summary.as_deref()) {
             (true, Some(s)) => {
                 agent.scrollback.push_block(RenderBlock::system(
-                    crate::locale::ctx().format_named(
-                        "session.load.code_restored",
-                        "\u{2713} Code restored: {summary}",
+                    crate::locale::ctx().tr_format("\u{2713} Code restored: {summary}",
                         &[("summary", s)],
                     ),
                 ));
             }
             (false, Some(s)) => {
                 agent.scrollback.push_block(RenderBlock::system(
-                    crate::locale::ctx().format_named(
-                        "session.load.code_restore_failed",
-                        "\u{26A0} Code restore failed: {summary}",
+                    crate::locale::ctx().tr_format("\u{26A0} Code restore failed: {summary}",
                         &[("summary", s)],
                     ),
                 ));

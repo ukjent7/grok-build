@@ -589,7 +589,7 @@ pub fn render_import_claude_modal(
     );
     let shortcuts = [
         Shortcut {
-            label: ctx.named_static_text("import.shortcut.navigate", "\u{2191}\u{2193} navigate"),
+            label: ctx.tr_static("\u{2191}\u{2193} navigate"),
             clickable: false,
             id: SHORTCUT_ID_HINT,
         },
@@ -599,7 +599,7 @@ pub fn render_import_claude_modal(
             id: SHORTCUT_ID_HINT,
         },
         Shortcut {
-            label: ctx.named_static_text("import.shortcut.fold", "\u{2190}\u{2192} fold"),
+            label: ctx.tr_static("\u{2190}\u{2192} fold"),
             clickable: false,
             id: SHORTCUT_ID_HINT,
         },

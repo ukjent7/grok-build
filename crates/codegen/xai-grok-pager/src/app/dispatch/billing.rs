@@ -115,9 +115,7 @@ pub(super) fn open_credit_limit_upsell(
             payg_telemetry: false,
         },
         CreditLimitUpsellMode::LegacyPayg { enabled: true } => CreditLimitCopy {
-            heading: crate::locale::ctx().named_static_text(
-                "billing.credit_limit.spending_cap_heading",
-                "You\u{2019}ve hit your spending cap.",
+            heading: crate::locale::ctx().tr_static("You\u{2019}ve hit your spending cap.",
             ),
             upgrade_tier_desc: crate::locale::ctx().tr_static("Upgrade to a higher tier for more credits",
             ),
@@ -129,9 +127,7 @@ pub(super) fn open_credit_limit_upsell(
             payg_telemetry: true,
         },
         CreditLimitUpsellMode::LegacyPayg { enabled: false } => CreditLimitCopy {
-            heading: crate::locale::ctx().named_static_text(
-                "billing.credit_limit.plan_heading",
-                "You\u{2019}ve hit the credit limit for your plan.",
+            heading: crate::locale::ctx().tr_static("You\u{2019}ve hit the credit limit for your plan.",
             ),
             upgrade_tier_desc: crate::locale::ctx().tr_static("Upgrade to a higher tier for more credits",
             ),
@@ -508,9 +504,7 @@ pub(super) fn handle_credit_limit_recheck_complete(
             let tier_name = app.subscription_tier.as_deref().unwrap_or(crate::locale::ctx()
                 .tr_static("a higher tier"));
             agent.scrollback.push_block(RenderBlock::system(
-                crate::locale::ctx().format_named(
-                    "billing.subscription_upgraded_retrying",
-                    "Subscription upgraded to {tier}. Retrying\u{2026}",
+                crate::locale::ctx().tr_format("Subscription upgraded to {tier}. Retrying\u{2026}",
                     &[("tier", tier_name)],
                 ),
             ));
@@ -571,9 +565,7 @@ pub(super) fn dispatch_retry_credit_limit_prompt(app: &mut AppView) -> Vec<Effec
     }) {
         agent
             .scrollback
-            .push_block(RenderBlock::system(crate::locale::ctx().named_static_text(
-                "billing.credit_limit.retrying",
-                "Trying again\u{2026}",
+            .push_block(RenderBlock::system(crate::locale::ctx().tr_static("Trying again\u{2026}",
             )));
     }
     note_peek_page_flip(app, agent_id, drain.page_flip_entry);

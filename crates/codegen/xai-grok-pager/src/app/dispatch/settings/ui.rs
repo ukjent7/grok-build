@@ -41,7 +41,7 @@ pub(in crate::app::dispatch) fn save_success_toast(label: &str, on: bool) -> Str
 /// Format a "✓ <label>: <value>" toast with a translated template.
 fn format_save_toast(label: &str, value: &str) -> String {
     crate::locale::ctx()
-        .named_text("settings.toast.saved", "\u{2713} {label}: {value}")
+        .tr("\u{2713} {label}: {value}")
         .replace("{label}", label)
         .replace("{value}", value)
 }

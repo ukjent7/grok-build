@@ -1254,18 +1254,14 @@ pub(in crate::app::dispatch) fn handle_session_loaded(
         match (code_restored, restore_summary.as_deref()) {
             (true, Some(s)) => {
                 agent.scrollback.push_block(RenderBlock::system(
-                    crate::locale::ctx().format_named(
-                        "session.load.code_restored",
-                        "\u{2713} Code restored: {summary}",
+                    crate::locale::ctx().tr_format("\u{2713} Code restored: {summary}",
                         &[("summary", s)],
                     ),
                 ));
             }
             (false, Some(s)) => {
                 agent.scrollback.push_block(RenderBlock::system(
-                    crate::locale::ctx().format_named(
-                        "session.load.code_restore_failed",
-                        "\u{26A0} Code restore failed: {summary}",
+                    crate::locale::ctx().tr_format("\u{26A0} Code restore failed: {summary}",
                         &[("summary", s)],
                     ),
                 ));

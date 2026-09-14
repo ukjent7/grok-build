@@ -197,7 +197,7 @@ fn localized_arg_description(english: &str) -> String {
         .and_then(|rest| rest.strip_suffix('"'))
     {
         return crate::locale::ctx()
-            .named_text("slash.command.docs.arg.open_template", "Open \"{title}\"")
+            .tr("Open \"{title}\"")
             .replace("{title}", title);
     }
     // `/theme` auto row; keep any trailing " (active)" marker.

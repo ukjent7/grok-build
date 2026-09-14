@@ -576,7 +576,7 @@ pub fn render_usage_modal(
         },
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("usage.modal.footer.scroll", "\u{2191}/\u{2193} scroll"),
+                .tr_static("\u{2191}/\u{2193} scroll"),
             clickable: false,
             id: 0,
         },
@@ -890,7 +890,7 @@ fn context_tab_lines(state: &UsageInfoModalState, theme: &Theme, width: u16) -> 
     vec![muted_line(
         theme,
         crate::locale::ctx()
-            .named_text("usage.modal.context.loading", "Loading context usage\u{2026}")
+            .tr("Loading context usage\u{2026}")
             .into_owned(),
     )]
 }
@@ -935,7 +935,7 @@ fn usage_limit_lines(
         lines.push(muted_line(
             theme,
             crate::locale::ctx()
-                .named_text("usage.modal.limit.loading", "Loading usage\u{2026}")
+                .tr("Loading usage\u{2026}")
                 .into_owned(),
         ));
     } else {
@@ -965,7 +965,7 @@ fn usage_limit_lines(
         lines.push(muted_line(
             theme,
             crate::locale::ctx()
-                .named_text("usage.modal.session_usage.loading", "Loading session usage\u{2026}")
+                .tr("Loading session usage\u{2026}")
                 .into_owned(),
         ));
     }
@@ -1073,7 +1073,7 @@ fn session_info_content(state: &UsageInfoModalState, theme: &Theme) -> TabConten
         return TabContent::from_lines(vec![muted_line(
             theme,
             crate::locale::ctx()
-                .named_text("usage.modal.session.loading", "Loading session info\u{2026}")
+                .tr("Loading session info\u{2026}")
                 .into_owned(),
         )]);
     };

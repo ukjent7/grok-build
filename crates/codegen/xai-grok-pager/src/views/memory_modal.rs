@@ -1062,7 +1062,7 @@ fn build_shortcuts(
             let mut shortcuts = vec![
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("memory.shortcut.navigate", "\u{2191}/\u{2193} nav"),
+                        .tr_static("\u{2191}/\u{2193} nav"),
                     clickable: false,
                     id: 0,
                 },

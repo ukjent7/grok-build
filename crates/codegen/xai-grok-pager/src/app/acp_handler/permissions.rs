@@ -182,9 +182,7 @@ fn resolve_subagent_label(agent: &AgentView, session_id: &acp::SessionId) -> Opt
     if let Some(info) = agent.subagent_sessions.get(sid) {
         let name: &str = info.description.as_ref();
         let kind: &str = info.subagent_type.as_ref();
-        return Some(crate::locale::ctx().format_named(
-            "permission.subagent_label",
-            "Subagent \"{name}\" ({kind}):",
+        return Some(crate::locale::ctx().tr_format("Subagent \"{name}\" ({kind}):",
             &[("name", name), ("kind", kind)],
         ));
     }
@@ -415,9 +413,7 @@ pub(super) fn mcp_args_lines(req: &acp::RequestPermissionRequest) -> Vec<String>
         let hidden = lines.len() - MCP_ARGS_MAX_LINES;
         lines.truncate(MCP_ARGS_MAX_LINES);
         let hidden_str = hidden.to_string();
-        lines.push(crate::locale::ctx().format_named(
-            "permission.args.more_lines",
-            "\u{2026} (+{hidden} more lines)",
+        lines.push(crate::locale::ctx().tr_format("\u{2026} (+{hidden} more lines)",
             &[("hidden", hidden_str.as_str())],
         ));
     }

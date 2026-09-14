@@ -1530,7 +1530,7 @@ impl TasksPane {
                 frames[frame_idx],
                 Style::default().fg(theme.accent_error),
                 crate::locale::ctx()
-                    .named_text("tasks.status.killing", "killing\u{2026} ")
+                    .tr("killing\u{2026} ")
                     .into_owned(),
                 Style::default().fg(theme.accent_error),
             )
@@ -1674,7 +1674,7 @@ impl TasksPane {
                 frames[frame_idx],
                 Style::default().fg(theme.accent_error),
                 crate::locale::ctx()
-                    .named_text("tasks.status.killing", "killing\u{2026} ")
+                    .tr("killing\u{2026} ")
                     .into_owned(),
                 Style::default().fg(theme.accent_error),
             )

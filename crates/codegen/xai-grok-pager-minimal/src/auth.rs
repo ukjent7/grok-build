@@ -241,7 +241,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         bottom,
                         Line::from(Span::styled(
                             xai_grok_locale::ctx()
-                                .named_text("auth.wait_approval", "Waiting for approval\u{2026}"),
+                                .tr("Waiting for approval\u{2026}"),
                             gray,
                         )),
                     );
@@ -253,9 +253,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         y,
                         bottom,
                         Line::from(Span::styled(
-                            xai_grok_locale::ctx().named_text(
-                                "auth.opening_browser",
-                                "Opening your browser to sign in\u{2026}",
+                            xai_grok_locale::ctx().tr("Opening your browser to sign in\u{2026}",
                             ),
                             gray,
                         )),
@@ -373,9 +371,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().named_text(
-                        "trust.footer",
-                        "Enter or y to trust \u{00b7} n or Esc to quit",
+                    xai_grok_locale::ctx().tr("Enter or y to trust \u{00b7} n or Esc to quit",
                     ),
                     gray,
                 )),
@@ -388,9 +384,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().named_text(
-                        "auth.starting_session",
-                        "Signing in\u{2026} starting your session.",
+                    xai_grok_locale::ctx().tr("Signing in\u{2026} starting your session.",
                     ),
                     gray,
                 )),

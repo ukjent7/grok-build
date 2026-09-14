@@ -668,7 +668,7 @@ pub(in crate::app::dispatch) fn dispatch_delete_current_session_answered(
             }),
     );
     app.show_toast(crate::locale::ctx()
-        .named_static_text("session.delete.deleting", "Deleting session\u{2026}"));
+        .tr_static("Deleting session\u{2026}"));
     effects.push(Effect::DeleteSession {
         source: "current".into(),
         session_id: session_id.to_string(),

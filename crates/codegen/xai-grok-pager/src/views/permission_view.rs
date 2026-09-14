@@ -793,9 +793,7 @@ fn render_pattern_preview_line(
         Some(pattern) if xai_grok_workspace::permission::bash_glob_is_catchall(pattern) => {
             spans.push(Span::styled(
                 crate::locale::ctx()
-                    .named_text(
-                        "permission.pattern.catchall_rejected",
-                        "\u{2717} matches everything, won't be saved",
+                    .tr("\u{2717} matches everything, won't be saved",
                     )
                     .into_owned(),
                 Style::default().fg(theme.accent_error),
@@ -813,16 +811,14 @@ fn render_pattern_preview_line(
             if xai_grok_workspace::permission::bash_pattern_matches_command(pattern, command) {
                 spans.push(Span::styled(
                     crate::locale::ctx()
-                        .named_text("permission.pattern.matches", "\u{2713} matches this command")
+                        .tr("\u{2713} matches this command")
                         .into_owned(),
                     Style::default().fg(theme.accent_success),
                 ));
             } else {
                 spans.push(Span::styled(
                     crate::locale::ctx()
-                        .named_text(
-                            "permission.pattern.no_match",
-                            "\u{2717} won't match this command",
+                        .tr("\u{2717} won't match this command",
                         )
                         .into_owned(),
                     Style::default().fg(theme.accent_error),
@@ -832,7 +828,7 @@ fn render_pattern_preview_line(
                 spans.push(sep.clone());
                 spans.push(Span::styled(
                     crate::locale::ctx()
-                        .named_text("permission.pattern.broad", "\u{26a0} very broad")
+                        .tr("\u{26a0} very broad")
                         .into_owned(),
                     Style::default().fg(theme.warning),
                 ));

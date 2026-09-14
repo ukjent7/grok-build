@@ -278,21 +278,17 @@ pub fn render_turn_status(
         // Parked with held queued rows: the queued hint says what Enter does (act on the queue now), so it replaces the generic interrupt copy
         let parked_suffix = if held_queue > 0 && held_queue_top_sendable {
             let count = held_queue.to_string();
-            crate::locale::ctx().format_named(
-                "turn.queue.send_now",
-                " \u{00b7} {count} queued, Enter to send now",
+            crate::locale::ctx().tr_format(" \u{00b7} {count} queued, Enter to send now",
                 &[("count", &count)],
             )
         } else if held_queue > 0 {
             let count = held_queue.to_string();
-            crate::locale::ctx().format_named(
-                "turn.queue.queued",
-                " \u{00b7} {count} queued",
+            crate::locale::ctx().tr_format(" \u{00b7} {count} queued",
                 &[("count", &count)],
             )
         } else {
             crate::locale::ctx()
-                .named_text("turn.send_message_interrupt", " \u{00b7} send a message to interrupt")
+                .tr(" \u{00b7} send a message to interrupt")
                 .into_owned()
         };
         let cue = match (still_running_label(watchers), parked) {

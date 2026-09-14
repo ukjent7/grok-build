@@ -241,9 +241,7 @@ pub(super) fn set_coding_data_sharing(
 ) -> Vec<Effect> {
     // ── Guard 1: Enterprise ZDR ──────────────────────────────────────
     if app.is_zdr {
-        app.show_toast(&crate::locale::ctx().named_text(
-            "status.zdr_cannot_change",
-            "\u{2717} Cannot change: Zero Data Retention enabled",
+        app.show_toast(&crate::locale::ctx().tr("\u{2717} Cannot change: Zero Data Retention enabled",
         ));
         return vec![];
     }
@@ -254,9 +252,7 @@ pub(super) fn set_coding_data_sharing(
             .as_deref()
             .is_some_and(|r| r.eq_ignore_ascii_case("admin"));
         if !is_admin {
-            app.show_toast(&crate::locale::ctx().named_text(
-                "status.team_admin_controls_sharing",
-                "\u{2717} Data sharing is controlled by your team admin",
+            app.show_toast(&crate::locale::ctx().tr("\u{2717} Data sharing is controlled by your team admin",
             ));
             return vec![];
         }
@@ -607,9 +603,7 @@ pub(super) fn handle_coding_data_sharing_failed(
     set_coding_data_sharing_inner(app, rollback_to_opted_in);
     refresh_open_settings_modals(app);
     let scrubbed = scrub_error_for_toast(&error);
-    app.show_toast(&crate::locale::ctx().format_named(
-        "status.coding_data_update_failed",
-        "\u{2717} Couldn't update coding data sharing: {error}",
+    app.show_toast(&crate::locale::ctx().tr_format("\u{2717} Couldn't update coding data sharing: {error}",
         &[("error", &scrubbed)],
     ));
     tracing::warn!(

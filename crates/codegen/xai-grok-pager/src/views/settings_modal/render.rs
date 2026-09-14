@@ -75,9 +75,7 @@ fn localized_validation_error(err: &str) -> std::borrow::Cow<'_, str> {
                 .strip_prefix("Unknown model: \"")
                 .and_then(|value| value.strip_suffix('"'))
                 .unwrap_or_default();
-            return std::borrow::Cow::Owned(crate::locale::ctx().format_named(
-                "settings.ui.validation.unknown_model",
-                "Unknown model: \"{model}\"",
+            return std::borrow::Cow::Owned(crate::locale::ctx().tr_format("Unknown model: \"{model}\"",
                 &[("model", model)],
             ));
         }
@@ -509,9 +507,7 @@ pub(super) fn render_row_list_with_search_bar(
 }
 
 pub(super) fn render_docs_footer(buf: &mut Buffer, area: Rect, theme: &Theme) {
-    let long = crate::locale::ctx().named_static_text(
-        "settings.docs_footer.long",
-        "Tip · Ask Grok: \"change theme to grokday\" or \"what does compact mode do?\"",
+    let long = crate::locale::ctx().tr_static("Tip · Ask Grok: \"change theme to grokday\" or \"what does compact mode do?\"",
     );
     let short = crate::locale::ctx().tr_static("Tip · Ask Grok to change a setting",
     );
@@ -551,9 +547,7 @@ pub(super) fn render_rows(
             // Fixed overhead = template width with an empty query (lead-in + surrounding quotes),
             // so the truncation budget works for any locale's wrap of the message.
             let overhead = crate::locale::ctx()
-                .format_named(
-                    "settings.no_matches",
-                    "No matches for \"{query}\"",
+                .tr_format("No matches for \"{query}\"",
                     &[("query", "")],
                 )
                 .width();
@@ -563,9 +557,7 @@ pub(super) fn render_rows(
             } else {
                 truncate_str(state.query(), available_for_query)
             };
-            let msg = crate::locale::ctx().format_named(
-                "settings.no_matches",
-                "No matches for \"{query}\"",
+            let msg = crate::locale::ctx().tr_format("No matches for \"{query}\"",
                 &[("query", &q_disp)],
             );
             let style = Style::default().fg(theme.gray_dim).bg(theme.bg_base);
@@ -1309,9 +1301,7 @@ pub(super) fn render_picking_enum(
         let overflow_y = y_cursor;
         if overflow_y < choices_y + max_choices_h as u16 && overflow_y < area.y + area.height {
             let overflow_style = Style::default().fg(theme.gray_dim).bg(theme.bg_base);
-            let raw = crate::locale::ctx().format_named(
-                "settings.ui.more",
-                "\u{2026} {count} more",
+            let raw = crate::locale::ctx().tr_format("\u{2026} {count} more",
                 &[("count", &more_count.to_string())],
             );
             let overflow_text: std::borrow::Cow<'_, str> = if raw.width() <= area.width as usize {
@@ -1625,35 +1615,35 @@ fn int_step_footer_labels(min: i64, max: i64) -> (&'static str, &'static str) {
     let (small, large) = int_step_sizes(min, max);
     match (small, large) {
         (1, 1) => (
-            locale.named_static_text("settings.shortcut.int_step.vertical_1", "\u{2191}/\u{2193} +/-1"),
+            locale.tr_static("\u{2191}/\u{2193} +/-1"),
             locale
-                .named_static_text("settings.shortcut.int_step.horizontal_1", "\u{2190}/\u{2192} +/-1"),
+                .tr_static("\u{2190}/\u{2192} +/-1"),
         ),
         (1, 5) => (
-            locale.named_static_text("settings.shortcut.int_step.vertical_1", "\u{2191}/\u{2193} +/-1"),
+            locale.tr_static("\u{2191}/\u{2193} +/-1"),
             locale
-                .named_static_text("settings.shortcut.int_step.horizontal_5", "\u{2190}/\u{2192} +/-5"),
+                .tr_static("\u{2190}/\u{2192} +/-5"),
         ),
         (5, 10) => (
-            locale.named_static_text("settings.shortcut.int_step.vertical_5", "\u{2191}/\u{2193} +/-5"),
+            locale.tr_static("\u{2191}/\u{2193} +/-5"),
             locale
-                .named_static_text("settings.shortcut.int_step.horizontal_10", "\u{2190}/\u{2192} +/-10"),
+                .tr_static("\u{2190}/\u{2192} +/-10"),
         ),
         // Defensive fallback if thresholds change without new static pairs.
         (1, _) => (
-            locale.named_static_text("settings.shortcut.int_step.vertical_1", "\u{2191}/\u{2193} +/-1"),
+            locale.tr_static("\u{2191}/\u{2193} +/-1"),
             locale
-                .named_static_text("settings.shortcut.int_step.horizontal_step", "\u{2190}/\u{2192} step"),
+                .tr_static("\u{2190}/\u{2192} step"),
         ),
         (5, _) => (
-            locale.named_static_text("settings.shortcut.int_step.vertical_5", "\u{2191}/\u{2193} +/-5"),
+            locale.tr_static("\u{2191}/\u{2193} +/-5"),
             locale
-                .named_static_text("settings.shortcut.int_step.horizontal_step", "\u{2190}/\u{2192} step"),
+                .tr_static("\u{2190}/\u{2192} step"),
         ),
         _ => (
-            locale.named_static_text("settings.shortcut.int_step.vertical_step", "\u{2191}/\u{2193} step"),
+            locale.tr_static("\u{2191}/\u{2193} step"),
             locale
-                .named_static_text("settings.shortcut.int_step.horizontal_step", "\u{2190}/\u{2192} step"),
+                .tr_static("\u{2190}/\u{2192} step"),
         ),
     }
 }
@@ -2774,7 +2764,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
             let mut shortcuts = vec![
                 Shortcut {
                     label: locale
-                        .named_static_text("settings.shortcut.arrows_jk_nav", "\u{2191}/\u{2193}/j/k nav"),
+                        .tr_static("\u{2191}/\u{2193}/j/k nav"),
                     clickable: false,
                     id: 0,
                 },
@@ -2799,7 +2789,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
             shortcuts.extend([
                 Shortcut {
                     label: locale
-                        .named_static_text("settings.shortcut.right_expand", "\u{2192} expand"),
+                        .tr_static("\u{2192} expand"),
                     clickable: false,
                     id: 0,
                 },
@@ -2833,7 +2823,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                 id: 0,
             },
             Shortcut {
-                label: locale.named_static_text("settings.shortcut.arrows_nav", "\u{2191}/\u{2193} nav"),
+                label: locale.tr_static("\u{2191}/\u{2193} nav"),
                 clickable: false,
                 id: 0,
             },
@@ -2861,9 +2851,9 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
         } => {
             // Labels depend on whether the Enum supports live preview.
             let nav_label = if *sp {
-                locale.named_static_text("settings.shortcut.arrows_try", "\u{2191}/\u{2193} try")
+                locale.tr_static("\u{2191}/\u{2193} try")
             } else {
-                locale.named_static_text("settings.shortcut.arrows_nav", "\u{2191}/\u{2193} nav")
+                locale.tr_static("\u{2191}/\u{2193} nav")
             };
             let esc_label = if *sp {
                 locale.tr_static("Esc revert")
@@ -2945,7 +2935,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
             },
             Shortcut {
                 label: locale
-                    .named_static_text("settings.shortcut.arrows_cursor", "\u{2190}/\u{2192} cursor"),
+                    .tr_static("\u{2190}/\u{2192} cursor"),
                 clickable: false,
                 id: 0,
             },
@@ -2963,7 +2953,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
         SettingsMode::PickingGroup { .. } => vec![
             Shortcut {
                 label: locale
-                    .named_static_text("settings.shortcut.arrows_jk_nav", "\u{2191}/\u{2193}/j/k nav"),
+                    .tr_static("\u{2191}/\u{2193}/j/k nav"),
                 clickable: false,
                 id: 0,
             },

@@ -1285,7 +1285,7 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 return vec![];
             }
             app.show_toast(crate::locale::ctx()
-                .named_static_text("session.deleting", "Deleting session\u{2026}"));
+                .tr_static("Deleting session\u{2026}"));
             vec![Effect::DeleteSession {
                 source,
                 session_id,

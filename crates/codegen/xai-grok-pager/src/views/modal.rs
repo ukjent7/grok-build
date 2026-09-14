@@ -1117,9 +1117,7 @@ fn fit_docs_ask_grok_tip(docs_path: &str, width: usize) -> String {
     if width == 0 {
         return String::new();
     }
-    let long = ctx.format_named(
-        "docs.tip.long",
-        "Tip · Ask Grok about the docs ({path}), e.g. \"how do I set up MCP?\"",
+    let long = ctx.tr_format("Tip · Ask Grok about the docs ({path}), e.g. \"how do I set up MCP?\"",
         &[("path", docs_path)],
     );
     if long.width() <= width {
@@ -1172,7 +1170,7 @@ pub fn render_doc_picker_overlay(
     let ctx = crate::locale::ctx();
     let mut picker_shortcuts: Vec<Shortcut<'_>> = vec![
         Shortcut {
-            label: ctx.named_static_text("docs.shortcut.navigate", "\u{2191}/\u{2193} nav"),
+            label: ctx.tr_static("\u{2191}/\u{2193} nav"),
             clickable: false,
             id: 0,
         },
@@ -1281,7 +1279,7 @@ pub fn render_doc_viewer_overlay(
     let doc_shortcuts = [
         super::modal_window::Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("docs.shortcut.scroll", "\u{2191}/\u{2193} scroll"),
+                .tr_static("\u{2191}/\u{2193} scroll"),
             clickable: false,
             id: 0,
         },

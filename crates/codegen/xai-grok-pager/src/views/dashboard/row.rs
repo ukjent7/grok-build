@@ -331,9 +331,7 @@ fn build_local_rows(
                     parent: *id,
                     child_session_id: format!("__more_{}", id.0),
                 },
-                label: crate::locale::ctx().format_named(
-                    "dashboard.row.more",
-                    "\u{2026} {count} more",
+                label: crate::locale::ctx().tr_format("\u{2026} {count} more",
                     &[("count", &(total - keep).to_string())],
                 ),
                 subtitle: None,

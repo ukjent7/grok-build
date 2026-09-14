@@ -1696,7 +1696,7 @@ impl AgentView {
             let mut picker_shortcuts: Vec<Shortcut> = vec![
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("picker.shortcut.nav", "\u{2191}/\u{2193} nav"),
+                        .tr_static("\u{2191}/\u{2193} nav"),
                     clickable: false,
                     id: 0,
                 },

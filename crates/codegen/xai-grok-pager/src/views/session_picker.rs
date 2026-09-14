@@ -969,9 +969,7 @@ pub(crate) fn build_content_header_label(
             "{} {}",
             spinner_frames[frame_idx],
             crate::locale::ctx()
-                .named_text(
-                    "session.content.searching",
-                    "Searching session content\u{2026}",
+                .tr("Searching session content\u{2026}",
                 )
                 .into_owned()
         )
@@ -999,9 +997,7 @@ pub(crate) fn hidden_external_hint(
                 .filter(|entry| crate::app::is_foreign_picker_source(&entry.source))
                 .count();
             (hidden > 0).then(|| {
-                crate::locale::ctx().format_named(
-                    "session.hidden_external",
-                    "{count} external session(s) hidden \u{b7} f to show",
+                crate::locale::ctx().tr_format("{count} external session(s) hidden \u{b7} f to show",
                     &[("count", &hidden.to_string())],
                 )
             })

@@ -713,7 +713,7 @@ pub fn modal_footer_detail() -> Vec<crate::views::modal_window::Shortcut<'static
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx().named_static_text("shortcuts.footer.scroll", "\u{2191}/\u{2193} scroll"),
+            label: crate::locale::ctx().tr_static("\u{2191}/\u{2193} scroll"),
             clickable: false,
             id: 0,
         },
@@ -1126,7 +1126,7 @@ pub fn modal_footer(filter_active: bool) -> Vec<crate::views::modal_window::Shor
     use crate::views::modal_window::Shortcut;
     let mut shortcuts = vec![
         Shortcut {
-            label: crate::locale::ctx().named_static_text("shortcuts.footer.nav", "\u{2191}/\u{2193} nav"),
+            label: crate::locale::ctx().tr_static("\u{2191}/\u{2193} nav"),
             clickable: false,
             id: 0,
         },
@@ -1143,13 +1143,13 @@ pub fn modal_footer(filter_active: bool) -> Vec<crate::views::modal_window::Shor
         },
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("shortcuts.footer.expand", "e/Space/\u{2192} expand"),
+                .tr_static("e/Space/\u{2192} expand"),
             clickable: false,
             id: 0,
         },
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("shortcuts.footer.collapse", "\u{2190} collapse"),
+                .tr_static("\u{2190} collapse"),
             clickable: false,
             id: 0,
         },

@@ -691,9 +691,7 @@ pub fn render_peek_panel(
         vpad_top: 0,
         chrome: false,
         bg: PromptBg::Canvas(theme.bg_base),
-        placeholder_override: Some(crate::locale::ctx().named_static_text(
-            "dashboard.peek.reply_placeholder",
-            "reply\u{2026}",
+        placeholder_override: Some(crate::locale::ctx().tr_static("reply\u{2026}",
         )),
         image_preview: false,
         ..PromptStyle::default()

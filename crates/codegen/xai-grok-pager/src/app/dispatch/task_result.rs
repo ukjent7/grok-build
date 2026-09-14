@@ -910,9 +910,7 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
         }
         TaskResult::ConsentPersistFailed { error } => {
             tracing::warn!(%error, "consent answer not persisted; the notice re-arms next launch");
-            app.show_toast(&crate::locale::ctx().named_static_text(
-                "consent.toast.persist_failed",
-                "\u{2717} Could not save your answer, so this notice returns next launch",
+            app.show_toast(&crate::locale::ctx().tr_static("\u{2717} Could not save your answer, so this notice returns next launch",
             ));
             vec![]
         }

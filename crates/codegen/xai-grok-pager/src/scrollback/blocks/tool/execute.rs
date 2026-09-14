@@ -563,9 +563,7 @@ impl ExecuteToolCallBlock {
                     let hidden = total - threshold;
                     lines.push(apply_pad(
                         BlockLine::separator(Line::from(Span::styled(
-                            crate::locale::ctx().format_named(
-                                "scrollback.tool.execute.more_lines",
-                                "\u{2026} +{count} lines",
+                            crate::locale::ctx().tr_format("\u{2026} +{count} lines",
                                 &[("count", &hidden.to_string())],
                             ),
                             theme.muted(),

@@ -361,7 +361,7 @@ pub fn render_btw_panel(
             let line = Line::from(vec![
                 Span::styled(format!("{spinner} "), loading_style),
                 Span::styled(
-                    crate::locale::ctx().named_static_text("btw.status.answering", "Answering\u{2026}"),
+                    crate::locale::ctx().tr_static("Answering\u{2026}"),
                     loading_style,
                 ),
             ]);

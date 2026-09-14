@@ -345,9 +345,7 @@ pub(super) fn handle_auth_complete(
                 if let Some(prompt) = agent.reauth_stashed_prompt.take() {
                     agent.scrollback.push_block(RenderBlock::system(
                         crate::locale::ctx()
-                            .named_text(
-                                "auth.reauthenticated_retrying",
-                                "Re-authenticated. Retrying\u{2026}",
+                            .tr("Re-authenticated. Retrying\u{2026}",
                             )
                             .into_owned(),
                     ));

@@ -431,9 +431,7 @@ impl ContextInfoBlock {
                 // Use `fmt_tok_big` (same as the header) so the remaining count rolls over to `m` for wide context windows
                 // A 4m window at 60% reads `~1.0m tokens remaining`, not `~1000k tokens remaining`
                 (
-                    crate::locale::ctx().format_named(
-                        "context.auto_compact_remaining",
-                        "Auto-compact at {percent}% \u{00b7} ~{tokens} tokens remaining",
+                    crate::locale::ctx().tr_format("Auto-compact at {percent}% \u{00b7} ~{tokens} tokens remaining",
                         &[
                             ("percent", &threshold_percent.to_string()),
                             ("tokens", &fmt_tok_big(remaining)),
@@ -448,9 +446,7 @@ impl ContextInfoBlock {
 
         // Footer stats
         lines.push(Line::from(Span::styled(
-            crate::locale::ctx().format_named(
-                "context.footer",
-                "Turns: {turns} \u{00b7} Tool calls: {tool_calls} \u{00b7} Compactions: {compactions}",
+            crate::locale::ctx().tr_format("Turns: {turns} \u{00b7} Tool calls: {tool_calls} \u{00b7} Compactions: {compactions}",
                 &[
                     ("turns", &turn_count.to_string()),
                     ("tool_calls", &tool_call_count.to_string()),

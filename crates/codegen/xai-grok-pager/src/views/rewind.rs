@@ -478,10 +478,10 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
             let mut y = area.y + 1;
             let preview_text = prompt_preview.as_deref().unwrap_or("this turn");
             let prefix = crate::locale::ctx()
-                .named_text("rewind.confirm.title_prefix", "Rewind conversation to \u{201C}")
+                .tr("Rewind conversation to \u{201C}")
                 .into_owned();
             let suffix = crate::locale::ctx()
-                .named_text("rewind.confirm.suffix", "\u{201D}?")
+                .tr("\u{201D}?")
                 .into_owned();
             let chrome = prefix.chars().count() + suffix.chars().count();
             let max_preview = (content_w as usize).saturating_sub(chrome + 1);

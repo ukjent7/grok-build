@@ -38,9 +38,7 @@ pub(super) fn render(failure: &StartupFailure) -> String {
             }
             let explanation = fill_indented(&advice.explanation(), "  ", "  ");
             let seconds = whole_seconds(*waited);
-            locale.format_named(
-                "startup_failure.timed_out",
-                "Couldn't start Grok: startup timed out after {seconds}.\n\n{explanation}",
+            locale.tr_format("Couldn't start Grok: startup timed out after {seconds}.\n\n{explanation}",
                 &[("seconds", &seconds), ("explanation", &explanation)],
             )
         }

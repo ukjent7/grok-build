@@ -309,18 +309,14 @@ impl SessionEvent {
                 if new_model_id.is_empty() {
                     reason.clone()
                 } else {
-                    locale.format_named(
-                        "scrollback.session_event.model_switched",
-                        "{reason} Switched to \"{model}\".",
+                    locale.tr_format("{reason} Switched to \"{model}\".",
                         &[("reason", reason), ("model", new_model_id)],
                     )
                 }
             }
             SessionEvent::MemorySaved { path, trigger } => {
                 let short_path = crate::util::abbreviate_path(path);
-                locale.format_named(
-                    "scrollback.session_event.memory_saved",
-                    "Memory saved ({trigger}) \u{2192} {path}  \u{00b7}  /memory to view",
+                locale.tr_format("Memory saved ({trigger}) \u{2192} {path}  \u{00b7}  /memory to view",
                     &[("trigger", trigger), ("path", &short_path)],
                 )
             }

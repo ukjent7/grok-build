@@ -692,7 +692,7 @@ fn render_location_picker(
     let mut shortcuts = vec![
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("dashboard.hint.up_down_nav", "\u{2191}\u{2193} nav"),
+                .tr_static("\u{2191}\u{2193} nav"),
             clickable: false,
             id: 0,
         },
@@ -2392,7 +2392,7 @@ pub(super) fn paint_record_badge(buf: &mut Buffer, area: Rect, theme: &Theme, li
         buf.set_string(
             area.x + 2,
             area.y,
-            crate::locale::ctx().named_static_text("dashboard.recording.badge", " \u{25CF} rec "),
+            crate::locale::ctx().tr_static(" \u{25CF} rec "),
             Style::default()
                 .fg(theme.accent_error)
                 .bg(theme.bg_base)
@@ -2491,9 +2491,7 @@ fn render_dispatch(
         let cursor_column = if state.dispatch.text().is_empty() {
             if avail > 0 {
                 let placeholder = truncate_str(
-                    crate::locale::ctx().named_static_text(
-                        "dashboard.search.placeholder",
-                        "Type to filter sessions\u{2026}",
+                    crate::locale::ctx().tr_static("Type to filter sessions\u{2026}",
                     ),
                     avail as usize,
                 );

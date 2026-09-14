@@ -1182,12 +1182,12 @@ fn build_agents_tab_shortcuts<'a>(state: &AgentsModalState) -> Vec<Shortcut<'a>>
             id: 0,
         },
         Shortcut {
-            label: ctx.named_static_text("agents.shortcut.expand", "e/\u{2192} expand"),
+            label: ctx.tr_static("e/\u{2192} expand"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: ctx.named_static_text("agents.shortcut.collapse", "E/\u{2190} collapse"),
+            label: ctx.tr_static("E/\u{2190} collapse"),
             clickable: false,
             id: 0,
         },
@@ -1267,12 +1267,12 @@ fn build_personas_tab_shortcuts<'a>(state: &AgentsModalState) -> Vec<Shortcut<'a
                 id: 0,
             },
             Shortcut {
-                label: ctx.named_static_text("agents.shortcut.expand", "e/\u{2192} expand"),
+                label: ctx.tr_static("e/\u{2192} expand"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: ctx.named_static_text("agents.shortcut.collapse", "E/\u{2190} collapse"),
+                label: ctx.tr_static("E/\u{2190} collapse"),
                 clickable: false,
                 id: 0,
             },
@@ -1469,19 +1469,19 @@ fn render_agents_tab(
                 let ctx = crate::locale::ctx();
                 let label = match group {
                     AgentGroup::Scope(AgentScope::BuiltIn) => {
-                        ctx.named_static_text("agents.scope_header.built_in", "\u{2500}\u{2500} Built-in \u{2500}\u{2500}")
+                        ctx.tr_static("\u{2500}\u{2500} Built-in \u{2500}\u{2500}")
                     }
                     AgentGroup::Scope(AgentScope::Project) => {
-                        ctx.named_static_text("agents.scope_header.project", "\u{2500}\u{2500} Project \u{2500}\u{2500}")
+                        ctx.tr_static("\u{2500}\u{2500} Project \u{2500}\u{2500}")
                     }
                     AgentGroup::Scope(AgentScope::User) => {
-                        ctx.named_static_text("agents.scope_header.user", "\u{2500}\u{2500} User \u{2500}\u{2500}")
+                        ctx.tr_static("\u{2500}\u{2500} User \u{2500}\u{2500}")
                     }
                     AgentGroup::Scope(AgentScope::Bundled) => {
-                        ctx.named_static_text("agents.scope_header.bundled", "\u{2500}\u{2500} Bundled \u{2500}\u{2500}")
+                        ctx.tr_static("\u{2500}\u{2500} Bundled \u{2500}\u{2500}")
                     }
                     AgentGroup::Plugin => {
-                        ctx.named_static_text("agents.scope_header.plugin", "\u{2500}\u{2500} Plugins \u{2500}\u{2500}")
+                        ctx.tr_static("\u{2500}\u{2500} Plugins \u{2500}\u{2500}")
                     }
                 };
                 let style = Style::default()
@@ -2335,9 +2335,7 @@ fn handle_agents_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
         KeyCode::Enter | KeyCode::Char('o') => {
             if let Some(entry) = state.agents.get(state.selected) {
                 if let Some(ref path) = entry.source_path {
-                    let title = crate::locale::ctx().format_named(
-                        "agents.detail.viewer_title",
-                        "{name} \u{00b7} prompt extension",
+                    let title = crate::locale::ctx().tr_format("{name} \u{00b7} prompt extension",
                         &[("name", &entry.name)],
                     );
                     return AgentsModalOutcome::ViewAgent {
@@ -2347,9 +2345,7 @@ fn handle_agents_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
                     };
                 }
                 if entry.definition.prompt_body.is_some() {
-                    let title = crate::locale::ctx().format_named(
-                        "agents.detail.viewer_title",
-                        "{name} \u{00b7} prompt extension",
+                    let title = crate::locale::ctx().tr_format("{name} \u{00b7} prompt extension",
                         &[("name", &entry.name)],
                     );
                     return AgentsModalOutcome::ViewAgent {
@@ -2417,15 +2413,11 @@ fn handle_agents_tab_key(state: &mut AgentsModalState, key: &KeyEvent) -> Agents
                     Ok(()) => {
                         state.rebuild_agents();
                         state.message = Some(AgentsModalMessage::info(if new_enabled {
-                            crate::locale::ctx().format_named(
-                                "agents.message.enabled",
-                                "Enabled '{name}' \u{2014} applies to new sessions",
+                            crate::locale::ctx().tr_format("Enabled '{name}' \u{2014} applies to new sessions",
                                 &[("name", &name)],
                             )
                         } else {
-                            crate::locale::ctx().format_named(
-                                "agents.message.disabled",
-                                "Disabled '{name}' \u{2014} applies to new sessions",
+                            crate::locale::ctx().tr_format("Disabled '{name}' \u{2014} applies to new sessions",
                                 &[("name", &name)],
                             )
                         }));

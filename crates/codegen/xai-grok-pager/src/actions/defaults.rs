@@ -28,9 +28,7 @@ fn mode_ctrl_g_action(screen_mode: crate::app::ScreenMode) -> ActionDef {
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.EditPromptExternal.long_help",
-                    "Opens the current prompt draft in $VISUAL or $EDITOR, falling back to vi when neither is set.\nSaving and closing the editor returns the updated text to the composer; it does not send the prompt.\nAvailable in minimal mode for ordinary attachment-free drafts.",
+                crate::locale::ctx().tr_static("Opens the current prompt draft in $VISUAL or $EDITOR, falling back to vi when neither is set.\nSaving and closing the editor returns the updated text to the composer; it does not send the prompt.\nAvailable in minimal mode for ordinary attachment-free drafts.",
                 )
             ),
         }
@@ -47,9 +45,7 @@ fn mode_ctrl_g_action(screen_mode: crate::app::ScreenMode) -> ActionDef {
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ToggleTasks.long_help",
-                    "Shows or hides the tasks pane, which lists background tasks and their status.\nUse it to monitor or return to work you sent to the background with Ctrl+B.\nA side pane; toggle off to reclaim width.",
+                crate::locale::ctx().tr_static("Shows or hides the tasks pane, which lists background tasks and their status.\nUse it to monitor or return to work you sent to the background with Ctrl+B.\nA side pane; toggle off to reclaim width.",
                 )
             ),
         }
@@ -75,14 +71,10 @@ pub(super) fn default_actions(
     // Minimal mode rebinds Ctrl+G to EditPromptExternal, so the two variants cannot share a
     // catalog id: telling a minimal-mode user to press Ctrl+G would send them to the editor.
     let send_to_background_help = if screen_mode.is_minimal() {
-        crate::locale::ctx().named_static_text(
-            "shortcuts.action.SendToBackground.long_help.minimal",
-            "Detaches the running foreground Execute so it keeps working in the background while you read, queue prompts, or start something else.\nTrack background work with /tasks.\nOnly meaningful while a foreground Execute is actually running.",
+        crate::locale::ctx().tr_static("Detaches the running foreground Execute so it keeps working in the background while you read, queue prompts, or start something else.\nTrack background work with /tasks.\nOnly meaningful while a foreground Execute is actually running.",
         )
     } else {
-        crate::locale::ctx().named_static_text(
-            "shortcuts.action.SendToBackground.long_help.tasks_pane",
-            "Detaches the running foreground Execute so it keeps working in the background while you read, queue prompts, or start something else.\nTrack and resume it from the tasks pane (Ctrl+G).\nOnly meaningful while a foreground Execute is actually running.",
+        crate::locale::ctx().tr_static("Detaches the running foreground Execute so it keeps working in the background while you read, queue prompts, or start something else.\nTrack and resume it from the tasks pane (Ctrl+G).\nOnly meaningful while a foreground Execute is actually running.",
         )
     };
 
@@ -313,9 +305,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ToggleFold.long_help",
-                    "Folds or unfolds the selected scrollback entry to hide or show its full body.\nHandy for skimming long tool output or reasoning.\nRelated: E folds/unfolds every entry, Ctrl+E toggles all thinking blocks.",
+                crate::locale::ctx().tr_static("Folds or unfolds the selected scrollback entry to hide or show its full body.\nHandy for skimming long tool output or reasoning.\nRelated: E folds/unfolds every entry, Ctrl+E toggles all thinking blocks.",
                 )
             ),
         },
@@ -331,9 +321,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ToggleExpandAll.long_help",
-                    "Folds or unfolds every scrollback entry at once, unlike e which toggles only the selected row.\nCollapse a long transcript to scan headers, then expand it all back.\nThinking blocks have their own toggle, Ctrl+E.",
+                crate::locale::ctx().tr_static("Folds or unfolds every scrollback entry at once, unlike e which toggles only the selected row.\nCollapse a long transcript to scan headers, then expand it all back.\nThinking blocks have their own toggle, Ctrl+E.",
                 )
             ),
         },
@@ -349,9 +337,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ExpandAllThinking.long_help",
-                    "Shows or hides the agent's reasoning (thinking) blocks across the whole transcript in one keypress.\nReveal how the agent reached an answer, or hide reasoning to focus on results.\nSeparate from E, which folds every entry regardless of type.",
+                crate::locale::ctx().tr_static("Shows or hides the agent's reasoning (thinking) blocks across the whole transcript in one keypress.\nReveal how the agent reached an answer, or hide reasoning to focus on results.\nSeparate from E, which folds every entry regardless of type.",
                 )
             ),
         },
@@ -367,9 +353,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ToggleRaw.long_help",
-                    "Switches the selected entry between rendered markdown and its raw source text.\nUse it to copy exact markdown, inspect a link target, or see formatting the renderer hides.\nPress again to return to the rendered view.",
+                crate::locale::ctx().tr_static("Switches the selected entry between rendered markdown and its raw source text.\nUse it to copy exact markdown, inspect a link target, or see formatting the renderer hides.\nPress again to return to the rendered view.",
                 )
             ),
         },
@@ -386,9 +370,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.CopyBlockContent.long_help",
-                    "Copies the selected block's body to the clipboard: message text, full tool output, or a code block's contents.\nOffered only on blocks that support copy.\nFor just the command or file path, use Y instead.",
+                crate::locale::ctx().tr_static("Copies the selected block's body to the clipboard: message text, full tool output, or a code block's contents.\nOffered only on blocks that support copy.\nFor just the command or file path, use Y instead.",
                 )
             ),
         },
@@ -404,9 +386,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.CopyBlockMeta.long_help",
-                    "Copies only the block's identifier: a tool call's command line or a file block's path, not the body.\nHandy to re-run a command or paste a path elsewhere.\nUse lowercase y to copy the full content instead.",
+                crate::locale::ctx().tr_static("Copies only the block's identifier: a tool call's command line or a file block's path, not the body.\nHandy to re-run a command or paste a path elsewhere.\nUse lowercase y to copy the full content instead.",
                 )
             ),
         },
@@ -422,9 +402,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.OpenBlockViewer.long_help",
-                    "Opens the selected block in a focused, scrollable full-screen viewer.\nBest for long tool output, large files, or code you want to read away from the surrounding transcript.\nEsc returns to the conversation.",
+                crate::locale::ctx().tr_static("Opens the selected block in a focused, scrollable full-screen viewer.\nBest for long tool output, large files, or code you want to read away from the surrounding transcript.\nEsc returns to the conversation.",
                 )
             ),
         },
@@ -468,9 +446,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.Rewind.long_help",
-                    "Rewinds the conversation to an earlier turn, discarding later turns. File changes made after that turn are left as-is.\nPick a turn from the list; a running turn is offered for cancel first. When Confirm before rewind is on (default), each pick asks Yes / Yes, and don't ask again / No. Picking \"Yes, and don't ask again\" turns the setting off in /settings.\nDestructive: later turns are dropped.\nAlso reachable idle with an empty prompt via Esc Esc (within 800ms), same as `/rewind`.",
+                crate::locale::ctx().tr_static("Rewinds the conversation to an earlier turn, discarding later turns. File changes made after that turn are left as-is.\nPick a turn from the list; a running turn is offered for cancel first. When Confirm before rewind is on (default), each pick asks Yes / Yes, and don't ask again / No. Picking \"Yes, and don't ask again\" turns the setting off in /settings.\nDestructive: later turns are dropped.\nAlso reachable idle with an empty prompt via Esc Esc (within 800ms), same as `/rewind`.",
                 )
             ),
         },
@@ -486,9 +462,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.KillBgTask.long_help",
-                    "Terminates the background task owned by the selected task block (e.g. a long shell command sent to the background).\nReach for it to stop a runaway or no-longer-needed process.\nApplies only to a live task; finished ones are unaffected.",
+                crate::locale::ctx().tr_static("Terminates the background task owned by the selected task block (e.g. a long shell command sent to the background).\nReach for it to stop a runaway or no-longer-needed process.\nApplies only to a live task; finished ones are unaffected.",
                 )
             ),
         },
@@ -531,9 +505,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.FocusScrollback.long_help",
-                    "Moves focus from the prompt to the scrollback so you can navigate the transcript.\nTab works in both simple and vim scrollback modes.\nEsc is reserved for the cancel / clear / rewind policy, not focus.",
+                crate::locale::ctx().tr_static("Moves focus from the prompt to the scrollback so you can navigate the transcript.\nTab works in both simple and vim scrollback modes.\nEsc is reserved for the cancel / clear / rewind policy, not focus.",
                 )
             ),
         },
@@ -549,9 +521,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.CancelTurn.long_help",
-                    "Interrupts the agent's current turn and stops generation, keeping the session open.\nCtrl+C cancels when the prompt is empty; with a non-empty draft it clears the prompt first and leaves the turn running.\nEsc never cancels a turn; pressed mid-turn it shows a reminder to use Ctrl+C.\nIt stops the turn, not the app; use the quit shortcut to exit.",
+                crate::locale::ctx().tr_static("Interrupts the agent's current turn and stops generation, keeping the session open.\nCtrl+C cancels when the prompt is empty; with a non-empty draft it clears the prompt first and leaves the turn running.\nEsc never cancels a turn; pressed mid-turn it shows a reminder to use Ctrl+C.\nIt stops the turn, not the app; use the quit shortcut to exit.",
                 )
             ),
         },
@@ -568,9 +538,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Shift+Tab"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.CycleMode.long_help",
-                    "Steps the session mode: Normal -> Plan -> Always-Approve -> Normal.\nPlan keeps the agent planning first and writes no files; Always-Approve runs every tool call without asking.\nCtrl+O toggles auto-approve directly.",
+                crate::locale::ctx().tr_static("Steps the session mode: Normal -> Plan -> Always-Approve -> Normal.\nPlan keeps the agent planning first and writes no files; Always-Approve runs every tool call without asking.\nCtrl+O toggles auto-approve directly.",
                 )
             ),
         },
@@ -588,9 +556,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ToggleTodos.long_help",
-                    "Shows or hides the todo pane: the agent's live task checklist for the current work.\nWatch what it plans to do and what's left as the turn runs.\nA side pane; toggle it off to reclaim width.",
+                crate::locale::ctx().tr_static("Shows or hides the todo pane: the agent's live task checklist for the current work.\nWatch what it plans to do and what's left as the turn runs.\nA side pane; toggle it off to reclaim width.",
                 )
             ),
         },
@@ -619,9 +585,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ToggleQueue.long_help",
-                    "Shows or hides the prompt queue.\nThe queue lets you line up follow-up prompts while a turn is running; each is sent automatically when the agent finishes.\nLocal macOS VS Code family: Ctrl+4 primary (Ctrl+; / Ctrl+' alts). Otherwise Ctrl+; with Ctrl+' alt.",
+                crate::locale::ctx().tr_static("Shows or hides the prompt queue.\nThe queue lets you line up follow-up prompts while a turn is running; each is sent automatically when the agent finishes.\nLocal macOS VS Code family: Ctrl+4 primary (Ctrl+; / Ctrl+' alts). Otherwise Ctrl+; with Ctrl+' alt.",
                 )
             ),
         },
@@ -637,9 +601,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.OpenSessions.long_help",
-                    "Opens the session browser to resume or switch between past conversations.\nSelect one to reattach to its full history. `/resume` does the same.\nSeparate from the Agent Dashboard (Ctrl+\\), which manages many live agents at once.",
+                crate::locale::ctx().tr_static("Opens the session browser to resume or switch between past conversations.\nSelect one to reattach to its full history. `/resume` does the same.\nSeparate from the Agent Dashboard (Ctrl+\\), which manages many live agents at once.",
                 )
             ),
         },
@@ -660,9 +622,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.OpenExtensions.long_help",
-                    "Opens the extensions manager for MCP servers and plugins: see what's connected and the tools they add.\nUse it to confirm an integration loaded or browse available tools.\nDistinct from settings, which holds general app options.",
+                crate::locale::ctx().tr_static("Opens the extensions manager for MCP servers and plugins: see what's connected and the tools they add.\nUse it to confirm an integration loaded or browse available tools.\nDistinct from settings, which holds general app options.",
                 )
             ),
         },
@@ -708,9 +668,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.InterjectPrompt.long_help",
-                    "Sends a message to the agent mid-turn without cancelling it (interject), so you can steer or add context while it keeps working.\nPlain Enter while a turn is running queues a follow-up for later; this chord merges composer text into the current turn instead.\nWith an empty composer, bare Enter (or this chord) force-sends the top queued follow-up from the prompt: no need to focus the queue pane. On the queue pane, this chord force-sends the selected row.\nReach for it to correct course without losing the turn's progress.",
+                crate::locale::ctx().tr_static("Sends a message to the agent mid-turn without cancelling it (interject), so you can steer or add context while it keeps working.\nPlain Enter while a turn is running queues a follow-up for later; this chord merges composer text into the current turn instead.\nWith an empty composer, bare Enter (or this chord) force-sends the top queued follow-up from the prompt: no need to focus the queue pane. On the queue pane, this chord force-sends the selected row.\nReach for it to correct course without losing the turn's progress.",
                 )
             ),
         },
@@ -743,9 +701,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Ctrl+Space / F8"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.VoiceToggle.long_help",
-                    "Microphone capture for dictation, bound to Ctrl+Space (or F8: handy where Ctrl+Space is taken, e.g. macOS input-source switching; use Fn+F8 on a laptop).\nBehavior follows the Voice capture setting: toggle (press to start, press again to stop) or hold-to-talk (hold to record, release to stop), where hold needs a Kitty-protocol terminal and falls back to toggle elsewhere. `/voice` toggles everywhere.\nSpeech is transcribed straight into the prompt.",
+                crate::locale::ctx().tr_static("Microphone capture for dictation, bound to Ctrl+Space (or F8: handy where Ctrl+Space is taken, e.g. macOS input-source switching; use Fn+F8 on a laptop).\nBehavior follows the Voice capture setting: toggle (press to start, press again to stop) or hold-to-talk (hold to record, release to stop), where hold needs a Kitty-protocol terminal and falls back to toggle elsewhere. `/voice` toggles everywhere.\nSpeech is transcribed straight into the prompt.",
                 )
             ),
         },
@@ -763,9 +719,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ToggleMultiline.long_help",
-                    "Toggles a persistent multi-line prompt so the editor stays expanded for composing longer messages.\nInsert newlines with Shift+Enter or Alt+Enter (or a trailing backslash); bare Enter still sends.\nCtrl+M toggles multiline in the prompt; off the prompt it opens the model picker.",
+                crate::locale::ctx().tr_static("Toggles a persistent multi-line prompt so the editor stays expanded for composing longer messages.\nInsert newlines with Shift+Enter or Alt+Enter (or a trailing backslash); bare Enter still sends.\nCtrl+M toggles multiline in the prompt; off the prompt it opens the model picker.",
                 )
             ),
         },
@@ -782,9 +736,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.StashPrompt.long_help",
-                    "Stash your current prompt as a draft.\nCtrl+S sets the draft aside and clears the composer. Ctrl+S on an empty composer restores it. The draft also restores by itself after you send your next prompt. Use Alt+S if your terminal swallows Ctrl+S.\nOne draft at a time: a new stash replaces the old one.",
+                crate::locale::ctx().tr_static("Stash your current prompt as a draft.\nCtrl+S sets the draft aside and clears the composer. Ctrl+S on an empty composer restores it. The draft also restores by itself after you send your next prompt. Use Alt+S if your terminal swallows Ctrl+S.\nOne draft at a time: a new stash replaces the old one.",
                 )
             ),
         },
@@ -800,9 +752,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("!"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.BashMode.long_help",
-                    "Runs a shell command without leaving the chat: type ! at the start of an empty prompt, then the command.\nThe command output is captured into the scrollback.\nDelete the leading ! to go back to a normal prompt.",
+                crate::locale::ctx().tr_static("Runs a shell command without leaving the chat: type ! at the start of an empty prompt, then the command.\nThe command output is captured into the scrollback.\nDelete the leading ! to go back to a normal prompt.",
                 )
             ),
         },
@@ -819,9 +769,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ToggleYolo.long_help",
-                    "Turns auto-approve (YOLO) on or off for this session.\nWhile on, the agent runs every tool call (edits, shell, deletes) with no per-action confirmation.\nSame state as the Shift+Tab cycle's Always-Approve; use with care.",
+                crate::locale::ctx().tr_static("Turns auto-approve (YOLO) on or off for this session.\nWhile on, the agent runs every tool call (edits, shell, deletes) with no per-action confirmation.\nSame state as the Shift+Tab cycle's Always-Approve; use with care.",
                 )
             ),
         },
@@ -837,9 +785,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: true,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.NewSession.long_help",
-                    "Starts a fresh session with empty scrollback and context.\nRequires confirmation: press it twice (the first press arms, the second starts)\nso you don't discard the current conversation by accident.",
+                crate::locale::ctx().tr_static("Starts a fresh session with empty scrollback and context.\nRequires confirmation: press it twice (the first press arms, the second starts)\nso you don't discard the current conversation by accident.",
                 )
             ),
         },
@@ -863,9 +809,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: true,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.Quit.long_help",
-                    "Exits the app. Requires confirmation: press twice in quick succession;\na lone press is treated as a stray key and ignored.\nBound to Ctrl+Q, with Ctrl+D as an alias (Ctrl+D is primary in VS Code's terminal).",
+                crate::locale::ctx().tr_static("Exits the app. Requires confirmation: press twice in quick succession;\na lone press is treated as a stray key and ignored.\nBound to Ctrl+Q, with Ctrl+D as an alias (Ctrl+D is primary in VS Code's terminal).",
                 )
             ),
         },
@@ -881,9 +825,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("?"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.CommandPalette.long_help",
-                    "Fuzzy-search every action and slash command, then run it by name.\nUseful when you don't remember a key binding.\nAlso opens with ? while the scrollback is focused.",
+                crate::locale::ctx().tr_static("Fuzzy-search every action and slash command, then run it by name.\nUseful when you don't remember a key binding.\nAlso opens with ? while the scrollback is focused.",
                 )
             ),
         },
@@ -907,9 +849,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ShortcutsHelp.long_help",
-                    "Opens this keyboard cheatsheet.\nBrowse with j/k, expand a row's inline help with e, or press Enter for a shortcut's full detail page.\nBound to both Ctrl+. and Ctrl+X; the bar advertises whichever your terminal sends reliably.",
+                crate::locale::ctx().tr_static("Opens this keyboard cheatsheet.\nBrowse with j/k, expand a row's inline help with e, or press Enter for a shortcut's full detail page.\nBound to both Ctrl+. and Ctrl+X; the bar advertises whichever your terminal sends reliably.",
                 )
             ),
         },
@@ -925,9 +865,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.ModelPicker.long_help",
-                    "Opens the model picker to switch the model for this session; the choice applies to later turns.\nBound to Ctrl+M, but while the prompt is focused that chord toggles multiline instead.\nReach it from the scrollback or the command palette.",
+                crate::locale::ctx().tr_static("Opens the model picker to switch the model for this session; the choice applies to later turns.\nBound to Ctrl+M, but while the prompt is focused that chord toggles multiline instead.\nReach it from the scrollback or the command palette.",
                 )
             ),
         },
@@ -986,9 +924,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Ctrl+\\"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.OpenDashboard.long_help",
-                    "Opens the Agent Dashboard: a list of all your running and recent agents to monitor and switch between.\nWorks from anywhere, including the welcome screen and inside a session.\nFrom there you can dispatch, attach, stop, group, and reorder agents.",
+                crate::locale::ctx().tr_static("Opens the Agent Dashboard: a list of all your running and recent agents to monitor and switch between.\nWorks from anywhere, including the welcome screen and inside a session.\nFrom there you can dispatch, attach, stop, group, and reorder agents.",
                 )
             ),
         },
@@ -1033,9 +969,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardTogglePin.long_help",
-                    "Pins or unpins the selected agent so it stays at the top of the list regardless of sorting or grouping.\nKeep the agents you care about in view as others come and go.\nPins persist across dashboard sessions.",
+                crate::locale::ctx().tr_static("Pins or unpins the selected agent so it stays at the top of the list regardless of sorting or grouping.\nKeep the agents you care about in view as others come and go.\nPins persist across dashboard sessions.",
                 )
             ),
         },
@@ -1064,9 +998,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardStop.long_help",
-                    "On a busy top-level row, Ctrl+X cancels the running turn. Once the row is idle, press Ctrl+X again within 2s to permanently delete the session.\nOn a subagent row, Ctrl+X kills the subagent.",
+                crate::locale::ctx().tr_static("On a busy top-level row, Ctrl+X cancels the running turn. Once the row is idle, press Ctrl+X again within 2s to permanently delete the session.\nOn a subagent row, Ctrl+X kills the subagent.",
                 )
             ),
         },
@@ -1084,9 +1016,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Shift+Tab"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardCycleMode.long_help",
-                    "Cycles the dispatch mode for agents you launch from the dashboard: Normal, Plan, then Always-Approve.\nPlan has new agents plan before changing files; Always-Approve runs their tools without prompting.\nMirrors the in-session Shift+Tab cycle, applied to new dispatches.",
+                crate::locale::ctx().tr_static("Cycles the dispatch mode for agents you launch from the dashboard: Normal, Plan, then Always-Approve.\nPlan has new agents plan before changing files; Always-Approve runs their tools without prompting.\nMirrors the in-session Shift+Tab cycle, applied to new dispatches.",
                 )
             ),
         },
@@ -1105,9 +1035,7 @@ pub(super) fn default_actions(
             hint_key_display: None,
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardToggleGrouping.long_help",
-                    "Switches the dashboard between a flat list and rows grouped by state, such as working versus idle.\nGrouping surfaces the agents that need attention; the flat list keeps a stable order.\nYour choice persists across sessions.",
+                crate::locale::ctx().tr_static("Switches the dashboard between a flat list and rows grouped by state, such as working versus idle.\nGrouping surfaces the agents that need attention; the flat list keeps a stable order.\nYour choice persists across sessions.",
                 )
             ),
         },
@@ -1175,9 +1103,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Esc"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardExit.long_help",
-                    "Closes the dashboard and returns to where you were.\nEsc is a cascade: it first dismisses an open peek or clears an active filter, and only exits once nothing else is pending.\nRebind this action to a different key to exit directly.",
+                crate::locale::ctx().tr_static("Closes the dashboard and returns to where you were.\nEsc is a cascade: it first dismisses an open peek or clears an active filter, and only exits once nothing else is pending.\nRebind this action to a different key to exit directly.",
                 )
             ),
         },
@@ -1195,9 +1121,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Ctrl+O"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardToggleAutoApprove.long_help",
-                    "Toggles auto-approve (YOLO) for the selected agent right from the dashboard, without attaching to it.\nWhile on, that agent runs every tool call with no per-action confirmation.\nThe per-session equivalent is Ctrl+O inside a session.",
+                crate::locale::ctx().tr_static("Toggles auto-approve (YOLO) for the selected agent right from the dashboard, without attaching to it.\nWhile on, that agent runs every tool call with no per-action confirmation.\nThe per-session equivalent is Ctrl+O inside a session.",
                 )
             ),
         },
@@ -1215,9 +1139,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Ctrl+l"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardOpenLocationPicker.long_help",
-                    "Opens a picker to set the working directory that newly dispatched dashboard agents run in.\nLaunch agents against a different repo or folder without leaving the dashboard.\nAffects new dispatches only, not agents already running.",
+                crate::locale::ctx().tr_static("Opens a picker to set the working directory that newly dispatched dashboard agents run in.\nLaunch agents against a different repo or folder without leaving the dashboard.\nAffects new dispatches only, not agents already running.",
                 )
             ),
         },
@@ -1235,9 +1157,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Ctrl+w"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardToggleWorktree.long_help",
-                    "Arms the next dashboard-dispatched agent to spawn in a fresh git worktree, isolating its work on a separate checkout.\nOnly applies when the working directory is a git repo.\nAffects newly dispatched agents, not ones already running.",
+                crate::locale::ctx().tr_static("Arms the next dashboard-dispatched agent to spawn in a fresh git worktree, isolating its work on a separate checkout.\nOnly applies when the working directory is a git repo.\nAffects newly dispatched agents, not ones already running.",
                 )
             ),
         },
@@ -1259,9 +1179,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Ctrl+\\"),
             requires_confirmation: false,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardOverlayExit.long_help",
-                    "Leaves the attached session overlay and returns to the dashboard list, without stopping the agent.\nAlso reachable via q on the scrollback, a neutral Esc, or the close button.\nTo stop the agent instead of just detaching, use Ctrl+X.",
+                crate::locale::ctx().tr_static("Leaves the attached session overlay and returns to the dashboard list, without stopping the agent.\nAlso reachable via q on the scrollback, a neutral Esc, or the close button.\nTo stop the agent instead of just detaching, use Ctrl+X.",
                 )
             ),
         },
@@ -1305,9 +1223,7 @@ pub(super) fn default_actions(
             hint_key_display: Some("Ctrl+x"),
             requires_confirmation: true,
             long_help: Some(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.action.DashboardOverlayStop.long_help",
-                    "Inside a session overlay, stops the attached agent and closes it, returning you to the dashboard list.\nRequires confirmation: press Ctrl+X twice.\nCtrl+. still opens the cheatsheet here; only Ctrl+X is taken over by stop.",
+                crate::locale::ctx().tr_static("Inside a session overlay, stops the attached agent and closes it, returning you to the dashboard list.\nRequires confirmation: press Ctrl+X twice.\nCtrl+. still opens the cheatsheet here; only Ctrl+X is taken over by stop.",
                 )
             ),
         },
