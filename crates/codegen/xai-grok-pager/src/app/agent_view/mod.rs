@@ -389,14 +389,10 @@ impl PromptInputMode {
             PromptInputMode::Normal | PromptInputMode::Bash => None,
             PromptInputMode::Remember => {
                 if multiline {
-                    Some(crate::locale::ctx().named_static_text(
-                        "prompt.placeholder.remember_multiline",
-                        "Save a memory note... (Enter for newline, Shift+Enter to save)",
+                    Some(crate::locale::ctx().tr_static("Save a memory note... (Enter for newline, Shift+Enter to save)",
                     ))
                 } else {
-                    Some(crate::locale::ctx().named_static_text(
-                        "prompt.placeholder.remember_single",
-                        "Save a memory note... (Shift+Enter for multiline)",
+                    Some(crate::locale::ctx().tr_static("Save a memory note... (Shift+Enter for multiline)",
                     ))
                 }
             }
@@ -405,13 +401,9 @@ impl PromptInputMode {
     pub fn prompt_info_override(self) -> Option<&'static str> {
         match self {
             PromptInputMode::Normal => None,
-            PromptInputMode::Bash => Some(crate::locale::ctx().named_static_text(
-                "prompt.info.bash",
-                "Run shell command",
+            PromptInputMode::Bash => Some(crate::locale::ctx().tr_static("Run shell command",
             )),
-            PromptInputMode::Remember => Some(crate::locale::ctx().named_static_text(
-                "prompt.info.remember",
-                "Save memory note",
+            PromptInputMode::Remember => Some(crate::locale::ctx().tr_static("Save memory note",
             )),
         }
     }

@@ -137,9 +137,7 @@ pub(super) fn open_doctor_fix_question(
     if agent.question_view.is_some() {
         agent.scrollback.push_block(RenderBlock::system(
             crate::locale::ctx()
-                .named_static_text(
-                    "doctor.fix.close_current_question",
-                    "Close the current question before applying this fix.",
+                .tr_static("Close the current question before applying this fix.",
                 )
                 .to_string(),
         ));
@@ -148,17 +146,15 @@ pub(super) fn open_doctor_fix_question(
     let preview = crate::diagnostics::format_fix_preview(&plan);
     let question = Question {
         question: crate::locale::ctx()
-            .named_static_text("doctor.fix.question", "Apply this fix?")
+            .tr_static("Apply this fix?")
             .to_owned(),
         options: vec![
             QuestionOption {
                 label: crate::locale::ctx()
-                    .named_static_text("doctor.fix.apply", "Apply")
+                    .tr_static("Apply")
                     .to_owned(),
                 description: crate::locale::ctx()
-                    .named_static_text(
-                        "doctor.fix.apply_description",
-                        "Make the changes shown above.",
+                    .tr_static("Make the changes shown above.",
                     )
                     .to_owned(),
                 preview: Some(preview),
@@ -166,12 +162,10 @@ pub(super) fn open_doctor_fix_question(
             },
             QuestionOption {
                 label: crate::locale::ctx()
-                    .named_static_text("doctor.fix.cancel", "Cancel")
+                    .tr_static("Cancel")
                     .to_owned(),
                 description: crate::locale::ctx()
-                    .named_static_text(
-                        "doctor.fix.cancel_description",
-                        "Do not change the configuration.",
+                    .tr_static("Do not change the configuration.",
                     )
                     .to_owned(),
                 preview: None,
@@ -1455,22 +1449,18 @@ pub(super) fn handle_prompt_response(
         let notification = match (&result, was_cancelling) {
             (Ok(_), false) if !agent.bash_turn => {
                 let body = match elapsed {
-                    Some(d) => crate::locale::ctx().format_named(
-                        "notification.turn_complete_duration",
-                        "Turn complete in {duration}.",
+                    Some(d) => crate::locale::ctx().tr_format("Turn complete in {duration}.",
                         &[("duration", &crate::util::format_duration(d))],
                     ),
                     None => crate::locale::ctx()
-                        .named_text("notification.turn_complete", "Turn complete.")
+                        .tr("Turn complete.")
                         .into_owned(),
                 };
                 Some((NotificationEventKind::TurnComplete, body))
             }
             (Err(err), _) if !dedicated_ux_shown => Some((
                 NotificationEventKind::AgentError,
-                crate::locale::ctx().format_named(
-                    "notification.agent_error",
-                    "Error: {error}",
+                crate::locale::ctx().tr_format("Error: {error}",
                     &[("error", err)],
                 ),
             )),

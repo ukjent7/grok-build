@@ -718,7 +718,7 @@ pub(crate) fn build_session_entry_data(
             let entry = &entries_data[orig_idx];
             let summary = if entry.summary.is_empty() {
                 crate::locale::ctx()
-                    .named_text("session.entry.no_prompt", "(no prompt)")
+                    .tr("(no prompt)")
                     .into_owned()
             } else {
                 entry.summary.clone()
@@ -787,9 +787,7 @@ pub(crate) fn build_session_entry_data(
                     ));
                 }
                 if let Some(ref detail) = entry.card_detail {
-                    let turns = ctx.format_named(
-                        "session.field.turns_with_tools",
-                        "{turns}    Tools  {tools}",
+                    let turns = ctx.tr_format("{turns}    Tools  {tools}",
                         &[
                             ("turns", &detail.turn_count.to_string()),
                             ("tools", &detail.tool_call_count.to_string()),
@@ -975,9 +973,7 @@ pub(crate) fn build_content_header_label(
         )
     } else if has_content_rows {
         crate::locale::ctx()
-            .named_text(
-                "session.content.extended_results",
-                "Extended search results (remote and local sessions)",
+            .tr("Extended search results (remote and local sessions)",
             )
             .into_owned()
     } else {
@@ -1017,34 +1013,26 @@ pub(crate) fn format_time_ago(dt: chrono::DateTime<chrono::Utc>) -> String {
 
     let ctx = crate::locale::ctx();
     let raw = if duration.num_minutes() < 1 {
-        ctx.named_text("session_picker.time.just_now", "just now")
+        ctx.tr("just now")
             .into_owned()
     } else if duration.num_minutes() < 60 {
         let value = duration.num_minutes().to_string();
-        ctx.format_named(
-            "session_picker.time.minutes_ago",
-            "{value}m ago",
+        ctx.tr_format("{value}m ago",
             &[("value", &value)],
         )
     } else if duration.num_hours() < 24 {
         let value = duration.num_hours().to_string();
-        ctx.format_named(
-            "session_picker.time.hours_ago",
-            "{value}h ago",
+        ctx.tr_format("{value}h ago",
             &[("value", &value)],
         )
     } else if duration.num_days() < 30 {
         let value = duration.num_days().to_string();
-        ctx.format_named(
-            "session_picker.time.days_ago",
-            "{value}d ago",
+        ctx.tr_format("{value}d ago",
             &[("value", &value)],
         )
     } else {
         let value = (duration.num_days() / 30).to_string();
-        ctx.format_named(
-            "session_picker.time.months_ago",
-            "{value}mo ago",
+        ctx.tr_format("{value}mo ago",
             &[("value", &value)],
         )
     };

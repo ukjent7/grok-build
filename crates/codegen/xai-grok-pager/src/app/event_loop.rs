@@ -1062,9 +1062,7 @@ fn run_pending_mode_switch(
                     crate::app::mode_switch::push_block_behind_live_stream(
                         &mut agent.scrollback,
                         crate::scrollback::block::RenderBlock::system(
-                            crate::locale::ctx().named_text(
-                                "mode.switch.to_minimal",
-                                "Switched to minimal mode · /fullscreen to go back",
+                            crate::locale::ctx().tr("Switched to minimal mode · /fullscreen to go back",
                             ),
                         ),
                     );
@@ -1080,9 +1078,7 @@ fn run_pending_mode_switch(
                 if let ActiveView::Agent(id) = app.active_view
                     && let Some(agent) = app.agents.get_mut(&id)
                 {
-                    agent.show_toast(&crate::locale::ctx().named_text(
-                        "mode.switch.to_fullscreen",
-                        "Switched to fullscreen mode · /minimal to go back",
+                    agent.show_toast(&crate::locale::ctx().tr("Switched to fullscreen mode · /minimal to go back",
                     ));
                 }
             }
@@ -1103,9 +1099,7 @@ fn run_pending_mode_switch(
                 crate::app::mode_switch::push_block_behind_live_stream(
                     &mut agent.scrollback,
                     crate::scrollback::block::RenderBlock::system(
-                        crate::locale::ctx().format_named(
-                            "mode.switch.error",
-                            "Couldn't switch to {mode} mode: {reason}",
+                        crate::locale::ctx().tr_format("Couldn't switch to {mode} mode: {reason}",
                             &[("mode", target.meta_label()), ("reason", reason.as_str())],
                         ),
                     ),
@@ -3078,9 +3072,7 @@ pub(crate) async fn run(
                             None,
                             Some(serde_json::json!({ "attempt": attempt })),
                         );
-                        app.show_toast(&crate::locale::ctx().format_named(
-                            "reconnect.attempt",
-                            "Disconnected. Reconnecting... (attempt {attempt})",
+                        app.show_toast(&crate::locale::ctx().tr_format("Disconnected. Reconnecting... (attempt {attempt})",
                             &[("attempt", &attempt.to_string())],
                         ));
                         presenter.request(false);
@@ -3263,11 +3255,11 @@ pub(crate) async fn run(
 
                         let reconnect_msg = if any_reload {
                             crate::locale::ctx()
-                                .named_text("reconnect.reload", "Reconnected. Reloading session...")
+                                .tr("Reconnected. Reloading session...")
                                 .into_owned()
                         } else {
                             crate::locale::ctx()
-                                .named_text("reconnect.reinitialize", "Reconnected. Re-initializing...")
+                                .tr("Reconnected. Re-initializing...")
                                 .into_owned()
                         };
                         app.show_toast(&reconnect_msg);
@@ -3348,19 +3340,13 @@ pub(crate) async fn run(
 
                 if pending.agent_ids.is_empty() {
                     // Nothing was reloaded (no open sessions at reconnect).
-                    app.show_toast(crate::locale::ctx().named_static_text(
-                        "reconnect.connected",
-                        "Reconnected.",
+                    app.show_toast(crate::locale::ctx().tr_static("Reconnected.",
                     ));
                 } else if restored {
-                    app.show_toast(crate::locale::ctx().named_static_text(
-                        "reconnect.restored",
-                        "Session restored. In-progress tools and terminals were lost.",
+                    app.show_toast(crate::locale::ctx().tr_static("Session restored. In-progress tools and terminals were lost.",
                     ));
                 } else {
-                    app.show_toast(crate::locale::ctx().named_static_text(
-                        "reconnect.restore_failed",
-                        "Session restore failed. Kept the existing transcript.",
+                    app.show_toast(crate::locale::ctx().tr_static("Session restore failed. Kept the existing transcript.",
                     ));
                 }
 

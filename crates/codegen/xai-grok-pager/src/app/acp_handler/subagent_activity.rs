@@ -47,7 +47,7 @@ pub(super) fn subagent_activity_label(child_view: &AgentView) -> Option<String> 
         Some(a) => Some(crate::app::subagent::format_activity_label(&a)),
         None if child_view.session.state.is_busy() => Some(
             crate::locale::ctx()
-                .named_static_text("turn.activity.waiting", "Waiting")
+                .tr_static("Waiting")
                 .to_string(),
         ),
         None => None,

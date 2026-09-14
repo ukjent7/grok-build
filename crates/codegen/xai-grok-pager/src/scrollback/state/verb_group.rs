@@ -312,7 +312,7 @@ impl<'e> BucketAccumulator<'e> {
             let separator = if i == 0 {
                 std::borrow::Cow::Borrowed("")
             } else {
-                crate::locale::ctx().named_text("scrollback.verb_group.separator", ", ")
+                crate::locale::ctx().tr(", ")
             };
             let segment = format!(
                 "{}{} {} {}",
@@ -325,9 +325,7 @@ impl<'e> BucketAccumulator<'e> {
             spans.push(Span::styled(segment, text_style));
         }
         if self.failed_count > 0 {
-            let suffix = crate::locale::ctx().format_named(
-                "scrollback.verb_group.failed",
-                " · {count} failed",
+            let suffix = crate::locale::ctx().tr_format(" · {count} failed",
                 &[("count", &self.failed_count.to_string())],
             );
             text.push_str(&suffix);

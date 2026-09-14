@@ -129,14 +129,14 @@ impl AgentView {
             None
         }) else {
             self.show_toast(
-                &crate::locale::ctx().named_text("plan.approval.no_plan", "No plan written yet."),
+                &crate::locale::ctx().tr("No plan written yet."),
             );
             return;
         };
         viewer.kind = crate::views::file_search::line_viewer::LineViewerKind::PlanPreview;
         viewer.title_override = Some(if approval_empty {
             crate::locale::ctx()
-                .named_static_text("plan.approval.empty_title", "plan.md (empty)")
+                .tr_static("plan.md (empty)")
                 .to_string()
         } else {
             "plan.md".to_string()

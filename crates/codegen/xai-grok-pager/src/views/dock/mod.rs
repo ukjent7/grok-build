@@ -101,10 +101,10 @@ impl Section {
     fn label(self) -> &'static str {
         let ctx = crate::locale::ctx();
         match self {
-            Section::Subagents => ctx.named_static_text("dock.section.subagents", "Subagents"),
-            Section::Tasks => ctx.named_static_text("dock.section.tasks", "Tasks"),
-            Section::Watchers => ctx.named_static_text("dock.section.watchers", "Watchers"),
-            Section::Queued => ctx.named_static_text("dock.section.queued", "Queued"),
+            Section::Subagents => ctx.tr_static("Subagents"),
+            Section::Tasks => ctx.tr_static("Tasks"),
+            Section::Watchers => ctx.tr_static("Watchers"),
+            Section::Queued => ctx.tr_static("Queued"),
         }
     }
 
@@ -112,9 +112,9 @@ impl Section {
         let ctx = crate::locale::ctx();
         match self {
             Section::Subagents => ctx.named_static_text("dock.section.subagents", "subagents"),
-            Section::Tasks => ctx.named_static_text("dock.section.tasks", "tasks"),
-            Section::Watchers => ctx.named_static_text("dock.section.watchers", "watchers"),
-            Section::Queued => ctx.named_static_text("dock.section.queued", "queued"),
+            Section::Tasks => ctx.tr_static("tasks"),
+            Section::Watchers => ctx.tr_static("watchers"),
+            Section::Queued => ctx.tr_static("queued"),
         }
     }
 
@@ -325,9 +325,7 @@ pub fn render(buf: &mut Buffer, area: Rect, theme: &Theme, data: &DockData) {
                 let arrow = crate::glyphs::disclosure_open();
                 let indent_len = MORE_INDENT.len().min(area.width.saturating_sub(1) as usize);
                 let count = hidden.to_string();
-                let more_text = crate::locale::ctx().format_named(
-                    "dock.more",
-                    "show {count} more",
+                let more_text = crate::locale::ctx().tr_format("show {count} more",
                     &[("count", &count)],
                 );
                 let line = Line::from(Span::styled(

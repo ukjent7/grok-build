@@ -120,7 +120,7 @@ pub fn render_jump_overlay(buf: &mut Buffer, area: Rect, state: &JumpState, focu
         .render(
             buf,
             area,
-            &crate::locale::ctx().named_text("jump.title", "Jump to which turn?"),
+            &crate::locale::ctx().tr("Jump to which turn?"),
             focused,
             |i, ctx| {
                 let entry = &state.entries[i];
@@ -128,7 +128,7 @@ pub fn render_jump_overlay(buf: &mut Buffer, area: Rect, state: &JumpState, focu
                 let ord_style = Style::default().fg(theme.gray).bg(ctx.row_bg);
                 let preview: String = if entry.preview.is_empty() {
                     crate::locale::ctx()
-                        .named_text("jump.no_preview", "(no preview)")
+                        .tr("(no preview)")
                         .into_owned()
                 } else {
                     truncate_str(

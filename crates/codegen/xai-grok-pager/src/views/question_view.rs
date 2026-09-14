@@ -1506,7 +1506,7 @@ fn build_freeform_line(
         // Empty: show placeholder
         (
             crate::locale::ctx()
-                .named_text("question.answer_placeholder", "Type your answer here")
+                .tr("Type your answer here")
                 .into_owned(),
             Style::default().fg(fg(theme.gray)).bg(row_bg),
         )

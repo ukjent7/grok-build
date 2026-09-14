@@ -28,9 +28,7 @@ fn prompt_style(focus: WelcomePromptFocus, compact: bool) -> PromptStyle {
         chrome: true,
         chrome_pad_left: CHROME_PAD,
         chrome_pad_right: CHROME_PAD,
-        placeholder_override: Some(crate::locale::ctx().named_static_text(
-            "welcome.prompt_placeholder",
-            "Type a message...",
+        placeholder_override: Some(crate::locale::ctx().tr_static("Type a message...",
         )),
         ..PromptStyle::default()
     }

@@ -35,9 +35,7 @@ pub(crate) fn version_mismatch_banner(params: &str) -> Option<String> {
     if client.chars().all(char::is_whitespace) || leader.chars().all(char::is_whitespace) {
         return None;
     }
-    let banner = crate::locale::ctx().format_named(
-        "acp.version_mismatch",
-        "⚠ {VERSION_MISMATCH_MARKER} client {client_version}, leader {leader_version}. Restart grok to match"
+    let banner = crate::locale::ctx().tr_format("⚠ {VERSION_MISMATCH_MARKER} client {client_version}, leader {leader_version}. Restart grok to match"
             .replace("{VERSION_MISMATCH_MARKER}", VERSION_MISMATCH_MARKER)
             .as_str(),
         &[("client_version", &client), ("leader_version", &leader)],

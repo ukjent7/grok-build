@@ -223,12 +223,12 @@ impl RowState {
         match self {
             // Shorter, punchier labels
             // "Done" reads cleaner as a group header than the past-tense "Completed" did
-            Self::NeedsInput => locale.named_static_text("dashboard.state.awaiting", "Awaiting"),
-            Self::Working => locale.named_static_text("dashboard.state.working", "Working"),
-            Self::Idle => locale.named_static_text("dashboard.state.idle", "Idle"),
-            Self::Inactive => locale.named_static_text("dashboard.state.inactive", "Inactive"),
+            Self::NeedsInput => locale.tr_static("Awaiting"),
+            Self::Working => locale.tr_static("Working"),
+            Self::Idle => locale.tr_static("Idle"),
+            Self::Inactive => locale.tr_static("Inactive"),
             Self::Completed => locale.named_static_text("dashboard.state.done", "Done"),
-            Self::Failed => locale.named_static_text("dashboard.state.failed", "Failed"),
+            Self::Failed => locale.tr_static("Failed"),
         }
     }
 }
@@ -244,9 +244,9 @@ impl DashboardStopAction {
     pub(crate) fn label(self) -> &'static str {
         let locale = crate::locale::ctx();
         match self {
-            Self::Stop => locale.named_static_text("dashboard.hint.stop", "stop"),
-            Self::Archive => locale.named_static_text("dashboard.hint.archive", "archive"),
-            Self::Close => locale.named_static_text("dashboard.hint.close", "close"),
+            Self::Stop => locale.tr_static("stop"),
+            Self::Archive => locale.tr_static("archive"),
+            Self::Close => locale.tr_static("close"),
         }
     }
 
@@ -254,13 +254,9 @@ impl DashboardStopAction {
         let locale = crate::locale::ctx();
         match self {
             Self::Stop => None,
-            Self::Archive => Some(locale.named_static_text(
-                "dashboard.confirm.archive",
-                "archive this session",
+            Self::Archive => Some(locale.tr_static("archive this session",
             )),
-            Self::Close => Some(locale.named_static_text(
-                "dashboard.confirm.close",
-                "close this session",
+            Self::Close => Some(locale.tr_static("close this session",
             )),
         }
     }
@@ -1400,17 +1396,17 @@ impl DashboardState {
         let locale = crate::locale::ctx();
         Some(match self.actions_focus? {
             ActionsFocus::NewAgent if self.focused_new_agent_sends_draft() => {
-                locale.named_static_text("dashboard.hint.send", "send")
+                locale.tr_static("send")
             }
-            ActionsFocus::NewAgent => locale.named_static_text("dashboard.hint.create", "create"),
+            ActionsFocus::NewAgent => locale.tr_static("create"),
             ActionsFocus::OpenPrevious => {
-                locale.named_static_text("dashboard.hint.open_previous", "open previous")
+                locale.tr_static("open previous")
             }
             ActionsFocus::Worktree if self.worktree_armed() => {
-                locale.named_static_text("dashboard.hint.disable_worktree", "disable worktree")
+                locale.tr_static("disable worktree")
             }
             ActionsFocus::Worktree => {
-                locale.named_static_text("dashboard.hint.enable_worktree", "enable worktree")
+                locale.tr_static("enable worktree")
             }
         })
     }
@@ -2485,9 +2481,7 @@ impl DashboardState {
         let mut attachment = match image {
             ProbedAttachment::Image(pasted) => {
                 if peek_in_question {
-                    self.set_error_toast(&crate::locale::ctx().named_text(
-                        "dashboard.error.paste_question",
-                        "Pasted image discarded: reply switched to a question",
+                    self.set_error_toast(&crate::locale::ctx().tr("Pasted image discarded: reply switched to a question",
                     ));
                     ClipboardPasteCompletion::Dropped
                 } else {
@@ -2513,9 +2507,7 @@ impl DashboardState {
             if file_urls.as_deref().is_some_and(|urls| {
                 !crate::prompt_images::try_read_images_from_paste(urls).is_empty()
             }) {
-                self.set_error_toast(&crate::locale::ctx().named_text(
-                    "dashboard.error.paste_question",
-                    "Pasted image discarded: reply switched to a question",
+                self.set_error_toast(&crate::locale::ctx().tr("Pasted image discarded: reply switched to a question",
                 ));
             }
             attachment = ClipboardPasteCompletion::Dropped;
@@ -2588,16 +2580,12 @@ impl DashboardState {
                 });
             } else if !same_row {
                 // Never reply to a row the user is no longer peeking.
-                self.set_error_toast(&crate::locale::ctx().named_text(
-                    "dashboard.error.reply_row_changed",
-                    "Reply canceled: peek panel changed",
+                self.set_error_toast(&crate::locale::ctx().tr("Reply canceled: peek panel changed",
                 ));
             } else {
                 // A question now owns the panel (Enter answers it there, and the reply dispatch would silently queue a prompt and wipe the draft
                 // behind the dialog); drop the stash; the draft stays put
-                self.set_error_toast(&crate::locale::ctx().named_text(
-                    "dashboard.error.reply_question_pending",
-                    "Reply canceled: answer the question first",
+                self.set_error_toast(&crate::locale::ctx().tr("Reply canceled: answer the question first",
                 ));
             }
         }
@@ -2689,9 +2677,7 @@ impl DashboardState {
             let valid = self.peek.as_ref().is_some_and(|p| idx < p.options.len());
             if !valid {
                 let n_opts = self.peek.as_ref().map(|p| p.options.len()).unwrap_or(0);
-                self.set_error_toast(&crate::locale::ctx().format_named(
-                    "dashboard.error.invalid_option",
-                    "No such option (only {n_opts} available)",
+                self.set_error_toast(&crate::locale::ctx().tr_format("No such option (only {n_opts} available)",
                     &[("n_opts", &n_opts.to_string()), ("count", &n_opts.to_string())],
                 ));
                 return Some(InputOutcome::Changed);

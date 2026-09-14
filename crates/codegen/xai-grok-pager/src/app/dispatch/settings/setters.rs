@@ -866,9 +866,7 @@ pub(in crate::app::dispatch) fn set_compact_mode(app: &mut AppView, new: bool) -
     // the UI compact; say so instead of implying the layout will loosen.
     if !new && crate::views::agent::effective_compact(false, app.last_known_terminal_rows) {
         let message = save_setting_bool_toast("compact_mode", "Compact mode", false);
-        app.show_toast(&crate::locale::ctx().format_named(
-            "settings.toast.compact_auto_active",
-            "{message} (auto-compact active on small terminal)",
+        app.show_toast(&crate::locale::ctx().tr_format("{message} (auto-compact active on small terminal)",
             &[("message", &message)],
         ));
     } else {

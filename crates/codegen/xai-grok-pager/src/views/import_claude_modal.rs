@@ -113,17 +113,17 @@ impl ItemKind {
     fn label(&self) -> &'static str {
         match self {
             Self::Permission => {
-                crate::locale::ctx().named_static_text("import.category.permissions", "Permissions")
+                crate::locale::ctx().tr_static("Permissions")
             }
             Self::EnvVar => {
-                crate::locale::ctx().named_static_text("import.category.env_vars", "Env vars")
+                crate::locale::ctx().tr_static("Env vars")
             }
             Self::McpServer => {
-                crate::locale::ctx().named_static_text("import.category.mcp_servers", "MCP servers")
+                crate::locale::ctx().tr_static("MCP servers")
             }
-            Self::Hook => crate::locale::ctx().named_static_text("import.category.hooks", "Hooks"),
+            Self::Hook => crate::locale::ctx().tr_static("Hooks"),
             Self::PathEntry => {
-                crate::locale::ctx().named_static_text("import.category.paths", "Paths")
+                crate::locale::ctx().tr_static("Paths")
             }
         }
     }
@@ -582,9 +582,7 @@ pub fn render_import_claude_modal(
     compact: bool,
 ) {
     let ctx = crate::locale::ctx();
-    let confirm_label = ctx.format_named(
-        "import.shortcut.confirm",
-        "Enter import {count}",
+    let confirm_label = ctx.tr_format("Enter import {count}",
         &[("count", &state.selected_count().to_string())],
     );
     let shortcuts = [
@@ -594,7 +592,7 @@ pub fn render_import_claude_modal(
             id: SHORTCUT_ID_HINT,
         },
         Shortcut {
-            label: ctx.named_static_text("import.shortcut.toggle", "space toggle"),
+            label: ctx.tr_static("space toggle"),
             clickable: false,
             id: SHORTCUT_ID_HINT,
         },
@@ -604,12 +602,12 @@ pub fn render_import_claude_modal(
             id: SHORTCUT_ID_HINT,
         },
         Shortcut {
-            label: ctx.named_static_text("import.shortcut.all", "a all"),
+            label: ctx.tr_static("a all"),
             clickable: true,
             id: SHORTCUT_ID_SELECT_ALL,
         },
         Shortcut {
-            label: ctx.named_static_text("import.shortcut.none", "n none"),
+            label: ctx.tr_static("n none"),
             clickable: true,
             id: SHORTCUT_ID_SELECT_NONE,
         },
@@ -619,14 +617,14 @@ pub fn render_import_claude_modal(
             id: SHORTCUT_ID_CONFIRM,
         },
         Shortcut {
-            label: ctx.named_static_text("import.shortcut.cancel", "Esc cancel"),
+            label: ctx.tr_static("Esc cancel"),
             clickable: true,
             id: SHORTCUT_ID_CANCEL,
         },
     ];
     let config = ModalWindowConfig {
         title: ctx
-            .named_static_text("import.title", "Import Claude settings"),
+            .tr_static("Import Claude settings"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing: ModalSizing::default().with_compact(compact),
@@ -713,9 +711,7 @@ fn build_rows(
         let scope_start = flat_index;
         let scope_key = format!("scope:{:?}", Scope::Global);
         let label = crate::locale::ctx()
-            .named_text(
-                "import.scope.global_label",
-                "Global  ~/.grok/config.toml",
+            .tr("Global  ~/.grok/config.toml",
             )
             .into_owned();
         // Placeholder header; flat_indices filled after children are pushed.
@@ -747,9 +743,7 @@ fn build_rows(
         let project_config = find_project_root(cwd)
             .join(".grok")
             .join(xai_grok_config::USER_CONFIG_FILENAME);
-        let label = crate::locale::ctx().format_named(
-            "import.scope.project_label",
-            "Project  {path}",
+        let label = crate::locale::ctx().tr_format("Project  {path}",
             &[("path", &project_config.display().to_string())],
         );
         let scope_header_pos = rows.len();

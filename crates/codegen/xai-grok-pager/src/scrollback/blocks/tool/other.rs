@@ -173,7 +173,7 @@ impl OtherToolCallBlock {
 /// verb is translated, matching what the turn-status line does with the same titles; every
 /// other title is a real tool name (frequently an MCP one) and has to stay verbatim.
 fn localized_title(name: &str) -> Cow<'_, str> {
-    let verb = crate::locale::ctx().named_static_text("scrollback.tool.ask.label", "Ask");
+    let verb = crate::locale::ctx().tr_static("Ask");
     if let Some(rest) = name.strip_prefix("Ask: ") {
         Cow::Owned(format!("{verb}: {rest}"))
     } else if let Some(rest) = name.strip_prefix("Ask ") {
@@ -267,9 +267,7 @@ impl BlockContent for OtherToolCallBlock {
                             let a_line = if answer.is_empty() {
                                 Line::from(Span::styled(
                                     crate::locale::ctx()
-                                        .named_text(
-                                            "scrollback.question.no_answer",
-                                            "     (no answer)",
+                                        .tr("     (no answer)",
                                         )
                                         .into_owned(),
                                     theme.dim(),

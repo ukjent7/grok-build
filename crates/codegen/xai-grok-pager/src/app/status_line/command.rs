@@ -49,9 +49,7 @@ async fn run_status_command(
                 metrics::global().record_failed(elapsed_ms);
             }
             RunOutcome::Failed {
-                text: crate::locale::ctx().format_named(
-                    "status_line.error.wrapper",
-                    "[status line: {error}]",
+                text: crate::locale::ctx().tr_format("[status line: {error}]",
                     &[("error", &error.to_string())],
                 ),
                 error: error.to_string(),
@@ -75,18 +73,14 @@ impl std::fmt::Display for RunError {
             RunError::Spawn(e) => write!(
                 f,
                 "{}",
-                crate::locale::ctx().format_named(
-                    "status_line.error.spawn",
-                    "could not start the script: {error}",
+                crate::locale::ctx().tr_format("could not start the script: {error}",
                     &[("error", &e.to_string())]
                 )
             ),
             RunError::Wait(e) => write!(
                 f,
                 "{}",
-                crate::locale::ctx().format_named(
-                    "status_line.error.wait",
-                    "could not wait for the script: {error}",
+                crate::locale::ctx().tr_format("could not wait for the script: {error}",
                     &[("error", &e.to_string())]
                 )
             ),
@@ -94,30 +88,22 @@ impl std::fmt::Display for RunError {
             RunError::Json(e) => write!(
                 f,
                 "{}",
-                crate::locale::ctx().format_named(
-                    "status_line.error.json",
-                    "could not encode Grok's payload: {error}",
+                crate::locale::ctx().tr_format("could not encode Grok's payload: {error}",
                     &[("error", &e.to_string())]
                 )
             ),
             RunError::TimedOut => {
-                f.write_str(crate::locale::ctx().named_static_text(
-                    "status_line.error.timed_out",
-                    "timed out",
+                f.write_str(crate::locale::ctx().tr_static("timed out",
                 ))
             }
             RunError::Exit(Some(code)) => write!(
                 f,
                 "{}",
-                crate::locale::ctx().format_named(
-                    "status_line.error.exit",
-                    "exit {code}",
+                crate::locale::ctx().tr_format("exit {code}",
                     &[("code", &code.to_string())]
                 )
             ),
-            RunError::Exit(None) => f.write_str(crate::locale::ctx().named_static_text(
-                "status_line.error.signal",
-                "killed by signal",
+            RunError::Exit(None) => f.write_str(crate::locale::ctx().tr_static("killed by signal",
             )),
         }
     }

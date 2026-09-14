@@ -112,7 +112,7 @@ pub(super) async fn fetch_plugin_cta_mcps(
                 .map(crate::views::mcps_modal::convert_list_response)
                 .map_err(|_| {
                     crate::locale::ctx()
-                        .named_text("extensions.error.server_list", "couldn't load server list")
+                        .tr("couldn't load server list")
                         .into_owned()
                 })
         }

@@ -795,9 +795,7 @@ async fn most_recent_session_id(
         .iter()
         .find(|summary| selection.admits(summary) && !summary.is_unused_optimistic_husk())
         .ok_or_else(|| {
-            anyhow::anyhow!(crate::locale::ctx().named_static_text(
-                "session.startup.no_session_for_cwd",
-                "No session found for current directory. Use 'grok' to start a new session.",
+            anyhow::anyhow!(crate::locale::ctx().tr_static("No session found for current directory. Use 'grok' to start a new session.",
             ))
         })?;
     Ok((first.info.id.to_string(), first.display_title_opt()))
@@ -1078,9 +1076,7 @@ async fn resolve_existing_session(
                 let hint = super::session_title_resolve::title_miss_hint(session_id);
                 anyhow::bail!(
                     "{}",
-                    crate::locale::ctx().format_named(
-                        "session.startup.not_found_with_hint",
-                        "Session does not exist: {hint}",
+                    crate::locale::ctx().tr_format("Session does not exist: {hint}",
                         &[("hint", hint.as_str())],
                     )
                 );
@@ -1088,7 +1084,7 @@ async fn resolve_existing_session(
             anyhow::bail!(
                 "{}",
                 crate::locale::ctx()
-                    .named_static_text("session.startup.not_found", "Session does not exist")
+                    .tr_static("Session does not exist")
             )
         }
         RemoteMissPlan::RestoreConversation => {
@@ -1332,9 +1328,7 @@ pub(crate) fn classify_remote_restore(
     }
     RemoteRestoreOutcome::Failed(
         crate::locale::ctx()
-            .named_static_text(
-                "session.startup.remote_restore.history_unavailable",
-                "Failed to restore session from remote: conversation history was unavailable.",
+            .tr_static("Failed to restore session from remote: conversation history was unavailable.",
             )
             .to_string(),
     )

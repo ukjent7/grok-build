@@ -184,7 +184,7 @@ pub fn footer_shortcuts(
         if has_run_list {
             s.push(Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("workflows.shortcut.runs", "←/tab runs"),
+                    .tr_static("←/tab runs"),
                 clickable: true,
                 id: shortcut_ids::RUNS,
             });
@@ -192,7 +192,7 @@ pub fn footer_shortcuts(
         if run.is_some_and(WorkflowRunSnapshot::can_pause) {
             s.push(Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("workflows.shortcut.pause", "p pause"),
+                    .tr_static("p pause"),
                 clickable: true,
                 id: shortcut_ids::PAUSE,
             });
@@ -200,7 +200,7 @@ pub fn footer_shortcuts(
         if run.is_some_and(WorkflowRunSnapshot::can_resume) {
             s.push(Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("workflows.shortcut.resume", "r resume"),
+                    .tr_static("r resume"),
                 clickable: true,
                 id: shortcut_ids::RESUME,
             });
@@ -208,7 +208,7 @@ pub fn footer_shortcuts(
         if run.is_some_and(WorkflowRunSnapshot::can_stop) {
             s.push(Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("workflows.shortcut.stop", "x stop"),
+                    .tr_static("x stop"),
                 clickable: true,
                 id: shortcut_ids::STOP,
             });
@@ -216,7 +216,7 @@ pub fn footer_shortcuts(
         if run.is_some_and(WorkflowRunSnapshot::can_save) {
             s.push(Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("workflows.shortcut.save", "s save"),
+                    .tr_static("s save"),
                 clickable: true,
                 id: shortcut_ids::SAVE,
             });
@@ -224,27 +224,27 @@ pub fn footer_shortcuts(
     } else {
         s.push(Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("workflows.shortcut.select", "↑↓ select"),
+                .tr_static("↑↓ select"),
             clickable: false,
             id: 0,
         });
         s.push(Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("workflows.shortcut.open", "enter open"),
+                .tr_static("enter open"),
             clickable: true,
             id: shortcut_ids::OPEN,
         });
         if run.is_some_and(WorkflowRunSnapshot::can_stop) {
             s.push(Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("workflows.shortcut.stop", "x stop"),
+                    .tr_static("x stop"),
                 clickable: true,
                 id: shortcut_ids::STOP,
             });
         }
     }
     s.push(Shortcut {
-        label: crate::locale::ctx().named_static_text("workflows.shortcut.close", "esc close"),
+        label: crate::locale::ctx().tr_static("esc close"),
         clickable: false,
         id: 0,
     });
@@ -465,7 +465,7 @@ pub fn phase_rail(run: &WorkflowRunSnapshot) -> Vec<(String, String)> {
     if phases.is_empty() {
         phases.push((
             crate::locale::ctx()
-                .named_text("workflows.all_agents", "All agents")
+                .tr("All agents")
                 .into_owned(),
             "active".to_owned(),
         ));
@@ -555,7 +555,7 @@ pub fn render_workflows(
     let config = ModalWindowConfig {
         // "Workflow Runs", not "Workflows": that name belongs to the extensions-modal catalog tab
         title: crate::locale::ctx()
-            .named_static_text("workflows.runs_title", "Workflow Runs"),
+            .tr_static("Workflow Runs"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing,
@@ -585,9 +585,7 @@ fn render_list(
             inner.x + 1,
             y + 1,
             crate::locale::ctx()
-                .named_text(
-                    "workflows.empty",
-                    "No workflow runs in this session yet.",
+                .tr("No workflow runs in this session yet.",
                 )
                 .as_ref(),
             Style::default().fg(theme.gray_bright),
@@ -598,9 +596,7 @@ fn render_list(
             inner.x + 1,
             y + 3,
             crate::locale::ctx()
-                .named_text(
-                    "workflows.empty_hint",
-                    "Start one with /deep-research <query> or ask for a workflow.",
+                .tr("Start one with /deep-research <query> or ask for a workflow.",
                 )
                 .as_ref(),
             Style::default().fg(theme.gray),
@@ -627,18 +623,14 @@ fn render_list(
         let phase_part = if run.phases.is_empty() {
             run.status.clone()
         } else {
-            crate::locale::ctx().format_named(
-                "workflows.phase_progress",
-                "{done}/{total} phases",
+            crate::locale::ctx().tr_format("{done}/{total} phases",
                 &[
                     ("done", &done_phases.to_string()),
                     ("total", &run.phases.len().to_string()),
                 ],
             )
         };
-        let agents_part = crate::locale::ctx().format_named(
-            "workflows.agent_progress",
-            "{done}/{total} agents",
+        let agents_part = crate::locale::ctx().tr_format("{done}/{total} agents",
             &[
                 ("done", &run.done_agents().to_string()),
                 ("total", &run.agents.len().to_string()),
@@ -758,21 +750,15 @@ fn render_detail(
     let status_line = if run.status == "budget_limited" {
         let body = if run.agents_used >= 1_024 {
             crate::locale::ctx()
-                .named_text(
-                    "workflows.budget.maximum",
-                    "budget limited: maximum agent budget reached; start a new run",
+                .tr("budget limited: maximum agent budget reached; start a new run",
                 )
                 .into_owned()
         } else if let Some(pause) = run.pause_message.as_deref().filter(|s| !s.is_empty()) {
-            crate::locale::ctx().format_named(
-                "workflows.budget.raise_with_reason",
-                "budget limited: bare resume disabled; raise agent budget via agent/tool. {reason}",
+            crate::locale::ctx().tr_format("budget limited: bare resume disabled; raise agent budget via agent/tool. {reason}",
                 &[("reason", &strip_control(pause))],
             )
         } else {
-            crate::locale::ctx().format_named(
-                "workflows.budget.raise_above",
-                "budget limited: bare resume disabled; raise agent budget above {count} via agent/tool",
+            crate::locale::ctx().tr_format("budget limited: bare resume disabled; raise agent budget above {count} via agent/tool",
                 &[("count", &run.agents_used.to_string())],
             )
         };
@@ -785,9 +771,7 @@ fn render_detail(
     } else if run.status == "failed" {
         Some((
             crate::locale::ctx()
-                .named_text(
-                    "workflows.failed_hint",
-                    "failed: see scrollback for details; r resumes from the journal",
+                .tr("failed: see scrollback for details; r resumes from the journal",
                 )
                 .into_owned(),
             Style::default().fg(theme.accent_error),
@@ -852,7 +836,7 @@ fn render_detail(
         buf,
         rail_area.x,
         body_y,
-        crate::locale::ctx().named_text("workflows.phases", "Phases").as_ref(),
+        crate::locale::ctx().tr("Phases").as_ref(),
         Style::default().fg(theme.text_secondary),
         rail_area.right(),
     );
@@ -977,9 +961,7 @@ fn render_detail(
     if state.roster_scroll == 0 {
         state.roster_top_agent_id = None;
     }
-    let agents_count = crate::locale::ctx().format_named(
-        "workflows.agent_count",
-        "{count} agents",
+    let agents_count = crate::locale::ctx().tr_format("{count} agents",
         &[("count", &roster_agents.len().to_string())],
     );
     let roster_title = if state.roster_scroll > 0 {
@@ -1007,7 +989,7 @@ fn render_detail(
             roster_inner.x,
             roster_inner.y,
             crate::locale::ctx()
-                .named_text("workflows.no_agents", "No agents in this phase yet.")
+                .tr("No agents in this phase yet.")
                 .as_ref(),
             Style::default().fg(theme.gray_dim),
             roster_inner.right(),
@@ -1047,9 +1029,7 @@ fn render_detail(
             let used = format_tokens_compact(i64::try_from(context_tokens).unwrap_or(i64::MAX));
             let total =
                 format_tokens_compact(i64::try_from(context_window_tokens).unwrap_or(i64::MAX));
-            meta_parts.push(crate::locale::ctx().format_named(
-                "workflows.context_tokens",
-                "{used} / {total} context",
+            meta_parts.push(crate::locale::ctx().tr_format("{used} / {total} context",
                 &[("used", &used), ("total", &total)],
             ));
         }

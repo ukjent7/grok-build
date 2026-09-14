@@ -91,9 +91,7 @@ impl AgentView {
                     AgentPane::Catalog => self.catalog.overlay.focused = false,
                     _ => {}
                 }
-                self.show_toast(&crate::locale::ctx().named_static_text(
-                    "prompt.queue.editing_switch_hint",
-                    "Editing a queued prompt: press Enter to save, Esc to discard",
+                self.show_toast(&crate::locale::ctx().tr_static("Editing a queued prompt: press Enter to save, Esc to discard",
                 ));
                 return Some(false); // blocked, no modal armed
             }
@@ -229,9 +227,7 @@ impl AgentView {
             && let Some(server_id) = row.as_ref().and_then(|row| row.server_id.as_deref())
             && !self.shared_queue.iter().any(|entry| entry.id == server_id)
         {
-            self.show_toast(crate::locale::ctx().named_static_text(
-                "prompt.queue.row_missing",
-                "Queued prompt is no longer in the queue",
+            self.show_toast(crate::locale::ctx().tr_static("Queued prompt is no longer in the queue",
             ));
             return;
         }
@@ -320,9 +316,7 @@ impl AgentView {
             }
         } else {
             // The row left the mirror between selection and keypress, so there is nothing to edit.
-            self.show_toast(crate::locale::ctx().named_static_text(
-                "prompt.queue.row_missing",
-                "Queued prompt is no longer in the queue",
+            self.show_toast(crate::locale::ctx().tr_static("Queued prompt is no longer in the queue",
             ));
         }
     }
@@ -487,16 +481,12 @@ impl AgentView {
         // Non-prompt rows stay queued (see `queue_row_prompt_like`): save the edit.
         let row_prompt_like = self.queue_row_prompt_like(id);
         if row_prompt_like == Some(false) {
-            self.show_toast(crate::locale::ctx().named_static_text(
-                "prompt.queue.mid_turn_deferred",
-                "Can't send this mid-turn: it runs when the current turn ends",
+            self.show_toast(crate::locale::ctx().tr_static("Can't send this mid-turn: it runs when the current turn ends",
             ));
             return self.save_edited_queued_row(id, server_id, true);
         }
         if row_prompt_like.is_none() && kind != crate::app::agent::QueueEntryKind::Prompt {
-            self.show_toast(crate::locale::ctx().named_static_text(
-                "prompt.queue.row_missing",
-                "Queued prompt is no longer in the queue",
+            self.show_toast(crate::locale::ctx().tr_static("Queued prompt is no longer in the queue",
             ));
             return self.save_edited_queued_row(id, server_id, true);
         }
@@ -507,9 +497,7 @@ impl AgentView {
                 if !self.prompt.images.is_empty() {
                     self.prompt.images.clear();
                     self.show_toast(
-                        &crate::locale::ctx().named_text(
-                            "prompt.image.shared_queue_unsupported",
-                            "Images can't be attached when editing a shared queued prompt",
+                        &crate::locale::ctx().tr("Images can't be attached when editing a shared queued prompt",
                         ),
                     );
                 }
@@ -593,9 +581,7 @@ impl AgentView {
         // Restore the pre-edit draft; keeping the orphaned edit text would look "duplicated" (the row is now the running turn)
         // A concurrent-removal edit is lost
         self.exit_editing_mode();
-        self.show_toast(crate::locale::ctx().named_static_text(
-            "prompt.queue.row_missing",
-            "Queued prompt is no longer in the queue",
+        self.show_toast(crate::locale::ctx().tr_static("Queued prompt is no longer in the queue",
         ));
     }
 

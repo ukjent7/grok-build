@@ -3,9 +3,7 @@ use super::{TabDataState, WorkflowInfo, cmp_str_ci, fuzzy_matches};
 /// Placeholder row when the catalog comes back empty (also what a disabled workflows feature looks like on the wire, hence the hedged phrasing).
 pub(super) fn workflows_empty_placeholder() -> String {
     crate::locale::ctx()
-        .named_text(
-            "extensions.workflows.empty",
-            "No workflows available. Ask Grok to help make you one!",
+        .tr("No workflows available. Ask Grok to help make you one!",
         )
         .into_owned()
 }
@@ -42,9 +40,7 @@ pub(super) fn build_workflows_picker_rows(
     let workflows = match data {
         TabDataState::Loaded(workflows) => workflows,
         TabDataState::Error(msg) => {
-            return vec![WorkflowRow::notice(crate::locale::ctx().format_named(
-                "extensions.error.prefix",
-                "Error: {error}",
+            return vec![WorkflowRow::notice(crate::locale::ctx().tr_format("Error: {error}",
                 &[("error", &msg)],
             ))]
         }
@@ -64,10 +60,10 @@ pub(super) fn build_workflows_picker_rows(
         .map(|wf| {
             let mut fields = Vec::new();
             if let Some(ref p) = wf.path {
-                fields.push((crate::locale::ctx().named_text("extensions.field.path", "path").to_string(), p.clone()));
+                fields.push((crate::locale::ctx().tr("path").to_string(), p.clone()));
             }
             if let Some(ref w) = wf.when_to_use {
-                fields.push((crate::locale::ctx().named_text("extensions.field.when_to_use", "when to use").to_string(), w.clone()));
+                fields.push((crate::locale::ctx().tr("when to use").to_string(), w.clone()));
             }
             WorkflowRow {
                 label: wf.name.clone(),

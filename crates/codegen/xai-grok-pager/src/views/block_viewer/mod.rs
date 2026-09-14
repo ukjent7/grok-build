@@ -519,7 +519,7 @@ impl BlockViewerPane {
             )));
             lines.push(Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_text("block_viewer.sources", "Sources ({count})")
+                    .tr("Sources ({count})")
                     .replace("{count}", &ws.citations.len().to_string()),
                 Style::default().fg(theme.text_secondary),
             )));
@@ -559,7 +559,7 @@ impl BlockViewerPane {
         if let Some(limit) = st.limit {
             lines.push(Line::from(vec![
                 Span::styled(
-                    crate::locale::ctx().named_static_text("block_viewer.limit", "limit: "),
+                    crate::locale::ctx().tr_static("limit: "),
                     label,
                 ),
                 Span::styled(limit.to_string(), value),
@@ -568,7 +568,7 @@ impl BlockViewerPane {
         let s = if st.result_count == 1 { "" } else { "s" };
         lines.push(Line::from(Span::styled(
             crate::locale::ctx()
-                .named_text("block_viewer.results", "{count} result{s}")
+                .tr("{count} result{s}")
                 .replace("{count}", &st.result_count.to_string())
                 .replace("{s}", s),
             label,

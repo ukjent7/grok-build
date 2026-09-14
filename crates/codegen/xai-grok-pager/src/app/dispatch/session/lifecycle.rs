@@ -205,9 +205,7 @@ pub(in crate::app::dispatch) fn open_new_session_question(app: &mut AppView) -> 
         QuestionOption {
             label: "Yes".into(),
             description: crate::locale::ctx()
-                .named_static_text(
-                    "session.new.option.worktree",
-                    "New session in a new isolated git worktree",
+                .tr_static("New session in a new isolated git worktree",
                 )
                 .into(),
             preview: None,
@@ -216,9 +214,7 @@ pub(in crate::app::dispatch) fn open_new_session_question(app: &mut AppView) -> 
         QuestionOption {
             label: "No".into(),
             description: crate::locale::ctx()
-                .named_static_text(
-                    "session.new.option.current_cwd",
-                    "New session in the current cwd",
+                .tr_static("New session in the current cwd",
                 )
                 .into(),
             preview: None,
@@ -228,9 +224,7 @@ pub(in crate::app::dispatch) fn open_new_session_question(app: &mut AppView) -> 
     options.extend(worktree_persist_options());
     let question = Question {
         question: crate::locale::ctx()
-            .named_static_text(
-                "session.new.question.worktree",
-                "Start the new session in an isolated git worktree?",
+            .tr_static("Start the new session in an isolated git worktree?",
             )
             .into(),
         id: None,
@@ -286,9 +280,7 @@ pub(in crate::app::dispatch) fn open_agent_type_mismatch_question(
             QuestionOption {
                 label: "No".into(),
                 description: crate::locale::ctx()
-                    .named_static_text(
-                        "session.model_mismatch.option.continue",
-                        "Continue the current session",
+                    .tr_static("Continue the current session",
                     )
                     .into(),
                 preview: None,
@@ -362,9 +354,7 @@ fn apply_welcome_workspace_on_new_session(app: &mut AppView) -> Result<(), Vec<E
                 } else {
                     raw_error
                 };
-            app.show_toast(&crate::locale::ctx().format_named(
-                "session.workspace.local_unavailable",
-                "Local workspace unavailable ({error}); using sandbox",
+            app.show_toast(&crate::locale::ctx().tr_format("Local workspace unavailable ({error}); using sandbox",
                 &[("error", &display_error)],
             ));
             app.welcome_session_local_workspace = Some(None);
@@ -550,14 +540,10 @@ pub(in crate::app::dispatch) fn open_delete_current_session_question(
     let delete_description = if after_delete_current_session(app, id)
         == crate::app::actions::AfterSessionDelete::Dashboard
     {
-        crate::locale::ctx().named_static_text(
-            "session.delete.option.delete.description.dashboard",
-            "Remove history and return to the dashboard",
+        crate::locale::ctx().tr_static("Remove history and return to the dashboard",
         )
     } else {
-        crate::locale::ctx().named_static_text(
-            "session.delete.option.delete.description",
-            "Remove history and return home",
+        crate::locale::ctx().tr_static("Remove history and return home",
         )
     };
     let Some(agent) = app.agents.get_mut(&id) else {
@@ -565,7 +551,7 @@ pub(in crate::app::dispatch) fn open_delete_current_session_question(
     };
     if agent.session.session_id.is_none() {
         app.show_toast(crate::locale::ctx()
-            .named_static_text("session.delete.no_active", "No active session to delete"));
+            .tr_static("No active session to delete"));
         return vec![];
     }
     if agent.question_view.is_some() {
@@ -574,16 +560,14 @@ pub(in crate::app::dispatch) fn open_delete_current_session_question(
     }
     let question = Question {
         question: crate::locale::ctx()
-            .named_static_text(
-                "session.delete.question.permanent",
-                "Delete this session permanently?",
+            .tr_static("Delete this session permanently?",
             )
             .into(),
         id: None,
         options: vec![
             QuestionOption {
                 label: crate::locale::ctx()
-                    .named_static_text("session.delete.option.delete", "Delete")
+                    .tr_static("Delete")
                     .into(),
                 description: delete_description.into(),
                 preview: None,
@@ -591,12 +575,10 @@ pub(in crate::app::dispatch) fn open_delete_current_session_question(
             },
             QuestionOption {
                 label: crate::locale::ctx()
-                    .named_static_text("session.delete.option.cancel", "Cancel")
+                    .tr_static("Cancel")
                     .into(),
                 description: crate::locale::ctx()
-                    .named_static_text(
-                        "session.delete.option.cancel.description",
-                        "Keep the session",
+                    .tr_static("Keep the session",
                     )
                     .into(),
                 preview: None,
@@ -642,7 +624,7 @@ pub(in crate::app::dispatch) fn dispatch_delete_current_session_answered(
         })
     else {
         app.show_toast(crate::locale::ctx()
-            .named_static_text("session.delete.no_active", "No active session to delete"));
+            .tr_static("No active session to delete"));
         return vec![];
     };
     if build_session
@@ -1175,9 +1157,7 @@ pub(in crate::app::dispatch) fn dispatch_new_worktree_session(
     }
     if !app.cwd_has_git_ancestor {
         let msg: String = crate::locale::ctx()
-            .named_static_text(
-                "session.worktree.not_inside_git",
-                "Not inside a git repository. Navigate to a git repo or run 'git init' first.",
+            .tr_static("Not inside a git repository. Navigate to a git repo or run 'git init' first.",
             )
             .to_string();
         if !app.startup_warnings.iter().any(|w| w.message == msg) {
@@ -1528,9 +1508,7 @@ pub(in crate::app::dispatch) fn handle_worktree_session_created(
         }
         agent.prompt.file_search.retarget(&session_cwd);
         agent.scrollback.push_block(RenderBlock::system(
-            crate::locale::ctx().format_named(
-                "session.worktree.ready",
-                "Worktree ready: {path}",
+            crate::locale::ctx().tr_format("Worktree ready: {path}",
                 &[("path", &worktree_path.display().to_string())],
             ),
         ));
@@ -1772,9 +1750,7 @@ pub(in crate::app::dispatch) fn handle_worktree_session_failed(
             app.session_picker_content_loading = false;
             restore_dashboard_attach_after_orphan_remove(app, agent_id, None);
         }
-        let msg = crate::locale::ctx().format_named(
-            "session.worktree.create_failed",
-            "Cannot create worktree: {error}",
+        let msg = crate::locale::ctx().tr_format("Cannot create worktree: {error}",
             &[("error", error.as_str())],
         );
         if !app.startup_warnings.iter().any(|w| w.message == msg) {

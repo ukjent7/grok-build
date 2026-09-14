@@ -32,8 +32,8 @@ static NEXT_FEEDBACK_SUBMISSION_ID: AtomicU64 = AtomicU64::new(1);
 fn feedback_tabs() -> [&'static str; 2] {
     let ctx = crate::locale::ctx();
     [
-        ctx.named_static_text("feedback.tab.write", "Write"),
-        ctx.named_static_text("feedback.tab.drafts", "Drafts"),
+        ctx.tr_static("Write"),
+        ctx.tr_static("Drafts"),
     ]
 }
 // One id shared by the footer `Shortcut` and the mouse `ShortcutActivated` arm; drifting them breaks click-to-cancel.
@@ -96,33 +96,19 @@ impl FeedbackModalDisplacement {
     pub(crate) fn notice(self) -> &'static str {
         let ctx = crate::locale::ctx();
         match self {
-            Self::CancelTurn => ctx.named_static_text(
-                "feedback.closed.cancel_turn",
-                "Feedback closed because the turn-cancel prompt needs an answer.",
+            Self::CancelTurn => ctx.tr_static("Feedback closed because the turn-cancel prompt needs an answer.",
             ),
-            Self::PlanApproval => ctx.named_static_text(
-                "feedback.closed.plan_approval",
-                "Feedback closed because a plan is ready for approval.",
+            Self::PlanApproval => ctx.tr_static("Feedback closed because a plan is ready for approval.",
             ),
-            Self::Permission => ctx.named_static_text(
-                "feedback.closed.permission",
-                "Feedback closed because a permission request needs an answer.",
+            Self::Permission => ctx.tr_static("Feedback closed because a permission request needs an answer.",
             ),
-            Self::AcpQuestion => ctx.named_static_text(
-                "feedback.closed.acp_question",
-                "Feedback closed because the agent asked a question.",
+            Self::AcpQuestion => ctx.tr_static("Feedback closed because the agent asked a question.",
             ),
-            Self::LocalQuestion => ctx.named_static_text(
-                "feedback.closed.local_question",
-                "Feedback closed because another prompt needs an answer.",
+            Self::LocalQuestion => ctx.tr_static("Feedback closed because another prompt needs an answer.",
             ),
-            Self::McpElicitation => ctx.named_static_text(
-                "feedback.closed.mcp_elicitation",
-                "Feedback closed because a tool needs your input.",
+            Self::McpElicitation => ctx.tr_static("Feedback closed because a tool needs your input.",
             ),
-            Self::HookBlockedPrompt => ctx.named_static_text(
-                "feedback.closed.hook_blocked",
-                "Feedback closed because a hook blocked the prompt.",
+            Self::HookBlockedPrompt => ctx.tr_static("Feedback closed because a hook blocked the prompt.",
             ),
         }
     }
@@ -148,13 +134,13 @@ impl FeedbackTraceChoice {
         let ctx = crate::locale::ctx();
         match self {
             Self::SendThisSession => {
-                ctx.named_static_text("feedback.trace_choice.send_session", "Send this session's trace")
+                ctx.tr_static("Send this session's trace")
             }
             Self::FeedbackOnly => {
-                ctx.named_static_text("feedback.trace_choice.feedback_only", "No, just the feedback")
+                ctx.tr_static("No, just the feedback")
             }
             Self::NeverAsk => {
-                ctx.named_static_text("feedback.trace_choice.never_ask", "No, and don't ask again")
+                ctx.tr_static("No, and don't ask again")
             }
         }
     }
@@ -217,33 +203,27 @@ impl FeedbackModalMetadata {
         let ctx = crate::locale::ctx();
         match field {
             MetadataField::Type => Some(match &self.r#type {
-                Some(value) => ctx.format_named(
-                    "feedback.field.type",
-                    "Type: {value}",
+                Some(value) => ctx.tr_format("Type: {value}",
                     &[("value", value.label())],
                 ),
                 None if self.draft_id.is_some() => {
-                    ctx.named_text("feedback.field.type_unselected", "Type: (choose)")
+                    ctx.tr("Type: (choose)")
                         .into_owned()
                 }
                 None => return None,
             }),
             MetadataField::Task => Some(match &self.task_category {
-                Some(value) => ctx.format_named(
-                    "feedback.field.task",
-                    "Task: {value}",
+                Some(value) => ctx.tr_format("Task: {value}",
                     &[("value", value.label())],
                 ),
                 None if self.draft_id.is_some() => {
-                    ctx.named_text("feedback.field.task_unselected", "Task: (choose)")
+                    ctx.tr("Task: (choose)")
                         .into_owned()
                 }
                 None => return None,
             }),
             MetadataField::Failure => self.failure_mode.as_ref().map(|value| {
-                ctx.format_named(
-                    "feedback.field.failure",
-                    "Failure: {value}",
+                ctx.tr_format("Failure: {value}",
                     &[("value", value.label())],
                 )
             }),
@@ -438,9 +418,7 @@ impl FeedbackModalState {
             trace_outcome_reported: false,
             error: (rejected_images > 0).then(|| {
                 let count = rejected_images.to_string();
-                crate::locale::ctx().format_named(
-                    "feedback.images.dropped_invalid",
-                    "Dropped {count} invalid image(s).",
+                crate::locale::ctx().tr_format("Dropped {count} invalid image(s).",
                     &[("count", &count)],
                 )
             }),
@@ -667,21 +645,13 @@ impl FeedbackModalState {
     fn trace_prompt(&self) -> &'static str {
         let ctx = crate::locale::ctx();
         match self.metadata.r#type {
-            Some(FeedbackType::Bug) => ctx.named_static_text(
-                "feedback.trace_prompt.bug",
-                "Attach this session's trace to help us debug this bug?",
+            Some(FeedbackType::Bug) => ctx.tr_static("Attach this session's trace to help us debug this bug?",
             ),
-            Some(FeedbackType::Idea) => ctx.named_static_text(
-                "feedback.trace_prompt.idea",
-                "Attach this session's trace to give this idea context?",
+            Some(FeedbackType::Idea) => ctx.tr_static("Attach this session's trace to give this idea context?",
             ),
-            Some(FeedbackType::MissingCapability) => ctx.named_static_text(
-                "feedback.trace_prompt.missing_capability",
-                "Attach this session's trace to show what was missing?",
+            Some(FeedbackType::MissingCapability) => ctx.tr_static("Attach this session's trace to show what was missing?",
             ),
-            None => ctx.named_static_text(
-                "feedback.trace_prompt.default",
-                "Attach this session's trace to your feedback?",
+            None => ctx.tr_static("Attach this session's trace to your feedback?",
             ),
         }
     }
@@ -703,9 +673,7 @@ impl FeedbackModalState {
                 .drop_image_preserving_session_file(image_identity);
             self.error = Some(
                 crate::locale::ctx()
-                    .named_text(
-                        "feedback.image_restore_failed",
-                        "Couldn't restore one feedback image; the original file was kept.",
+                    .tr("Couldn't restore one feedback image; the original file was kept.",
                     )
                     .into_owned(),
             );

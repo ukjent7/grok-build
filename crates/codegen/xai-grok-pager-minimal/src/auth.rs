@@ -188,7 +188,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().named_text("auth.sign_in", "Sign in to Grok"),
+                    xai_grok_locale::ctx().tr("Sign in to Grok"),
                     bold,
                 )),
             );
@@ -201,9 +201,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         y,
                         bottom,
                         Line::from(Span::styled(
-                            xai_grok_locale::ctx().named_text(
-                                "auth.open_url",
-                                "Open this URL in your browser to approve:",
+                            xai_grok_locale::ctx().tr("Open this URL in your browser to approve:",
                             ),
                             gray,
                         )),
@@ -226,7 +224,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                             Line::from(vec![
                                 Span::styled(
                                     xai_grok_locale::ctx()
-                                        .named_text("auth.device.code_label", "Code: "),
+                                        .tr("Code: "),
                                     gray,
                                 ),
                                 Span::styled(code.clone(), bold),
@@ -272,7 +270,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().named_text("auth.sign_in_failed", "Sign-in failed"),
+                    xai_grok_locale::ctx().tr("Sign-in failed"),
                     warn,
                 )),
             );
@@ -294,9 +292,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().named_text(
-                        "trust.question",
-                        "Do you trust the contents of this directory?",
+                    xai_grok_locale::ctx().tr("Do you trust the contents of this directory?",
                     ),
                     bold,
                 )),
@@ -316,9 +312,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().named_text(
-                        "trust.warning_1",
-                        "Grok Build may run or modify contents in this directory,",
+                    xai_grok_locale::ctx().tr("Grok Build may run or modify contents in this directory,",
                     ),
                     gray,
                 )),
@@ -329,7 +323,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().named_text("trust.warning_2", "posing security risks."),
+                    xai_grok_locale::ctx().tr("posing security risks."),
                     gray,
                 )),
             );
@@ -345,7 +339,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                     // needs no padding to align with the "n" row below.
                     Span::styled("  ", gray),
                     Span::styled(
-                        xai_grok_locale::ctx().named_text("trust.yes_proceed", "Yes, proceed"),
+                        xai_grok_locale::ctx().tr("Yes, proceed"),
                         gray,
                     ),
                 ]),
@@ -359,7 +353,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                     Span::styled("n", bold),
                     Span::styled("  ", gray),
                     Span::styled(
-                        xai_grok_locale::ctx().named_text("trust.no_quit", "No, quit"),
+                        xai_grok_locale::ctx().tr("No, quit"),
                         gray,
                     ),
                 ]),

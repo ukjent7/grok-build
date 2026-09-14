@@ -171,7 +171,7 @@ pub(super) fn render_header(
 
     let mut choose_hint = hint_line(
         Span::styled(
-            crate::locale::ctx().named_static_text("dashboard.actions.choose", "Choose"),
+            crate::locale::ctx().tr_static("Choose"),
             dim,
         ),
         chord_hint(
@@ -311,13 +311,11 @@ pub(super) fn render_actions_row(
     let worktree_armed = state.worktree_armed();
     let new_agent_label = if worktree_armed {
         crate::locale::ctx()
-            .named_static_text(
-                "dashboard.actions.new_agent_worktree",
-                "+ New Agent in Worktree",
+            .tr_static("+ New Agent in Worktree",
             )
     } else {
         crate::locale::ctx()
-            .named_static_text("dashboard.actions.new_agent", "+ New Agent")
+            .tr_static("+ New Agent")
     };
     let new_agent_w = (UnicodeWidthStr::width(new_agent_label) as u16).min(area.width);
 
@@ -345,10 +343,10 @@ pub(super) fn render_actions_row(
 
     let worktree_label = if worktree_armed {
         crate::locale::ctx()
-            .named_static_text("dashboard.actions.disable_worktree", "Disable Worktree")
+            .tr_static("Disable Worktree")
     } else {
         crate::locale::ctx()
-            .named_static_text("dashboard.actions.worktree", "Worktree")
+            .tr_static("Worktree")
     };
     let worktree_hint = hint_line(
         Span::styled(
@@ -375,7 +373,7 @@ pub(super) fn render_actions_row(
         let open_previous = hint_line(
             Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("dashboard.actions.open_previous", "Open Previous"),
+                    .tr_static("Open Previous"),
                 bg.fg(button_fg(
                     state.open_session_button_focused(),
                     state.open_session_button_hit.hovered,

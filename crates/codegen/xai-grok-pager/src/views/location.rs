@@ -12,7 +12,7 @@ use crate::theme::Theme;
 /// The `worktree ` marker painted before the path of a linked worktree, matching the session status bar (accent_user).
 pub(crate) fn worktree_badge(theme: &Theme) -> Span<'static> {
     Span::styled(
-        crate::locale::ctx().named_static_text("welcome.location.worktree_badge", "worktree "),
+        crate::locale::ctx().tr_static("worktree "),
         Style::default().fg(theme.accent_user),
     )
 }
@@ -40,7 +40,7 @@ fn location_parts_from(cwd: &Path, info: Option<git_info::CwdGitInfo>) -> Locati
     let branch = info.and_then(|i| i.branch).map(|b| {
         if b.is_empty() {
             crate::locale::ctx()
-                .named_text("welcome.location.detached", "detached")
+                .tr("detached")
                 .into_owned()
         } else {
             b
@@ -65,9 +65,7 @@ fn format_cwd_display(cwd: &Path, info: Option<&git_info::CwdGitInfo>) -> String
 /// Pure formatting for the cwd display; no global state.
 fn format_cwd_parts(display: &str, main_repo: Option<&str>) -> String {
     if let Some(main_repo) = main_repo {
-        crate::locale::ctx().format_named(
-            "welcome.location.worktree_of",
-            "{display} (worktree of {main_repo})",
+        crate::locale::ctx().tr_format("{display} (worktree of {main_repo})",
             &[("display", display), ("main_repo", main_repo)],
         )
     } else {

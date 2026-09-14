@@ -300,11 +300,11 @@ pub fn build_entries(
         if vim_mode && cat == Category::ConversationNav {
             let mut item = HintItem::new(
                 crate::key!('/'),
-                crate::locale::ctx().named_static_text("shortcuts.pseudo.search.label", "search"),
+                crate::locale::ctx().tr_static("search"),
             );
             item.description = Some(std::borrow::Cow::Borrowed(
                 crate::locale::ctx()
-                    .named_static_text("shortcuts.pseudo.search.description", "Search scrollback"),
+                    .tr_static("Search scrollback"),
             ));
             let dimmed = !active_contexts.contains(&When::ScrollbackFocused);
             entries.push(ShortcutsHelpEntry::Hint {
@@ -319,12 +319,12 @@ pub fn build_entries(
         if !vim_mode && cat == Category::ConversationNav {
             let mut item = HintItem::new(
                 crate::key!(Null),
-                crate::locale::ctx().named_static_text("shortcuts.pseudo.search.label", "search"),
+                crate::locale::ctx().tr_static("search"),
             );
             item.custom_display = Some("/find");
             item.description = Some(std::borrow::Cow::Borrowed(
                 crate::locale::ctx()
-                    .named_static_text("shortcuts.pseudo.search.description", "Search scrollback"),
+                    .tr_static("Search scrollback"),
             ));
             // `/find` is a slash command typed at the prompt (not a scrollback keystroke like the vim `/` above)
             // It is available when the prompt is focused, so dim on `!PromptFocused`, not scrollback
@@ -354,12 +354,10 @@ pub fn build_entries(
 
             let mut paste = HintItem::new(
                 crate::key!('v', CONTROL),
-                crate::locale::ctx().named_static_text("shortcuts.pseudo.paste.label", "paste"),
+                crate::locale::ctx().tr_static("paste"),
             );
             paste.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.pseudo.paste.description",
-                    "Paste images (and text) from the clipboard",
+                crate::locale::ctx().tr_static("Paste images (and text) from the clipboard",
                 ),
             ));
             #[cfg(target_os = "windows")]
@@ -368,12 +366,10 @@ pub fn build_entries(
 
             let mut undo = HintItem::new(
                 crate::key!('z', CONTROL),
-                crate::locale::ctx().named_static_text("shortcuts.pseudo.undo.label", "undo"),
+                crate::locale::ctx().tr_static("undo"),
             );
             undo.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.pseudo.undo.description",
-                    "Undo the last prompt edit",
+                crate::locale::ctx().tr_static("Undo the last prompt edit",
                 ),
             ));
             push_pseudo(&mut entries, undo, Some(undo_long_help()));
@@ -381,12 +377,10 @@ pub fn build_entries(
             // Alt+Z is the fallback on terminals that send Ctrl+Shift+Z as plain Ctrl+Z
             let mut redo = HintItem::new(
                 crate::key!('z', CONTROL | SHIFT),
-                crate::locale::ctx().named_static_text("shortcuts.pseudo.redo.label", "redo"),
+                crate::locale::ctx().tr_static("redo"),
             );
             redo.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx().named_static_text(
-                    "shortcuts.pseudo.redo.description",
-                    "Redo the last undone prompt edit",
+                crate::locale::ctx().tr_static("Redo the last undone prompt edit",
                 ),
             ));
             redo.keys.push(crate::key!('z', ALT));
@@ -397,11 +391,11 @@ pub fn build_entries(
             // Up-history is prompt-only, so give it its own dim scoped to PromptFocused
             let mut history = HintItem::new(
                 crate::key!(Up),
-                crate::locale::ctx().named_static_text("shortcuts.pseudo.history.label", "history"),
+                crate::locale::ctx().tr_static("history"),
             );
             history.description = Some(std::borrow::Cow::Borrowed(
                 crate::locale::ctx()
-                    .named_static_text("shortcuts.pseudo.history.description", "Prompt history"),
+                    .tr_static("Prompt history"),
             ));
             let history_dimmed = !active_contexts.contains(&When::PromptFocused);
             entries.push(ShortcutsHelpEntry::Hint {
@@ -708,7 +702,7 @@ pub fn modal_footer_detail() -> Vec<crate::views::modal_window::Shortcut<'static
     use crate::views::modal_window::Shortcut;
     vec![
         Shortcut {
-            label: crate::locale::ctx().named_static_text("shortcuts.footer.back", "Esc back"),
+            label: crate::locale::ctx().tr_static("Esc back"),
             clickable: false,
             id: 0,
         },
@@ -718,7 +712,7 @@ pub fn modal_footer_detail() -> Vec<crate::views::modal_window::Shortcut<'static
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx().named_static_text("shortcuts.footer.close_all", "Ctrl+./X close"),
+            label: crate::locale::ctx().tr_static("Ctrl+./X close"),
             clickable: false,
             id: 0,
         },
@@ -776,9 +770,7 @@ pub fn render_detail_body<'a>(
     if dimmed_note {
         lines.push(Line::from(""));
         lines.push(Line::from(Span::styled(
-            crate::locale::ctx().named_static_text(
-                "shortcuts.inactive_context",
-                "(not active in current context)",
+            crate::locale::ctx().tr_static("(not active in current context)",
             ),
             Style::default().fg(theme.gray_dim),
         )));
@@ -816,7 +808,7 @@ pub fn render_detail(
     };
     let footer = modal_footer_detail();
     let modal_config = mw::ModalWindowConfig {
-        title: crate::locale::ctx().named_static_text("shortcuts.title", "Keyboard Shortcuts"),
+        title: crate::locale::ctx().tr_static("Keyboard Shortcuts"),
         tabs: None,
         shortcuts: &footer,
         sizing: modal_sizing(compact),
@@ -1133,10 +1125,10 @@ pub fn modal_footer(filter_active: bool) -> Vec<crate::views::modal_window::Shor
         Shortcut {
             label: if filter_active {
                 crate::locale::ctx()
-                    .named_static_text("shortcuts.footer.show_all", "f show all")
+                    .tr_static("f show all")
             } else {
                 crate::locale::ctx()
-                    .named_static_text("shortcuts.footer.filter", "f filter")
+                    .tr_static("f filter")
             },
             clickable: false,
             id: 0,
@@ -1155,17 +1147,17 @@ pub fn modal_footer(filter_active: bool) -> Vec<crate::views::modal_window::Shor
         },
         Shortcut {
             label: crate::locale::ctx()
-                .named_static_text("shortcuts.footer.details", "Enter details"),
+                .tr_static("Enter details"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx().named_static_text("shortcuts.footer.search", "/ search"),
+            label: crate::locale::ctx().tr_static("/ search"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx().named_static_text("shortcuts.footer.close", "Esc close"),
+            label: crate::locale::ctx().tr_static("Esc close"),
             clickable: false,
             id: 0,
         },
@@ -1387,7 +1379,7 @@ pub fn render_modal(
     let non_sel: Vec<bool> = vec![false; picker_entries.len()];
     let footer = modal_footer(filter_active);
     let modal_config = mw::ModalWindowConfig {
-        title: crate::locale::ctx().named_static_text("shortcuts.title", "Keyboard Shortcuts"),
+        title: crate::locale::ctx().tr_static("Keyboard Shortcuts"),
         tabs: None,
         shortcuts: &footer,
         sizing: modal_sizing(compact),
@@ -1498,7 +1490,7 @@ pub fn handle_modal_key(
         modal_footer(filter_active)
     };
     let chrome_cfg = mw::ModalWindowConfig {
-        title: crate::locale::ctx().named_static_text("shortcuts.title", "Keyboard Shortcuts"),
+        title: crate::locale::ctx().tr_static("Keyboard Shortcuts"),
         tabs: None,
         shortcuts: &footer,
         sizing: modal_sizing(compact),

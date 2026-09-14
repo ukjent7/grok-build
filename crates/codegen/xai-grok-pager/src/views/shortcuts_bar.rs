@@ -173,7 +173,7 @@ fn localized_hint_label(label: &str) -> Cow<'_, str> {
         "clear" => ctx.tr_static("clear"),
         "clear search" => ctx.tr_static("clear search"),
         "close" => ctx.tr_static("close"),
-        "collapse" => ctx.named_static_text("shortcut.collapse", "collapse"),
+        "collapse" => ctx.tr_static("collapse"),
         "collapse thinking" => {
             ctx.tr_static("collapse thinking")
         }
@@ -205,7 +205,7 @@ fn localized_hint_label(label: &str) -> Cow<'_, str> {
         "fwd" => ctx.tr_static("fwd"),
         "go" => ctx.tr_static("go"),
         "goto" => ctx.tr_static("goto"),
-        "input" => ctx.named_static_text("shortcut.input", "input"),
+        "input" => ctx.tr_static("input"),
         "keep filter" => ctx.tr_static("keep filter"),
         "kill" => ctx.tr_static("kill"),
         "lines" => ctx.tr_static("lines"),

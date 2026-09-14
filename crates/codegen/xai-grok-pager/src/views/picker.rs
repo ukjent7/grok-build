@@ -1727,18 +1727,18 @@ pub fn picker_shortcuts() -> &'static [HintItem] {
         vec![
             HintItem {
                 keys: vec![],
-                label: std::borrow::Cow::Borrowed(ctx.named_static_text("picker.hint.nav", "nav")),
+                label: std::borrow::Cow::Borrowed(ctx.tr_static("nav")),
                 custom_display: Some("\u{2191}/\u{2193}"),
                 description: None,
                 pinned: false,
             },
             HintItem::new(
                 crate::key!(Enter),
-                ctx.named_static_text("picker.hint.select", "select"),
+                ctx.tr_static("select"),
             ),
             HintItem::new(
                 crate::key!(Esc),
-                ctx.named_static_text("picker.hint.close", "close"),
+                ctx.tr_static("close"),
             ),
         ]
     });
@@ -1968,7 +1968,7 @@ fn render_picker_content_inner(
         let frame = spinner_frames[(loading_tick / 4) as usize % spinner_frames.len()];
         let msg = format!(
             "{frame} {}",
-            crate::locale::ctx().named_text("picker.loading", "Loading…")
+            crate::locale::ctx().tr("Loading…")
         );
         let msg_style = Style::default().fg(theme.gray);
         let cx = content_area.x + content_area.width.saturating_sub(msg.width() as u16) / 2;
@@ -1987,7 +1987,7 @@ fn render_picker_content_inner(
             content_area.y,
             &format!(
                 "  {}",
-                crate::locale::ctx().named_text("picker.search.no_matches", "No matches")
+                crate::locale::ctx().tr("No matches")
             ),
             msg_style,
         );
@@ -2433,7 +2433,7 @@ pub fn render_picker(
         if config.vim_normal_first && !state.search_active {
             all_hints.push(HintItem::new(
                 crate::key!('i'),
-                crate::locale::ctx().named_static_text("picker.hint.search", "search"),
+                crate::locale::ctx().tr_static("search"),
             ));
         }
         // Expandable: add the e (expand) and y (copy) hints
@@ -2441,7 +2441,7 @@ pub fn render_picker(
             all_hints.push(HintItem {
                 keys: vec![],
                 label: std::borrow::Cow::Borrowed(
-                    crate::locale::ctx().named_static_text("picker.hint.expand", "expand"),
+                    crate::locale::ctx().tr_static("expand"),
                 ),
                 custom_display: Some("e/Shift+e"),
                 description: None,
@@ -2450,7 +2450,7 @@ pub fn render_picker(
             all_hints.push(HintItem {
                 keys: vec![],
                 label: std::borrow::Cow::Borrowed(
-                    crate::locale::ctx().named_static_text("picker.hint.copy", "copy"),
+                    crate::locale::ctx().tr_static("copy"),
                 ),
                 custom_display: Some("y"),
                 description: None,

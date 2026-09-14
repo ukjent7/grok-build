@@ -1025,9 +1025,7 @@ impl AgentView {
             )
         }) {
             self.show_toast(
-                &crate::locale::ctx().named_text(
-                    "prompt.blocked.toast.choose_action",
-                    "Your prompt is blocked — choose Edit, Resend, or Discard",
+                &crate::locale::ctx().tr("Your prompt is blocked — choose Edit, Resend, or Discard",
                 ),
             );
             return InputOutcome::Changed;
@@ -1157,9 +1155,7 @@ impl AgentView {
                     qv.local_kind = Some(kind);
                     self.question_view = Some(qv);
                     self.show_toast(
-                        &crate::locale::ctx().named_text(
-                            "prompt.blocked.toast.choose_action",
-                            "Your prompt is blocked — choose Edit, Resend, or Discard",
+                        &crate::locale::ctx().tr("Your prompt is blocked — choose Edit, Resend, or Discard",
                         ),
                     );
                     return InputOutcome::Changed;

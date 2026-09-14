@@ -37,11 +37,11 @@ use xai_grok_announcements::visible_announcements;
 
 /// Dim hint pointing at the hide command (`hide: /announcements hide`).
 fn hide_cta() -> &'static str {
-    crate::locale::ctx().named_static_text("announcement.hide_cta", "hide: /announcements hide")
+    crate::locale::ctx().tr_static("hide: /announcements hide")
 }
 /// Clickable hide button, far right of the title row.
 fn hide_button() -> &'static str {
-    crate::locale::ctx().named_static_text("announcement.hide_button", "[hide]")
+    crate::locale::ctx().tr_static("[hide]")
 }
 /// Alert prefix on the title row; the message row indents by its width.
 const TITLE_PREFIX: &str = "! ";

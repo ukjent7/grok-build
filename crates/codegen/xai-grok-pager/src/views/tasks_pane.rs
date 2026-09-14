@@ -171,10 +171,10 @@ impl GroupKind {
     fn label(self) -> &'static str {
         let ctx = crate::locale::ctx();
         match self {
-            GroupKind::Workflows => ctx.named_static_text("tasks.group.workflows", "Workflows"),
-            GroupKind::Subagents => ctx.named_static_text("tasks.group.subagents", "Subagents"),
-            GroupKind::Tasks => ctx.named_static_text("tasks.group.tasks", "Tasks"),
-            GroupKind::Watchers => ctx.named_static_text("tasks.group.watchers", "Watchers"),
+            GroupKind::Workflows => ctx.tr_static("Workflows"),
+            GroupKind::Subagents => ctx.tr_static("Subagents"),
+            GroupKind::Tasks => ctx.tr_static("Tasks"),
+            GroupKind::Watchers => ctx.tr_static("Watchers"),
         }
     }
 
@@ -461,10 +461,10 @@ impl TaskEntry {
             let ctx = crate::locale::ctx();
             let agents = match run.agents.iter().filter(|a| a.state == "running").count() {
                 0 => None,
-                1 => Some(ctx.format_named("tasks.agent.one", "1 agent", &[("count", "1")])),
+                1 => Some(ctx.tr("1 agent").into_owned()),
                 n => {
                     let count = n.to_string();
-                    Some(ctx.format_named("tasks.agent.many", "{count} agents", &[("count", &count)]))
+                    Some(ctx.tr_format("{count} agents", &[("count", &count)]))
                 }
             };
             match (phase, agents) {
@@ -472,7 +472,7 @@ impl TaskEntry {
                 (Some(p), None) => p.to_string(),
                 (None, Some(a)) => a,
                 (None, None) => crate::locale::ctx()
-                    .named_text("tasks.workflow.running", "running")
+                    .tr("running")
                     .into_owned(),
             }
         } else {
@@ -482,7 +482,7 @@ impl TaskEntry {
         let mut spans = vec![
             Span::styled(
                 crate::locale::ctx()
-                    .named_text("tasks.kind.workflow_prefix", "Workflow ")
+                    .tr("Workflow ")
                     .into_owned(),
                 Style::default().fg(tag_color),
             ),
@@ -496,7 +496,7 @@ impl TaskEntry {
         }
 
         let workflow_label = crate::locale::ctx()
-            .named_text("tasks.kind.workflow_prefix", "Workflow ")
+            .tr("Workflow ")
             .into_owned();
         let label = format!("{workflow_label}{} {suffix}", run.name);
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
@@ -531,14 +531,12 @@ impl TaskEntry {
                 let now = std::time::Instant::now();
                 if approx > now {
                     let duration = format_duration(approx.duration_since(now));
-                    crate::locale::ctx().format_named(
-                        "tasks.schedule.next_in",
-                        " (next in {duration})",
+                    crate::locale::ctx().tr_format(" (next in {duration})",
                         &[("duration", &duration)],
                     )
                 } else {
                     crate::locale::ctx()
-                        .named_text("tasks.schedule.due_now", " (due now)")
+                        .tr(" (due now)")
                         .into_owned()
                 }
             } else {
@@ -548,11 +546,11 @@ impl TaskEntry {
         let is_provisional = info.task_id.starts_with("provisional-");
         let suffix = if linked_running {
             crate::locale::ctx()
-                .named_text("tasks.schedule.running", " (running)")
+                .tr(" (running)")
                 .into_owned()
         } else if is_provisional {
             crate::locale::ctx()
-                .named_text("tasks.schedule.starting", " (starting)")
+                .tr(" (starting)")
                 .into_owned()
         } else if let Some(n) = &info.next_fire_at {
             if let Ok(dt) = DateTime::<chrono::FixedOffset>::parse_from_rfc3339(n) {
@@ -560,14 +558,12 @@ impl TaskEntry {
                 let now = Utc::now();
                 if dt > now {
                     let duration = format_duration((dt - now).to_std().unwrap_or_default());
-                    crate::locale::ctx().format_named(
-                        "tasks.schedule.next_in",
-                        " (next in {duration})",
+                    crate::locale::ctx().tr_format(" (next in {duration})",
                         &[("duration", &duration)],
                     )
                 } else {
                     crate::locale::ctx()
-                        .named_text("tasks.schedule.due_now", " (due now)")
+                        .tr(" (due now)")
                         .into_owned()
                 }
             } else {
@@ -1273,7 +1269,7 @@ impl TasksPane {
                 let ctx = crate::locale::ctx();
                 if self.show_done {
                     let span = Span::styled(
-                        ctx.named_static_text("tasks.empty.all", "No tasks or agents."),
+                        ctx.tr_static("No tasks or agents."),
                         Style::default().fg(theme.gray_bright),
                     );
                     buf.set_span(inner.x, inner.y, &span, inner.width);
@@ -1284,13 +1280,13 @@ impl TasksPane {
                         .add_modifier(Modifier::BOLD);
                     let line = Line::from(vec![
                         Span::styled(
-                            ctx.named_text("tasks.empty.running_prefix", "No running tasks. Press ")
+                            ctx.tr("No running tasks. Press ")
                                 .into_owned(),
                             muted,
                         ),
                         Span::styled("h", key_style),
                         Span::styled(
-                            ctx.named_text("tasks.empty.running_suffix", " to show all.")
+                            ctx.tr(" to show all.")
                                 .into_owned(),
                             muted,
                         ),

@@ -1084,58 +1084,44 @@ pub(crate) fn execute(
                                 let msg = match (event.phase, event.step) {
                                     (RestorePhase::Download, PhaseStep::Start) => {
                                         Some(crate::locale::ctx()
-                                            .named_static_text(
-                                                "session.restore.progress.download_start",
-                                                "Downloading session archives...",
+                                            .tr_static("Downloading session archives...",
                                             )
                                             .to_string())
                                     }
                                     (RestorePhase::Download, PhaseStep::End) => {
                                         let elapsed = format_restore_elapsed(event.elapsed);
-                                        Some(crate::locale::ctx().format_named(
-                                            "session.restore.progress.download_done",
-                                            "Downloads finished ({elapsed}).",
+                                        Some(crate::locale::ctx().tr_format("Downloads finished ({elapsed}).",
                                             &[("elapsed", &elapsed)],
                                         ))
                                     }
                                     (RestorePhase::Codebase, PhaseStep::Start) => {
                                         Some(crate::locale::ctx()
-                                            .named_static_text(
-                                                "session.restore.progress.code_start",
-                                                "Restoring code...",
+                                            .tr_static("Restoring code...",
                                             )
                                             .to_string())
                                     }
                                     (RestorePhase::Codebase, PhaseStep::End) => {
                                         event.detail.as_ref().map(|detail| {
-                                            crate::locale::ctx().format_named(
-                                                "session.restore.progress.code_done",
-                                                "Code restored ({detail}).",
+                                            crate::locale::ctx().tr_format("Code restored ({detail}).",
                                                 &[("detail", detail)],
                                             )
                                         })
                                     }
                                     (RestorePhase::Memory, PhaseStep::Start) => {
                                         Some(crate::locale::ctx()
-                                            .named_static_text(
-                                                "session.restore.progress.memory_start",
-                                                "Restoring memory...",
+                                            .tr_static("Restoring memory...",
                                             )
                                             .to_string())
                                     }
                                     (RestorePhase::SessionState, PhaseStep::Start) => {
                                         Some(crate::locale::ctx()
-                                            .named_static_text(
-                                                "session.restore.progress.state_start",
-                                                "Restoring session state...",
+                                            .tr_static("Restoring session state...",
                                             )
                                             .to_string())
                                     }
                                     (RestorePhase::SessionState, PhaseStep::End) => {
                                         event.detail.as_ref().map(|detail| {
-                                            crate::locale::ctx().format_named(
-                                                "session.restore.progress.state_done",
-                                                "Session state restored ({detail}).",
+                                            crate::locale::ctx().tr_format("Session state restored ({detail}).",
                                                 &[("detail", detail)],
                                             )
                                         })
@@ -1152,15 +1138,11 @@ pub(crate) fn execute(
                                             format!("{elapsed_secs}s")
                                         };
                                         if event.incomplete {
-                                            Some(crate::locale::ctx().format_named(
-                                                "session.restore.progress.incomplete",
-                                                "Restore incomplete ({elapsed}).",
+                                            Some(crate::locale::ctx().tr_format("Restore incomplete ({elapsed}).",
                                                 &[("elapsed", &elapsed)],
                                             ))
                                         } else {
-                                            Some(crate::locale::ctx().format_named(
-                                                "session.restore.progress.complete",
-                                                "Restore complete ({elapsed}).",
+                                            Some(crate::locale::ctx().tr_format("Restore complete ({elapsed}).",
                                                 &[("elapsed", &elapsed)],
                                             ))
                                         }
@@ -2447,9 +2429,7 @@ pub(crate) fn execute(
                                 .map(crate::views::mcps_modal::convert_list_response)
                                 .map_err(|_| {
                                     crate::locale::ctx()
-                                        .named_text(
-                                            "extensions.error.server_list",
-                                            "couldn't load server list",
+                                        .tr("couldn't load server list",
                                         )
                                         .into_owned()
                                 })
@@ -5317,9 +5297,7 @@ fn format_auth_lines(is_api_key_auth: bool, api_key_env_set: bool) -> String {
         };
         return format!(
             "{method}  {}\n",
-            crate::locale::ctx().named_static_text(
-                "usage.modal.session.login_upsell",
-                "Run `grok login` to use your SuperGrok subscription instead."
+            crate::locale::ctx().tr_static("Run `grok login` to use your SuperGrok subscription instead."
             )
         );
     }

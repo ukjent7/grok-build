@@ -9,12 +9,12 @@ pub(super) fn render(failure: &StartupFailure) -> String {
     let context = &failure.context;
     let mut rows = vec![
         (
-            locale.named_text("startup_failure.label.mode", "Mode").into_owned(),
+            locale.tr("Mode").into_owned(),
             attempted_agents(context),
         ),
         (
             locale
-                .named_text("startup_failure.label.version", "Version")
+                .tr("Version")
                 .into_owned(),
             context.version.clone(),
         ),
@@ -24,14 +24,14 @@ pub(super) fn render(failure: &StartupFailure) -> String {
             let advice = advice_for(timings, context.attempt);
             rows.push((
                 locale
-                    .named_text("startup_failure.label.steps", "Steps")
+                    .tr("Steps")
                     .into_owned(),
                 format_steps(timings),
             ));
             if let Some(command) = advice.next_step.command() {
                 rows.push((
                     locale
-                        .named_text("startup_failure.label.try", "Try")
+                        .tr("Try")
                         .into_owned(),
                     command.to_owned(),
                 ));
@@ -44,16 +44,14 @@ pub(super) fn render(failure: &StartupFailure) -> String {
         }
         Reason::Cancelled => {
             let agent = agent_name(context.target).to_string();
-            locale.format_named(
-                "startup_failure.cancelled",
-                "Startup cancelled while connecting to the {agent}.",
+            locale.tr_format("Startup cancelled while connecting to the {agent}.",
                 &[("agent", &agent)],
             )
         }
     };
     rows.push((
         locale
-            .named_text("startup_failure.label.log", "Log")
+            .tr("Log")
             .into_owned(),
         context.log_path.display().to_string(),
     ));
@@ -83,13 +81,11 @@ impl Advice {
     fn explanation(&self) -> String {
         let locale = crate::locale::ctx();
         let mut explanation = match self.doing {
-            Some(doing) => locale.format_named(
-                "startup_failure.longest_step",
-                "The longest step was {doing}.",
+            Some(doing) => locale.tr_format("The longest step was {doing}.",
                 &[("doing", doing)],
             ),
             None => locale
-                .named_text("startup_failure.no_step_started", "No startup step had begun.")
+                .tr("No startup step had begun.")
                 .into_owned(),
         };
         if let Some(earlier) = self.earlier {
@@ -97,9 +93,7 @@ impl Advice {
             let _ = write!(
                 explanation,
                 " {}",
-                locale.format_named(
-                    "startup_failure.earlier_attempt",
-                    "Grok spent the first {seconds} on the {target}.",
+                locale.tr_format("Grok spent the first {seconds} on the {target}.",
                     &[
                         ("seconds", &whole_seconds(earlier.wait)),
                         ("target", &target)
@@ -182,13 +176,9 @@ impl NextStep {
     fn text(self) -> &'static str {
         let locale = crate::locale::ctx();
         match self {
-            Self::Retry => locale.named_static_text(
-                "startup_failure.next_step.retry",
-                "Start Grok again.",
+            Self::Retry => locale.tr_static("Start Grok again.",
             ),
-            Self::CheckNetworkThenRetry => locale.named_static_text(
-                "startup_failure.next_step.check_network",
-                "Check your network connection, then start Grok again.",
+            Self::CheckNetworkThenRetry => locale.tr_static("Check your network connection, then start Grok again.",
             ),
             Self::RestartSharedLeader => locale.named_static_text(
                 "startup_failure.next_step.restart_leader",
@@ -211,72 +201,52 @@ fn step_advice(phase: StartupPhase) -> (&'static str, NextStep) {
     let locale = crate::locale::ctx();
     match phase {
         StartupPhase::ConfigLoad => (
-            locale.named_static_text(
-                "startup_failure.step.config_load",
-                "reading your local configuration",
+            locale.tr_static("reading your local configuration",
             ),
             Retry,
         ),
         StartupPhase::ManagedPolicy => (
-            locale.named_static_text(
-                "startup_failure.step.managed_policy",
-                "checking your organization's managed policy",
+            locale.tr_static("checking your organization's managed policy",
             ),
             Network,
         ),
         StartupPhase::Bootstrap => (
-            locale.named_static_text(
-                "startup_failure.step.bootstrap",
-                "loading your account settings",
+            locale.tr_static("loading your account settings",
             ),
             Network,
         ),
         StartupPhase::ModelCatalog => (
-            locale.named_static_text(
-                "startup_failure.step.model_catalog",
-                "reading the list of available models",
+            locale.tr_static("reading the list of available models",
             ),
             Retry,
         ),
         StartupPhase::WorkerSpawn => (
-            locale.named_static_text(
-                "startup_failure.step.worker_spawn",
-                "starting the local agent",
+            locale.tr_static("starting the local agent",
             ),
             Retry,
         ),
         StartupPhase::LeaderConnect => (
-            locale.named_static_text(
-                "startup_failure.step.leader_connect",
-                "connecting to the shared leader",
+            locale.tr_static("connecting to the shared leader",
             ),
             RestartSharedLeader,
         ),
         StartupPhase::AcpInitialize => (
-            locale.named_static_text(
-                "startup_failure.step.acp_initialize",
-                "waiting for the agent to respond",
+            locale.tr_static("waiting for the agent to respond",
             ),
             Retry,
         ),
         StartupPhase::EagerAuth => (
-            locale.named_static_text(
-                "startup_failure.step.eager_auth",
-                "refreshing your sign-in",
+            locale.tr_static("refreshing your sign-in",
             ),
             Network,
         ),
         StartupPhase::AppInit => (
-            locale.named_static_text(
-                "startup_failure.step.app_init",
-                "preparing the interface",
+            locale.tr_static("preparing the interface",
             ),
             Retry,
         ),
         StartupPhase::SessionCreate => (
-            locale.named_static_text(
-                "startup_failure.step.session_create",
-                "creating the session",
+            locale.tr_static("creating the session",
             ),
             Retry,
         ),
@@ -286,9 +256,7 @@ fn attempted_agents(context: &Context) -> String {
     let target = agent_name(context.target);
     match context.attempt {
         ConnectAttempt::First => target.to_owned(),
-        ConnectAttempt::AfterFallback(earlier) => crate::locale::ctx().format_named(
-            "startup_failure.attempted_agents_fallback",
-            "{first}, then {target}",
+        ConnectAttempt::AfterFallback(earlier) => crate::locale::ctx().tr_format("{first}, then {target}",
             &[("first", agent_name(earlier.target)), ("target", target)],
         ),
     }
@@ -297,10 +265,10 @@ fn agent_name(agent: AgentKind) -> &'static str {
     let locale = crate::locale::ctx();
     match agent {
         AgentKind::Embedded => {
-            locale.named_static_text("startup_failure.agent.local", "local agent")
+            locale.tr_static("local agent")
         }
         AgentKind::Leader => {
-            locale.named_static_text("startup_failure.agent.shared_leader", "shared leader")
+            locale.tr_static("shared leader")
         }
     }
 }

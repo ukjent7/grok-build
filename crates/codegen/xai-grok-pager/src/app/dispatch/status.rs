@@ -14,9 +14,7 @@ use crate::scrollback::block::RenderBlock;
 
 /// Temporary kill switch: client share links are disabled.
 pub(super) fn dispatch_share_session(app: &mut AppView) -> Vec<Effect> {
-    app.show_toast(&crate::locale::ctx().named_text(
-        "status.session_share_disabled",
-        "Session sharing is temporarily disabled",
+    app.show_toast(&crate::locale::ctx().tr("Session sharing is temporarily disabled",
     ));
     vec![]
 }
@@ -308,7 +306,7 @@ pub(super) fn scrub_error_for_toast(error: &str) -> String {
             .any(crate::render::line_utils::is_unsafe_display_char)
     {
         crate::locale::ctx()
-            .named_text("status.server_error_generic", "server error (see logs for details)")
+            .tr("server error (see logs for details)")
             .into_owned()
     } else {
         error.to_string()
@@ -364,9 +362,7 @@ pub(super) fn dispatch_show_usage(app: &mut AppView) -> Vec<Effect> {
                     &mut agent.scrollback,
                     RenderBlock::system(
                         crate::locale::ctx()
-                            .named_text(
-                                "status.session_usage_unavailable",
-                                "Session usage is unavailable until the session starts.",
+                            .tr("Session usage is unavailable until the session starts.",
                             )
                             .into_owned(),
                     ),
@@ -469,9 +465,7 @@ pub(crate) fn commit_minimal_update_notice(app: &mut AppView, latest_version: &s
         && let Some(agent) = app.agents.get_mut(&id)
     {
         agent.scrollback.push_block(RenderBlock::system(
-            crate::locale::ctx().format_named(
-                "status.update_available",
-                "Update available: v{version}. Restart to apply.",
+            crate::locale::ctx().tr_format("Update available: v{version}. Restart to apply.",
                 &[("version", latest_version)],
             ),
         ));

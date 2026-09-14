@@ -52,7 +52,7 @@ fn no_login_method_error(app: &AppView) -> String {
             .into_owned()
     } else {
         crate::locale::ctx()
-            .named_text("auth.no_login_method", "No login method available")
+            .tr("No login method available")
             .into_owned()
     }
 }

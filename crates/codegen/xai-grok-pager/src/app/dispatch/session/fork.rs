@@ -23,9 +23,7 @@ pub(in crate::app::dispatch) fn dispatch_fork(
     args: crate::slash::commands::fork::ForkArgs,
 ) -> Vec<Effect> {
     let ActiveView::Agent(parent_id) = app.active_view else {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "session.fork.only_inside_session",
-            "/fork only works inside a session",
+        app.show_toast(crate::locale::ctx().tr_static("/fork only works inside a session",
         ));
         return vec![];
     };
@@ -35,17 +33,13 @@ pub(in crate::app::dispatch) fn dispatch_fork(
         .map(|a| (a.session.session_id.is_some(), a.current_branch.is_some()))
         .unwrap_or((false, false));
     if !has_session {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "session.fork.still_creating",
-            "Cannot fork: session is still being created",
+        app.show_toast(crate::locale::ctx().tr_static("Cannot fork: session is still being created",
         ));
         return vec![];
     }
     match args.worktree_override {
         Some(true) if !in_git_repo => {
-            app.show_toast(crate::locale::ctx().named_static_text(
-                "session.worktree.not_git_repo",
-                "Cannot create worktree: not in a git repository",
+            app.show_toast(crate::locale::ctx().tr_static("Cannot create worktree: not in a git repository",
             ));
             vec![]
         }
@@ -83,12 +77,10 @@ pub(super) fn worktree_persist_options()
     [
         QuestionOption {
             label: crate::locale::ctx()
-                .named_static_text("session.worktree.option.always.label", "Always worktree")
+                .tr_static("Always worktree")
                 .into(),
             description: crate::locale::ctx()
-                .named_static_text(
-                    "session.worktree.option.always.description",
-                    "Use worktree and stop asking (reset in config.toml)",
+                .tr_static("Use worktree and stop asking (reset in config.toml)",
                 )
                 .into(),
             preview: None,
@@ -96,12 +88,10 @@ pub(super) fn worktree_persist_options()
         },
         QuestionOption {
             label: crate::locale::ctx()
-                .named_static_text("session.worktree.option.never.label", "Never worktree")
+                .tr_static("Never worktree")
                 .into(),
             description: crate::locale::ctx()
-                .named_static_text(
-                    "session.worktree.option.never.description",
-                    "Skip worktree and stop asking (reset in config.toml)",
+                .tr_static("Skip worktree and stop asking (reset in config.toml)",
                 )
                 .into(),
             preview: None,
@@ -123,21 +113,17 @@ fn open_fork_question(app: &mut AppView, directive: Option<String>) -> Vec<Effec
         return vec![];
     };
     if agent.question_view.is_some() {
-        app.show_toast(&crate::locale::ctx().named_text(
-            "question.finish_current_first",
-            "Finish answering the current question first",
+        app.show_toast(&crate::locale::ctx().tr("Finish answering the current question first",
         ));
         return vec![];
     }
     let mut options = vec![
         QuestionOption {
             label: crate::locale::ctx()
-                .named_static_text("question.option.yes", "Yes")
+                .tr_static("Yes")
                 .to_owned(),
             description: crate::locale::ctx()
-                .named_static_text(
-                    "session.fork.option.worktree",
-                    "Fork in a new isolated git worktree",
+                .tr_static("Fork in a new isolated git worktree",
                 )
                 .into(),
             preview: None,
@@ -145,10 +131,10 @@ fn open_fork_question(app: &mut AppView, directive: Option<String>) -> Vec<Effec
         },
         QuestionOption {
             label: crate::locale::ctx()
-                .named_static_text("question.option.no", "No")
+                .tr_static("No")
                 .to_owned(),
             description: crate::locale::ctx()
-                .named_static_text("session.fork.option.current_cwd", "Fork in the current cwd")
+                .tr_static("Fork in the current cwd")
                 .into(),
             preview: None,
             id: None,
@@ -157,9 +143,7 @@ fn open_fork_question(app: &mut AppView, directive: Option<String>) -> Vec<Effec
     options.extend(worktree_persist_options());
     let question = Question {
         question: crate::locale::ctx()
-            .named_static_text(
-                "session.fork.question.worktree",
-                "Run this fork in an isolated git worktree?",
+            .tr_static("Run this fork in an isolated git worktree?",
             )
             .into(),
         id: None,
@@ -193,9 +177,7 @@ pub(in crate::app::dispatch) fn dispatch_fork_resolved(
         return vec![];
     };
     let Some(parent_session_id) = parent.session.session_id.clone() else {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "session.fork.not_yet_created",
-            "Cannot fork: session not yet created",
+        app.show_toast(crate::locale::ctx().tr_static("Cannot fork: session not yet created",
         ));
         return vec![];
     };
@@ -205,13 +187,11 @@ pub(in crate::app::dispatch) fn dispatch_fork_resolved(
     app.next_agent_id += 1;
     let new_agent = build_fork_placeholder(app, new_id, parent_id, &parent_cwd, worktree);
     let parent_marker = match directive.as_deref() {
-        Some(d) => crate::locale::ctx().format_named(
-            "session.fork.parent_marker.directive",
-            "Forked: {directive}",
+        Some(d) => crate::locale::ctx().tr_format("Forked: {directive}",
             &[("directive", d)],
         ),
         None => crate::locale::ctx()
-            .named_static_text("session.fork.parent_marker", "Forked")
+            .tr_static("Forked")
             .to_string(),
     };
     let parent_chat_kind = parent.chat_kind || app.chat_mode;
@@ -358,9 +338,7 @@ pub(in crate::app::dispatch) fn build_child_fork_marker(
     switch_hint: Option<&str>,
 ) -> String {
     let header = if let Some(cmd) = switch_hint {
-        crate::locale::ctx().format_named(
-            "session.fork.child_marker.switch",
-            "Session {session_id} (forked from {parent_sid}), use {command} to switch between sessions",
+        crate::locale::ctx().tr_format("Session {session_id} (forked from {parent_sid}), use {command} to switch between sessions",
             &[
                 ("session_id", session_id),
                 ("parent_sid", parent_sid),
@@ -368,9 +346,7 @@ pub(in crate::app::dispatch) fn build_child_fork_marker(
             ],
         )
     } else {
-        crate::locale::ctx().format_named(
-            "session.fork.child_marker",
-            "Session {session_id} (forked from {parent_sid})",
+        crate::locale::ctx().tr_format("Session {session_id} (forked from {parent_sid})",
             &[("session_id", session_id), ("parent_sid", parent_sid)],
         )
     };
@@ -379,9 +355,7 @@ pub(in crate::app::dispatch) fn build_child_fork_marker(
     } else {
         format!(
             "{header}\n  {}",
-            crate::locale::ctx().named_text(
-                "session.fork.child_marker.shared_cwd",
-                "(both agents share cwd)",
+            crate::locale::ctx().tr("(both agents share cwd)",
             )
         )
     }
@@ -468,9 +442,7 @@ pub(in crate::app::dispatch) fn handle_worktree_forked(
         app.restore_code = None;
         agent.prompt.file_search.retarget(&session_cwd);
         agent.scrollback.push_block(RenderBlock::system(
-            crate::locale::ctx().format_named(
-                "session.worktree.ready",
-                "Worktree ready: {path}",
+            crate::locale::ctx().tr_format("Worktree ready: {path}",
                 &[("path", &worktree_path.display().to_string())],
             ),
         ));

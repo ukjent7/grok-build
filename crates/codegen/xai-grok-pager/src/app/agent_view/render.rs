@@ -791,7 +791,7 @@ impl AgentView {
         left_spans.push(Span::styled("\u{2191}/\u{2193}", hint_key));
         left_spans.push(Span::styled(" ", hint_style));
         left_spans.push(Span::styled(
-            ctx.named_static_text("shortcut.navigate", "navigate"),
+            ctx.tr_static("navigate"),
             hint_style,
         ));
         if qv.questions.len() > 1 {
@@ -799,7 +799,7 @@ impl AgentView {
             left_spans.push(Span::styled("\u{2190}/\u{2192}", hint_key));
             left_spans.push(Span::styled(" ", hint_style));
             left_spans.push(Span::styled(
-                ctx.named_static_text("shortcut.question", "question"),
+                ctx.tr_static("question"),
                 hint_style,
             ));
         }
@@ -808,7 +808,7 @@ impl AgentView {
             left_spans.push(Span::styled("y", hint_key));
             left_spans.push(Span::styled(" ", hint_style));
             left_spans.push(Span::styled(
-                ctx.named_static_text("shortcut.copy", "copy"),
+                ctx.tr_static("copy"),
                 hint_style,
             ));
         }
@@ -2455,7 +2455,7 @@ impl AgentView {
             buf.set_string(
                 content_x + 2,
                 rec_area.y,
-                crate::locale::ctx().named_static_text("voice.recording.label", "Recording"),
+                crate::locale::ctx().tr_static("Recording"),
                 Style::default().fg(theme.accent_error).bg(bg),
             );
             let stop_str = "[stop]";
@@ -2511,14 +2511,10 @@ impl AgentView {
             };
             Some(if approval_is_commenting || casual_commenting {
             commenting_label = match commenting_range {
-                Some(r) if r.len() == 1 => crate::locale::ctx().format_named(
-                    "mode.commenting.line",
-                    "commenting L{line}",
+                Some(r) if r.len() == 1 => crate::locale::ctx().tr_format("commenting L{line}",
                     &[("line", &r.start.to_string())],
                 ),
-                Some(r) => crate::locale::ctx().format_named(
-                    "mode.commenting.range",
-                    "commenting L{start}-{end}",
+                Some(r) => crate::locale::ctx().tr_format("commenting L{start}-{end}",
                     &[("start", &r.start.to_string()), ("end", &(r.end - 1).to_string())],
                 ),
                 None => "commenting".to_string(),
@@ -2560,9 +2556,7 @@ impl AgentView {
             },
             PromptMode::EditingQueued { id, .. } => {
                 let pos = self.session.queue_position(*id).map(|i| i + 1).unwrap_or(1);
-                editing_label = crate::locale::ctx().format_named(
-                    "prompt.editing_queued",
-                    "editing queued #{position}",
+                editing_label = crate::locale::ctx().tr_format("editing queued #{position}",
                     &[("position", &pos.to_string())],
                 );
                 PromptInfo {
@@ -2902,11 +2896,11 @@ impl AgentView {
                     let is_last = qv.active_tab >= qv.questions.len().saturating_sub(1);
                     let ctx = crate::locale::ctx();
                     let enter_label = if qv.is_on_freeform_row() {
-                        ctx.named_static_text("shortcut.edit", "edit")
+                        ctx.tr_static("edit")
                     } else if is_last {
-                        ctx.named_static_text("shortcut.submit", "submit")
+                        ctx.tr_static("submit")
                     } else {
-                        ctx.named_static_text("shortcut.select", "select")
+                        ctx.tr_static("select")
                     };
                     let btn_key = "Enter";
                     let btn_bg = theme.bg_base;

@@ -528,9 +528,7 @@ pub(super) fn handle_rewind_points_loaded(
         if let Some(stashed) = stashed {
             agent.prompt.restore(stashed);
         }
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "rewind.no_undoable_prompts",
-            "No undoable prompts",
+        app.show_toast(crate::locale::ctx().tr_static("No undoable prompts",
         ));
         return vec![];
     }

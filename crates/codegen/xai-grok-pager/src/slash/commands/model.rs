@@ -46,7 +46,7 @@ impl SlashCommand for ModelCommand {
             return CommandResult::Error(
                 format!(
                     "{}{}",
-                    crate::locale::ctx().named_text("slash.error.usage", "Usage: "),
+                    crate::locale::ctx().tr("Usage: "),
                     "/model <name> [effort]"
                 ),
             );
@@ -79,9 +79,7 @@ impl SlashCommand for ModelCommand {
             };
         }
 
-        CommandResult::Error(crate::locale::ctx().format_named(
-            "slash.command.model.error.unknown",
-            "Unknown model: {model}",
+        CommandResult::Error(crate::locale::ctx().tr_format("Unknown model: {model}",
             &[("model", trimmed)],
         ))
     }

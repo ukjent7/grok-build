@@ -96,22 +96,22 @@ impl FeedbackModalState {
         let ctx = crate::locale::ctx();
         vec![
             Shortcut {
-                label: ctx.named_static_text("feedback.shortcut.move_rows", "↑↓ move"),
+                label: ctx.tr_static("↑↓ move"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: ctx.named_static_text("feedback.shortcut.filter", "type filter"),
+                label: ctx.tr_static("type filter"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: ctx.named_static_text("feedback.shortcut.select", "Enter select"),
+                label: ctx.tr_static("Enter select"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: ctx.named_static_text("feedback.shortcut.back", "Esc back"),
+                label: ctx.tr_static("Esc back"),
                 clickable: false,
                 id: 0,
             },

@@ -128,14 +128,12 @@ impl SearchToolCallBlock {
         };
 
         let prefix =
-            crate::locale::ctx().named_text("scrollback.tool.search_tools.label", "Search Tools ");
+            crate::locale::ctx().tr("Search Tools ");
 
         match max_width {
             Some(w) => {
                 let count = self.result_count.to_string();
-                let suffix = crate::locale::ctx().format_named(
-                    "scrollback.tool.search_tools.results",
-                    " ({count} results)",
+                let suffix = crate::locale::ctx().tr_format(" ({count} results)",
                     &[("count", &count)],
                 );
 
@@ -242,9 +240,7 @@ impl BlockContent for SearchToolCallBlock {
                     lines.push(
                         Line::from(Span::styled(
                             crate::locale::ctx()
-                                .named_text(
-                                    "scrollback.tool.search_tools.no_results_found",
-                                    "  (no results found)",
+                                .tr("  (no results found)",
                                 )
                                 .into_owned(),
                             theme.muted(),

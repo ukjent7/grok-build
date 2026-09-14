@@ -309,7 +309,7 @@ impl ContextInfoBlock {
                 glyph: system_glyph,
                 color: system_color,
                 label: crate::locale::ctx()
-                    .named_text("context.system_prompt", "System prompt")
+                    .tr("System prompt")
                     .into_owned(),
                 tokens: system_tokens,
                 detail: None,
@@ -318,7 +318,7 @@ impl ContextInfoBlock {
                 glyph: messages_glyph,
                 color: messages_color,
                 label: crate::locale::ctx()
-                    .named_text("context.messages", "Messages")
+                    .tr("Messages")
                     .into_owned(),
                 tokens: message_tokens,
                 detail: None,
@@ -329,7 +329,7 @@ impl ContextInfoBlock {
                 glyph: overhead_glyph,
                 color: overhead_color,
                 label: crate::locale::ctx()
-                    .named_text("context.reasoning_overhead", "Reasoning/overhead")
+                    .tr("Reasoning/overhead")
                     .into_owned(),
                 tokens: overhead_tokens,
                 detail: None,
@@ -348,7 +348,7 @@ impl ContextInfoBlock {
             glyph: tools_glyph,
             color: tools_color,
             label: crate::locale::ctx()
-                .named_text("context.tool_definitions", "Tool definitions")
+                .tr("Tool definitions")
                 .into_owned(),
             tokens: tool_tokens,
             detail: Some(localized_existing_count_detail(
@@ -374,7 +374,7 @@ impl ContextInfoBlock {
             // Header: bold white "Context"
             Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("context.title", "Context")
+                    .tr_static("Context")
                     .to_string(),
                 primary,
             )),
@@ -420,9 +420,7 @@ impl ContextInfoBlock {
             let remaining = threshold_tokens.saturating_sub(used);
             let (text, style) = if usage_pct >= threshold_percent {
                 (
-                    crate::locale::ctx().format_named(
-                        "context.auto_compact_triggers",
-                        "Auto-compact triggers next turn (at {percent}%)",
+                    crate::locale::ctx().tr_format("Auto-compact triggers next turn (at {percent}%)",
                         &[("percent", &threshold_percent.to_string())],
                     ),
                     Style::default().fg(quantize(theme.warning)),
@@ -463,9 +461,7 @@ impl ContextInfoBlock {
             lines.push(Line::from(""));
             lines.push(Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_text(
-                        "context.tip_compact",
-                        "Tip: run /compact to free up context space.",
+                    .tr("Tip: run /compact to free up context space.",
                     )
                     .into_owned(),
                 Style::default().fg(quantize(theme.warning)),
@@ -484,11 +480,11 @@ fn localized_usage_category(label: &str, detail: Option<&str>) -> (String, Optio
     let ctx = crate::locale::ctx();
     match label {
         "Skills" => (
-            ctx.named_text("context.skills", "Skills").into_owned(),
+            ctx.tr("Skills").into_owned(),
             detail.map(|value| localized_existing_count_detail(value, "context.detail.skills")),
         ),
         "MCP servers" => (
-            ctx.named_text("context.mcp_servers", "MCP servers")
+            ctx.tr("MCP servers")
                 .into_owned(),
             detail.map(|value| localized_existing_count_detail(value, "context.detail.servers")),
         ),

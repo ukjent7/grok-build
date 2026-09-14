@@ -47,7 +47,7 @@ pub(super) fn rate_limited_wake_failure_event(
             .map(str::to_string)
             .unwrap_or_else(|| {
                 crate::locale::ctx()
-                    .named_static_text("session.rate_limit.fallback", "rate limited")
+                    .tr_static("rate limited")
                     .to_string()
             }),
         elapsed,

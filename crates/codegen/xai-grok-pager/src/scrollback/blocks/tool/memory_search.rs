@@ -84,13 +84,11 @@ impl MemorySearchToolCallBlock {
         };
 
         let prefix =
-            crate::locale::ctx().named_text("scrollback.tool.memory_search.label", "Memory Search ");
+            crate::locale::ctx().tr("Memory Search ");
         let count = self.results.len();
         let suffix = if count > 0 {
             let count = count.to_string();
-            crate::locale::ctx().format_named(
-                "scrollback.tool.memory_search.results",
-                " ({count} results)",
+            crate::locale::ctx().tr_format(" ({count} results)",
                 &[("count", &count)],
             )
         } else {
@@ -187,7 +185,7 @@ impl BlockContent for MemorySearchToolCallBlock {
                     lines.push(BlockLine::separator(Line::from("")));
                     lines.push(BlockLine::separator(Line::from(Span::styled(
                         crate::locale::ctx()
-                            .named_text("scrollback.tool.no_results", "  (no results)")
+                            .tr("  (no results)")
                             .into_owned(),
                         theme.muted(),
                     ))));

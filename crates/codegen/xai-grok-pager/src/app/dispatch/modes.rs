@@ -38,9 +38,7 @@ pub(super) fn dispatch_enter_plan_mode(
 
     let in_plan = agent.plan_mode_pending.unwrap_or(agent.plan_mode_active);
     if in_plan {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "plan.already_active",
-            "Already in plan mode. Use /view-plan to view the current plan.",
+        app.show_toast(crate::locale::ctx().tr_static("Already in plan mode. Use /view-plan to view the current plan.",
         ));
         return vec![];
     }

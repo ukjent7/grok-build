@@ -225,10 +225,10 @@ impl QueuedPromptEntry {
         let suffix = if extra_lines > 0 {
             let ctx = crate::locale::ctx();
             if extra_lines == 1 {
-                ctx.named_text("queue.extra_lines_one", " (+1 line)").into_owned()
+                ctx.tr(" (+1 line)").into_owned()
             } else {
                 let count = extra_lines.to_string();
-                ctx.format_named("queue.extra_lines", " (+{count} lines)", &[("count", &count)])
+                ctx.tr_format(" (+{count} lines)", &[("count", &count)])
             }
         } else {
             String::new()
@@ -969,7 +969,7 @@ impl QueuePane {
                 let fits = |right: u16, w: u16| right.checked_sub(w).filter(|&x| x >= inner.x);
 
                 let cancel_label = crate::locale::ctx()
-                    .named_text("queue.button.cancel", "[cancel]")
+                    .tr("[cancel]")
                     .into_owned();
                 let cancel_w = cancel_label.width() as u16;
                 if entry.capabilities.can_delete()
@@ -987,7 +987,7 @@ impl QueuePane {
                 }
 
                 let interject_label = crate::locale::ctx()
-                    .named_text("queue.button.send_now", "[Send now]")
+                    .tr("[Send now]")
                     .into_owned();
                 let interject_w = interject_label.width() as u16;
                 let show_send_now = can_send_now && entry.capabilities.can_send_now();
@@ -996,7 +996,7 @@ impl QueuePane {
                 // neighbours so the queued message cannot leak through a gap.
                 // Drop [edit] if [Send now] fits alone but not with [edit].
                 let edit_label = crate::locale::ctx()
-                    .named_text("queue.button.edit", "[edit]")
+                    .tr("[edit]")
                     .into_owned();
                 let edit_w = edit_label.width() as u16;
                 let send_now_fits_alone = show_send_now && fits(right, interject_w).is_some();

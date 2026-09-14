@@ -73,12 +73,12 @@ pub fn maybe_commit_welcome(app: &mut AppView, terminal: &mut PagerTerminal) {
     }
     if let Some(model) = model {
         info.push(Line::from(Span::styled(
-            xai_grok_locale::ctx().format_named("minimal.model", "Model · {model}", &[("model", &model)]),
+            xai_grok_locale::ctx().tr_format("Model · {model}", &[("model", &model)]),
             theme.muted(),
         )));
     }
     info.push(Line::from(Span::styled(
-        xai_grok_locale::ctx().named_text("minimal.help_hint", "/help for commands"),
+        xai_grok_locale::ctx().tr("/help for commands"),
         theme.dim(),
     )));
 

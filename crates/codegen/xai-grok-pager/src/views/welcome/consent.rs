@@ -31,7 +31,7 @@ const TOO_SMALL_NARROW: &str = "Window too small";
 
 /// Localized quit label shared by both consent menu rows.
 fn quit_label() -> &'static str {
-    crate::locale::ctx().named_static_text("welcome.quit", "Quit")
+    crate::locale::ctx().tr_static("Quit")
 }
 
 pub fn render_consent(

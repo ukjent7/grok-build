@@ -1702,13 +1702,13 @@ impl AgentView {
                 },
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("picker.shortcut.select", "Enter select"),
+                        .tr_static("Enter select"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("picker.shortcut.close", "Esc close"),
+                        .tr_static("Esc close"),
                     clickable: false,
                     id: 0,
                 },

@@ -4044,7 +4044,7 @@ fn handle_welcome_input(ev: &Event, ctx: &mut WelcomeInputCtx<'_>) -> InputOutco
                 {
                     return InputOutcome::Action(Action::ShowReleaseNotes {
                         title: crate::locale::ctx()
-                            .named_text("docs.release_notes.title", "Release Notes")
+                            .tr("Release Notes")
                             .into_owned(),
                         content: md.trim().to_string(),
                     });
@@ -4273,7 +4273,7 @@ fn dispatch_menu_action(
         if let Some(md) = changelog_md {
             return InputOutcome::Action(Action::ShowReleaseNotes {
                 title: crate::locale::ctx()
-                    .named_text("docs.release_notes.title", "Release Notes")
+                    .tr("Release Notes")
                     .into_owned(),
                 content: md.trim().to_string(),
             });

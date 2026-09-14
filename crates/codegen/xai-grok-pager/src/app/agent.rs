@@ -115,19 +115,17 @@ impl AgentCommand {
     pub fn display_name(&self) -> &'static str {
         let ctx = crate::locale::ctx();
         match self {
-            Self::Compact => ctx.named_static_text("turn.command.compacting", "Compacting"),
+            Self::Compact => ctx.tr_static("Compacting"),
             Self::CreateWorktree => {
-                ctx.named_static_text("turn.command.creating_worktree", "Creating worktree")
+                ctx.tr_static("Creating worktree")
             }
-            Self::RestoreWorktree => ctx.named_static_text(
-                "turn.command.restoring_worktree",
-                "Restoring session in worktree",
+            Self::RestoreWorktree => ctx.tr_static("Restoring session in worktree",
             ),
             Self::RestoreCode => {
-                ctx.named_static_text("turn.command.restoring_code", "Restoring code")
+                ctx.tr_static("Restoring code")
             }
             Self::ForkSession => {
-                ctx.named_static_text("turn.command.forking_session", "Forking session")
+                ctx.tr_static("Forking session")
             }
         }
     }
@@ -374,20 +372,16 @@ impl GoalDisplayStatus {
     pub fn pause_label(&self) -> &'static str {
         let ctx = crate::locale::ctx();
         match self {
-            Self::UserPaused => ctx.named_static_text("goal.status.paused", "Paused"),
+            Self::UserPaused => ctx.tr_static("Paused"),
             Self::BackOffPaused => {
-                ctx.named_static_text("goal.status.paused_back_off", "Paused (back-off)")
+                ctx.tr_static("Paused (back-off)")
             }
-            Self::NoProgressPaused => ctx.named_static_text(
-                "goal.status.paused_no_progress",
-                "Paused (no progress)",
+            Self::NoProgressPaused => ctx.tr_static("Paused (no progress)",
             ),
             Self::InfraPaused => {
-                ctx.named_static_text("goal.status.paused_error", "Paused (error)")
+                ctx.tr_static("Paused (error)")
             }
-            Self::Blocked => ctx.named_static_text(
-                "goal.status.paused_verification_blocked",
-                "Paused (verification blocked)",
+            Self::Blocked => ctx.tr_static("Paused (verification blocked)",
             ),
             Self::Active
             | Self::Failed

@@ -188,7 +188,7 @@ fn resolve_subagent_label(agent: &AgentView, session_id: &acp::SessionId) -> Opt
     }
     Some(
         crate::locale::ctx()
-            .named_text("permission.child_session_label", "Child session (untracked):")
+            .tr("Child session (untracked):")
             .into_owned(),
     )
 }
@@ -236,13 +236,11 @@ pub(super) fn build_permission_display(
             .map(|t| t.to_string())
             .unwrap_or_else(
                 || match bash_highlights.and_then(|h| h.highlighted_words.first()) {
-                    Some(bin) => crate::locale::ctx().format_named(
-                        "permission.title.command",
-                        "Allow `{target}`?",
+                    Some(bin) => crate::locale::ctx().tr_format("Allow `{target}`?",
                         &[("target", bin.as_str())],
                     ),
                     None => crate::locale::ctx()
-                        .named_text("permission.title.execute", "Allow Execute?")
+                        .tr("Allow Execute?")
                         .into_owned(),
                 },
             )
@@ -255,43 +253,37 @@ pub(super) fn build_permission_display(
             .and_then(|v| v.get("file_path"))
             .and_then(|v| v.as_str());
         if let Some(path) = file_path {
-            crate::locale::ctx().format_named(
-                "permission.title.edit_target",
-                "Allow Edit to {target}?",
+            crate::locale::ctx().tr_format("Allow Edit to {target}?",
                 &[("target", path)],
             )
         } else if let Some(t) = acp_title {
             let pretty = xai_grok_workspace::permission::mcp_pretty_name_if_qualified(t);
-            crate::locale::ctx().format_named(
-                "permission.title.action",
-                "Allow {action}?",
+            crate::locale::ctx().tr_format("Allow {action}?",
                 &[("action", pretty.as_str())],
             )
         } else {
             crate::locale::ctx()
-                .named_text("permission.title.edit", "Allow Edit?")
+                .tr("Allow Edit?")
                 .into_owned()
         }
     } else if let Some(t) = acp_title {
         let pretty = xai_grok_workspace::permission::mcp_pretty_name_if_qualified(t);
-        crate::locale::ctx().format_named(
-            "permission.title.action",
-            "Allow {action}?",
+        crate::locale::ctx().tr_format("Allow {action}?",
             &[("action", pretty.as_str())],
         )
     } else {
         match req.tool_call.fields.kind {
             Some(acp::ToolKind::Edit) => crate::locale::ctx()
-                .named_text("permission.title.edit", "Allow Edit?")
+                .tr("Allow Edit?")
                 .into_owned(),
             Some(acp::ToolKind::Execute) => crate::locale::ctx()
-                .named_text("permission.title.execute", "Allow Execute?")
+                .tr("Allow Execute?")
                 .into_owned(),
             Some(acp::ToolKind::Delete) => crate::locale::ctx()
-                .named_text("permission.title.delete", "Allow Delete?")
+                .tr("Allow Delete?")
                 .into_owned(),
             _ => crate::locale::ctx()
-                .named_text("permission.title.generic", "Allow?")
+                .tr("Allow?")
                 .into_owned(),
         }
     };
@@ -310,7 +302,7 @@ fn qualify_permission_title_for_local_workspace(
         return title;
     }
     let machine = crate::locale::ctx()
-        .named_text("permission.title.on_machine", "(on your machine)")
+        .tr("(on your machine)")
         .into_owned();
     // Guard against double-qualification, in either language.
     if title.contains("(on your machine)") || title.contains(machine.as_str()) {
@@ -348,15 +340,11 @@ fn localized_hook_ask_line(ask: &xai_grok_workspace::permission::HookAsk) -> Str
     let reason = ask.reason.as_deref().unwrap_or_default();
     let reason = reason.split_whitespace().collect::<Vec<_>>().join(" ");
     if reason.is_empty() {
-        ctx.format_named(
-            "permission.hook_ask.confirmation",
-            "hook '{hook_name}' asks for confirmation",
+        ctx.tr_format("hook '{hook_name}' asks for confirmation",
             &[("hook_name", &ask.hook_name)],
         )
     } else {
-        ctx.format_named(
-            "permission.hook_ask.reason",
-            "hook '{hook_name}' asks: {reason}",
+        ctx.tr_format("hook '{hook_name}' asks: {reason}",
             &[("hook_name", &ask.hook_name), ("reason", &reason)],
         )
     }

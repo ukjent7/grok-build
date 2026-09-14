@@ -196,12 +196,12 @@ impl ExecuteToolCallBlock {
                     theme.primary().add_modifier(Modifier::BOLD)
                 };
                 let run_label =
-                    crate::locale::ctx().named_text("scrollback.tool.execute.run", "Run ");
+                    crate::locale::ctx().tr("Run ");
                 let mut spans = vec![Span::styled(run_label.clone(), label_style)];
                 let mut hang = UnicodeWidthStr::width(run_label.as_ref());
                 if self.bash_mode {
                     let user_label =
-                        crate::locale::ctx().named_text("scrollback.tool.execute.user", "(user) ");
+                        crate::locale::ctx().tr("(user) ");
                     spans.push(Span::styled(user_label.clone(), theme.muted()));
                     hang += UnicodeWidthStr::width(user_label.as_ref());
                 }
@@ -294,7 +294,7 @@ impl ExecuteToolCallBlock {
         };
         let mut spans = vec![Span::styled(
             crate::locale::ctx()
-                .named_text("scrollback.tool.execute.run", "Run ")
+                .tr("Run ")
                 .into_owned(),
             label_style,
         )];
@@ -302,7 +302,7 @@ impl ExecuteToolCallBlock {
             // Same style as session event messages (e.g. "Worked for 2.3s")
             spans.push(Span::styled(
                 crate::locale::ctx()
-                    .named_text("scrollback.tool.execute.user", "(user) ")
+                    .tr("(user) ")
                     .into_owned(),
                 theme.muted(),
             ));

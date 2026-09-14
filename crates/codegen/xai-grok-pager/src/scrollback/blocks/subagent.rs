@@ -179,9 +179,9 @@ impl BlockContent for SubagentBlock {
         let line = match (&self.kind, self.is_background) {
             (SubagentBlockKind::Started, bg) => {
                 let verb = if bg {
-                    crate::locale::ctx().named_text("scrollback.subagent.started", "started: ")
+                    crate::locale::ctx().tr("started: ")
                 } else {
-                    crate::locale::ctx().named_text("scrollback.subagent.running", "running: ")
+                    crate::locale::ctx().tr("running: ")
                 };
                 let activity_suffix: String = self
                     .activity_label
@@ -200,7 +200,7 @@ impl BlockContent for SubagentBlock {
                 let mut spans = vec![
                     Span::styled(
                         crate::locale::ctx()
-                            .named_static_text("scrollback.subagent.label", "Subagent ")
+                            .tr_static("Subagent ")
                             .to_string(),
                         bold,
                     ),
@@ -222,14 +222,12 @@ impl BlockContent for SubagentBlock {
                 Line::from(vec![
                     Span::styled(
                         crate::locale::ctx()
-                            .named_static_text("scrollback.subagent.label", "Subagent ")
+                            .tr_static("Subagent ")
                             .to_string(),
                         bold,
                     ),
                     Span::styled(
-                        crate::locale::ctx().format_named(
-                            "scrollback.subagent.completed",
-                            "completed in {duration}: ",
+                        crate::locale::ctx().tr_format("completed in {duration}: ",
                             &[("duration", &time_str)],
                         ),
                         muted,
@@ -249,14 +247,12 @@ impl BlockContent for SubagentBlock {
                 Line::from(vec![
                     Span::styled(
                         crate::locale::ctx()
-                            .named_static_text("scrollback.subagent.label", "Subagent ")
+                            .tr_static("Subagent ")
                             .to_string(),
                         bold,
                     ),
                     Span::styled(
-                        crate::locale::ctx().format_named(
-                            "scrollback.subagent.failed",
-                            "failed in {duration}{detail}: ",
+                        crate::locale::ctx().tr_format("failed in {duration}{detail}: ",
                             &[("duration", &time_str), ("detail", &detail)],
                         ),
                         muted,
@@ -273,14 +269,12 @@ impl BlockContent for SubagentBlock {
                 Line::from(vec![
                     Span::styled(
                         crate::locale::ctx()
-                            .named_static_text("scrollback.subagent.label", "Subagent ")
+                            .tr_static("Subagent ")
                             .to_string(),
                         bold,
                     ),
                     Span::styled(
-                        crate::locale::ctx().format_named(
-                            "scrollback.subagent.cancelled",
-                            "cancelled in {duration}: ",
+                        crate::locale::ctx().tr_format("cancelled in {duration}: ",
                             &[("duration", &time_str)],
                         ),
                         muted,

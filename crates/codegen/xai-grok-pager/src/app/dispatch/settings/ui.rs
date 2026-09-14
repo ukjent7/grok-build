@@ -88,7 +88,7 @@ pub(in crate::app::dispatch) fn save_setting_choice_toast(
 /// Wrap a toast message with the "restart to apply" cue (localized template).
 pub(in crate::app::dispatch) fn restart_required_toast(message: &str) -> String {
     crate::locale::ctx()
-        .named_text("settings.toast.restart_required", "{message} (restart to apply)")
+        .tr("{message} (restart to apply)")
         .replace("{message}", message)
 }
 
@@ -96,13 +96,13 @@ pub(in crate::app::dispatch) fn restart_required_toast(message: &str) -> String 
 pub(in crate::app::dispatch) fn setting_already_default_toast(setting_key: &str, label: &str) -> String {
     let label = crate::locale::ctx().setting_label(setting_key, label);
     crate::locale::ctx()
-        .named_text("settings.toast.already_default", "{label}: already at default")
+        .tr("{label}: already at default")
         .replace("{label}", label.as_ref())
 }
 
 /// Format the "cleared" toast for a cleared override value.
 pub(in crate::app::dispatch) fn setting_cleared_toast(setting_key: &str, label: &str) -> String {
-    let cleared = crate::locale::ctx().named_static_text("settings.toast.value.cleared", "cleared");
+    let cleared = crate::locale::ctx().tr_static("cleared");
     save_setting_value_toast(setting_key, label, cleared)
 }
 
@@ -494,9 +494,9 @@ pub(in crate::app::dispatch) fn dispatch_toggle_vim_mode(app: &mut AppView) -> V
     set_vim_mode_inner(app, enabled);
     refresh_open_settings_modals(app);
     let msg = if enabled {
-        crate::locale::ctx().named_static_text("settings.vim_mode.on", "Vim mode: on")
+        crate::locale::ctx().tr_static("Vim mode: on")
     } else {
-        crate::locale::ctx().named_static_text("settings.vim_mode.off", "Vim mode: off")
+        crate::locale::ctx().tr_static("Vim mode: off")
     };
     tracing::info!(vim_mode = enabled, "Vim mode toggled");
     match app.active_view {
@@ -581,7 +581,7 @@ pub(in crate::app::dispatch) fn dispatch_toggle_mouse_capture(app: &mut AppView)
         with_active_agent(app, |agent| {
             toast_applied = true;
             let toast =
-                crate::locale::ctx().named_static_text("settings.toast.mouse_reporting_on", "Mouse reporting on");
+                crate::locale::ctx().tr_static("Mouse reporting on");
             agent.show_toast(toast);
         });
     } else {

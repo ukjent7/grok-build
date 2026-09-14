@@ -164,9 +164,7 @@ pub(crate) fn handle_ask_user_question(
                 LocalQuestionKind::PromptBlocked { .. } => {
                     agent.scrollback.push_block(RenderBlock::system(
                         crate::locale::ctx()
-                            .named_text(
-                                "prompt.blocked.card_replaced",
-                                "The blocked-prompt card was replaced by another question. Your prompt is still held at the front of the queue.",
+                            .tr("The blocked-prompt card was replaced by another question. Your prompt is still held at the front of the queue.",
                             )
                             .into_owned(),
                     ));

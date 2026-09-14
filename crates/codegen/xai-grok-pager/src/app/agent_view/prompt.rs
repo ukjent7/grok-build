@@ -472,9 +472,7 @@ impl AgentView {
                         if let Some(viewer) = crate::prompt_images::ImageViewerState::open(img) {
                             self.image_viewer = Some(viewer);
                         } else {
-                            self.show_toast(crate::locale::ctx().named_static_text(
-                                "prompt.image.preview_unavailable",
-                                "Couldn't load image preview",
+                            self.show_toast(crate::locale::ctx().tr_static("Couldn't load image preview",
                             ));
                         }
                     }
@@ -773,9 +771,7 @@ impl AgentView {
                 && let Some(cancel_key) = registry.key_for(ActionId::CancelTurn)
             {
                 let cancel_key = cancel_key.display();
-                let hint = crate::locale::ctx().format_named(
-                    "prompt.turn.cancel_hint",
-                    "Press {key} to cancel the turn",
+                let hint = crate::locale::ctx().tr_format("Press {key} to cancel the turn",
                     &[("key", &cancel_key)],
                 );
                 self.show_cancel_key_hint(&hint);
@@ -795,7 +791,7 @@ impl AgentView {
                 action: Action::ClearPrompt,
                 shortcut: crate::input::key::KeyShortcut::from(*key),
                 label: Some(
-                    crate::locale::ctx().named_static_text("shortcut.clear", "clear"),
+                    crate::locale::ctx().tr_static("clear"),
                 ),
                 ttl: crate::app::app_view::esc_double_press_ttl(),
             });

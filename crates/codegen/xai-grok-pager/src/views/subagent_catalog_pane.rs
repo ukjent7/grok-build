@@ -128,17 +128,17 @@ impl SubagentCatalogPane {
 
         let groups: [(&str, &'static str, &[String]); 3] = [
             (
-                crate::locale::ctx().named_static_text("agents.tab.personas", "Personas"),
+                crate::locale::ctx().tr_static("Personas"),
                 "persona",
                 &state.personas,
             ),
             (
-                crate::locale::ctx().named_static_text("catalog.roles", "Roles"),
+                crate::locale::ctx().tr_static("Roles"),
                 "role",
                 &state.roles,
             ),
             (
-                crate::locale::ctx().named_static_text("agents.tab.agents", "Agents"),
+                crate::locale::ctx().tr_static("Agents"),
                 "agent",
                 &state.agents,
             ),
@@ -280,7 +280,7 @@ impl SubagentCatalogPane {
                 let theme = Theme::current();
                 let span = Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("catalog.empty", "No bundled items."),
+                        .tr_static("No bundled items."),
                     Style::default().fg(theme.gray_bright),
                 );
                 buf.set_span(inner.x, inner.y, &span, inner.width);

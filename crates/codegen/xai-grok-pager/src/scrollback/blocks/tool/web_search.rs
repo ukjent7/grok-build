@@ -108,7 +108,7 @@ impl WebSearchToolCallBlock {
             .clone()
             .unwrap_or_else(|| {
                 crate::locale::ctx()
-                    .named_text("scrollback.tool.web_search.label", "Web Search ")
+                    .tr("Web Search ")
                     .into_owned()
             });
 
@@ -119,9 +119,7 @@ impl WebSearchToolCallBlock {
                 let site_count = self.unique_domains().len();
                 let suffix = if site_count > 0 {
                     let count = site_count.to_string();
-                    crate::locale::ctx().format_named(
-                        "scrollback.tool.web_search.sites",
-                        " ({count} sites)",
+                    crate::locale::ctx().tr_format(" ({count} sites)",
                         &[("count", &count)],
                     )
                 } else {
@@ -194,7 +192,7 @@ impl WebSearchToolCallBlock {
 
         let mut spans: Vec<Span<'static>> = vec![Span::styled(
             crate::locale::ctx()
-                .named_text("scrollback.tool.web_search.sources", "  Sources: ")
+                .tr("  Sources: ")
                 .into_owned(),
             label_style,
         )];
@@ -211,9 +209,7 @@ impl WebSearchToolCallBlock {
         if remaining > 0 {
             let count = remaining.to_string();
             spans.push(Span::styled(
-                crate::locale::ctx().format_named(
-                    "scrollback.tool.web_search.more_sources",
-                    " (+{count} more)",
+                crate::locale::ctx().tr_format(" (+{count} more)",
                     &[("count", &count)],
                 ),
                 label_style,
@@ -295,9 +291,7 @@ impl BlockContent for WebSearchToolCallBlock {
                                 BlockLine::from(Line::from(Span::styled(
                                     format!(
                                         "{indent}{}",
-                                        crate::locale::ctx().format_named(
-                                            "scrollback.tool.more_lines_hint",
-                                            "... ({count} more lines, press Enter to view)",
+                                        crate::locale::ctx().tr_format("... ({count} more lines, press Enter to view)",
                                             &[("count", &remaining.to_string())],
                                         )
                                     ),
@@ -333,7 +327,7 @@ impl BlockContent for WebSearchToolCallBlock {
                     lines.push(
                         Line::from(Span::styled(
                             crate::locale::ctx()
-                                .named_text("scrollback.tool.no_content", "  (no content)")
+                                .tr("  (no content)")
                                 .into_owned(),
                             theme.muted(),
                         ))

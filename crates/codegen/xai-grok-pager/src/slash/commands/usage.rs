@@ -88,9 +88,7 @@ impl SlashCommand for UsageCommand {
         if !ctx.usage_command_visible {
             return CommandResult::Error(
                 crate::locale::ctx()
-                    .named_text(
-                        "slash.command.usage.error.unavailable",
-                        "/usage is not available.",
+                    .tr("/usage is not available.",
                     )
                     .into_owned(),
             );
@@ -99,9 +97,7 @@ impl SlashCommand for UsageCommand {
         if !ctx.billing_surface_visible {
             return match arg {
                 "" => CommandResult::Action(Action::ShowUsage),
-                _ => CommandResult::Error(crate::locale::ctx().format_named(
-                    "slash.command.usage.error.unknown_argument",
-                    "Unknown argument: {argument}. Use {hint}",
+                _ => CommandResult::Error(crate::locale::ctx().tr_format("Unknown argument: {argument}. Use {hint}",
                     &[("argument", arg), ("hint", "/usage")],
                 )),
             };
@@ -109,9 +105,7 @@ impl SlashCommand for UsageCommand {
         match arg {
             "" | "show" => CommandResult::Action(Action::ShowUsage),
             "manage" => CommandResult::Action(Action::ManageBilling),
-            _ => CommandResult::Error(crate::locale::ctx().format_named(
-                "slash.command.usage.error.unknown_argument",
-                "Unknown argument: {argument}. Use {hint}",
+            _ => CommandResult::Error(crate::locale::ctx().tr_format("Unknown argument: {argument}. Use {hint}",
                 &[("argument", arg), ("hint", "/usage show or /usage manage")],
             )),
         }

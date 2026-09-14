@@ -252,12 +252,10 @@ fn localized_provenance_badge(provenance: &crate::slash::CommandProvenance) -> S
     match provenance {
         crate::slash::CommandProvenance::Builtin | crate::slash::CommandProvenance::Shell => {
             crate::locale::ctx()
-                .named_text("slash.provenance.builtin", "built-in")
+                .tr("built-in")
                 .into_owned()
         }
-        crate::slash::CommandProvenance::Skill { source } => crate::locale::ctx().format_named(
-            "slash.provenance.skill",
-            "skill · {source}",
+        crate::slash::CommandProvenance::Skill { source } => crate::locale::ctx().tr_format("skill · {source}",
             &[("source", source.as_str())],
         ),
     }

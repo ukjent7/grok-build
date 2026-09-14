@@ -817,9 +817,7 @@ pub async fn run(
         if session_startup::chat_mode_refuses_local_build_load(true, false, session_id, &cwd) {
             anyhow::bail!(
                 "{}",
-                crate::locale::ctx().format_named(
-                    "session.chat.local_build_refusal_with_id",
-                    "{message} (session id: {session_id})",
+                crate::locale::ctx().tr_format("{message} (session id: {session_id})",
                     &[
                         ("message", session_startup::chat_mode_local_build_refusal().as_str()),
                         ("session_id", session_id),

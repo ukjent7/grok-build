@@ -123,9 +123,7 @@ pub(super) fn drain_prompt_state_to_last_queued(agent: &mut AgentView) {
 
     // wire_blocks policy: skill-injected prompts do not carry prompt images.
     if entry.wire_blocks.is_some() {
-        agent.show_toast(crate::locale::ctx().named_static_text(
-            "queue.images_removed_skill",
-            "Images removed (skill prompt)",
+        agent.show_toast(crate::locale::ctx().tr_static("Images removed (skill prompt)",
         ));
         return;
     }

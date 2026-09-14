@@ -14,7 +14,7 @@ const DIALOG_HEIGHT: u16 = 5;
 /// Left/right padding inside the border (`inner_x = dialog.x + 2`).
 const INNER_PAD: u16 = 4;
 fn label_prefix() -> &'static str {
-    crate::locale::ctx().named_static_text("new_worktree.label.name_optional", "Name (optional): ")
+    crate::locale::ctx().tr_static("Name (optional): ")
 }
 
 /// Render the new-worktree popup dialog centered on screen.
@@ -30,7 +30,7 @@ pub fn render_new_worktree_dialog(area: Rect, buf: &mut Buffer, state: &NewWorkt
         if area.height >= 1 && area.width >= 16 {
             let hint = Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_text("new_worktree.narrow.close", "[Esc] to close")
+                    .tr("[Esc] to close")
                     .into_owned(),
                 Style::default().fg(theme.gray_dim),
             ));
@@ -117,7 +117,7 @@ pub fn render_new_worktree_dialog(area: Rect, buf: &mut Buffer, state: &NewWorkt
     // Row 1: Title
     let title = Line::from(Span::styled(
         crate::locale::ctx()
-            .named_text("new_worktree.title", "New Worktree")
+            .tr("New Worktree")
             .into_owned(),
         Style::default()
             .fg(theme.text_primary)
@@ -146,7 +146,7 @@ pub fn render_new_worktree_dialog(area: Rect, buf: &mut Buffer, state: &NewWorkt
     let hints = Line::from(vec![
         Span::styled(
             crate::locale::ctx()
-                .named_text("new_worktree.key.enter", "enter")
+                .tr("enter")
                 .into_owned(),
             Style::default()
                 .fg(theme.accent_user)
@@ -154,13 +154,13 @@ pub fn render_new_worktree_dialog(area: Rect, buf: &mut Buffer, state: &NewWorkt
         ),
         Span::styled(
             crate::locale::ctx()
-                .named_text("new_worktree.hint.create", " = create   ")
+                .tr(" = create   ")
                 .into_owned(),
             Style::default().fg(theme.gray),
         ),
         Span::styled(
             crate::locale::ctx()
-                .named_text("new_worktree.key.esc", "esc")
+                .tr("esc")
                 .into_owned(),
             Style::default()
                 .fg(theme.accent_user)
@@ -168,7 +168,7 @@ pub fn render_new_worktree_dialog(area: Rect, buf: &mut Buffer, state: &NewWorkt
         ),
         Span::styled(
             crate::locale::ctx()
-                .named_text("new_worktree.hint.cancel", " = cancel")
+                .tr(" = cancel")
                 .into_owned(),
             Style::default().fg(theme.gray),
         ),

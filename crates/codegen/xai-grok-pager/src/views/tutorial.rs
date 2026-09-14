@@ -348,14 +348,14 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
             if topic.go_deeper.is_some() {
                 shortcuts.push(Shortcut {
                     label: crate::locale::ctx()
-                        .named_static_text("tutorial.go_deeper", "d go deeper"),
+                        .tr_static("d go deeper"),
                     clickable: false,
                     id: 0,
                 });
             }
             shortcuts.push(Shortcut {
                 label: crate::locale::ctx()
-                    .named_static_text("tutorial.back_to_list", "Esc list"),
+                    .tr_static("Esc list"),
                 clickable: false,
                 id: 0,
             });
@@ -402,9 +402,7 @@ pub fn render_tutorial(buf: &mut Buffer, area: Rect, st: &mut TutorialState, com
 fn render_list(buf: &mut Buffer, area: Rect, st: &mut TutorialState, compact: bool, theme: &Theme) {
     let viewed_count = st.viewed.len().to_string();
     let total_count = TUTORIAL_TOPICS.len().to_string();
-    let progress = crate::locale::ctx().format_named(
-        "tutorial.explored",
-        "{viewed}/{total} explored",
+    let progress = crate::locale::ctx().tr_format("{viewed}/{total} explored",
         &[("viewed", &viewed_count), ("total", &total_count)],
     );
     let shortcuts = [
@@ -420,18 +418,18 @@ fn render_list(buf: &mut Buffer, area: Rect, st: &mut TutorialState, compact: bo
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx().named_static_text("tutorial.open", "Enter open"),
+            label: crate::locale::ctx().tr_static("Enter open"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx().named_static_text("tutorial.close", "Esc done"),
+            label: crate::locale::ctx().tr_static("Esc done"),
             clickable: false,
             id: 0,
         },
     ];
     let modal_config = ModalWindowConfig {
-        title: crate::locale::ctx().named_static_text("tutorial.title", "Welcome to Grok Build"),
+        title: crate::locale::ctx().tr_static("Welcome to Grok Build"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing: ModalSizing {

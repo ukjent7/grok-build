@@ -110,7 +110,7 @@ impl WebFetchToolCallBlock {
             theme.fg(theme.command)
         };
 
-        let prefix = crate::locale::ctx().named_text("scrollback.tool.fetch.label", "Fetch ");
+        let prefix = crate::locale::ctx().tr("Fetch ");
         let display_url = match max_width {
             Some(w) => truncate_str(&self.url, w.saturating_sub(prefix.len())),
             None => self.url.clone(),
@@ -145,7 +145,7 @@ impl WebFetchToolCallBlock {
             parts.push(vec![
                 Span::styled(
                     crate::locale::ctx()
-                        .named_text("scrollback.tool.fetch.metadata.status", "status: ")
+                        .tr("status: ")
                         .into_owned(),
                     label_style,
                 ),
@@ -156,9 +156,7 @@ impl WebFetchToolCallBlock {
             parts.push(vec![
                 Span::styled(
                     crate::locale::ctx()
-                        .named_text(
-                            "scrollback.tool.fetch.metadata.content_type",
-                            "content_type: ",
+                        .tr("content_type: ",
                         )
                         .into_owned(),
                     label_style,
@@ -170,7 +168,7 @@ impl WebFetchToolCallBlock {
             parts.push(vec![
                 Span::styled(
                     crate::locale::ctx()
-                        .named_text("scrollback.tool.fetch.metadata.size", "size: ")
+                        .tr("size: ")
                         .into_owned(),
                     label_style,
                 ),
@@ -263,9 +261,7 @@ impl BlockContent for WebFetchToolCallBlock {
                                 BlockLine::from(Line::from(Span::styled(
                                     format!(
                                         "{indent}{}",
-                                        crate::locale::ctx().format_named(
-                                            "scrollback.tool.more_lines_hint",
-                                            "... ({count} more lines, press Enter to view)",
+                                        crate::locale::ctx().tr_format("... ({count} more lines, press Enter to view)",
                                             &[("count", &remaining.to_string())],
                                         )
                                     ),
@@ -292,7 +288,7 @@ impl BlockContent for WebFetchToolCallBlock {
                     lines.push(
                         Line::from(Span::styled(
                             crate::locale::ctx()
-                                .named_text("scrollback.tool.no_content", "  (no content)")
+                                .tr("  (no content)")
                                 .into_owned(),
                             theme.muted(),
                         ))

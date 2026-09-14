@@ -246,9 +246,7 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 }
                 Err(err) => {
                     tracing::warn!("welcome local-workspace ack: {err}");
-                    app.show_toast(&crate::locale::ctx().format_named(
-                        "local_workspace.error",
-                        "Local workspace: {error}",
+                    app.show_toast(&crate::locale::ctx().tr_format("Local workspace: {error}",
                         &[("error", &err.to_string())],
                     ));
                     vec![]
@@ -1262,16 +1260,12 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 return vec![];
             }
             if crate::app::foreign_sessions::is_foreign_picker_source(&source) {
-                app.show_toast(crate::locale::ctx().named_static_text(
-                    "session.delete_external_unsupported",
-                    "External sessions can't be deleted",
+                app.show_toast(crate::locale::ctx().tr_static("External sessions can't be deleted",
                 ));
                 return vec![];
             }
             if source == "conversation" {
-                app.show_toast(crate::locale::ctx().named_static_text(
-                    "session.delete_chat_unsupported",
-                    "Deleting chat conversations isn't supported yet",
+                app.show_toast(crate::locale::ctx().tr_static("Deleting chat conversations isn't supported yet",
                 ));
                 return vec![];
             }
@@ -1344,9 +1338,7 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 agent
                     .scrollback
                     .push_block(crate::scrollback::block::RenderBlock::system(
-                        crate::locale::ctx().format_named(
-                            "doctor.fix.applying",
-                            "Applying {fix}…",
+                        crate::locale::ctx().tr_format("Applying {fix}…",
                             &[("fix", fix_label.as_str())],
                         ),
                     ));
@@ -1358,7 +1350,7 @@ pub(crate) fn dispatch(action: Action, app: &mut AppView) -> Vec<Effect> {
                 app,
                 target.agent_id,
                 crate::locale::ctx()
-                    .named_text("doctor.fix.cancelled", "Fix cancelled.")
+                    .tr("Fix cancelled.")
                     .into_owned(),
             );
             vec![]

@@ -133,14 +133,10 @@ pub(crate) fn retry_clause(attempt: u32, max_retries: u32, style: RetryLabelStyl
     let attempt = attempt.to_string();
     let max_retries = max_retries.to_string();
     match style {
-        RetryLabelStyle::Status => crate::locale::ctx().format_named(
-            "error.retry.status",
-            "Retrying (attempt {attempt})...",
+        RetryLabelStyle::Status => crate::locale::ctx().tr_format("Retrying (attempt {attempt})...",
             &[("attempt", &attempt)],
         ),
-        RetryLabelStyle::Compact => crate::locale::ctx().format_named(
-            "error.retry.compact",
-            "Retrying ({attempt}/{max_retries})",
+        RetryLabelStyle::Compact => crate::locale::ctx().tr_format("Retrying ({attempt}/{max_retries})",
             &[("attempt", &attempt), ("max_retries", &max_retries)],
         ),
     }

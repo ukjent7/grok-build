@@ -423,9 +423,7 @@ impl AgentView {
             ));
             true
         } else {
-            self.show_toast(crate::locale::ctx().named_static_text(
-                "media.toast.open_failed",
-                "Could not open file",
+            self.show_toast(crate::locale::ctx().tr_static("Could not open file",
             ));
             false
         }
@@ -517,7 +515,7 @@ impl AgentView {
                 }
             });
             self.show_toast(crate::locale::ctx()
-                .named_static_text("media.toast.copied_image", "Copied image"));
+                .tr_static("Copied image"));
             return Some(InputOutcome::Changed);
         }
 

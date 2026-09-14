@@ -284,14 +284,12 @@ impl ThinkingBlock {
             Line::from(vec![
                 Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("scrollback.thinking.completed", "Thought")
+                        .tr_static("Thought")
                         .to_string(),
                     label_style,
                 ),
                 Span::styled(
-                    crate::locale::ctx().format_named(
-                        "scrollback.thinking.duration",
-                        " for {duration}",
+                    crate::locale::ctx().tr_format(" for {duration}",
                         &[("duration", &time_str)],
                     ),
                     detail_style,
@@ -300,7 +298,7 @@ impl ThinkingBlock {
         } else {
             Line::from(Span::styled(
                 crate::locale::ctx()
-                    .named_static_text("scrollback.thinking.completed", "Thought")
+                    .tr_static("Thought")
                     .to_string(),
                 label_style,
             ))

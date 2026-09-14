@@ -91,7 +91,7 @@ pub fn format_waiting_for_subject(subject: &str) -> String {
     let clamped = clamp_activity_subject(subject);
     if clamped.is_empty() {
         crate::locale::ctx()
-            .named_static_text("turn.waiting.task_output", "Waiting on task output…")
+            .tr_static("Waiting on task output…")
             .to_string()
     } else {
         format!("{clamped}…")
@@ -114,12 +114,12 @@ impl WaitingReason {
     pub fn label(&self) -> String {
         match self {
             Self::Model => crate::locale::ctx()
-                .named_static_text("turn.waiting.response", "Waiting for response…")
+                .tr_static("Waiting for response…")
                 .to_string(),
             Self::Subagent { display } => match display.as_deref().map(clamp_activity_subject) {
                 Some(display) if !display.is_empty() => format!("{display}…"),
                 _ => crate::locale::ctx()
-                    .named_static_text("turn.waiting.subagent", "Waiting on subagent…")
+                    .tr_static("Waiting on subagent…")
                     .to_string(),
             },
             Self::TaskOutput {
@@ -127,31 +127,25 @@ impl WaitingReason {
                 ..
             } => format_waiting_for_subject(subject),
             Self::TaskOutput { .. } => crate::locale::ctx()
-                .named_static_text("turn.waiting.task_output", "Waiting on task output…")
+                .tr_static("Waiting on task output…")
                 .to_string(),
             Self::TasksComplete => crate::locale::ctx()
-                .named_static_text("turn.waiting.tasks", "Waiting on tasks…")
+                .tr_static("Waiting on tasks…")
                 .to_string(),
             Self::Sleep => crate::locale::ctx()
-                .named_static_text("turn.waiting.sleep", "Sleeping…")
+                .tr_static("Sleeping…")
                 .to_string(),
             Self::Hooks { event_name, count } if *count > 1 => {
                 let count = count.to_string();
-                crate::locale::ctx().format_named(
-                    "turn.waiting.hooks_many",
-                    "Running {count} {event_name} hooks…",
+                crate::locale::ctx().tr_format("Running {count} {event_name} hooks…",
                     &[("count", &count), ("event_name", event_name)],
                 )
             }
-            Self::Hooks { event_name, .. } => crate::locale::ctx().format_named(
-                "turn.waiting.hooks_one",
-                "Running {event_name} hook…",
+            Self::Hooks { event_name, .. } => crate::locale::ctx().tr_format("Running {event_name} hook…",
                 &[("event_name", event_name)],
             ),
             Self::PromptAck => crate::locale::ctx()
-                .named_static_text(
-                    "turn.waiting.prompt_ack",
-                    "Waiting for the agent to accept the prompt…",
+                .tr_static("Waiting for the agent to accept the prompt…",
                 )
                 .to_string(),
         }
@@ -195,19 +189,13 @@ impl WritingToolCall {
             n => format!(" ({n})"),
         };
         match self.tool_name.as_deref() {
-            Some(name) if xai_grok_tools::is_task_tool_id(name) => ctx.format_named(
-                "turn.writing.subagent_prompt",
-                "Writing subagent prompt{ordinal}…",
+            Some(name) if xai_grok_tools::is_task_tool_id(name) => ctx.tr_format("Writing subagent prompt{ordinal}…",
                 &[("ordinal", &ordinal)],
             ),
-            Some(xai_grok_tools::USE_TOOL_NAME) => ctx.format_named(
-                "turn.writing.mcp_tool",
-                "Preparing MCP tool{ordinal}…",
+            Some(xai_grok_tools::USE_TOOL_NAME) => ctx.tr_format("Preparing MCP tool{ordinal}…",
                 &[("ordinal", &ordinal)],
             ),
-            Some(xai_grok_tools::SEARCH_TOOL_NAME) => ctx.format_named(
-                "turn.writing.search_mcp_tools",
-                "Searching MCP tools{ordinal}…",
+            Some(xai_grok_tools::SEARCH_TOOL_NAME) => ctx.tr_format("Searching MCP tools{ordinal}…",
                 &[("ordinal", &ordinal)],
             ),
             Some(name) => {
@@ -215,52 +203,36 @@ impl WritingToolCall {
                 let ordinal_arg: &[(&str, &str)] = &[("ordinal", &ordinal)];
                 match xai_grok_tools::tool_taxonomy::writing_tool_kind(name) {
                     Some(ToolKind::Write) => {
-                        ctx.format_named("turn.writing.file", "Writing file{ordinal}…", ordinal_arg)
+                        ctx.tr_format("Writing file{ordinal}…", ordinal_arg)
                     }
                     Some(ToolKind::Edit) => {
-                        ctx.format_named("turn.writing.edit", "Writing edit{ordinal}…", ordinal_arg)
+                        ctx.tr_format("Writing edit{ordinal}…", ordinal_arg)
                     }
-                    Some(ToolKind::Execute) => ctx.format_named(
-                        "turn.writing.command",
-                        "Writing command{ordinal}…",
+                    Some(ToolKind::Execute) => ctx.tr_format("Writing command{ordinal}…",
                         ordinal_arg,
                     ),
-                    Some(ToolKind::Plan) => ctx.format_named(
-                        "turn.writing.todo",
-                        "Updating todo list{ordinal}…",
+                    Some(ToolKind::Plan) => ctx.tr_format("Updating todo list{ordinal}…",
                         ordinal_arg,
                     ),
-                    Some(ToolKind::Workflow) => ctx.format_named(
-                        "turn.writing.workflow",
-                        "Writing workflow{ordinal}…",
+                    Some(ToolKind::Workflow) => ctx.tr_format("Writing workflow{ordinal}…",
                         ordinal_arg,
                     ),
-                    Some(ToolKind::Feedback) => ctx.format_named(
-                        "turn.writing.feedback",
-                        "Writing feedback draft{ordinal}…",
+                    Some(ToolKind::Feedback) => ctx.tr_format("Writing feedback draft{ordinal}…",
                         ordinal_arg,
                     ),
-                    Some(ToolKind::ImageGen) => ctx.format_named(
-                        "turn.writing.image_prompt",
-                        "Writing image prompt{ordinal}…",
+                    Some(ToolKind::ImageGen) => ctx.tr_format("Writing image prompt{ordinal}…",
                         ordinal_arg,
                     ),
-                    Some(ToolKind::ImageToVideo | ToolKind::ReferenceToVideo) => ctx.format_named(
-                        "turn.writing.video_prompt",
-                        "Writing video prompt{ordinal}…",
+                    Some(ToolKind::ImageToVideo | ToolKind::ReferenceToVideo) => ctx.tr_format("Writing video prompt{ordinal}…",
                         ordinal_arg,
                     ),
-                    Some(ToolKind::AskUser) => ctx.format_named(
-                        "turn.writing.question",
-                        "Preparing question{ordinal}…",
+                    Some(ToolKind::AskUser) => ctx.tr_format("Preparing question{ordinal}…",
                         ordinal_arg,
                     ),
                     _ => {
                         let name =
                             xai_grok_workspace::permission::mcp_pretty_name_if_qualified(name);
-                        ctx.format_named(
-                            "turn.writing.preparing_subject",
-                            "Preparing {subject}{ordinal}…",
+                        ctx.tr_format("Preparing {subject}{ordinal}…",
                             &[
                                 ("subject", &clamp_activity_subject(&name)),
                                 ("ordinal", &ordinal),
@@ -269,9 +241,7 @@ impl WritingToolCall {
                     }
                 }
             }
-            None => ctx.format_named(
-                "turn.writing.tool_call",
-                "Preparing tool call{ordinal}…",
+            None => ctx.tr_format("Preparing tool call{ordinal}…",
                 &[("ordinal", &ordinal)],
             ),
         }

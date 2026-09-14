@@ -618,7 +618,7 @@ mod tests {
             source: LocaleSource::Cli,
         });
         assert_eq!(
-            context.named_text("prompt.placeholder.default", "Build anything"),
+            context.tr("Build anything"),
             "告诉我你想做些什么…"
         );
         assert_eq!(

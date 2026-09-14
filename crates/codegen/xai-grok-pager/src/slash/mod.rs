@@ -204,9 +204,7 @@ fn localized_arg_description(english: &str) -> String {
     if let Some(active_suffix) = english.strip_prefix("auto (follow system)") {
         return format!(
             "{}{active_suffix}",
-            crate::locale::ctx().named_text(
-                "slash.arg.theme.auto.description",
-                "auto (follow system)"
+            crate::locale::ctx().tr("auto (follow system)"
             )
         );
     }

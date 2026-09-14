@@ -175,7 +175,7 @@ impl ReadToolCallBlock {
             return Line::from(vec![
                 Span::styled(
                     crate::locale::ctx()
-                        .named_static_text("scrollback.tool.read.skill", "Skill ")
+                        .tr_static("Skill ")
                         .to_string(),
                     bold_style,
                 ),
@@ -183,7 +183,7 @@ impl ReadToolCallBlock {
             ]);
         }
 
-        let prefix = crate::locale::ctx().named_text("scrollback.tool.read.label", "Read ");
+        let prefix = crate::locale::ctx().tr("Read ");
         let range_suffix = self
             .line_range
             .map(|r| {
@@ -192,9 +192,7 @@ impl ReadToolCallBlock {
                 {
                     let range = r.to_string();
                     let total = total.to_string();
-                    crate::locale::ctx().format_named(
-                        "scrollback.tool.read.range_of",
-                        " ({range} of {total})",
+                    crate::locale::ctx().tr_format(" ({range} of {total})",
                         &[("range", &range), ("total", &total)],
                     )
                 } else {
@@ -205,18 +203,16 @@ impl ReadToolCallBlock {
         // Extra suffix for errors or empty content
         let extra_suffix = if self.content.as_ref().is_some_and(|c| c.is_empty()) {
             crate::locale::ctx()
-                .named_text("scrollback.tool.read.empty", " (empty)")
+                .tr(" (empty)")
                 .into_owned()
         } else if let Some(media) = &self.media_kind {
             match media {
                 ReadMediaKind::Image => crate::locale::ctx()
-                    .named_text("scrollback.tool.read.image", " (image)")
+                    .tr(" (image)")
                     .into_owned(),
                 ReadMediaKind::Pdf { pages } => {
                     let count = pages.to_string();
-                    crate::locale::ctx().format_named(
-                        "scrollback.tool.read.pages",
-                        " ({count} pages)",
+                    crate::locale::ctx().tr_format(" ({count} pages)",
                         &[("count", &count)],
                     )
                 }

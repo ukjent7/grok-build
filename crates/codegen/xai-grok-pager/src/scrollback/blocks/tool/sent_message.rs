@@ -32,24 +32,16 @@ impl SentMessagePresentation {
         let locale = crate::locale::ctx();
         match self {
             Self::Sending => locale
-                .named_static_text(
-                    "scrollback.sent_message.title.sending",
-                    "Sending message to subagent",
+                .tr_static("Sending message to subagent",
                 ),
             Self::Sent => locale
-                .named_static_text(
-                    "scrollback.sent_message.title.sent",
-                    "Sent message to subagent",
+                .tr_static("Sent message to subagent",
                 ),
             Self::Rejected { .. } => locale
-                .named_static_text(
-                    "scrollback.sent_message.title.rejected",
-                    "Failed to send message to subagent",
+                .tr_static("Failed to send message to subagent",
                 ),
             Self::Unconfirmed { .. } => locale
-                .named_static_text(
-                    "scrollback.sent_message.title.unconfirmed",
-                    "Message delivery unconfirmed",
+                .tr_static("Message delivery unconfirmed",
                 ),
         }
     }
@@ -237,12 +229,12 @@ impl BlockContent for SentMessageToolCallBlock {
         lines.push(Line::from("").into());
         let id_wrap = RtOptions::new(width).initial_indent(Line::from(Span::styled(
             crate::locale::ctx()
-                .named_text("scrollback.sent_message.subagent_id", "Subagent ID: ")
+                .tr("Subagent ID: ")
                 .into_owned(),
             theme.muted(),
         )));
         let unavailable = crate::locale::ctx()
-            .named_text("scrollback.sent_message.unavailable", "unavailable")
+            .tr("unavailable")
             .into_owned();
         let id_value = Line::from(Span::styled(
             self.subagent_id
@@ -266,7 +258,7 @@ impl BlockContent for SentMessageToolCallBlock {
         lines.push(Line::from("").into());
         lines.push(BlockLine::separator(Line::from(Span::styled(
             crate::locale::ctx()
-                .named_text("scrollback.sent_message.message", "Message:")
+                .tr("Message:")
                 .into_owned(),
             theme.muted(),
         ))));
@@ -302,7 +294,7 @@ impl BlockContent for SentMessageToolCallBlock {
             None => {
                 let mut line = BlockLine::styled(Line::from(Span::styled(
                     crate::locale::ctx()
-                        .named_text("scrollback.sent_message.unavailable", "unavailable")
+                        .tr("unavailable")
                         .into_owned(),
                     theme.muted(),
                 )));

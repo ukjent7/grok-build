@@ -81,9 +81,7 @@ impl AgentView {
         // The history does not hold it: `Ctrl+S` was the only way back
         self.prompt_stash = Some(entry);
 
-        self.note_stash_change_in_minimal(&crate::locale::ctx().named_text(
-            "prompt.stash.saved",
-            "Draft stashed. Press the stash key again to restore it.",
+        self.note_stash_change_in_minimal(&crate::locale::ctx().tr("Draft stashed. Press the stash key again to restore it.",
         ));
     }
 
@@ -118,9 +116,7 @@ impl AgentView {
         };
 
         self.restore_stash_entry(entry);
-        self.note_stash_change_in_minimal(crate::locale::ctx().named_text(
-            "prompt.stash.restored",
-            "Stashed draft restored.",
+        self.note_stash_change_in_minimal(crate::locale::ctx().tr("Stashed draft restored.",
         )
         .as_ref());
     }
@@ -169,9 +165,7 @@ impl AgentView {
         };
 
         self.restore_stash_entry(entry);
-        self.note_stash_change_in_minimal(crate::locale::ctx().named_text(
-            "prompt.stash.restored",
-            "Stashed draft restored.",
+        self.note_stash_change_in_minimal(crate::locale::ctx().tr("Stashed draft restored.",
         )
         .as_ref());
         InputOutcome::Changed

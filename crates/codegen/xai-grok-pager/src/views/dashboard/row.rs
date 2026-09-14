@@ -417,12 +417,12 @@ fn append_roster_rows(
         let activity = match state {
             RowState::NeedsInput => Some(
                 crate::locale::ctx()
-                    .named_text("dashboard.row.awaiting_input", "Awaiting input")
+                    .tr("Awaiting input")
                     .into_owned(),
             ),
             RowState::Working => Some(
                 crate::locale::ctx()
-                    .named_text("dashboard.row.working", "Working")
+                    .tr("Working")
                     .into_owned(),
             ),
             _ => None,
@@ -771,9 +771,7 @@ fn top_level_secondary_line(
             if let Some(perm) = agent.permission_queue.front() {
                 let title = perm.title.trim();
                 if !title.is_empty() {
-                    return Some(crate::locale::ctx().format_named(
-                        "dashboard.row.pending",
-                        "Pending: {detail}",
+                    return Some(crate::locale::ctx().tr_format("Pending: {detail}",
                         &[("detail", &sanitize(title))],
                     ));
                 }
@@ -781,7 +779,7 @@ fn top_level_secondary_line(
             if agent.question_view.is_some() {
                 return Some(
                     crate::locale::ctx()
-                        .named_text("dashboard.row.pending_question", "Pending: question")
+                        .tr("Pending: question")
                         .into_owned(),
                 );
             }
@@ -846,7 +844,7 @@ fn top_level_activity(agent: &AgentView, state: RowState) -> Option<String> {
     match state {
         RowState::NeedsInput => Some(
             crate::locale::ctx()
-                .named_text("dashboard.row.awaiting_your_input", "Awaiting your input")
+                .tr("Awaiting your input")
                 .into_owned(),
         ),
         RowState::Working => {
@@ -857,7 +855,7 @@ fn top_level_activity(agent: &AgentView, state: RowState) -> Option<String> {
             } else if agent.session.loading_replay {
                 Some(
                     crate::locale::ctx()
-                        .named_text("dashboard.row.loading", "Loading…")
+                        .tr("Loading…")
                         .into_owned(),
                 )
             } else if let Some(bg) = background_work_label(agent) {
@@ -865,7 +863,7 @@ fn top_level_activity(agent: &AgentView, state: RowState) -> Option<String> {
             } else {
                 Some(
                     crate::locale::ctx()
-                        .named_text("dashboard.row.working", "Working")
+                        .tr("Working")
                         .into_owned(),
                 )
             }
@@ -893,7 +891,7 @@ fn subagent_activity(info: &SubagentInfo, state: RowState) -> Option<String> {
         if last_tool.is_empty() {
             Some(
                 crate::locale::ctx()
-                    .named_text("dashboard.row.working", "Working")
+                    .tr("Working")
                     .into_owned(),
             )
         } else {
@@ -908,9 +906,7 @@ fn subagent_activity(info: &SubagentInfo, state: RowState) -> Option<String> {
         let turns = info.attempt.turns.unwrap_or(0);
         let tools = info.attempt.tool_calls.unwrap_or(0);
         let toks = info.attempt.tokens_used.unwrap_or(0);
-        Some(crate::locale::ctx().format_named(
-            "dashboard.row.finished_stats",
-            "{tools} tools · {toks} tok · {turns} turns",
+        Some(crate::locale::ctx().tr_format("{tools} tools · {toks} tok · {turns} turns",
             &[
                 ("tools", &tools.to_string()),
                 ("toks", &toks.to_string()),

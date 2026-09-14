@@ -430,9 +430,7 @@ pub(in crate::app::dispatch) fn dispatch_pick_session(
             }
             return vec![];
         }
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "session.toast.restoring_remote",
-            "Restoring session from remote...",
+        app.show_toast(crate::locale::ctx().tr_static("Restoring session from remote...",
         ));
         dispatch_load_session_with_restore(app, session_id, cwd)
     } else {
@@ -471,9 +469,7 @@ pub(in crate::app::dispatch) fn dispatch_pick_session_in_worktree(
         })
         .is_some_and(|entry| crate::app::foreign_sessions::is_foreign_picker_source(&entry.source));
     if is_foreign {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "session.toast.external_worktree_forbidden",
-            "External sessions can't be resumed in a worktree",
+        app.show_toast(crate::locale::ctx().tr_static("External sessions can't be resumed in a worktree",
         ));
         return vec![];
     }
@@ -519,9 +515,7 @@ pub(in crate::app::dispatch) fn dispatch_pick_session_in_worktree(
         }
     };
     if source == "conversation" {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "session.toast.conversation_worktree_forbidden",
-            "Chat conversations can't be resumed in a worktree",
+        app.show_toast(crate::locale::ctx().tr_static("Chat conversations can't be resumed in a worktree",
         ));
         return vec![];
     }
@@ -1056,9 +1050,7 @@ pub(in crate::app::dispatch) fn dispatch_pick_content_session(
     if focus_if_session_already_open(app, &session_id, false).is_some() {
         return vec![];
     }
-    app.show_toast(crate::locale::ctx().named_static_text(
-        "session.toast.restoring_remote",
-        "Restoring session from remote...",
+    app.show_toast(crate::locale::ctx().tr_static("Restoring session from remote...",
     ));
     dispatch_load_session_with_restore(app, session_id, cwd)
 }
@@ -1617,9 +1609,7 @@ pub(in crate::app::dispatch) fn dispatch_pick_content_session_in_worktree(
         return vec![];
     }
     if session_picker_entry_is_conversation(app, &session_id) {
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "session.toast.conversation_worktree_forbidden",
-            "Chat conversations can't be resumed in a worktree",
+        app.show_toast(crate::locale::ctx().tr_static("Chat conversations can't be resumed in a worktree",
         ));
         return vec![];
     }

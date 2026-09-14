@@ -245,7 +245,7 @@ fn render_resume(
         buf,
         title_row,
         theme,
-        &xai_grok_locale::ctx().named_text("panel.resume_title", "Resume session"),
+        &xai_grok_locale::ctx().tr("Resume session"),
     );
     // Focus-aware search bar (cursor only when search is focused).
     minimal_api::render_picker_search_bar(
@@ -335,7 +335,7 @@ fn render_mcps(
         buf,
         title_row,
         theme,
-        &xai_grok_locale::ctx().named_text("panel.mcps_title", "Manage MCP servers"),
+        &xai_grok_locale::ctx().tr("Manage MCP servers"),
     );
 
     // Phase 1 (immutable): build the row mapping and owned per-row render data
@@ -393,7 +393,7 @@ fn render_mcps(
                                         "blocked by policy".to_string()
                                     } else {
                                         xai_grok_locale::ctx()
-                                            .named_text("panel.disabled", "disabled")
+                                            .tr("disabled")
                                             .into_owned()
                                     };
                                     bc[i] = Some(theme.accent_error);
@@ -445,9 +445,7 @@ fn render_mcps(
                 expandeds = vec![];
             }
             TabDataState::Error(msg) => {
-                subtitle = xai_grok_locale::ctx().format_named(
-                    "panel.error",
-                    "error: {message}",
+                subtitle = xai_grok_locale::ctx().tr_format("error: {message}",
                     &[("message", msg.as_str())],
                 );
                 labels = vec![];

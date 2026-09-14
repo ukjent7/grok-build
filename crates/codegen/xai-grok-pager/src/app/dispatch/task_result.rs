@@ -1469,7 +1469,7 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
             let delete_notice = if membership_removal_failed {
                 "Session deleted, but dashboard membership could not be removed"
             } else {
-                crate::locale::ctx().named_static_text("session.delete.success", "Session deleted")
+                crate::locale::ctx().tr_static("Session deleted")
             };
             if after == AfterSessionDelete::Stay {
                 app.dashboard_local_sessions
@@ -1616,9 +1616,7 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
             app,
             agent_id,
             &session_id,
-            crate::locale::ctx().format_named(
-                "status.usage.load_failed",
-                "Couldn't load session usage: {error}",
+            crate::locale::ctx().tr_format("Couldn't load session usage: {error}",
                 &[("error", error.as_str())],
             ),
             nonce,

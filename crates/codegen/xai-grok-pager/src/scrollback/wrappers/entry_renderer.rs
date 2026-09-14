@@ -277,15 +277,11 @@ impl<'a> EntryRenderer<'a> {
             spans.extend(label.line.spans.iter().cloned());
         } else {
             let label = if self.group_collapse_header {
-                crate::locale::ctx().format_named(
-                    "scrollback.group.tool_calls_thoughts",
-                    "{count} tool calls & thoughts",
+                crate::locale::ctx().tr_format("{count} tool calls & thoughts",
                     &[("count", &n.to_string())],
                 )
             } else {
-                crate::locale::ctx().format_named(
-                    "scrollback.group.more",
-                    "{count} more",
+                crate::locale::ctx().tr_format("{count} more",
                     &[("count", &n.to_string())],
                 )
             };

@@ -555,7 +555,7 @@ pub fn render_permission_view(
             spans.push(Span::styled("\u{2190} \u{2192}", key_style));
             spans.push(Span::styled(
                 crate::locale::ctx()
-                    .named_text("permission.scope.narrow", " narrow scope")
+                    .tr(" narrow scope")
                     .into_owned(),
                 hint_style,
             ));
@@ -567,7 +567,7 @@ pub fn render_permission_view(
             spans.push(Span::styled("e", key_style));
             spans.push(Span::styled(
                 crate::locale::ctx()
-                    .named_text("permission.pattern.edit", " edit pattern")
+                    .tr(" edit pattern")
                     .into_owned(),
                 hint_style,
             ));
@@ -782,9 +782,7 @@ fn render_pattern_preview_line(
         None => {
             spans.push(Span::styled(
                 crate::locale::ctx()
-                    .named_text(
-                        "permission.pattern.placeholder",
-                        "type a command pattern to allow (e.g. gh api repos/*)",
+                    .tr("type a command pattern to allow (e.g. gh api repos/*)",
                     )
                     .into_owned(),
                 dim,
@@ -802,7 +800,7 @@ fn render_pattern_preview_line(
             spans.push(Span::styled("Esc", Style::default().fg(theme.accent_user)));
             spans.push(Span::styled(
                 crate::locale::ctx()
-                    .named_text("permission.pattern.cancel", " cancel")
+                    .tr(" cancel")
                     .into_owned(),
                 dim,
             ));
@@ -840,14 +838,14 @@ fn render_pattern_preview_line(
             ));
             spans.push(Span::styled(
                 crate::locale::ctx()
-                    .named_text("permission.pattern.save", " save  ")
+                    .tr(" save  ")
                     .into_owned(),
                 dim,
             ));
             spans.push(Span::styled("Esc", Style::default().fg(theme.accent_user)));
             spans.push(Span::styled(
                 crate::locale::ctx()
-                    .named_text("permission.pattern.cancel", " cancel")
+                    .tr(" cancel")
                     .into_owned(),
                 dim,
             ));
@@ -1487,9 +1485,7 @@ fn build_reject_once_line<'a>(
     } else {
         (
             crate::locale::ctx()
-                .named_text(
-                    "dashboard.peek.reject_placeholder",
-                    "No, reject (type to add feedback)",
+                .tr("No, reject (type to add feedback)",
                 )
                 .into_owned(),
             Style::default().fg(theme.gray).bg(row_bg),
@@ -1517,10 +1513,10 @@ fn build_reject_once_line<'a>(
 fn localized_prompt_prefix(prefix: &str) -> String {
     match prefix {
         "Always allow:" => crate::locale::ctx()
-            .named_text("permission.option.always_allow_prefix", "Always allow:")
+            .tr("Always allow:")
             .into_owned(),
         "Never allow:" => crate::locale::ctx()
-            .named_text("permission.option.never_allow_prefix", "Never allow:")
+            .tr("Never allow:")
             .into_owned(),
         other => other.to_string(),
     }
@@ -1545,9 +1541,7 @@ fn dynamic_option_label(
                 McpScope::Server => match scope.server_prefix.as_deref() {
                     Some(s) => {
                         let server = mcp_titleize_segment(s);
-                        crate::locale::ctx().format_named(
-                            "permission.option.mcp_all_tools_from",
-                            "all tools from {server}",
+                        crate::locale::ctx().tr_format("all tools from {server}",
                             &[("server", server.as_str())],
                         )
                     }
