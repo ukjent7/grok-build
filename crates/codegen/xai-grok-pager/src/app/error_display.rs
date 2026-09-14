@@ -144,20 +144,22 @@ pub(crate) fn retry_clause(attempt: u32, max_retries: u32, style: RetryLabelStyl
 
 /// Fixed client-side copy: translated through the locale dictionary, while
 /// dynamic provider/server detail stays byte-for-byte intact.
+///
+/// English-keyed on purpose: the literal is both the fallback and the lookup
+/// key, so upstream rewording falls back to English with no id to re-baseline.
 #[derive(Clone, Copy)]
 struct FixedCopy {
-    id: &'static str,
     english: &'static str,
 }
 
 impl FixedCopy {
     fn render(self) -> String {
-        crate::locale::ctx().named_text(self.id, self.english).into_owned()
+        crate::locale::ctx().tr_static(self.english).to_owned()
     }
 }
 
-const fn fixed(id: &'static str, english: &'static str) -> FixedCopy {
-    FixedCopy { id, english }
+const fn fixed(english: &'static str) -> FixedCopy {
+    FixedCopy { english }
 }
 
 fn classified_retry_headline(reason: &str, error_type: Option<&str>) -> Option<String> {
@@ -263,109 +265,58 @@ fn classify(status: Option<u16>, wire: WireErrorType) -> Classified {
     if let Some(code) = status {
         let (prefix, action, default_why) = match code {
             400 | 422 => (
-                fixed("error.request.headline.bad_request", "Bad request"),
+                fixed("Bad request"),
                 None,
-                Some(fixed(
-                    "error.request.why.server_rejected",
-                    "The server rejected this request.",
-                )),
+                Some(fixed("The server rejected this request.")),
             ),
             403 => (
-                fixed("error.request.headline.request_denied", "Request denied"),
+                fixed("Request denied"),
                 None,
-                Some(fixed(
-                    "error.request.why.permission_denied",
-                    "You don't have permission to do this.",
-                )),
+                Some(fixed("You don't have permission to do this.")),
             ),
             404 => (
-                fixed("error.request.headline.not_found", "Not found"),
-                Some(fixed(
-                    "error.request.action.select_model",
-                    "Run /model to pick another.",
-                )),
-                Some(fixed(
-                    "error.request.why.model_unavailable",
-                    "This model isn't available.",
-                )),
+                fixed("Not found"),
+                Some(fixed("Run /model to pick another.")),
+                Some(fixed("This model isn't available.")),
             ),
             408 | 504 => (
-                fixed(
-                    "error.request.headline.request_timed_out",
-                    "Request timed out",
-                ),
-                Some(fixed(
-                    "error.request.action.retry_shortly",
-                    "Try again shortly.",
-                )),
-                Some(fixed(
-                    "error.request.why.server_timeout",
-                    "The server took too long to respond.",
-                )),
+                fixed("Request timed out"),
+                Some(fixed("Try again shortly.")),
+                Some(fixed("The server took too long to respond.")),
             ),
             409 => (
-                fixed("error.request.headline.conflict", "Conflict"),
-                Some(fixed("error.request.action.try_again", "Try again.")),
-                Some(fixed(
-                    "error.request.why.conflict_state",
-                    "The request conflicted with the current state.",
-                )),
+                fixed("Conflict"),
+                Some(fixed("Try again.")),
+                Some(fixed("The request conflicted with the current state.")),
             ),
             413 => (
-                fixed(
-                    "error.request.headline.request_too_large",
-                    "Request too large",
-                ),
-                Some(fixed(
-                    "error.request.action.smaller_prompt_compact",
-                    "Try a smaller prompt or run /compact.",
-                )),
+                fixed("Request too large"),
+                Some(fixed("Try a smaller prompt or run /compact.")),
                 None,
             ),
             429 => (
-                fixed("error.request.headline.rate_limited", "Rate limited"),
-                Some(fixed(
-                    "error.request.action.try_again_later",
-                    "Try again later.",
-                )),
-                Some(fixed(
-                    "error.request.why.plan_rate_limit",
-                    "You've hit the rate limit for your plan.",
-                )),
+                fixed("Rate limited"),
+                Some(fixed("Try again later.")),
+                Some(fixed("You've hit the rate limit for your plan.")),
             ),
             502 | 503 => (
-                fixed(
-                    "error.request.headline.service_unavailable",
-                    "Service unavailable",
-                ),
-                Some(fixed(
-                    "error.request.action.service_busy",
-                    "The service is busy. Wait a minute and send again.",
-                )),
+                fixed("Service unavailable"),
+                Some(fixed("The service is busy. Wait a minute and send again.")),
                 None,
             ),
             100..=399 => (
-                fixed("error.request.headline.request_failed", "Request failed"),
+                fixed("Request failed"),
                 None,
-                Some(fixed(
-                    "error.request.why.did_not_complete",
-                    "The request did not complete successfully.",
-                )),
+                Some(fixed("The request did not complete successfully.")),
             ),
             400..=499 => (
-                fixed("error.request.headline.request_failed", "Request failed"),
+                fixed("Request failed"),
                 None,
-                Some(fixed(
-                    "error.request.why.server_rejected",
-                    "The server rejected this request.",
-                )),
+                Some(fixed("The server rejected this request.")),
             ),
             _ => (
-                fixed("error.request.headline.server_error", "Server error"),
-                Some(fixed(
-                    "error.request.action.server_side_retry",
-                    "Something went wrong on our side. Wait a minute and send again.",
-                )),
+                fixed("Server error"),
+                Some(fixed("Something went wrong on our side. Wait a minute and send again.")),
                 None,
             ),
         };
@@ -377,100 +328,49 @@ fn classify(status: Option<u16>, wire: WireErrorType) -> Classified {
     }
     let (headline, action, default_why) = match wire {
         WireErrorType::IdleTimeout => (
-            fixed(
-                "error.request.headline.no_model_response",
-                "No response from the model",
-            ),
-            Some(fixed(
-                "error.request.action.send_again",
-                "Try sending again.",
-            )),
-            Some(fixed("error.request.why.may_be_stuck", "It may be stuck.")),
+            fixed("No response from the model"),
+            Some(fixed("Try sending again.")),
+            Some(fixed("It may be stuck.")),
         ),
         WireErrorType::EmptyResponse => (
-            fixed("error.request.headline.empty_response", "Empty response"),
-            Some(fixed(
-                "error.request.action.send_again",
-                "Try sending again.",
-            )),
-            Some(fixed(
-                "error.request.why.model_no_content",
-                "The model returned no content.",
-            )),
+            fixed("Empty response"),
+            Some(fixed("Try sending again.")),
+            Some(fixed("The model returned no content.")),
         ),
         WireErrorType::Serialization => (
-            fixed(
-                "error.request.headline.couldnt_read_response",
-                "Couldn't read the response",
-            ),
-            Some(fixed(
-                "error.request.action.send_again",
-                "Try sending again.",
-            )),
+            fixed("Couldn't read the response"),
+            Some(fixed("Try sending again.")),
             None,
         ),
         WireErrorType::Http => (
-            fixed(
-                "error.request.headline.connection_failed",
-                "Connection failed",
-            ),
-            Some(fixed(
-                "error.request.action.check_network",
-                "Check your network and try again.",
-            )),
+            fixed("Connection failed"),
+            Some(fixed("Check your network and try again.")),
             None,
         ),
         WireErrorType::MaxTokensTruncation => (
-            fixed(
-                "error.request.headline.response_truncated",
-                "Response truncated",
-            ),
+            fixed("Response truncated"),
             None,
-            Some(fixed(
-                "error.request.why.output_limit",
-                "The model hit its output limit.",
-            )),
+            Some(fixed("The model hit its output limit.")),
         ),
         WireErrorType::RateLimited => (
-            fixed("error.request.headline.rate_limited", "Rate limited"),
-            Some(fixed(
-                "error.request.action.try_again_later",
-                "Try again later.",
-            )),
-            Some(fixed(
-                "error.request.why.plan_rate_limit",
-                "You've hit the rate limit for your plan.",
-            )),
+            fixed("Rate limited"),
+            Some(fixed("Try again later.")),
+            Some(fixed("You've hit the rate limit for your plan.")),
         ),
         WireErrorType::Api => (
-            fixed("error.request.headline.server_error", "Server error"),
-            Some(fixed(
-                "error.request.action.server_side_retry",
-                "Something went wrong on our side. Wait a minute and send again.",
-            )),
+            fixed("Server error"),
+            Some(fixed("Something went wrong on our side. Wait a minute and send again.")),
             None,
         ),
         WireErrorType::AuthTransient => (
-            fixed(
-                "error.request.headline.auth_temporarily_unavailable",
-                "Authentication temporarily unavailable",
-            ),
-            Some(fixed(
-                "error.request.action.retry_moment",
-                "Try sending again in a moment.",
-            )),
+            fixed("Authentication temporarily unavailable"),
+            Some(fixed("Try sending again in a moment.")),
             None,
         ),
         _ => (
-            fixed("error.request.headline.request_failed", "Request failed"),
-            Some(fixed(
-                "error.request.action.send_again",
-                "Try sending again.",
-            )),
-            Some(fixed(
-                "error.request.why.something_wrong",
-                "Something went wrong.",
-            )),
+            fixed("Request failed"),
+            Some(fixed("Try sending again.")),
+            Some(fixed("Something went wrong.")),
         ),
     };
     Classified {

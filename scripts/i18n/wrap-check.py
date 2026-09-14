@@ -73,8 +73,9 @@ EN_TO_ZH_CATALOG = "crates/codegen/xai-grok-locale/locales/en-to-zh.json"
 TR_KINDS = {"tr", "tr_static", "tr_format", "tr_ctx"}
 
 # Direct wrap forms. `english` is the fallback that stays at the call site, so it
-# doubles as the anchor for re-application. `fixed` is
-# `app/error_display.rs`'s one-line constructor for `FixedCopy { id, english }`.
+# doubles as the anchor for re-application. (`fixed`, the old one-line
+# constructor for `FixedCopy { id, english }`, is gone: error_display.rs now
+# holds English-keyed copy. The alternation keeps it so history still scans.)
 # English-keyed forms (`tr`, `tr_static`, `tr_format`, `tr_ctx`) are the
 # preferred tier going forward: no invented id, upstream rewording falls back
 # to English without a baseline entry to update. Fragments and identifiers

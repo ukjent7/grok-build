@@ -514,43 +514,6 @@
 {"file": "crates/codegen/xai-grok-pager/src/app/effects/session_list.rs", "id": "Couldn't load your chats: log in with /login", "kind": "tr_static", "english": "Couldn't load your chats: log in with /login"}
 {"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "Retrying (attempt {attempt})...", "kind": "tr_format", "english": "Retrying (attempt {attempt})..."}
 {"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "Retrying ({attempt}/{max_retries})", "kind": "tr_format", "english": "Retrying ({attempt}/{max_retries})"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.check_network", "kind": "fixed", "english": "Check your network and try again."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.retry_moment", "kind": "fixed", "english": "Try sending again in a moment."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.retry_shortly", "kind": "fixed", "english": "Try again shortly."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.select_model", "kind": "fixed", "english": "Run /model to pick another."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.send_again", "kind": "fixed", "english": "Try sending again."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.server_side_retry", "kind": "fixed", "english": "Something went wrong on our side. Wait a minute and send again."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.service_busy", "kind": "fixed", "english": "The service is busy. Wait a minute and send again."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.smaller_prompt_compact", "kind": "fixed", "english": "Try a smaller prompt or run /compact."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.try_again", "kind": "fixed", "english": "Try again."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.action.try_again_later", "kind": "fixed", "english": "Try again later."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.auth_temporarily_unavailable", "kind": "fixed", "english": "Authentication temporarily unavailable"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.bad_request", "kind": "fixed", "english": "Bad request"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.conflict", "kind": "fixed", "english": "Conflict"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.connection_failed", "kind": "fixed", "english": "Connection failed"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.couldnt_read_response", "kind": "fixed", "english": "Couldn't read the response"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.empty_response", "kind": "fixed", "english": "Empty response"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.no_model_response", "kind": "fixed", "english": "No response from the model"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.not_found", "kind": "fixed", "english": "Not found"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.rate_limited", "kind": "fixed", "english": "Rate limited"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.request_denied", "kind": "fixed", "english": "Request denied"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.request_failed", "kind": "fixed", "english": "Request failed"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.request_timed_out", "kind": "fixed", "english": "Request timed out"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.request_too_large", "kind": "fixed", "english": "Request too large"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.response_truncated", "kind": "fixed", "english": "Response truncated"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.server_error", "kind": "fixed", "english": "Server error"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.headline.service_unavailable", "kind": "fixed", "english": "Service unavailable"}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.conflict_state", "kind": "fixed", "english": "The request conflicted with the current state."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.did_not_complete", "kind": "fixed", "english": "The request did not complete successfully."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.may_be_stuck", "kind": "fixed", "english": "It may be stuck."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.model_no_content", "kind": "fixed", "english": "The model returned no content."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.model_unavailable", "kind": "fixed", "english": "This model isn't available."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.output_limit", "kind": "fixed", "english": "The model hit its output limit."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.permission_denied", "kind": "fixed", "english": "You don't have permission to do this."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.plan_rate_limit", "kind": "fixed", "english": "You've hit the rate limit for your plan."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.server_rejected", "kind": "fixed", "english": "The server rejected this request."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.server_timeout", "kind": "fixed", "english": "The server took too long to respond."}
-{"file": "crates/codegen/xai-grok-pager/src/app/error_display.rs", "id": "error.request.why.something_wrong", "kind": "fixed", "english": "Something went wrong."}
 {"file": "crates/codegen/xai-grok-pager/src/app/event_loop.rs", "id": "Couldn't switch to {mode} mode: {reason}", "kind": "tr_format", "english": "Couldn't switch to {mode} mode: {reason}"}
 {"file": "crates/codegen/xai-grok-pager/src/app/event_loop.rs", "id": "Disconnected. Reconnecting... (attempt {attempt})", "kind": "tr_format", "english": "Disconnected. Reconnecting... (attempt {attempt})"}
 {"file": "crates/codegen/xai-grok-pager/src/app/event_loop.rs", "id": "Reconnected.", "kind": "tr_static", "english": "Reconnected."}
