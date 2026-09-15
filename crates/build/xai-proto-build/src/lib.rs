@@ -154,14 +154,15 @@ impl XaiProtoBuilder {
         for proto in protos {
             let mut command = Command::new(protoc.unwrap_or(Path::new("protoc")));
             // FORK: Windows has neither /dev/stdout nor /dev/null, so both
-            // platforms route --dependency_out through a pid-unique temp file
-            // (removed after read). Only the discarded descriptor set still
-            // needs the platform null device below.
+            // platforms route --dependency_out through an auto-cleaned temp file.
+            // Only the discarded descriptor set still needs the platform null device below.
             // (xai-proto-build runs on the build host, so cfg!(windows) is the host.)
-            let dependency_out_file = std::env::temp_dir().join(format!(
-                "xai-proto-deps-{}.d",
-                std::process::id()
-            ));
+            let dependency_out_file = tempfile::Builder::new()
+                .prefix("xai-proto-deps-")
+                .suffix(".d")
+                .tempfile()
+                .context("failed to create temporary dependency file")?
+                .into_temp_path();
             let null_device = if cfg!(windows) { "NUL" } else { "/dev/null" };
             command.arg(format!(
                 "--dependency_out={}",
@@ -199,7 +200,7 @@ impl XaiProtoBuilder {
                     dependency_out_file.display()
                 )
             })?;
-            let _ = fs::remove_file(&dependency_out_file);
+            let _ = dependency_out_file.close();
 
             let mut lines = text.lines();
             let first_line = lines.next().context("protoc command output is empty")?;

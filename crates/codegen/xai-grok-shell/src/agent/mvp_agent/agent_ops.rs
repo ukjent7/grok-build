@@ -84,14 +84,11 @@ impl MvpAgent {
         session_ids.len()
     }
     pub(super) fn resolve_image_description_model(&self) -> String {
-        // FORK(byok): known gap — `session_summary` falls back per endpoint
-        // (session model on third-party, compiled default on first-party),
-        // but `image_description` still returns the compiled default unconditionally.
-        // Kept as-is because third-party image inputs ride the inline-image
-        // `normalize` path, not the describe bypass; changing the fallback needs
-        // a runtime check of which path a third-party turn actually takes.
-        // TODO(BYOK): verify third-party describe failures, then mirror
-        // `build_summary_client` with an endpoint-aware fallback.
+        // FORK(byok): image_description returns the configured or compiled default slug.
+        // Pure BYOK endpoints need no special handling here: downstream in `prompt_build.rs`,
+        // `resolve_aux_sampler_config` returns None when credentials for the aux slug are absent,
+        // and `finalize_image_describe_sampler_config` automatically falls back to the active
+        // session model and config.
         self.cfg
             .borrow()
             .image_description_model
