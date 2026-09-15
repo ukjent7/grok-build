@@ -152,6 +152,17 @@ jobs:
       - name: Check i18n wraps
         run: python3 scripts/i18n/wrap-check.py check
 
+      # FORK(i18n): the other half of the check above. `wrap-check` proves the
+      # wraps survived and that every wrap has a translation; it cannot see an
+      # id-keyed catalog entry that nothing looks up, because a lookup that
+      # never happens never falls back. The `tr()` migration left 2882 such
+      # entries across the two id-keyed catalogs (85% of them) with no call site
+      # and no test that could notice.
+      # Fails on any catalog id no code path can reach: either wire it up or
+      # drop it. `python3 scripts/i18n/catalog-check.py --list` prints them.
+      - name: Check i18n catalog reachability
+        run: python3 scripts/i18n/catalog-check.py
+
       # FORK(i18n): the mirror image of the step above. That one proves the
       # wraps we already had survived; this one looks at the copy this push
       # *added* and reports any that landed unlocalized -- the same silent

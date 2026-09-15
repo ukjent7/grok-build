@@ -1,3 +1,7 @@
 /target
 **/*.rs.bk
 .DS_Store
+
+# fork-local tooling: i18n gate bytecode + agent scratch
+__pycache__/
+.workbuddy/

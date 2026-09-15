@@ -10,16 +10,19 @@
 //!   call site takes this path; `scripts/i18n/wraps.jsonl` carries the counts.
 //! * **id-keyed** — [`LocaleContext::named_text`], [`LocaleContext::named_static_text`]
 //!   and [`LocaleContext::format_named`] resolve a stable id against
-//!   `zh-CN-metadata.json` first (the large upstream-owned surface: settings
-//!   labels, command metadata, picker choices) and then `zh-CN.json` (a small
-//!   typed catalog — `app.name`, `trust.question`, `reconnect.*` — whose ids
-//!   mirror `en-US.json`). These ids are the ones the UI code already uses, so
-//!   no parallel id space had to be invented.
+//!   `zh-CN-metadata.json` first and then `zh-CN.json` (a small typed catalog
+//!   whose ids mirror `en-US.json`). Only ~100 call sites still take this path:
+//!   labels whose id is built from a runtime key (settings, slash commands,
+//!   tutorial topics, skill catalog entries) plus a handful of literal ids.
+//!   Everything else moved to the English-keyed path during the `tr()` migration.
 //!
 //! Both paths take the upstream English literal as an explicit fallback, so a
-//! missing catalog entry renders English instead of blank — which also means a
-//! dropped translation is invisible at runtime, and `scripts/i18n/wrap-check.py`
-//! gates the wraps and the catalog coverage in CI.
+//! missing catalog entry renders English instead of blank. That fallback is why
+//! an id-keyed entry with no call site is invisible: nothing complains, and no
+//! test can, because the lookup never happens. The migration to `tr()` left
+//! 2882 such entries behind (85% of the two id-keyed catalogs), so
+//! `scripts/i18n/catalog-check.py` now gates reachability in CI, and
+//! `scripts/i18n/wrap-check.py` gates the wraps and the catalog coverage.
 //!
 //! # Process-wide context
 //!
