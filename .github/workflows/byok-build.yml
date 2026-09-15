@@ -242,13 +242,19 @@ jobs:
               commit -m "chore: checksums for $TAG"
             # Two tags released concurrently race on the `main` pointer.
             # Retry with rebase so the second push does not drop the pointer.
+            pushed=0
             for i in 1 2 3; do
-              if git push origin main; then break; fi
+              if git push origin main; then pushed=1; break; fi
               echo "push rejected (attempt $i/3), rebasing..."
               git fetch origin main
               git rebase origin/main
             done
-            git push origin main
+            # A `for` body does not propagate a failure, so without this the
+            # step would report success with the pointer never pushed.
+            if [ "$pushed" != 1 ]; then
+              echo "::error::checksums not pushed after 3 attempts"
+              exit 1
+            fi
           fi
 
       # FORK(byok): the checksums commit above is pushed with GITHUB_TOKEN,

@@ -324,7 +324,11 @@ if ($AuthSource) {
 
 # --- Download binary ---
 
-$binaryPath = Join-Path $DownloadDir "grok-$platform.exe"
+# FORK(byok): match the in-app updater's `grok-{version}-{platform}` name.
+# `cleanup_old_downloads` skips any file whose suffix does not start with a
+# digit, so a versionless name would sit in ~/.grok/downloads forever,
+# next to every versioned copy the updater leaves behind.
+$binaryPath = Join-Path $DownloadDir "grok-$resolvedVersion-$platform.exe"
 
 try {
     $usedUrl = Try-Download-File $binaryUrls $binaryPath
@@ -449,6 +453,11 @@ if (-not (Test-Path $ConfigFile)) {
 # defaults off without remote settings. Media generation hits xAI-only
 # endpoints with your third-party key; telemetry/trace upload/feedback should
 # be an explicit opt-in on a fork. Missing keys only — explicit user values win.
+# `__disabled__` is load-bearing on aux-model resolution returning None for
+# an unknown slug (`resolve_aux_sampler_config` only reads the local catalog).
+# If upstream adds a session-model fallback for aux models -- image-describe
+# and the auto classifier already have one -- this line stops disabling
+# anything and web_search silently comes back on BYOK. Re-check it then.
 $cfgLines = Get-Content $ConfigFile
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'web_fetch = true'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'models' 'web_search = "__disabled__"'
