@@ -35,10 +35,6 @@ fn per_model_row_count(models: &[(String, u64)]) -> u16 {
     (shown + overflow) as u16
 }
 
-// ---------------------------------------------------------------------------
-// Token budget color
-// ---------------------------------------------------------------------------
-
 /// Choose the progress bar fill color based on usage percentage.
 fn budget_color(pct: f32, theme: &Theme) -> Color {
     if pct > 0.80 {
@@ -65,10 +61,6 @@ pub(crate) fn format_elapsed(ms: u64) -> String {
         format!("{secs}s")
     }
 }
-
-// ---------------------------------------------------------------------------
-// Status label
-// ---------------------------------------------------------------------------
 
 fn status_label(goal: &GoalDisplayState) -> (&'static str, Color, String) {
     let theme = Theme::current();
@@ -106,10 +98,6 @@ fn status_label(goal: &GoalDisplayState) -> (&'static str, Color, String) {
         ),
     }
 }
-
-// ---------------------------------------------------------------------------
-// Wrapping helpers: pause-message reason block
-// ---------------------------------------------------------------------------
 
 /// Wrap a string into rows of at most `width` terminal columns. `width` of zero or one returns a
 /// single un-split row to avoid divide-by-zero behaviour at degenerate modal widths.
@@ -239,10 +227,6 @@ fn format_pause_reason(msg: &str) -> String {
         &[("reason", &strip_control_chars(msg, true))],
     )
 }
-
-// ---------------------------------------------------------------------------
-// Public render
-// ---------------------------------------------------------------------------
 
 /// True when the goal carries at least one signal from the completion classifier.
 /// Gates the modal's "Completion review" section so a goal that has never been classified shows nothing extra.
@@ -546,7 +530,7 @@ pub fn render_goal_detail(
     let is_active = matches!(goal.status, GoalDisplayStatus::Active);
     let spinner_prefix = if is_active {
         let frames = crate::glyphs::dot_spinner_frames();
-        let frame = frames[(tick / 4) % frames.len()];
+        let frame = frames.get((tick / 4) % frames.len()).copied().unwrap_or("");
         format!("{frame} ")
     } else {
         String::new()
@@ -597,7 +581,6 @@ pub fn render_goal_detail(
     let x = inner.x + 1;
     let w = inner.width.saturating_sub(2);
 
-    // ── Status line ──
     let (status_text, status_color, phase_text) = status_label(goal);
     let mut status_spans = vec![
         Span::styled(
@@ -690,7 +673,6 @@ pub fn render_goal_detail(
         }
     }
 
-    // ── Budget / tokens line with optional progress bar ──
     let tokens_str =
         format_tokens_compact(goal.live_tokens_used(context_used, active_subagent_tokens));
     let elapsed_str = format_elapsed(goal.live_elapsed_ms());
@@ -761,14 +743,12 @@ pub fn render_goal_detail(
         return Some(close_rect);
     }
 
-    // ── Blank separator ──
     y += 1;
 
     if y >= inner.y + inner.height {
         return Some(close_rect);
     }
 
-    // ── Progress section (todo items) ──
     if todos.is_empty() {
         buf.set_line_safe(
             x,
@@ -799,7 +779,7 @@ pub fn render_goal_detail(
         y += 1;
 
         let display_count = todos.len().min(MAX_TODO_DISPLAY);
-        for item in &todos[..display_count] {
+        for item in todos.iter().take(display_count) {
             if y >= inner.y + inner.height.saturating_sub(1) {
                 break;
             }
@@ -841,7 +821,6 @@ pub fn render_goal_detail(
         return Some(close_rect);
     }
 
-    // ── Active subagent metrics (with a leading blank separator) ──
     if let Some(ref role) = goal.current_subagent_role {
         // Leading blank, budgeted in `subagent_lines` (renders only with the block)
         y += 1;
@@ -960,7 +939,6 @@ pub fn render_goal_detail(
         return Some(close_rect);
     }
 
-    // ── Completion review (only when classifier has run at least once) ──
     if has_classifier_activity(goal) {
         // Blank separator.
         y += 1;
@@ -1052,7 +1030,6 @@ pub fn render_goal_detail(
         return Some(close_rect);
     }
 
-    // ── Recent history (with a leading blank separator) ──
     if goal.last_event.is_some() {
         // Leading blank, budgeted in `history_lines` (renders only with the block)
         y += 1;
@@ -1097,7 +1074,6 @@ pub fn render_goal_detail(
         }
     }
 
-    // ── Commands hint ──
     if y < inner.y + inner.height {
         let hint_style = Style::default().fg(theme.gray_dim);
         let hint = if matches!(
@@ -1119,10 +1095,6 @@ pub fn render_goal_detail(
 
     Some(close_rect)
 }
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
@@ -1940,9 +1912,13 @@ mod tests {
         // The rendered modal then preserves the break between the short label and the long body
         let text = "short reason\nlonger body content";
         let lines = wrap_pause_message_lines(text, 80);
-        assert_eq!(lines.len(), 2);
-        assert_eq!(lines[0], "short reason");
-        assert_eq!(lines[1], "longer body content");
+        assert_eq!(
+            lines,
+            [
+                "short reason".to_string(),
+                "longer body content".to_string()
+            ]
+        );
     }
 
     #[test]
@@ -1950,7 +1926,7 @@ mod tests {
         // At unusable width (0/1) the wrapper returns a single un-split row; the kept `\n` must still collapse so the row carries no control byte
         let out = wrap_pause_message_lines("a\nb", 1);
         assert_eq!(out, vec!["a b".to_string()]);
-        assert!(!out[0].contains('\n'));
+        assert!(out.first().is_some_and(|s| !s.contains('\n')));
     }
 
     #[test]
@@ -2006,8 +1982,6 @@ mod tests {
             );
         }
     }
-
-    // -- Todo rendering tests -----------------------------------------------
 
     fn make_todo(content: &str, status: TodoStatus) -> TodoItem {
         TodoItem {
@@ -2115,8 +2089,6 @@ mod tests {
         assert!(result.ends_with('\u{2026}'));
     }
 
-    // -- objective in the modal title ---------------------------------------
-
     #[test]
     fn modal_title_renders_objective() {
         // The objective must appear in the modal title (top border) so the user can see which goal is running, not a static placeholder
@@ -2170,8 +2142,6 @@ mod tests {
         );
     }
 
-    // -- commands hint must not be clipped ----------------------------------
-
     #[test]
     fn commands_hint_visible_without_subagent_or_history() {
         // With no active subagent and no recent-history event, the height calc and render must agree on the conditional blank separators
@@ -2201,8 +2171,6 @@ mod tests {
             "commands hint must render (not clipped) with no subagent/history, got:\n{text}"
         );
     }
-
-    // -- details path existence check ---------------------------------------
 
     #[test]
     fn classifier_details_display_handles_missing_present_and_none() {
@@ -2236,8 +2204,6 @@ mod tests {
         );
     }
 
-    // -- Attempts hyphen branch --------------------------------------------
-
     #[test]
     fn modal_attempts_shows_hyphen_when_classifier_active_without_counts() {
         // Completion review renders (a verdict is present) but no run counter has arrived (both counts absent)
@@ -2256,8 +2222,6 @@ mod tests {
             "empty counter must fall back to a hyphen, got:\n{text}"
         );
     }
-
-    // -- Recent-History humanization ----------------------------------------
 
     #[test]
     fn humanize_goal_event_maps_wire_vocabulary() {
@@ -2379,8 +2343,6 @@ mod tests {
         }
     }
 
-    // -- title control-char / boundary handling -----------------------------
-
     #[test]
     fn modal_title_collapses_control_chars_to_one_row() {
         // A newline in the objective must be collapsed to a space so the whole objective stays on the single-row title
@@ -2422,8 +2384,6 @@ mod tests {
         // Degenerate budget 0 yields just the ellipsis (no codepoint dropped silently)
         assert_eq!(truncate_to_width("x", 0), "\u{2026}");
     }
-
-    // -- subagent / classifier height combos --------------------------------
 
     #[test]
     fn subagent_just_spawned_budgets_no_detail_row() {

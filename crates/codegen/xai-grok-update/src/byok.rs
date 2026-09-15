@@ -248,8 +248,8 @@ pub async fn install(
     }
 
     eprintln!();
-    super::auto_update::cleanup_old_downloads(&download_dir, "grok", &version).await;
-    super::auto_update::cleanup_old_downloads(&download_dir, "grok-pager", &version).await;
+    super::cleanup_downloads::cleanup_old_downloads(&download_dir, "grok", &version).await;
+    super::cleanup_downloads::cleanup_old_downloads(&download_dir, "grok-pager", &version).await;
 
     let _ = xai_grok_shell::util::config::update_config(|st| {
         st.cli.installer = Some(INSTALLER.to_string());

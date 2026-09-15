@@ -71,6 +71,25 @@ mod expand_home_tests {
         );
     }
 }
+/// True when `candidate` is `trusted_base` or a path under it (same scheme, host, and port).
+pub fn matches_trusted_base_url(candidate: &str, trusted_base: &str) -> bool {
+    let Ok(candidate) = reqwest::Url::parse(candidate) else {
+        return false;
+    };
+    let Ok(trusted) = reqwest::Url::parse(trusted_base) else {
+        return false;
+    };
+    let trusted_path = trusted.path();
+    let candidate_path = candidate.path();
+    let path_matches = candidate_path == trusted_path
+        || candidate_path
+            .strip_prefix(trusted_path)
+            .is_some_and(|suffix| suffix.starts_with('/'));
+    candidate.scheme() == trusted.scheme()
+        && candidate.host_str() == trusted.host_str()
+        && candidate.port_or_known_default() == trusted.port_or_known_default()
+        && path_matches
+}
 /// Production cli-chat-proxy base only (compiled-in constant). Unlike [`is_cli_chat_proxy_url`], this rejects loopback and staging/dev hosts. Used for security-sensitive remote kill-switches.
 /// Those must not become env toggles via `GROK_CLI_CHAT_PROXY_BASE_URL` (or similar) pointing at an attacker-controlled origin.
 /// FORK(byok): thin delegate to `endpoint_trust`; that module is the single source of truth.
@@ -133,12 +152,10 @@ pub fn truncate(s: &str, max_chars: usize) -> &str {
     if s.len() <= max_chars {
         return s;
     }
-    let end = s
-        .char_indices()
-        .nth(max_chars)
-        .map(|(i, _)| i)
-        .unwrap_or(s.len());
-    &s[..end]
+    match s.char_indices().nth(max_chars) {
+        Some((i, _)) => s.get(..i).unwrap_or(s),
+        None => s,
+    }
 }
 /// Check if a process is still alive.
 /// Unix: `kill(pid, 0)` via `nix`. True if the process exists (even under a different UID); false only on ESRCH.
@@ -290,7 +307,10 @@ pub fn is_grok_process(pid: u32) -> bool {
         if result.is_err() {
             return false;
         }
-        String::from_utf16_lossy(&buf[..size as usize])
+        let Some(name) = buf.get(..size as usize) else {
+            return false;
+        };
+        String::from_utf16_lossy(name)
             .to_ascii_lowercase()
             .contains("grok")
     }

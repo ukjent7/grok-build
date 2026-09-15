@@ -123,13 +123,13 @@ pub fn render_jump_overlay(buf: &mut Buffer, area: Rect, state: &JumpState, focu
             &crate::locale::ctx().tr("Jump to which turn?"),
             focused,
             |i, ctx| {
-                let entry = &state.entries[i];
+                let Some(entry) = state.entries.get(i) else {
+                    return Line::from("");
+                };
                 let ordinal = format!("{:>ord_width$} ", entry.turn_idx + 1);
                 let ord_style = Style::default().fg(theme.gray).bg(ctx.row_bg);
                 let preview: String = if entry.preview.is_empty() {
-                    crate::locale::ctx()
-                        .tr("(no preview)")
-                        .into_owned()
+                    crate::locale::ctx().tr("(no preview)").into_owned()
                 } else {
                     truncate_str(
                         &entry.preview,

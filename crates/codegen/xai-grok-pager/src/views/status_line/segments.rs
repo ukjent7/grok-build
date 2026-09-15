@@ -106,6 +106,8 @@ pub fn compose_builtin(
                 .map(|usd| StatusSegment::dim(format!("${usd:.2}"))),
             StatusLineItem::TurnTimer => {
                 let secs = turn_elapsed?.as_secs();
+                // Localized unit glyphs, unlike `fmt_elapsed`'s `1m02s`: the status
+                // line is the one surface where the timer is the copy, not a suffix.
                 let seconds = crate::locale::ctx().named_text("status_line.unit.seconds", "s");
                 let minutes = crate::locale::ctx().tr("m");
                 let text = match secs {

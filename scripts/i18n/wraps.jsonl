@@ -20,7 +20,7 @@
 {"file": "crates/codegen/xai-grok-pager-minimal/src/live.rs", "id": "{count} queued", "kind": "tr_format", "english": "{count} queued", "locs": [["render_prompt_info", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "Manage MCP servers", "kind": "tr", "english": "Manage MCP servers", "locs": [["render_mcps", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "Resume session", "kind": "tr", "english": "Resume session", "locs": [["render_resume", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "disabled", "kind": "tr", "english": "disabled", "locs": [["render_mcps", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "disabled", "kind": "tr_static", "english": "disabled", "locs": [["render_mcps", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "error: {message}", "kind": "tr_format", "english": "error: {message}", "locs": [["render_mcps", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "loading…", "kind": "tr", "english": "loading…", "locs": [["render_mcps", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager-minimal/src/panel.rs", "id": "↑/↓ navigate · enter confirm · esc cancel", "kind": "tr_static", "english": "↑/↓ navigate · enter confirm · esc cancel", "locs": [["resume_footer", 0, "lit"]]}
@@ -658,7 +658,6 @@
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "This conversation is too large for the model's context window. Use /new to start a new session.", "kind": "tr", "english": "This conversation is too large for the model's context window. Use /new to start a new session.", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "This session's conversation history is incompatible with the current model. Please start a new session.", "kind": "tr", "english": "This session's conversation history is incompatible with the current model. Please start a new session.", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "Turn blocked by a hook in {duration}.", "kind": "tr_format", "english": "Turn blocked by a hook in {duration}.", "locs": [["message", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "Turn cancelled by user in {duration}.", "kind": "tr_format", "english": "Turn cancelled by user in {duration}.", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "Turn completed.", "kind": "tr", "english": "Turn completed.", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "Turn failed in {duration}: {error}", "kind": "tr_format", "english": "Turn failed in {duration}: {error}", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "Turn failed: {error}", "kind": "tr_format", "english": "Turn failed: {error}", "locs": [["message", 0, "lit"]]}
@@ -666,6 +665,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "abandoned", "kind": "tr", "english": "abandoned", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "approved", "kind": "tr", "english": "approved", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "{body} ({duration})", "kind": "tr_format", "english": "{body} ({duration})", "locs": [["message", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "{cause} in {duration}.", "kind": "tr_format", "english": "{cause} in {duration}.", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/session_event.rs", "id": "{reason} Switched to \"{model}\".", "kind": "tr_format", "english": "{reason} Switched to \"{model}\".", "locs": [["message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/subagent.rs", "id": "Subagent ", "kind": "tr_static", "english": "Subagent ", "locs": [["output", 0, "lit"], ["output", 1, "lit"], ["output", 2, "lit"], ["output", 3, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/subagent.rs", "id": "cancelled in {duration}: ", "kind": "tr_format", "english": "cancelled in {duration}: ", "locs": [["output", 0, "lit"]]}
@@ -750,13 +750,18 @@
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search_tool.rs", "id": "  (no results found)", "kind": "tr", "english": "  (no results found)", "locs": [["output", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search_tool.rs", "id": " ({count} results)", "kind": "tr_format", "english": " ({count} results)", "locs": [["header_line", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/search_tool.rs", "id": "Search Tools ", "kind": "tr", "english": "Search Tools ", "locs": [["header_line", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "Failed to send message to subagent", "kind": "tr_static", "english": "Failed to send message to subagent", "locs": [["title", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "Message delivery unconfirmed", "kind": "tr_static", "english": "Message delivery unconfirmed", "locs": [["title", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "Message ", "kind": "tr_static", "english": "Message ", "locs": [["header_label", -1, "const"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "Message:", "kind": "tr", "english": "Message:", "locs": [["output", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "Sending message to subagent", "kind": "tr_static", "english": "Sending message to subagent", "locs": [["title", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "Sent message to subagent", "kind": "tr_static", "english": "Sent message to subagent", "locs": [["title", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "Subagent ID: ", "kind": "tr", "english": "Subagent ID: ", "locs": [["output", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "unavailable", "kind": "tr", "english": "unavailable", "locs": [["output", 0, "lit"], ["output", 1, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "interjected to {noun}", "kind": "tr_format", "english": "interjected to {noun}", "locs": [["verb_and_target", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "parent", "kind": "tr_static", "english": "parent", "locs": [["noun", -1, "const"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "queued for {noun}", "kind": "tr_format", "english": "queued for {noun}", "locs": [["verb_and_target", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "rejected · {noun}", "kind": "tr_format", "english": "rejected · {noun}", "locs": [["verb_and_target", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "sending to {noun}", "kind": "tr_format", "english": "sending to {noun}", "locs": [["verb_and_target", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "sent to {noun}", "kind": "tr_format", "english": "sent to {noun}", "locs": [["verb_and_target", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "subagent", "kind": "tr_static", "english": "subagent", "locs": [["noun", -1, "const"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "unavailable", "kind": "tr", "english": "unavailable", "locs": [["output", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/sent_message.rs", "id": "unconfirmed · {noun}", "kind": "tr_format", "english": "unconfirmed · {noun}", "locs": [["verb_and_target", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/use_tool.rs", "id": "... ({count} more lines, press Enter to view)", "kind": "tr_format", "english": "... ({count} more lines, press Enter to view)", "locs": [["output", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/web_fetch.rs", "id": "  (no content)", "kind": "tr", "english": "  (no content)", "locs": [["output", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/scrollback/blocks/tool/web_fetch.rs", "id": "... ({count} more lines, press Enter to view)", "kind": "tr_format", "english": "... ({count} more lines, press Enter to view)", "locs": [["output", 0, "lit"]]}
@@ -973,15 +978,16 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "{hidden} more", "kind": "tr_format", "english": "{hidden} more", "locs": [["render_idle_overflow", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/render.rs", "id": "↑↓ nav", "kind": "tr_static", "english": "↑↓ nav", "locs": [["render_location_picker", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "Awaiting input", "kind": "tr", "english": "Awaiting input", "locs": [["append_roster_rows", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "Awaiting your input", "kind": "tr", "english": "Awaiting your input", "locs": [["top_level_activity", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "Loading…", "kind": "tr", "english": "Loading…", "locs": [["top_level_activity", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "Pending: question", "kind": "tr", "english": "Pending: question", "locs": [["top_level_secondary_line", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "Pending: {detail}", "kind": "tr_format", "english": "Pending: {detail}", "locs": [["top_level_secondary_line", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "Working", "kind": "tr", "english": "Working", "locs": [["append_roster_rows", 0, "lit"], ["top_level_activity", 0, "lit"], ["subagent_activity", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "Working", "kind": "tr", "english": "Working", "locs": [["append_roster_rows", 0, "lit"], ["subagent_activity", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "dashboard.badge.worktree", "kind": "named_static_text", "english": "worktree", "locs": [["top_level_subtitle", 0, "lit"], ["subagent_subtitle", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "dashboard.row.new_session", "kind": "named_text", "english": "New session", "locs": [["new_session_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "{tools} tools · {toks} tok · {turns} turns", "kind": "tr_format", "english": "{tools} tools · {toks} tok · {turns} turns", "locs": [["subagent_activity", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row.rs", "id": "… {count} more", "kind": "tr_format", "english": "… {count} more", "locs": [["build_local_rows", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row_activity.rs", "id": "Awaiting your input", "kind": "tr", "english": "Awaiting your input", "locs": [["top_level_activity", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row_activity.rs", "id": "Loading…", "kind": "tr", "english": "Loading…", "locs": [["top_level_activity", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row_activity.rs", "id": "Pending: question", "kind": "tr", "english": "Pending: question", "locs": [["top_level_secondary_line", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row_activity.rs", "id": "Pending: {detail}", "kind": "tr_format", "english": "Pending: {detail}", "locs": [["top_level_secondary_line", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/dashboard/row_activity.rs", "id": "Working", "kind": "tr", "english": "Working", "locs": [["top_level_activity", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/state.rs", "id": "Awaiting", "kind": "tr_static", "english": "Awaiting", "locs": [["group_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/state.rs", "id": "Failed", "kind": "tr_static", "english": "Failed", "locs": [["group_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dashboard/state.rs", "id": "Idle", "kind": "tr_static", "english": "Idle", "locs": [["group_label", 0, "lit"]]}
@@ -1006,12 +1012,9 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "Subagents", "kind": "tr_static", "english": "Subagents", "locs": [["label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "Tasks", "kind": "tr_static", "english": "Tasks", "locs": [["label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "Watchers", "kind": "tr_static", "english": "Watchers", "locs": [["label", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "Workflows", "kind": "tr_static", "english": "Workflows", "locs": [["label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "[stop]", "kind": "tr_static", "english": "[stop]", "locs": [["stop_label", -1, "const"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "dock.section.subagents", "kind": "named_static_text", "english": "subagents", "locs": [["tab_hint", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "queued", "kind": "tr_static", "english": "queued", "locs": [["tab_hint", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "show {count} more", "kind": "tr_format", "english": "show {count} more", "locs": [["render", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "tasks", "kind": "tr_static", "english": "tasks", "locs": [["tab_hint", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/dock/mod.rs", "id": "watchers", "kind": "tr_static", "english": "watchers", "locs": [["tab_hint", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": " +{count} more", "kind": "tr_format", "english": " +{count} more", "locs": [["render_components_fields", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": " back", "kind": "tr_static", "english": " back", "locs": [["render_extensions_modal", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/extensions_modal.rs", "id": " cancel", "kind": "tr_static", "english": " cancel", "locs": [["render_extensions_modal", 0, "lit"]]}
@@ -1258,9 +1261,8 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/list_pane/render.rs", "id": "go to: ", "kind": "tr", "english": "go to: ", "locs": [["render_bottom_bar", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/list_pane/render.rs", "id": "search", "kind": "tr", "english": "search", "locs": [["render_bottom_bar", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/list_pane/render.rs", "id": "search: ", "kind": "tr", "english": "search: ", "locs": [["render_bottom_bar", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/location.rs", "id": "detached", "kind": "tr", "english": "detached", "locs": [["location_parts_from", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/location.rs", "id": "detached", "kind": "tr", "english": "detached", "locs": [["branch_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/location.rs", "id": "worktree ", "kind": "tr_static", "english": "worktree ", "locs": [["worktree_badge", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/location.rs", "id": "{display} (worktree of {main_repo})", "kind": "tr_format", "english": "{display} (worktree of {main_repo})", "locs": [["format_cwd_parts", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/managed_connectors_wait.rs", "id": "Finish in the browser.", "kind": "tr_static", "english": "Finish in the browser.", "locs": [["render_managed_connectors_wait", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/managed_connectors_wait.rs", "id": "Refresh when you're done.", "kind": "tr_static", "english": "Refresh when you're done.", "locs": [["render_managed_connectors_wait", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/managed_connectors_wait.rs", "id": "[copied]", "kind": "tr_static", "english": "[copied]", "locs": [["render_managed_connectors_wait", 0, "lit"]]}
@@ -1278,7 +1280,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "*(File too large to preview)*", "kind": "tr", "english": "*(File too large to preview)*", "locs": [["load_preview", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "/ search", "kind": "tr_static", "english": "/ search", "locs": [["build_shortcuts", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "/ to filter...", "kind": "tr", "english": "/ to filter...", "locs": [["render_file_list", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "Esc close", "kind": "tr_static", "english": "Esc close", "locs": [["build_shortcuts", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "Esc close", "kind": "tr_static", "english": "Esc close", "locs": [["build_shortcuts", 0, "lit"], ["build_shortcuts", 1, "lit"], ["build_shortcuts", 2, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "Esc exit filter", "kind": "tr_static", "english": "Esc exit filter", "locs": [["build_shortcuts", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "Global", "kind": "tr", "english": "Global", "locs": [["build_entries", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "Memory", "kind": "tr", "english": "Memory", "locs": [["render_memory_modal", 0, "lit"]]}
@@ -1290,8 +1292,8 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "any key cancel", "kind": "tr_static", "english": "any key cancel", "locs": [["build_shortcuts", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "just now", "kind": "tr", "english": "just now", "locs": [["format_modified", 0, "lit"], ["format_modified", 1, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "memory.shortcut.type_filter", "kind": "named_static_text", "english": "type to filter", "locs": [["build_shortcuts", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "t toggle (off)", "kind": "tr_static", "english": "t toggle (off)", "locs": [["build_shortcuts", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "t toggle (on)", "kind": "tr_static", "english": "t toggle (on)", "locs": [["build_shortcuts", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "t turn off", "kind": "tr_static", "english": "t turn off", "locs": [["build_shortcuts", 0, "lit"], ["build_shortcuts", 1, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "t turn on", "kind": "tr_static", "english": "t turn on", "locs": [["build_shortcuts", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "type to filter...", "kind": "tr", "english": "type to filter...", "locs": [["render_file_list", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "unknown", "kind": "tr", "english": "unknown", "locs": [["format_modified", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/memory_modal.rs", "id": "x confirm delete", "kind": "tr_static", "english": "x confirm delete", "locs": [["build_shortcuts", 0, "lit"]]}
@@ -1482,6 +1484,8 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/rewind.rs", "id": "Yes", "kind": "tr", "english": "Yes", "locs": [["render_rewind_overlay", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/rewind.rs", "id": "Yes, and don't ask again", "kind": "tr", "english": "Yes, and don't ask again", "locs": [["render_rewind_overlay", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/rewind.rs", "id": "”?", "kind": "tr", "english": "”?", "locs": [["render_rewind_overlay", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/scheduled_next.rs", "id": " (due now)", "kind": "tr", "english": " (due now)", "locs": [["suffix", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/scheduled_next.rs", "id": " (next in {duration})", "kind": "tr_format", "english": " (next in {duration})", "locs": [["suffix", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/session_picker.rs", "id": "(no prompt)", "kind": "tr", "english": "(no prompt)", "locs": [["build_session_entry_data", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/session_picker.rs", "id": "Extended search results (remote and local sessions)", "kind": "tr", "english": "Extended search results (remote and local sessions)", "locs": [["build_content_header_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/session_picker.rs", "id": "Searching session content…", "kind": "tr", "english": "Searching session content…", "locs": [["build_content_header_label", 0, "lit"]]}
@@ -1666,12 +1670,9 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/subagent_catalog_pane.rs", "id": "No bundled items.", "kind": "tr_static", "english": "No bundled items.", "locs": [["render", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/subagent_catalog_pane.rs", "id": "Personas", "kind": "tr_static", "english": "Personas", "locs": [["sync_from_bundle", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/subagent_catalog_pane.rs", "id": "Roles", "kind": "tr_static", "english": "Roles", "locs": [["sync_from_bundle", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": " (due now)", "kind": "tr", "english": " (due now)", "locs": [["from_scheduled", 0, "lit"], ["from_scheduled", 1, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": " (next in {duration})", "kind": "tr_format", "english": " (next in {duration})", "locs": [["from_scheduled", 0, "lit"], ["from_scheduled", 1, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": " (running)", "kind": "tr", "english": " (running)", "locs": [["from_scheduled", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": " (starting)", "kind": "tr", "english": " (starting)", "locs": [["from_scheduled", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": " to show all.", "kind": "tr", "english": " to show all.", "locs": [["render", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "1 agent", "kind": "tr", "english": "1 agent", "locs": [["from_workflow_run", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Monitor", "kind": "tr_static", "english": "Monitor", "locs": [["from_bg_task", -1, "const"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "No running tasks. Press ", "kind": "tr", "english": "No running tasks. Press ", "locs": [["render", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "No tasks or agents.", "kind": "tr_static", "english": "No tasks or agents.", "locs": [["render", 0, "lit"]]}
@@ -1682,8 +1683,6 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Workflow ", "kind": "tr", "english": "Workflow ", "locs": [["from_workflow_run", 0, "lit"], ["from_workflow_run", 1, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "Workflows", "kind": "tr_static", "english": "Workflows", "locs": [["label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "killing… ", "kind": "tr", "english": "killing… ", "locs": [["render_bg_task_overlay", 0, "lit"], ["render_agent_overlay", 0, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "running", "kind": "tr", "english": "running", "locs": [["from_workflow_run", 1, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/tasks_pane.rs", "id": "{count} agents", "kind": "tr_format", "english": "{count} agents", "locs": [["from_workflow_run", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/todo_pane.rs", "id": "All done.", "kind": "tr", "english": "All done.", "locs": [["empty_placeholder_message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/todo_pane.rs", "id": "No todo items.", "kind": "tr", "english": "No todo items.", "locs": [["empty_placeholder_message", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/todo_pane.rs", "id": "{cancelled} cancelled.", "kind": "tr_format", "english": "{cancelled} cancelled.", "locs": [["empty_placeholder_message", 0, "lit"]]}
@@ -1816,6 +1815,7 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/workspace_mode.rs", "id": "Local·CLI", "kind": "tr_static", "english": "Local·CLI", "locs": [["status_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/workspace_mode.rs", "id": "Sandbox", "kind": "tr_static", "english": "Sandbox", "locs": [["label", 0, "lit"], ["status_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/welcome/workspace_mode.rs", "id": "Workspace", "kind": "tr_static", "english": "Workspace", "locs": [["render_workspace_mode_picker", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "1 agent", "kind": "tr", "english": "1 agent", "locs": [["activity_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "All agents", "kind": "tr", "english": "All agents", "locs": [["phase_rail", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "No agents in this phase yet.", "kind": "tr", "english": "No agents in this phase yet.", "locs": [["render_detail", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "No workflow runs in this session yet.", "kind": "tr", "english": "No workflow runs in this session yet.", "locs": [["render_list", 0, "lit"]]}
@@ -1830,9 +1830,10 @@
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "failed: see scrollback for details; r resumes from the journal", "kind": "tr", "english": "failed: see scrollback for details; r resumes from the journal", "locs": [["render_detail", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "p pause", "kind": "tr_static", "english": "p pause", "locs": [["footer_shortcuts", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "r resume", "kind": "tr_static", "english": "r resume", "locs": [["footer_shortcuts", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "running", "kind": "tr", "english": "running", "locs": [["activity_label", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "s save", "kind": "tr_static", "english": "s save", "locs": [["footer_shortcuts", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "x stop", "kind": "tr_static", "english": "x stop", "locs": [["footer_shortcuts", 0, "lit"], ["footer_shortcuts", 1, "lit"]]}
-{"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "{count} agents", "kind": "tr_format", "english": "{count} agents", "locs": [["render_detail", 0, "lit"]]}
+{"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "{count} agents", "kind": "tr_format", "english": "{count} agents", "locs": [["activity_label", 0, "lit"], ["render_detail", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "{done}/{total} agents", "kind": "tr_format", "english": "{done}/{total} agents", "locs": [["render_list", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "{done}/{total} phases", "kind": "tr_format", "english": "{done}/{total} phases", "locs": [["render_list", 0, "lit"]]}
 {"file": "crates/codegen/xai-grok-pager/src/views/workflows.rs", "id": "{used} / {total} context", "kind": "tr_format", "english": "{used} / {total} context", "locs": [["render_detail", 0, "lit"]]}
