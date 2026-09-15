@@ -1274,15 +1274,17 @@ impl SamplingClient {
             }
         }
 
-        // FORK(byok): xAI-proprietary defaults a strict third-party Responses implementation rejects.
-        // BYOK endpoints get a clean standard payload instead (see `strip_byok_response_extensions`).
-        if self.defaults.byok_compat {
-            return Ok(());
-        }
-
-        // The API defaults `store` to true, which breaks ZDR compliance
+        // The API defaults `store` to true, which breaks ZDR compliance. This is a
+        // standard Responses field, not an xAI extension, so it applies to third-party
+        // endpoints too -- and matters most there.
         if request.inner.store.is_none() {
             request.inner.store = Some(false);
+        }
+
+        // FORK(byok): the remaining defaults below are xAI-specific request extensions
+        // that a strict third-party Responses implementation rejects.
+        if self.defaults.byok_compat {
+            return Ok(());
         }
 
         // Include encrypted reasoning content if not specified
@@ -3799,6 +3801,30 @@ mod tests {
         assert_eq!(
             request.inner.reasoning.unwrap().summary,
             Some(rs::ReasoningSummary::Detailed)
+        );
+    }
+
+    /// The BYOK gate strips xAI request extensions, never the ZDR default: `store`
+    /// is a standard Responses field, and omitting it hands third-party providers a
+    /// store-by-default request. `minimal_config`'s `example.test` is third-party.
+    #[test]
+    fn third_party_endpoint_keeps_store_false_but_drops_the_xai_include() {
+        let client = client_with_summary(None);
+        assert!(
+            client.defaults.byok_compat,
+            "test premise: example.test must classify as third-party"
+        );
+        let mut request = CreateResponseWrapper::new(rs::CreateResponse::default());
+        client.apply_response_defaults(&mut request).unwrap();
+        assert_eq!(
+            request.inner.store,
+            Some(false),
+            "the BYOK bail-out must not skip the ZDR store default"
+        );
+        let includes = request.inner.include.unwrap_or_default();
+        assert!(
+            !includes.contains(&rs::IncludeEnum::ReasoningEncryptedContent),
+            "encrypted-reasoning includes are xAI-only: {includes:?}"
         );
     }
 
