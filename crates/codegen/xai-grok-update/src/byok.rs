@@ -41,10 +41,19 @@ pub fn release_semver() -> Option<String> {
     normalize_tag(release_tag()?)
 }
 
-/// Old fork installs persist `installer = "internal"`; a tagged fork binary
-/// must still resolve to the fork source so it can never drift to official.
+/// Old fork installs persist `installer = "internal"`; a fork binary must still
+/// resolve to the fork source so it can never drift to official.
+///
+/// Fork identity is not the release tag: this function only compiles into fork
+/// builds, so an untagged one (`cargo build`, or a CI build where `BYOK_RELEASE`
+/// did not land) is just as much a fork install. Keying on the tag instead let an
+/// untagged build track the official GCS channel and overwrite itself with an
+/// upstream binary. The tag selects which version to *report* (see
+/// [`installed_for`]), never which channel to use; without it `fetch_latest`
+/// resolves to the installed version, i.e. "already up to date", and never
+/// reaches upstream.
 pub fn is_byok_install(installer: &str) -> bool {
-    installer == INSTALLER || (installer == "internal" && release_tag().is_some())
+    installer == INSTALLER || installer == "internal"
 }
 
 /// Installed version on the fork axis. Tagged builds report their release;
@@ -84,7 +93,8 @@ pub fn normalize_pin(pin: &str) -> String {
 /// Latest stable fork release as bare semver, semver-max over non-draft,
 /// non-prerelease `byok-v*` tags.
 /// Paginates (100 per page, up to 5 pages) so the max is not truncated once the
-/// repo holds more releases than fit on one page.
+/// repo holds more releases than fit on one page. The stop signal is the raw page
+/// size GitHub served, never the filtered count -- see `fetch_all_tags`.
 pub async fn fetch_latest() -> Result<String> {
     // Source builds carry no release tag; without a network-free answer the
     // updater would compare the Cargo version against the fork axis.
@@ -123,8 +133,12 @@ async fn fetch_all_tags(repo: &str) -> Result<Vec<String>> {
     for page in 1..=5 {
         let url =
             format!("https://api.github.com/repos/{repo}/releases?per_page=100&page={page}");
-        let page_tags = fetch_tags_once(&url).await?;
-        let done = page_tags.len() < 100;
+        // `raw_len` is what GitHub served, `page_tags` what survived the stability
+        // filter. Only the former can end the scan: a page of drafts/prereleases
+        // shrinks `page_tags` below the page size and would stop the walk early,
+        // hiding the newest stable release that lives on the next page.
+        let (page_tags, raw_len) = fetch_tags_once(&url).await?;
+        let done = raw_len < 100;
         tags.extend(page_tags);
         if done {
             break;
@@ -133,7 +147,9 @@ async fn fetch_all_tags(repo: &str) -> Result<Vec<String>> {
     Ok(tags)
 }
 
-async fn fetch_tags_once(url: &str) -> Result<Vec<String>> {
+/// Stable (non-draft, non-prerelease) tag names on this page, plus the number of
+/// releases the page actually carried. See `fetch_all_tags` for why both are needed.
+async fn fetch_tags_once(url: &str) -> Result<(Vec<String>, usize)> {
     let mut builder = xai_grok_extra_ca::build_reqwest_client(|b| {
         b.timeout(std::time::Duration::from_secs(15))
     })?
@@ -151,11 +167,13 @@ async fn fetch_tags_once(url: &str) -> Result<Vec<String>> {
         anyhow::bail!("GitHub releases fetch failed: HTTP {}", resp.status());
     }
     let releases: Vec<GhRelease> = resp.json().await?;
-    Ok(releases
+    let raw_len = releases.len();
+    let stable = releases
         .into_iter()
         .filter(|r| !r.draft && !r.prerelease)
         .map(|r| r.tag_name)
-        .collect())
+        .collect();
+    Ok((stable, raw_len))
 }
 
 /// Latest stable fork release as bare semver: semver-max over non-prerelease
@@ -351,6 +369,22 @@ async fn fetch_text(url: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn fork_identity_does_not_depend_on_the_release_tag() {
+        // An untagged build (local `cargo build`) must never fall through to the
+        // official channel, or the updater replaces the fork with an upstream binary.
+        for fork in [INSTALLER, "internal"] {
+            assert!(
+                is_byok_install(fork),
+                "{fork:?} must stay on the fork channel (tag present: {})",
+                release_tag().is_some(),
+            );
+        }
+        for other in ["npm", "gh-release", ""] {
+            assert!(!is_byok_install(other), "{other:?} is not a fork install");
+        }
+    }
 
     #[test]
     fn normalize_tag_round_trips() {
