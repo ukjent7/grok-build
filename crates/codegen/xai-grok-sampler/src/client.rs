@@ -1256,17 +1256,10 @@ impl SamplingClient {
             request.inner.max_output_tokens = self.defaults.max_completion_tokens;
         }
 
-        // FORK(byok): xAI-proprietary defaults a strict third-party Responses implementation rejects.
-        // BYOK endpoints get a clean standard payload instead (see `strip_byok_response_extensions`).
-        if self.defaults.byok_compat {
-            return Ok(());
-        }
-
-        // The API defaults `store` to true, which breaks ZDR compliance
-        if request.inner.store.is_none() {
-            request.inner.store = Some(false);
-        }
-
+        // A configured summary (including `none`) has to land before the BYOK
+        // bail-out below: the builder already emits `concise` on its own, so
+        // skipping this would both send the field to third-party gateways that
+        // reject it and ignore a user's `reasoning_summary = "none"` override.
         if let Some(summary) = self.defaults.reasoning_summary {
             let summary = summary.to_responses_api();
             match request.inner.reasoning.as_mut() {
@@ -1279,6 +1272,17 @@ impl SamplingClient {
                 }
                 None => {}
             }
+        }
+
+        // FORK(byok): xAI-proprietary defaults a strict third-party Responses implementation rejects.
+        // BYOK endpoints get a clean standard payload instead (see `strip_byok_response_extensions`).
+        if self.defaults.byok_compat {
+            return Ok(());
+        }
+
+        // The API defaults `store` to true, which breaks ZDR compliance
+        if request.inner.store.is_none() {
+            request.inner.store = Some(false);
         }
 
         // Include encrypted reasoning content if not specified
