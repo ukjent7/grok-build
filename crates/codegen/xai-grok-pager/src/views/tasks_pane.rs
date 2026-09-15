@@ -490,9 +490,9 @@ impl TaskEntry {
         };
         let is_provisional = info.task_id.starts_with("provisional-");
         let suffix = if linked_running {
-            crate::locale::ctx().tr(" (running)").to_owned()
+            crate::locale::ctx().tr(" (running)").into_owned()
         } else if is_provisional {
-            crate::locale::ctx().tr(" (starting)").to_owned()
+            crate::locale::ctx().tr(" (starting)").into_owned()
         } else {
             super::scheduled_next::next_suffix(info, now)
         };
