@@ -72,23 +72,11 @@ mod expand_home_tests {
     }
 }
 /// True when `candidate` is `trusted_base` or a path under it (same scheme, host, and port).
+/// FORK(byok): delegate to `endpoint_trust`, which derives `byok_compat` from this same
+/// matcher. This crate kept a byte-identical copy, so an upstream fix on one side would
+/// silently make the BYOK trust decision and the compression decision disagree.
 pub fn matches_trusted_base_url(candidate: &str, trusted_base: &str) -> bool {
-    let Ok(candidate) = reqwest::Url::parse(candidate) else {
-        return false;
-    };
-    let Ok(trusted) = reqwest::Url::parse(trusted_base) else {
-        return false;
-    };
-    let trusted_path = trusted.path();
-    let candidate_path = candidate.path();
-    let path_matches = candidate_path == trusted_path
-        || candidate_path
-            .strip_prefix(trusted_path)
-            .is_some_and(|suffix| suffix.starts_with('/'));
-    candidate.scheme() == trusted.scheme()
-        && candidate.host_str() == trusted.host_str()
-        && candidate.port_or_known_default() == trusted.port_or_known_default()
-        && path_matches
+    xai_grok_sampling_types::endpoint_trust::matches_trusted_base_url(candidate, trusted_base)
 }
 /// Production cli-chat-proxy base only (compiled-in constant). Unlike [`is_cli_chat_proxy_url`], this rejects loopback and staging/dev hosts. Used for security-sensitive remote kill-switches.
 /// Those must not become env toggles via `GROK_CLI_CHAT_PROXY_BASE_URL` (or similar) pointing at an attacker-controlled origin.

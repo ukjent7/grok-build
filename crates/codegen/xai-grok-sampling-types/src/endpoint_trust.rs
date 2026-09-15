@@ -5,7 +5,10 @@
 //! flag threaded through every `SamplerConfig` construction site. The shell
 //! crates keep thin delegates; this module is the single source of truth.
 
-fn matches_trusted_base_url(candidate: &str, trusted_base: &str) -> bool {
+/// True when `candidate` is `trusted_base` or a path under it (same scheme, host, and port).
+/// Single implementation on purpose: `xai-grok-shell-base` delegates here too, so the
+/// BYOK trust decision and the shell's URL checks cannot drift apart.
+pub fn matches_trusted_base_url(candidate: &str, trusted_base: &str) -> bool {
     let Ok(candidate) = reqwest::Url::parse(candidate) else {
         return false;
     };
