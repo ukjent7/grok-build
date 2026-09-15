@@ -13,9 +13,12 @@ on:
     # push trigger to tag pushes only and branch pushes stop triggering at
     # all. Tag pushes are skipped instead via the job-level `if` below: the
     # run still appears (as skipped, seconds) instead of vanishing silently.
-    # Pure metadata/data/installer files: nothing cargo compiles or tests
-    # reads them (verified: no include_str!/build-script references).
-    # A push touching ONLY these skips CI; mixed pushes still run it.
+    # Pure metadata/data files: nothing cargo compiles or tests reads them
+    # (verified: no include_str!/build-script references). A push touching ONLY
+    # these skips CI; mixed pushes still run it. install.ps1 is NOT in this list
+    # even though cargo never reads it: the "Parse install.ps1" step below exists
+    # solely to validate it, and ignoring it let installer-only pushes bypass their
+    # own gate.
     # NOTE: crates/**.md is deliberately NOT here — prompt templates and
     # user-guide pages are compiled into binaries/tests via include_str!.
     paths-ignore:
@@ -26,7 +29,6 @@ on:
       - 'THIRD-PARTY-NOTICES'
       - 'SOURCE_REV'
       - 'checksums/**'
-      - 'install.ps1'
       - 'scripts/byok.sh'
       - '.github/workflows/byok-build.yml'
   pull_request:
@@ -38,7 +40,6 @@ on:
       - 'THIRD-PARTY-NOTICES'
       - 'SOURCE_REV'
       - 'checksums/**'
-      - 'install.ps1'
       - 'scripts/byok.sh'
       - '.github/workflows/byok-build.yml'
   workflow_dispatch:
@@ -145,7 +146,8 @@ jobs:
       # conflict silently unwraps a string (it falls back to English, so nothing
       # crashes and nobody notices). This compares the tree against wraps.jsonl and
       # fails on a missing wrap, an upstream-edited English anchor, an unbaselined
-      # new wrap, a wrap with no zh-CN entry, or a bare `{}` in an English anchor.
+      # new wrap, an anchor that lost some of its recorded wrap sites, a wrap with no
+      # zh-CN entry, or a bare `{}` in an English anchor.
       # Rerun `python3 scripts/i18n/wrap-check.py baseline` after intentional edits.
       - name: Check i18n wraps
         run: python3 scripts/i18n/wrap-check.py check
