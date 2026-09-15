@@ -399,17 +399,17 @@ fn render_mcps(
                                 if !srv.enabled {
                                     // Policy-blocked rows also carry `enabled = false`; the verdict outranks
                                     // the personal-disable badge, as in the full modal
-                                      if let Some(badge) = b.get_mut(i) {
-                                          *badge = if srv.blocked_reason.is_some() {
-                                              "blocked by policy"
-                                          } else {
-                                              xai_grok_locale::ctx().tr_static("disabled")
-                                          }
-                                          .to_string();
-                                      }
-                                      if let Some(color) = bc.get_mut(i) {
-                                          *color = Some(theme.accent_error);
-                                      }
+                                    if let Some(badge) = b.get_mut(i) {
+                                        *badge = if srv.blocked_reason.is_some() {
+                                            "blocked by policy"
+                                        } else {
+                                            xai_grok_locale::ctx().tr_static("disabled")
+                                        }
+                                        .to_string();
+                                    }
+                                    if let Some(color) = bc.get_mut(i) {
+                                        *color = Some(theme.accent_error);
+                                    }
                                 } else {
                                     if let Some(badge) = b.get_mut(i) {
                                         *badge =
