@@ -8086,9 +8086,8 @@ fn reconnect_guard_holds_for_chinese_success_toasts() {
         locale: UiLocale::ZhCn,
         source: LocaleSource::Config,
     });
-    let banner = zh.format_named(
-        "acp.version_mismatch",
-        "⚠ Version mismatch",
+    let banner = zh.tr_format(
+        crate::acp::VERSION_MISMATCH_BANNER_EN,
         &[("client_version", "0.1.157"), ("leader_version", "0.1.150")],
     );
     assert!(

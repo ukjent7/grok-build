@@ -20,12 +20,19 @@ struct VersionMismatchParams<'a> {
 
 /// ASCII marker that survives `sanitize_toast_message` glyph fallback (legacy ConHost turns `⚠` into `!`).
 const VERSION_MISMATCH_MARKER: &str = "Version mismatch:";
+/// English banner template, and verbatim the `en-to-zh.json` key [`version_mismatch_banner`] looks up.
+///
+/// Spelled out rather than assembled by substituting [`VERSION_MISMATCH_MARKER`] at call time, so the
+/// gate and the tests anchor on the same string the runtime reads.
+pub(crate) const VERSION_MISMATCH_BANNER_EN: &str =
+    "⚠ Version mismatch: client {client_version}, leader {leader_version}. Restart grok to match";
 /// Chinese counterpart of the marker so a translated banner is still detectable by [`is_version_mismatch_banner`].
 ///
 /// This is the only hard-coded Chinese string in the tree: it has to be a compile-time
 /// constant because detection runs on already-rendered text where the catalog cannot be
-/// consulted again. It is therefore coupled to the `acp.version_mismatch` catalog entry,
-/// which is asserted by `chinese_catalog_keeps_the_detection_marker` — reword one, update both.
+/// consulted again. It is therefore coupled to the zh-CN row of
+/// [`VERSION_MISMATCH_BANNER_EN`], which `chinese_catalog_keeps_the_detection_marker`
+/// asserts through the same lookup the runtime uses — reword one, update both.
 const VERSION_MISMATCH_MARKER_ZH: &str = "版本不一致：";
 
 pub(crate) fn version_mismatch_banner(params: &str) -> Option<String> {
@@ -35,9 +42,8 @@ pub(crate) fn version_mismatch_banner(params: &str) -> Option<String> {
     if client.chars().all(char::is_whitespace) || leader.chars().all(char::is_whitespace) {
         return None;
     }
-    let banner = crate::locale::ctx().tr_format("⚠ {VERSION_MISMATCH_MARKER} client {client_version}, leader {leader_version}. Restart grok to match"
-            .replace("{VERSION_MISMATCH_MARKER}", VERSION_MISMATCH_MARKER)
-            .as_str(),
+    let banner = crate::locale::ctx().tr_format(
+        VERSION_MISMATCH_BANNER_EN,
         &[("client_version", &client), ("leader_version", &leader)],
     );
     Some(sanitize_toast_message(&banner).into_owned())

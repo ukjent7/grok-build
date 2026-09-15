@@ -1,4 +1,7 @@
-use super::{is_version_mismatch_banner, version_mismatch_banner, VERSION_MISMATCH_MARKER_ZH};
+use super::{
+    is_version_mismatch_banner, version_mismatch_banner, VERSION_MISMATCH_BANNER_EN,
+    VERSION_MISMATCH_MARKER, VERSION_MISMATCH_MARKER_ZH,
+};
 use crate::glyphs::sanitize_toast_message;
 use crate::locale::{LocaleContext, LocaleSource, ResolvedLocale, UiLocale};
 
@@ -86,14 +89,17 @@ fn full_banner_matches_sanitize_toast_message() {
 /// The catalog translation and [`VERSION_MISMATCH_MARKER_ZH`] are two halves of one
 /// contract: `is_version_mismatch_banner` only recognizes the translated banner while
 /// the catalog still carries that exact marker. Rewording the catalog entry without
-/// updating the constant would silently disable detection, so pin them together here.
+/// updating the constant would silently disable detection, so pin them together here
+/// through the same lookup `version_mismatch_banner` performs — an id-keyed catalog read
+/// would guard a row the runtime never touches.
 #[test]
 fn chinese_catalog_keeps_the_detection_marker() {
     let ctx = zh_cn();
-    let banner = ctx.named_text(
-        "acp.version_mismatch",
-        "⚠ Version mismatch: client {client_version}, leader {leader_version}. Restart grok to match",
+    assert!(
+        VERSION_MISMATCH_BANNER_EN.contains(VERSION_MISMATCH_MARKER),
+        "the English template must keep the ASCII marker it is detected by"
     );
+    let banner = ctx.tr(VERSION_MISMATCH_BANNER_EN);
     assert!(
         banner.contains(VERSION_MISMATCH_MARKER_ZH),
         "zh-CN banner must keep {VERSION_MISMATCH_MARKER_ZH:?} or it stops being detectable: {banner:?}"

@@ -1655,7 +1655,6 @@
   "⚠ Code restore failed: {summary}": "⚠ 代码恢复失败：{summary}",
   "⚠ Version mismatch: client {client_version}, leader {leader_version}. Restart grok to match": "⚠ 版本不一致：客户端 {client_version}，主进程 {leader_version} — 请重启 grok 以匹配版本",
   "⚠ very broad": "⚠ 范围很宽",
-  "⚠ {VERSION_MISMATCH_MARKER} client {client_version}, leader {leader_version}. Restart grok to match": "⚠ 版本不一致：客户端 {client_version}，主进程 {leader_version} — 请重启 grok 以匹配版本",
   "✓ Code restored: {summary}": "✓ 代码已恢复：{summary}",
   "✓ matches this command": "✓ 与此命令匹配",
   "✓ {label}: {value}": "✓ {label}：{value}",

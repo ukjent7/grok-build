@@ -19,20 +19,24 @@ What it does
   baseline  Scan the tree, rewrite scripts/i18n/wraps.jsonl from what is there.
   check     Compare the tree against the baseline; non-zero exit on drift.
 
-Five failure classes, all fatal on `check`:
+Six failure classes, all fatal on `check`:
   1. missing      a wrap the baseline has and the tree no longer does (dropped
                   by a merge resolution).
   2. added        a wrap the tree has and the baseline does not. Intentional
                   additions must be baselined so the next upstream sync can
                   still tell a dropped wrap from an untouched one.
-  3. untranslated a wrap whose id has no zh-CN entry. It renders English, so the
+  3. thinned      an anchor the baseline recorded at N wrap sites that the tree
+                  now wraps at fewer. One key can cover several sites (same
+                  English string, several call sites in one file), so membership
+                  alone cannot see all but one of them being unwrapped.
+  4. untranslated a wrap whose id has no zh-CN entry. It renders English, so the
                   interface goes half-Chinese with nothing else to notice it.
                   English-keyed `tr` wraps check against `en-to-zh.json` instead.
-  4. bare_braces  a bare `{}` in the English anchor. `named_*`/`format_named`/
+  5. bare_braces  a bare `{}` in the English anchor. `named_*`/`format_named`/
                   `tr_format` substitute named `{placeholder}` only, so `{}` would
                   reach the screen verbatim. Rejected by design (see
                   `english_fallback_survives_an_unknown_id_verbatim`).
-  5. placeholder_mismatch  an `en-to-zh.json` value uses a `{name}` the English
+  6. placeholder_mismatch  an `en-to-zh.json` value uses a `{name}` the English
                   key lacks. `tr_format` substitutes by name, so the extra
                   placeholder would reach the screen verbatim. Convention is
                   single-name: rename, never dual-pass (see `tr_format` docs).
@@ -423,8 +427,8 @@ def looks_like_copy(text):
         return False  # `{:>ord_width$} `: pure format machinery, never copy
     if re.fullmatch(r"[a-z0-9_.:/\\{}\- ]+", text):
         return False
-    if re.search(r"\{(?:\w+:?[?#]?|:?[?#])\}", text):
-        return False  # `{x:?}` and friends: debug formatting, never copy
+    if re.search(r"\{[^{}]*:[^{}]*\}", text):
+        return False  # `{x:?}`, `{x:>8}`: format specs, never copy. `{name}` and `{}` still are.
     if re.match(r"(?i)^(expected|assert|got|want|actual)\b", text):
         return False
     return sum(c.isalpha() for c in text) / max(len(text), 1) > 0.5
@@ -862,6 +866,19 @@ def cmd_check():
     missing = [w for k, w in old.items() if k not in new]
     added = [w for k, w in new.items() if k not in old]
 
+    # A key can carry several wrap sites: the same English anchor wrapped in more
+    # than one place in one file (`locs` lists them). Key membership alone would
+    # let every site but one be unwrapped and still print OK, so compare counts.
+    # Key element 1 is None for English-keyed tr wraps, so order by file alone.
+    thinned = sorted(
+        (
+            (k, len(old[k]["locs"]), len(new[k]["locs"]))
+            for k in old
+            if k in new and len(new[k]["locs"]) < len(old[k]["locs"])
+        ),
+        key=lambda row: row[0][0],
+    )
+
     # Same (file, id, kind) on both sides = upstream reworded the anchor, which is the
     # one case a reviewer has to re-read the translation for.
     missing_sites = {(w["file"], w["id"], w["kind"]) for w in missing}
@@ -900,6 +917,7 @@ def cmd_check():
     print(f"baseline {len(old)} wraps | now {len(new)}")
     print(
         f"missing {len(missing)} | added {len(added)} | rewritten {len(rewritten)}"
+        f" | thinned {len(thinned)}"
         f" | untranslated {len(orphans)} | bare-brace {len(bare_braces)}"
         f" | placeholder-mismatch {len(placeholder_mismatch)}"
     )
@@ -934,6 +952,13 @@ def cmd_check():
         if len(fresh) > MAX_SHOWN:
             print(f"  ... {len(fresh) - MAX_SHOWN} more")
 
+    if thinned:
+        print("\n=== anchors that lost wrap sites (key still present, copy now renders English) ===")
+        for k, was, now in thinned[:MAX_SHOWN]:
+            print(f'  {k[0]}: {k[2]} {k[1] if k[1] is not None else k[3]}  {was} -> {now} sites')
+        if len(thinned) > MAX_SHOWN:
+            print(f"  ... {len(thinned) - MAX_SHOWN} more")
+
     if orphans:
         print("\n=== wraps with no zh-CN translation (these render English) ===")
         for w in orphans[:MAX_SHOWN]:
@@ -951,7 +976,7 @@ def cmd_check():
         for key in placeholder_mismatch[:MAX_SHOWN]:
             print(f'  "{key[:70]}" -> "{en_to_zh[key][:70]}"')
 
-    failed = bool(missing or added or orphans or bare_braces or placeholder_mismatch)
+    failed = bool(missing or added or thinned or orphans or bare_braces or placeholder_mismatch)
     if not failed:
         print("\nOK: wraps intact")
     return 1 if failed else 0
