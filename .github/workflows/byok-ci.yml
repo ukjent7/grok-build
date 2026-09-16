@@ -31,6 +31,7 @@ on:
       - 'checksums/**'
       - 'scripts/byok.sh'
       - '.github/workflows/byok-build.yml'
+      - '.github/workflows/byok-purge-jsdelivr.yml'
   pull_request:
     paths-ignore:
       - 'README.md'
@@ -42,6 +43,7 @@ on:
       - 'checksums/**'
       - 'scripts/byok.sh'
       - '.github/workflows/byok-build.yml'
+      - '.github/workflows/byok-purge-jsdelivr.yml'
   workflow_dispatch:
     inputs:
       # A dispatch carries no "before" commit, so this is the only way to run
@@ -56,6 +58,7 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
   # Newer than rust-toolchain.toml on purpose (see that file's bump policy);
   # overrides it without touching the repo file.
   RUSTUP_TOOLCHAIN: 1.98.1
@@ -76,6 +79,21 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      # Fast non-Rust validation gates: fail in seconds if installer syntax or
+      # localization wraps drifted, before downloading toolchains or running cargo check.
+      - name: Parse install.ps1
+        shell: pwsh
+        run: |
+          $errs = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile('install.ps1', [ref]$null, [ref]$errs)
+          if ($errs.Count -ne 0) { $errs | ForEach-Object { Write-Error $_.Message }; exit 1 }
+
+      - name: Check i18n wraps
+        run: python3 scripts/i18n/wrap-check.py check
+
+      - name: Check i18n catalog reachability
+        run: python3 scripts/i18n/catalog-check.py
 
       # xai-grok-tools-api runs proto codegen in its build script;
       # prefer a PATH protoc over the DotSlash-bundled one.
@@ -131,38 +149,6 @@ jobs:
       - name: Check (incl. test targets)
         run: cargo check --locked -p xai-grok-sampler -p xai-grok-shell -p xai-grok-sampling-types -p xai-grok-update -p xai-grok-pager -p xai-grok-pager-minimal -p xai-grok-pager-render -p xai-grok-pager-bin -p xai-grok-locale -p xai-grok-shared -p xai-grok-shell-base -p xai-proto-build --all-targets --keep-going
 
-      # FORK(byok): install.ps1 is the most-edited fork file and nothing in
-      # cargo validates it; fail on syntax errors (ubuntu runners ship pwsh).
-      - name: Parse install.ps1
-        shell: pwsh
-        run: |
-          $errs = $null
-          [void][System.Management.Automation.Language.Parser]::ParseFile('install.ps1', [ref]$null, [ref]$errs)
-          if ($errs.Count -ne 0) { $errs | ForEach-Object { Write-Error $_.Message }; exit 1 }
-
-      # FORK(i18n): the zh-CN localization wraps string literals in place across a
-      # large slice of upstream files (see the size of scripts/i18n/wraps.jsonl).
-      # Upstream syncs rewrite some of them, and taking the upstream side of a
-      # conflict silently unwraps a string (it falls back to English, so nothing
-      # crashes and nobody notices). This compares the tree against wraps.jsonl and
-      # fails on a missing wrap, an upstream-edited English anchor, an unbaselined
-      # new wrap, an anchor that lost some of its recorded wrap sites, a wrap with no
-      # zh-CN entry, or a bare `{}` in an English anchor.
-      # Rerun `python3 scripts/i18n/wrap-check.py baseline` after intentional edits.
-      - name: Check i18n wraps
-        run: python3 scripts/i18n/wrap-check.py check
-
-      # FORK(i18n): the other half of the check above. `wrap-check` proves the
-      # wraps survived and that every wrap has a translation; it cannot see an
-      # id-keyed catalog entry that nothing looks up, because a lookup that
-      # never happens never falls back. The `tr()` migration left 2882 such
-      # entries across the two id-keyed catalogs (85% of them) with no call site
-      # and no test that could notice.
-      # Fails on any catalog id no code path can reach: either wire it up or
-      # drop it. `python3 scripts/i18n/catalog-check.py --list` prints them.
-      - name: Check i18n catalog reachability
-        run: python3 scripts/i18n/catalog-check.py
-
       # FORK(i18n): the mirror image of the step above. That one proves the
       # wraps we already had survived; this one looks at the copy this push
       # *added* and reports any that landed unlocalized -- the same silent
@@ -199,15 +185,9 @@ jobs:
       - name: Test update channel
         run: cargo test --locked -p xai-grok-update --no-fail-fast
 
-      # FORK(byok): /usage hit-rate panel lives here.
-      - name: Test usage status blocks
-        run: cargo test --locked -p xai-grok-pager --no-fail-fast -- app::status_blocks
-
-      # FORK(i18n): the version-mismatch banner and the reconnect guard that reads
-      # the already-rendered toast text. The guard takes its `&LocaleContext` as a
-      # parameter precisely so the zh-CN path is executable here.
-      - name: Test localized mismatch guard
-        run: cargo test --locked -p xai-grok-pager --no-fail-fast -- version_mismatch reconnect_guard
+      # FORK(byok/i18n): /usage hit-rate panel, version-mismatch banner, and reconnect guard.
+      - name: Test pager fork features (usage + mismatch guard)
+        run: cargo test --locked -p xai-grok-pager --no-fail-fast -- app::status_blocks version_mismatch reconnect_guard
 
       # FORK(i18n): minimal render mode is a separate crate the check step
       # compiles; its suite is small so run it whole.

@@ -42,6 +42,8 @@ env:
   # (observed: connection reset while compiling xai-grok-shell lib).
   # Fall back to local compilation instead of failing the whole build.
   SCCACHE_IGNORE_SERVER_IO_ERROR: "1"
+  # Prevent sccache daemon from timing out during long compilation/linking stages
+  SCCACHE_IDLE_TIMEOUT: "0"
   CARGO_INCREMENTAL: 0
   # FORK(byok): tag name baked into the binary as the update identity
   # (xai-grok-update/src/byok.rs). Branch runs (dispatch) carry no tag and
