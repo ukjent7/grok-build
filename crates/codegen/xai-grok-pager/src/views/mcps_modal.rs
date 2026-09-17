@@ -142,6 +142,9 @@ fn parse_plugin_name(source_label: &str) -> Option<String> {
 #[serde(rename_all = "camelCase")]
 pub struct McpsListResponse {
     pub servers: Vec<McpsServerEntry>,
+    /// Session-scoped. True when session MCP init reports `is_initialized`.
+    #[serde(default)]
+    pub session_mcp_resolved: Option<bool>,
 }
 
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -477,6 +480,7 @@ mod tests {
                     blocked_reason: None,
                 }),
             }],
+            session_mcp_resolved: None,
         })
         .into_iter()
         .next()
@@ -493,6 +497,7 @@ mod tests {
                     .unwrap();
             convert_list_response(McpsListResponse {
                 servers: vec![entry],
+                session_mcp_resolved: None,
             })
             .remove(0)
         };
@@ -688,6 +693,7 @@ mod tests {
                 gateway_entry("managed_gateway:zeta", "Alpha"),
                 gateway_entry("managed_gateway:alpha", "Zeta"),
             ],
+            session_mcp_resolved: None,
         });
         let [first, second, ..] = servers.as_slice() else {
             panic!("expected two servers: {servers:?}");
@@ -729,6 +735,7 @@ mod tests {
                     blocked_reason: None,
                 }),
             }],
+            session_mcp_resolved: None,
         });
         let [server] = servers.as_slice() else {
             panic!("expected one server: {servers:?}");
