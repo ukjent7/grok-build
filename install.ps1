@@ -469,14 +469,22 @@ $cfgLines = Add-TomlValueIfMissing $cfgLines 'telemetry' 'trace_upload = false'
 # Side-call features (turn summary, auto title refresh, session recap) each spend an
 # extra model call per turn — on a metered third-party endpoint that is pure overhead,
 # so they default off here. `prompt_suggestions` is a `[ui]` key, not `[features]`
-# (the shell reads `ui.prompt_suggestions`); memory defaults to the V2 filesystem mode.
+# (the shell reads `ui.prompt_suggestions`).
+# Memory is the one side-call feature this script turns ON, and it needs both keys:
+# `[memory] enabled` is the legacy gate, and `default(false)` in the `BoolFlag`
+# waterfall means nothing else turns it on here (BYOK has no remote-settings tier);
+# `[memory_v2] enabled` is what actually selects the v2 pipeline. `[memory] mode = "v2"`
+# used to do that, but upstream dropped the field in the 48271133 sync and
+# `MemorySettings` has no `mode`, so it is silently ignored (pinned by
+# `memory_v2_cannot_be_selected_from_legacy_memory_section`). A config.toml from an
+# older install may still carry that inert line; leave it.
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'ui' 'prompt_suggestions = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'ui' 'locale = "zh-CN"'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'turn_summary = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'title_refresh = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'session_recap = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'memory' 'enabled = true'
-$cfgLines = Add-TomlValueIfMissing $cfgLines 'memory' 'mode = "v2"'
+$cfgLines = Add-TomlValueIfMissing $cfgLines 'memory_v2' 'enabled = true'
 [System.IO.File]::WriteAllLines($ConfigFile, [string[]]$cfgLines, [System.Text.Encoding]::UTF8)
 
 # --- Fetch deployment config (deployment key only) ---
