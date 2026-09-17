@@ -181,6 +181,41 @@ pub(crate) fn backfill_usage_details(value: &mut serde_json::Value) {
     }
 }
 
+/// Rewrite integral floats (`1789666913.0`) as JSON integers, in place.
+///
+/// A gateway that builds a Unix timestamp in floating point (Python's
+/// `time.time()`, a JS `Date.now() / 1000`) serializes it as `1789666913.0`.
+/// serde_json routes that literal through its `f64` visitor, so every `u64` field
+/// rejects the whole payload as a floating point where an integer was expected --
+/// including fields the client never reads, such as Responses `created_at`. That
+/// turns a healthy stream into a terminal, non-retryable `Serialization` error.
+///
+/// Every integral float within +/-2^53 is exactly representable as an integer, and
+/// serde's float visitors accept integer input, so the rewrite is lossless for
+/// every type such a payload can declare. Fractional, non-finite and out-of-range
+/// numbers stay untouched.
+pub(crate) fn coerce_integral_floats_to_ints(value: &mut serde_json::Value) {
+    // 2^53: the largest magnitude where `f64` still holds every integer exactly.
+    const EXACT_F64_INT_MAX: f64 = 9_007_199_254_740_992.0;
+
+    match value {
+        serde_json::Value::Number(number) => {
+            if let Some(float) = number.as_f64() {
+                if float.fract() == 0.0 && float.abs() <= EXACT_F64_INT_MAX {
+                    *number = serde_json::Number::from(float as i64);
+                }
+            }
+        }
+        serde_json::Value::Array(items) => {
+            items.iter_mut().for_each(coerce_integral_floats_to_ints);
+        }
+        serde_json::Value::Object(members) => {
+            members.values_mut().for_each(coerce_integral_floats_to_ints);
+        }
+        _ => {}
+    }
+}
+
 /// Deserialize a unary Responses body, tolerating standard third-party shapes
 /// the fork's types are stricter than (see `backfill_usage_details`).
 pub(crate) fn deserialize_response_body(bytes: &[u8]) -> Result<rs::Response> {
@@ -196,6 +231,7 @@ pub(crate) fn deserialize_response_body(bytes: &[u8]) -> Result<rs::Response> {
             let mut value: serde_json::Value = serde_json::from_slice(bytes)
                 .map_err(|_| SamplingError::Serialization(first_err))?;
             backfill_usage_details(&mut value);
+            coerce_integral_floats_to_ints(&mut value);
             serde_json::from_value::<rs::Response>(value).map_err(|retry_err| {
                 tracing::error!(
                     error = %retry_err,
@@ -317,6 +353,7 @@ pub(crate) fn deserialize_chat_chunk(data: &str) -> Result<ChatCompletionChunk> 
         Err(first_err) => {
             if let Ok(mut value) = serde_json::from_str::<serde_json::Value>(data) {
                 null_out_empty_finish_reasons(&mut value);
+                coerce_integral_floats_to_ints(&mut value);
                 if let Ok(chunk) = serde_json::from_value::<ChatCompletionChunk>(value) {
                     return Ok(chunk);
                 }
@@ -345,6 +382,7 @@ pub(crate) fn deserialize_chat_response(bytes: &[u8]) -> Result<ChatCompletionRe
             let mut value: serde_json::Value = serde_json::from_slice(bytes)
                 .map_err(|_| SamplingError::Serialization(first_err))?;
             null_out_empty_finish_reasons(&mut value);
+            coerce_integral_floats_to_ints(&mut value);
             serde_json::from_value::<ChatCompletionResponse>(value).map_err(|retry_err| {
                 tracing::error!(
                     error = %retry_err,
@@ -576,5 +614,75 @@ mod tests {
             screen_message_payload("ping", r#"{"error":"x"}"#),
             ScreenedMessagePayload::Skip
         ));
+    }
+
+    #[test]
+    fn integral_floats_become_integers_and_other_numbers_are_untouched() {
+        let mut value = serde_json::json!({
+            "created_at": 1789666913.0,
+            "items": [{ "duration": 2.0 }, { "duration": 0.5 }],
+            "huge": u64::MAX,
+            "text": "1789666913.0",
+        });
+        coerce_integral_floats_to_ints(&mut value);
+
+        assert_eq!(value["created_at"].as_u64(), Some(1_789_666_913));
+        assert_eq!(value["items"][0]["duration"].as_u64(), Some(2));
+        // Fractional, out-of-f64-exact-range and non-number values keep their shape.
+        assert!(value["items"][1]["duration"].is_f64());
+        assert_eq!(value["huge"].as_u64(), Some(u64::MAX));
+        assert!(value["text"].is_string());
+        // serde's float visitors accept integer input, so a rewritten `f64` field still loads.
+        let duration: f64 = serde_json::from_value(value["items"][0]["duration"].clone()).unwrap();
+        assert_eq!(duration, 2.0);
+    }
+
+    #[test]
+    fn float_timestamps_no_longer_kill_responses_events() {
+        // Replayed from a real gateway frame (`codex.wzyfromhust.de`, `deepseek-v4.1-flash`):
+        // it serialized `created_at` out of a float, so the strict parse failed on a field
+        // the client never reads and every turn ended as a non-retryable Serialization error.
+        let created = r#"{
+            "type": "response.created",
+            "sequence_number": 0,
+            "response": {
+                "id": "resp_944c9f15ab5f4ec291feb4a67dee8ed6",
+                "object": "response",
+                "created_at": 1789666913.0,
+                "model": "deepseek-v4.1-flash",
+                "status": "in_progress",
+                "output": []
+            }
+        }"#;
+        let event = crate::client::deserialize_response_event(created).expect("created parses");
+        let rs::ResponseStreamEvent::ResponseCreated(e) = event else {
+            panic!("expected ResponseCreated");
+        };
+        assert_eq!(e.response.created_at, 1_789_666_913);
+
+        let completed = r#"{
+            "type": "response.completed",
+            "sequence_number": 1,
+            "response": {
+                "id": "resp_944c9f15ab5f4ec291feb4a67dee8ed6",
+                "object": "response",
+                "created_at": 1789666913.0,
+                "completed_at": 1789666914.0,
+                "model": "deepseek-v4.1-flash",
+                "status": "completed",
+                "output": [],
+                "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 5,
+                    "total_tokens": 15
+                }
+            }
+        }"#;
+        let event = crate::client::deserialize_response_event(completed).expect("completed parses");
+        let rs::ResponseStreamEvent::ResponseCompleted(e) = event else {
+            panic!("expected ResponseCompleted");
+        };
+        assert_eq!(e.response.created_at, 1_789_666_913);
+        assert_eq!(e.response.completed_at, Some(1_789_666_914));
     }
 }

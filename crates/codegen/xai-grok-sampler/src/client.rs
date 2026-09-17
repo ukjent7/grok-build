@@ -37,10 +37,10 @@ use xai_grok_sampling_types::{
 
 use crate::config::{AuthScheme, OriginClientInfo, RequestCompression, SamplerConfig};
 use crate::client_third_party::{
-    backfill_usage_details, deserialize_chat_chunk, deserialize_chat_response,
-    deserialize_response_body, is_ignorable_response_event, normalize_byok_chat_message_content,
-    retain_byok_hosted_tool_entries, screen_message_payload, strip_byok_response_extensions,
-    ScreenedMessagePayload,
+    backfill_usage_details, coerce_integral_floats_to_ints, deserialize_chat_chunk,
+    deserialize_chat_response, deserialize_response_body, is_ignorable_response_event,
+    normalize_byok_chat_message_content, retain_byok_hosted_tool_entries, screen_message_payload,
+    strip_byok_response_extensions, ScreenedMessagePayload,
 };
 use crate::events::SamplingErrorInfo;
 use crate::request_compression::{compress_body, should_compress};
@@ -111,6 +111,7 @@ pub(crate) fn deserialize_response_event(data: &str) -> Result<rs::ResponseStrea
                     tools.retain(|t| serde_json::from_value::<rs::Tool>(t.clone()).is_ok());
                 }
                 backfill_usage_details(&mut value);
+                coerce_integral_floats_to_ints(&mut value);
                 if let Ok(mut event) = serde_json::from_value::<rs::ResponseStreamEvent>(value) {
                     apply_terminal_event_overrides(&mut event, data);
                     return Ok(event);
