@@ -433,7 +433,7 @@ pub(crate) fn render_dashboard(
             &theme,
             crate::views::session_picker_surface::SessionPickerRenderMode::Modal {
                 window: &mut surface.window,
-                title: crate::views::session_picker_surface::DASHBOARD_PICKER_TITLE,
+                title: crate::views::session_picker_surface::dashboard_picker_title(),
             },
             &mut crate::views::session_picker_surface::SessionPickerRenderCtx {
                 state: &mut surface.state,

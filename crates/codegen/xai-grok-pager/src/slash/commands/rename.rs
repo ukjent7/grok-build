@@ -36,7 +36,9 @@ impl SlashCommand for RenameCommand {
             display: title.to_owned(),
             match_text: title.to_owned(),
             insert_text: title.to_owned(),
-            description: "current title".to_string(),
+            description: crate::locale::ctx()
+                .tr_static("current title")
+                .to_string(),
         }])
     }
 

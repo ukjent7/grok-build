@@ -73,13 +73,13 @@ impl SlashCommand for UsageCommand {
                 display: "show".into(),
                 match_text: "show".into(),
                 insert_text: "show".into(),
-                description: "View usage".into(),
+                description: crate::locale::ctx().tr_static("View usage").into(),
             },
             ArgItem {
                 display: "manage".into(),
                 match_text: "manage".into(),
                 insert_text: "manage".into(),
-                description: "Manage billing".into(),
+                description: crate::locale::ctx().tr_static("Manage billing").into(),
             },
         ])
     }

@@ -1,7 +1,7 @@
 //! Prompt-queue dispatch: the server-authoritative immediate-send routing helpers and the optimistic queue echoes.
 //! It also holds the local drip-feed drain ([`maybe_drain_queue`]), the turn-start shim, and the queue-interject action arm.
 
-use super::ctx::{NO_SESSION_NOTICE, active_agent_session_id, with_active_agent};
+use super::ctx::{no_session_notice, active_agent_session_id, with_active_agent};
 use crate::acp::meta::user_prompt_meta;
 use crate::app::actions::Effect;
 use crate::app::agent::{AgentCommand, AgentId};
@@ -1259,7 +1259,7 @@ pub(super) fn dispatch_run_edited_queued_command(
         // Row kept and nothing runs: a command that ignores the missing session (`/compact` enqueues regardless) would leave a second row
         EditedCommandGate::NeedsSession => {
             if let Some(agent) = app.agents.get_mut(&agent_id) {
-                agent.show_toast(NO_SESSION_NOTICE);
+                agent.show_toast(no_session_notice());
             }
             preserve_queued_image_paths(app, &mut submission);
             false

@@ -56,71 +56,84 @@ const MAX_SEARCH_BYTES_TOTAL: u64 = 8 * 1_048_576;
 const NOTICE_MAX_WIDTH: u16 = 72;
 
 // Notices use bold leads rather than `#` headings: heading text takes the theme accent color.
-/// Only advertises the actions the shell reported as available in this session.
-fn empty_state_markdown(capture_enabled: bool, dream_enabled: bool) -> String {
-    let mut text = String::from("**Nothing remembered yet.**\n\n");
-    if capture_enabled {
-        text.push_str("- Keep working. Notes are saved automatically after each completed turn.\n");
-    }
-    text.push_str("- `/remember <note>` saves something specific right now.\n");
-    if dream_enabled {
-        text.push_str("- `/dream` organizes saved notes into topics.\n");
-    }
-    text.push_str(
-        "\nGrok Build remembers conventions, decisions, and project facts across sessions so you \
-         don't have to repeat yourself. Notes live in **workspace** memory for this repository and \
-         **global** memory shared across all your projects; each has a generated `MEMORY.md` index \
-         that fills in as notes are saved.\n",
-    );
-    text
-}
+//
+// Each notice body is a `const` wrapped with `tr_static(CONST)` rather than an inline literal:
+// the source spans lines with `\` continuations, and `scripts/i18n/wrap-check.py` joins those
+// only for a same-file const anchor. Keep them consts, or the wrap leaves the gate's sight.
+const NOTHING_REMEMBERED_YET: &str = "**Nothing remembered yet.**\n\n";
+const EMPTY_KEEP_WORKING: &str =
+    "- Keep working. Notes are saved automatically after each completed turn.\n";
+const EMPTY_REMEMBER_HINT: &str = "- `/remember <note>` saves something specific right now.\n";
+const EMPTY_DREAM_HINT: &str = "- `/dream` organizes saved notes into topics.\n";
+const EMPTY_STATE_TAIL: &str = "\n\
+Grok Build remembers conventions, decisions, and project facts across sessions so you \
+don't have to repeat yourself. Notes live in **workspace** memory for this repository and \
+**global** memory shared across all your projects; each has a generated `MEMORY.md` index \
+that fills in as notes are saved.\n";
 
-fn disabled_state_markdown(reason: Option<MemoryDisabledReason>) -> &'static str {
-    match reason {
-        None | Some(MemoryDisabledReason::SessionToggle) => {
-            "\
+const MEMORY_OFF_SESSION_TOGGLE: &str = "\
 **Memory is off for this session.** Press **t** to turn it back on.
 
 While off, Grok isn't reading or saving notes; anything already remembered is kept on disk. \
 Memory carries conventions, decisions, and project facts between sessions so you don't have \
-to repeat yourself."
-        }
-        Some(MemoryDisabledReason::ConfigOptOut) => {
-            "\
+to repeat yourself.";
+const MEMORY_OFF_CONFIG_OPTOUT: &str = "\
 **Memory is off** (`[memory] enabled = false` in `config.toml`). Press **t** to turn it on for \
 this session.
 
 The toggle lasts for this session only; new sessions follow `config.toml`. Set `enabled = true` \
-there (or remove the line) to keep memory on. Anything already remembered is kept on disk."
-        }
-        Some(MemoryDisabledReason::ProcessDisabled) => {
-            "\
+there (or remove the line) to keep memory on. Anything already remembered is kept on disk.";
+const MEMORY_OFF_PROCESS_DISABLED: &str = "\
 **Memory is off for this process.** Start a new session without `--no-memory` or \
 `GROK_MEMORY=0` to use it.
 
 Memory was turned off when Grok Build started, so it can't be turned on here. Anything already \
-remembered is kept on disk."
-        }
-        Some(MemoryDisabledReason::RolloutRestricted) => {
-            "\
+remembered is kept on disk.";
+const MEMORY_OFF_ROLLOUT_RESTRICTED: &str = "\
 **Memory is unavailable in this session.** Start a new session to pick up your current settings.
 
 This session's memory settings were pinned when it started, and they disable memory, so it \
-can't be turned on here. Press **s** for details."
-        }
-        Some(MemoryDisabledReason::NotConfigured) => {
-            "\
+can't be turned on here. Press **s** for details.";
+const MEMORY_OFF_NOT_CONFIGURED: &str = "\
 **Memory isn't configured.** Press **s** for details.
 
-No memory storage is set up for this session, so there is nothing to browse or turn on."
-        }
-        Some(MemoryDisabledReason::Unknown) => {
-            "\
+No memory storage is set up for this session, so there is nothing to browse or turn on.";
+const MEMORY_OFF_UNKNOWN: &str = "\
 **Memory is off for this session.** Press **s** for details.
 
 This session reports a reason this version of Grok Build doesn't recognize; press **t** to try \
-turning it back on."
+turning it back on.";
+
+/// Only advertises the actions the shell reported as available in this session.
+fn empty_state_markdown(capture_enabled: bool, dream_enabled: bool) -> String {
+    let ctx = crate::locale::ctx();
+    let mut text = String::from(ctx.tr_static(NOTHING_REMEMBERED_YET));
+    if capture_enabled {
+        text.push_str(ctx.tr_static(EMPTY_KEEP_WORKING));
+    }
+    text.push_str(ctx.tr_static(EMPTY_REMEMBER_HINT));
+    if dream_enabled {
+        text.push_str(ctx.tr_static(EMPTY_DREAM_HINT));
+    }
+    text.push_str(ctx.tr_static(EMPTY_STATE_TAIL));
+    text
+}
+
+fn disabled_state_markdown(reason: Option<MemoryDisabledReason>) -> &'static str {
+    let ctx = crate::locale::ctx();
+    match reason {
+        None | Some(MemoryDisabledReason::SessionToggle) => {
+            ctx.tr_static(MEMORY_OFF_SESSION_TOGGLE)
         }
+        Some(MemoryDisabledReason::ConfigOptOut) => ctx.tr_static(MEMORY_OFF_CONFIG_OPTOUT),
+        Some(MemoryDisabledReason::ProcessDisabled) => {
+            ctx.tr_static(MEMORY_OFF_PROCESS_DISABLED)
+        }
+        Some(MemoryDisabledReason::RolloutRestricted) => {
+            ctx.tr_static(MEMORY_OFF_ROLLOUT_RESTRICTED)
+        }
+        Some(MemoryDisabledReason::NotConfigured) => ctx.tr_static(MEMORY_OFF_NOT_CONFIGURED),
+        Some(MemoryDisabledReason::Unknown) => ctx.tr_static(MEMORY_OFF_UNKNOWN),
     }
 }
 
@@ -471,7 +484,10 @@ impl MemoryModalState {
                 self.clamp_selected();
                 self.load_preview();
                 MemoryStatusLine {
-                    text: format!("Deleted {}.", label.unwrap_or_default()),
+                    text: crate::locale::ctx().tr_format(
+                        "Deleted {label}.",
+                        &[("label", &label.unwrap_or_default())],
+                    ),
                     is_error: false,
                     ticks_remaining: None,
                 }
@@ -1228,7 +1244,7 @@ fn render_file_list(buf: &mut Buffer, area: Rect, state: &mut MemoryModalState, 
             if is_selected
                 && matches!(state.mode, MemoryModalMode::ConfirmingDelete { idx } if idx == filt_idx)
             {
-                let hint = " [x to confirm]";
+                let hint = crate::locale::ctx().tr_static(" [x to confirm]");
                 let hint_w = hint.len() as u16;
                 let hint_x = (area.x + content_width).saturating_sub(hint_w + 1);
                 buf.set_span(
@@ -1269,8 +1285,13 @@ fn render_no_matches(buf: &mut Buffer, area: Rect, y: u16, query: &str, theme: &
     let width = area.width as usize;
     let style = Style::default().fg(theme.gray_dim).bg(theme.bg_base);
     let lines = [
-        format!("No notes match \u{201C}{query}\u{201D}"),
-        "Backspace clears the filter".to_owned(),
+        crate::locale::ctx().tr_format(
+            "No notes match \u{201C}{query}\u{201D}",
+            &[("query", query)],
+        ),
+        crate::locale::ctx()
+            .tr_static("Backspace clears the filter")
+            .to_owned(),
     ];
     for (row, text) in lines.iter().enumerate() {
         let y = y + row as u16;
@@ -1402,7 +1423,10 @@ pub fn handle_memory_key(state: &mut MemoryModalState, key: &KeyEvent) -> InputO
             let path = entry.path.clone();
             state.pending_delete = Some(path.clone());
             state.status = Some(MemoryStatusLine {
-                text: format!("Deleting {}…", entry.label),
+                text: crate::locale::ctx().tr_format(
+                    "Deleting {label}…",
+                    &[("label", entry.label.as_str())],
+                ),
                 is_error: false,
                 ticks_remaining: None,
             });
@@ -1812,7 +1836,11 @@ fn handle_browse(state: &mut MemoryModalState, key: &KeyEvent) -> InputOutcome {
             };
             if state.preview_hash.is_none() {
                 state.status = Some(MemoryStatusLine {
-                    text: "Can't delete: this note couldn't be read for verification.".to_owned(),
+                    text: crate::locale::ctx()
+                        .tr_static(
+                            "Can't delete: this note couldn't be read for verification.",
+                        )
+                        .to_owned(),
                     is_error: true,
                     ticks_remaining: None,
                 });
@@ -1823,9 +1851,9 @@ fn handle_browse(state: &mut MemoryModalState, key: &KeyEvent) -> InputOutcome {
                 source => format!("{source} memory"),
             };
             state.status = Some(MemoryStatusLine {
-                text: format!(
-                    "Delete {} from {scope}? Dream may re-derive it from future sessions. x confirm · any other key cancels",
-                    entry.label
+                text: crate::locale::ctx().tr_format(
+                    "Delete {label} from {scope}? Dream may re-derive it from future sessions. x confirm · any other key cancels",
+                    &[("label", entry.label.as_str()), ("scope", scope.as_str())],
                 ),
                 is_error: false,
                 ticks_remaining: None,
@@ -2011,9 +2039,15 @@ fn observation_key_label(file_name: &str) -> Option<String> {
     let turns = if from == through {
         format!("turn {from}")
     } else {
-        format!("turns {from}\u{2013}{through}")
+        crate::locale::ctx().tr_format(
+            "turns {from}\u{2013}{through}",
+            &[("from", &from.to_string()), ("through", &through.to_string())],
+        )
     };
-    Some(format!("observation, {turns} (#{})", ordinal + 1))
+    Some(crate::locale::ctx().tr_format(
+        "observation, {turns} (#{ordinal})",
+        &[("turns", turns.as_str()), ("ordinal", &(ordinal + 1).to_string())],
+    ))
 }
 
 /// Relative age in at most 3 columns (`<1m`, `27m`, `5h`, `99d`, `52w`, `99y`); no suffix, the

@@ -746,6 +746,13 @@ pub struct MaterializeCtx {
     /// Pre-TUI restore progress on stdout (interactive tty).
     /// Headless keeps stdout as JSON or NDJSON and uses stderr instead.
     pub restore_progress_on_stdout: bool,
+    /// Locale for the errors this path raises before any UI exists.
+    ///
+    /// Interactive passes [`crate::locale::ctx`]; headless passes
+    /// [`crate::locale::english`], because its run reports failures on stderr next to a
+    /// stdout stream a script parses. Same reason as `restore_progress_on_stdout`, which
+    /// is the other interactive-vs-headless split this struct already carries.
+    pub locale: &'static crate::locale::LocaleContext,
 }
 impl MaterializeCtx {
     pub const fn default_allow_remote_restore() -> bool {
@@ -764,6 +771,7 @@ impl MaterializeCtx {
             restore_code: args.restore_code,
             recent_session_selection: args.local_resume_selection(),
             restore_progress_on_stdout: false,
+            locale: crate::locale::ctx(),
         }
     }
 }
@@ -802,13 +810,14 @@ pub use xai_grok_shell::session::persistence::RecentSessionSelection;
 async fn most_recent_session_id(
     cwd: &str,
     selection: RecentSessionSelection,
+    locale: &crate::locale::LocaleContext,
 ) -> anyhow::Result<(String, Option<String>)> {
     let summaries = xai_grok_shell::session::persistence::list_summaries(Some(cwd)).await?;
     let first = summaries
         .iter()
         .find(|summary| selection.admits(summary) && !summary.is_unused_optimistic_husk())
         .ok_or_else(|| {
-            anyhow::anyhow!(crate::locale::ctx().tr_static("No session found for current directory. Use 'grok' to start a new session.",
+            anyhow::anyhow!(locale.tr_static("No session found for current directory. Use 'grok' to start a new session.",
             ))
         })?;
     Ok((first.info.id.to_string(), first.display_title_opt()))
@@ -888,7 +897,7 @@ pub async fn materialize_startup_for_cwd(
                 anyhow::bail!("chat-mode resume requires a build with the `chat` cargo feature");
             }
             let started = std::time::Instant::now();
-            let (id, title) = most_recent_session_id(cwd, ctx.recent_session_selection).await?;
+            let (id, title) = most_recent_session_id(cwd, ctx.recent_session_selection, ctx.locale).await?;
             tracing::info!(
                 source = "local",
                 elapsed_ms = started.elapsed().as_millis() as u64,
@@ -910,7 +919,7 @@ pub async fn materialize_startup_for_cwd(
             if let Some(ref nid) = new_session_id {
                 ensure_session_id_available(nid, cwd)?;
             }
-            let (id, title) = most_recent_session_id(cwd, ctx.recent_session_selection).await?;
+            let (id, title) = most_recent_session_id(cwd, ctx.recent_session_selection, ctx.locale).await?;
             Ok(MaterializedStartup::Fork {
                 parent_session_id: id,
                 parent_cwd: None,
@@ -995,7 +1004,7 @@ async fn resolve_existing_session(
         {
             anyhow::bail!(
                 "{}",
-                crate::locale::ctx().tr(REMOTE_RESTORE_NEEDS_WORKTREE,
+                ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,
                 )
             );
         }
@@ -1049,7 +1058,7 @@ async fn resolve_existing_session(
             if !ctx.restore_code {
                 eprintln!(
                     "{}",
-                    crate::locale::ctx().tr(WORKTREE_NO_RESTORE_CODE_NOTICE,
+                    ctx.locale.tr(WORKTREE_NO_RESTORE_CODE_NOTICE,
                     )
                 );
             }
@@ -1065,14 +1074,14 @@ async fn resolve_existing_session(
             if title_miss_hint {
                 anyhow::bail!(
                     "{}; {}",
-                    crate::locale::ctx().tr(REMOTE_RESTORE_NEEDS_WORKTREE,
+                    ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,
                     ),
                     super::session_title_resolve::title_miss_hint(session_id)
                 );
             }
             anyhow::bail!(
                 "{}",
-                crate::locale::ctx().tr(REMOTE_RESTORE_NEEDS_WORKTREE,
+                ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,
                 )
             )
         }
@@ -1081,20 +1090,21 @@ async fn resolve_existing_session(
                 let hint = super::session_title_resolve::title_miss_hint(session_id);
                 anyhow::bail!(
                     "{}",
-                    crate::locale::ctx().tr_format("Session does not exist: {hint}",
+                    ctx.locale.tr_format("Session does not exist: {hint}",
                         &[("hint", hint.as_str())],
                     )
                 );
             }
             anyhow::bail!(
                 "{}",
-                crate::locale::ctx()
+                ctx.locale
                     .tr_static("Session does not exist")
             )
         }
         RemoteMissPlan::RestoreConversation => {
             let restored =
-                restore_session_from_remote(session_id, cwd, ctx.restore_progress_on_stdout).await;
+                restore_session_from_remote(session_id, cwd, ctx.restore_progress_on_stdout, ctx.locale)
+                    .await;
             if arg_is_uuid {
                 return restored;
             }
@@ -1161,6 +1171,7 @@ async fn restore_session_from_remote(
     session_id: &str,
     cwd: &str,
     progress_on_stdout: bool,
+    locale: &crate::locale::LocaleContext,
 ) -> anyhow::Result<ResolvedExisting> {
     let raw_config = xai_grok_shell::config::load_effective_config()
         .map_err(|e| anyhow::anyhow!("Failed to load config: {}", e))?;
@@ -1249,6 +1260,7 @@ async fn restore_session_from_remote(
             .map(|e| format!("{e:#}"))
             .as_deref(),
         recovered_local_id.as_deref(),
+        locale,
     ) {
         RemoteRestoreOutcome::Restored { local_session_id } => {
             emit_pre_tui_restore_line(
@@ -1311,6 +1323,7 @@ pub(crate) fn classify_remote_restore(
     local_session_id: Option<&str>,
     restore_err: Option<&str>,
     recovered_local_id: Option<&str>,
+    locale: &crate::locale::LocaleContext,
 ) -> RemoteRestoreOutcome {
     if let Some(id) = local_session_id.filter(|s| !s.is_empty()) {
         return RemoteRestoreOutcome::Restored {
@@ -1332,7 +1345,7 @@ pub(crate) fn classify_remote_restore(
         return RemoteRestoreOutcome::Failed(format!("Failed to restore session from remote: {e}"));
     }
     RemoteRestoreOutcome::Failed(
-        crate::locale::ctx()
+        locale
             .tr_static("Failed to restore session from remote: conversation history was unavailable.",
             )
             .to_string(),
@@ -1732,6 +1745,7 @@ mod tests {
             restore_code: false,
             recent_session_selection: RecentSessionSelection::Interactive,
             restore_progress_on_stdout: false,
+            locale: crate::locale::ctx(),
         }
     }
     #[test]
@@ -1937,6 +1951,7 @@ mod tests {
             restore_code,
             recent_session_selection: RecentSessionSelection::Interactive,
             restore_progress_on_stdout: false,
+            locale: crate::locale::ctx(),
         }
     }
     #[test]
@@ -2018,7 +2033,7 @@ mod tests {
     #[test]
     fn classify_remote_restore_prefers_returned_local_id() {
         assert_eq!(
-            classify_remote_restore(false, Some("child"), Some("boom"), Some("other")),
+            classify_remote_restore(false, Some("child"), Some("boom"), Some("other"), crate::locale::ctx()),
             RemoteRestoreOutcome::Restored {
                 local_session_id: "child".into(),
             }
@@ -2027,13 +2042,13 @@ mod tests {
     #[test]
     fn classify_remote_restore_recovers_disk_child_on_timeout_or_error() {
         assert_eq!(
-            classify_remote_restore(true, None, None, Some("child")),
+            classify_remote_restore(true, None, None, Some("child"), crate::locale::ctx()),
             RemoteRestoreOutcome::RecoveredAfterFailure {
                 local_session_id: "child".into(),
             }
         );
         assert_eq!(
-            classify_remote_restore(false, Some(""), Some("network"), Some("child")),
+            classify_remote_restore(false, Some(""), Some("network"), Some("child"), crate::locale::ctx()),
             RemoteRestoreOutcome::RecoveredAfterFailure {
                 local_session_id: "child".into(),
             }
@@ -2041,21 +2056,21 @@ mod tests {
     }
     #[test]
     fn classify_remote_restore_errors_when_conversation_missing() {
-        match classify_remote_restore(true, None, None, None) {
+        match classify_remote_restore(true, None, None, None, crate::locale::ctx()) {
             RemoteRestoreOutcome::Failed(msg) => {
                 assert!(msg.contains("Timed out"), "{msg}");
                 assert!(msg.contains("cannot be recovered"), "{msg}");
             }
             other => panic!("expected Failed, got {other:?}"),
         }
-        match classify_remote_restore(false, None, Some("registry 404"), None) {
+        match classify_remote_restore(false, None, Some("registry 404"), None, crate::locale::ctx()) {
             RemoteRestoreOutcome::Failed(msg) => {
                 assert!(msg.contains("Failed to restore"), "{msg}");
                 assert!(msg.contains("registry 404"), "{msg}");
             }
             other => panic!("expected Failed, got {other:?}"),
         }
-        match classify_remote_restore(false, Some(""), None, None) {
+        match classify_remote_restore(false, Some(""), None, None, crate::locale::ctx()) {
             RemoteRestoreOutcome::Failed(msg) => {
                 assert!(
                     msg.contains("conversation history was unavailable"),
@@ -2248,6 +2263,7 @@ mod tests {
             restore_code: false,
             recent_session_selection: RecentSessionSelection::Interactive,
             restore_progress_on_stdout: false,
+            locale: crate::locale::ctx(),
         };
         let err = materialize_startup_for_cwd(
             ctx,
@@ -2340,6 +2356,7 @@ mod tests {
                 restore_code: false,
                 recent_session_selection: RecentSessionSelection::Interactive,
                 restore_progress_on_stdout: false,
+                locale: crate::locale::ctx(),
             }
         }
         async fn resume_with(

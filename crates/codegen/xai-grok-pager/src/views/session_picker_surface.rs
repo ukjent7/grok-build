@@ -19,6 +19,11 @@ pub enum SessionPickerHost {
 /// Shared by dashboard picker paint and input so a copy change cannot update only one site.
 pub(crate) const DASHBOARD_PICKER_TITLE: &str = "Open session";
 
+/// Localized [`DASHBOARD_PICKER_TITLE`]; a function so both hosts localize identically.
+pub(crate) fn dashboard_picker_title() -> &'static str {
+    crate::locale::ctx().tr_static(DASHBOARD_PICKER_TITLE)
+}
+
 /// State for one session-picker incarnation.
 /// Host-agnostic: everything a picker accumulates between open and dismiss, nothing about how a host renders it or maps its keys.
 #[derive(Debug)]

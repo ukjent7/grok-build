@@ -21,25 +21,31 @@ pub(crate) enum EffortTokenError {
 }
 
 impl EffortTokenError {
-    pub(crate) fn message(&self) -> String {
+    /// The message for the caller's own surface.
+    ///
+    /// The locale is a parameter, not [`crate::locale::ctx`], because this type is shared
+    /// across surfaces that disagree: the TUI toasts the Chinese text, while headless
+    /// writes it into the `--output-format json` payload on stdout, which a script parses
+    /// and which therefore passes [`crate::locale::english`].
+    pub(crate) fn message(&self, locale: &crate::locale::LocaleContext) -> String {
         match self {
-            Self::Unsupported => crate::locale::ctx()
+            Self::Unsupported => locale
                 .tr("current model does not support reasoning effort",
                 )
                 .into_owned(),
             Self::UnknownToken { token, offered } => {
                 if offered.is_empty() {
-                    crate::locale::ctx().tr_format("unknown effort level '{token}'; this model has no selectable effort levels",
+                    locale.tr_format("unknown effort level '{token}'; this model has no selectable effort levels",
                         &[("token", token)],
                     )
                 } else {
                     let options = offered.join(", ");
-                    crate::locale::ctx().tr_format("unknown effort level '{token}'; use one of: {options}",
+                    locale.tr_format("unknown effort level '{token}'; use one of: {options}",
                         &[("token", token), ("options", options.as_str())],
                     )
                 }
             }
-            Self::NoActiveModel => crate::locale::ctx()
+            Self::NoActiveModel => locale
                 .tr("no active model to apply effort to",
                 )
                 .into_owned(),
@@ -487,7 +493,7 @@ mod tests {
         );
         // The error copy must list only this model's options, never a hardcoded none/minimal/…
         // The rejected token may still appear quoted in "unknown effort level '…'"
-        let msg = err.message();
+        let msg = err.message(crate::locale::english());
         assert!(msg.contains("use one of: high, low"), "msg={msg}");
         let offered_half = msg
             .split_once("; ")

@@ -180,6 +180,12 @@ fn localized_arg_placeholder(placeholder: String) -> String {
 /// Localized description for an arg-suggestion row. Only fixed, pager-owned
 /// arg texts are mapped; anything else (including dynamic doc titles) passes
 /// through unchanged.
+///
+/// A fixed description is therefore wrapped where it is written, with
+/// `tr_static`/`tr` at the `ArgItem` construction site — this helper cannot do
+/// it, because it receives a `&str` and cannot tell a literal from a
+/// server-supplied one (`/model`'s `info.description`, a workflow's own
+/// description, a doc title). Those must stay as they arrived.
 fn localized_arg_description(english: &str) -> String {
     // `/docs` arg rows: `Open "{title}"`. The doc title itself stays in
     // English (1.0.24 has no localized doc catalog); only the template is

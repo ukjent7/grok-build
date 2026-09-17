@@ -323,32 +323,42 @@ impl ClipboardFeedback {
     /// User-facing toast message for this kind.
     ///
     /// Must start with [`Self::message_lead`] (asserted in tests) so the path-bearing toast built from the lead never rewords the static copy.
+    /// The English literal is the `en-to-zh.json` key, so the prefix relation has to hold
+    /// in the Chinese pair too — keep each lead the opening clause of its message.
     fn message(self) -> &'static str {
+        let ctx = xai_grok_locale::ctx();
         match self {
-            Self::Copied => "Copied!",
-            Self::CopiedTmux => "Copied to tmux buffer, paste with prefix + ]",
-            Self::CopiedOscContainer => "Copied via OSC 52 from the container.",
-            Self::CopiedOscRemote => "Copied via OSC 52.",
+            Self::Copied => ctx.tr_static("Copied!"),
+            Self::CopiedTmux => ctx.tr_static("Copied to tmux buffer, paste with prefix + ]"),
+            Self::CopiedOscContainer => {
+                ctx.tr_static("Copied via OSC 52 from the container.")
+            }
+            Self::CopiedOscRemote => ctx.tr_static("Copied via OSC 52."),
             Self::UnverifiedOscRemote | Self::UnverifiedOscContainer => {
-                "Copy sent. If paste fails, use grok wrap or /minimal."
+                ctx.tr_static("Copy sent. If paste fails, use grok wrap or /minimal.")
             }
-            Self::VsCodeSshNonAscii => {
-                "Copied. VS Code over SSH may garble non-ASCII; use /minimal if needed."
+            Self::VsCodeSshNonAscii => ctx.tr_static(
+                "Copied. VS Code over SSH may garble non-ASCII; use /minimal if needed.",
+            ),
+            Self::FailedRemote | Self::Failed => {
+                ctx.tr_static("Copy failed. Try /doctor or /minimal.")
             }
-            Self::FailedRemote | Self::Failed => "Copy failed. Try /doctor or /minimal.",
         }
     }
 
     /// Compact lead of [`Self::message`] (no trailing guidance sentence).
     fn message_lead(self) -> &'static str {
+        let ctx = xai_grok_locale::ctx();
         match self {
-            Self::Copied => "Copied!",
-            Self::CopiedTmux => "Copied to tmux buffer, paste with prefix + ]",
-            Self::CopiedOscContainer => "Copied via OSC 52 from the container",
-            Self::CopiedOscRemote => "Copied via OSC 52",
-            Self::UnverifiedOscRemote | Self::UnverifiedOscContainer => "Copy sent",
-            Self::VsCodeSshNonAscii => "Copied",
-            Self::FailedRemote | Self::Failed => "Copy failed",
+            Self::Copied => ctx.tr_static("Copied!"),
+            Self::CopiedTmux => ctx.tr_static("Copied to tmux buffer, paste with prefix + ]"),
+            Self::CopiedOscContainer => ctx.tr_static("Copied via OSC 52 from the container"),
+            Self::CopiedOscRemote => ctx.tr_static("Copied via OSC 52"),
+            Self::UnverifiedOscRemote | Self::UnverifiedOscContainer => {
+                ctx.tr_static("Copy sent")
+            }
+            Self::VsCodeSshNonAscii => ctx.tr_static("Copied"),
+            Self::FailedRemote | Self::Failed => ctx.tr_static("Copy failed"),
         }
     }
 

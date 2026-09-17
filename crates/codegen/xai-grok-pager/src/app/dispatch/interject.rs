@@ -1,6 +1,6 @@
 //! Mid-turn interjection dispatch: optimistic local echo, the `x.ai/interject` effect, and prompt-history recording.
 
-use super::ctx::NO_SESSION_NOTICE;
+use super::ctx::no_session_notice;
 use super::voice::voice_stop_on_submit;
 use crate::app::actions::Effect;
 use crate::app::agent::AgentId;
@@ -65,7 +65,7 @@ fn dispatch_interject_on_inner(
     }
 
     let Some(session_id) = agent.session.session_id.clone() else {
-        agent.show_toast(NO_SESSION_NOTICE);
+        agent.show_toast(no_session_notice());
         return vec![];
     };
 
@@ -161,7 +161,7 @@ pub(super) fn dispatch_send_prompt_now(
     agent.ephemeral_tip.clear_on_submit();
 
     let Some(session_id) = agent.session.session_id.clone() else {
-        agent.show_toast(NO_SESSION_NOTICE);
+        agent.show_toast(no_session_notice());
         return vec![];
     };
 

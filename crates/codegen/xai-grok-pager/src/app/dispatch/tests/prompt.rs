@@ -2919,7 +2919,7 @@ fn execute_plan_refuse_without_session_keeps_review() {
     assert!(plan_review_closed(agent).is_empty());
     assert_eq!(
         agent.toast.as_ref().map(|(msg, _)| msg.as_str()),
-        Some(crate::app::dispatch::ctx::NO_SESSION_NOTICE)
+        Some(crate::app::dispatch::ctx::no_session_notice())
     );
 }
 

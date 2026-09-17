@@ -38,20 +38,29 @@ pub fn browser_open_likely_available() -> bool {
     browser_open_likely_available_from_env(&env)
 }
 
+/// English source for the notice, and verbatim the `en-to-zh.json` key [`browser_unavailable_notice`] reads.
 const BROWSER_UNAVAILABLE_NOTICE: &str = "Could not open a browser. Open this URL manually";
+
+fn browser_unavailable_notice() -> &'static str {
+    xai_grok_locale::ctx().tr_static(BROWSER_UNAVAILABLE_NOTICE)
+}
 
 /// Multi-line copy for agent scrollback: notice, then the full URL alone so it is easy to select/copy in the TUI.
 pub fn browser_unavailable_message(url: &str) -> String {
-    format!("{BROWSER_UNAVAILABLE_NOTICE}:\n{url}")
+    format!("{}:\n{url}", browser_unavailable_notice())
 }
 
 /// Single-line welcome toast: URL first so prefix truncation keeps the destination.
 /// `copied` is true only when clipboard delivery reported success, so the toast never claims a copy that did not happen.
 pub fn browser_unavailable_line(url: &str, copied: bool) -> String {
+    let notice = browser_unavailable_notice();
     if copied {
-        format!("{url} \u{00b7} {BROWSER_UNAVAILABLE_NOTICE} (URL copied)")
+        format!(
+            "{url} \u{00b7} {notice}{}",
+            xai_grok_locale::ctx().tr_static(" (URL copied)")
+        )
     } else {
-        format!("{url} \u{00b7} {BROWSER_UNAVAILABLE_NOTICE}")
+        format!("{url} \u{00b7} {notice}")
     }
 }
 

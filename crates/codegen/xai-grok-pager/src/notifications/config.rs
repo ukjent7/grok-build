@@ -97,6 +97,19 @@ pub enum TitleItem {
     ActionRequired,
 }
 
+/// Which event fired a notification.
+///
+/// The `strum(serialize = …)` values are a **wire contract, not display copy**, and must
+/// stay English under every locale:
+///
+/// * `as_ref()` is the body of the terminal notification *and* the `GROK_MESSAGE` a
+///   notification hook receives; `into()` is the `GROK_EVENT` beside it. A user's hook
+///   script matches those, so translating them silently breaks it.
+/// * `into()` is also the `event_kind` field on the `NotificationEmitted` telemetry event.
+///
+/// The `serde` name is the `snake_case` variant used in `config.toml` `events = […]`, a
+/// third contract. Localizing the notification a user sees would mean adding a separate
+/// display string here; do not retarget the three existing ones.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, strum::AsRefStr, strum::IntoStaticStr,
 )]

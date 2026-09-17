@@ -53,7 +53,7 @@ impl SlashCommand for DebugCommand {
                     display: name.to_string(),
                     match_text: name.to_string(),
                     insert_text: name.to_string(),
-                    description: desc.to_string(),
+                    description: crate::locale::ctx().tr(desc).into_owned(),
                 })
                 .collect(),
         )

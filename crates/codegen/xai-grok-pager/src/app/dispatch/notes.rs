@@ -1,6 +1,6 @@
 //! Feedback, remember-note, btw, and recap dispatchers.
 
-use super::ctx::{NO_SESSION_NOTICE, with_active_agent};
+use super::ctx::{no_session_notice, with_active_agent};
 use agent_client_protocol as acp;
 
 use crate::app::actions::{Effect, FeedbackSendOrigin, FeedbackTraceChoice};
@@ -51,7 +51,7 @@ pub(super) fn dispatch_open_feedback_modal(
             && let Some(dashboard) = app.dashboard.as_mut()
         {
             dashboard.dispatch.set_text("");
-            dashboard.set_error_toast(NO_SESSION_NOTICE);
+            dashboard.set_error_toast(no_session_notice());
         }
         return vec![];
     };
@@ -71,7 +71,7 @@ pub(super) fn dispatch_open_feedback_modal(
                 .session
                 .session_id
                 .is_none()
-                .then_some(NO_SESSION_NOTICE)
+                .then_some(no_session_notice())
         })
     };
     if let Some(message) = blocked {
@@ -201,7 +201,7 @@ pub(super) fn dispatch_submit_feedback_modal(
         return vec![];
     }
     let Some(session_id) = session_id else {
-        modal.set_error(NO_SESSION_NOTICE.to_string());
+        modal.set_error(no_session_notice().to_string());
         return vec![];
     };
     if !modal.is_sendable() {
@@ -514,7 +514,7 @@ pub(super) fn dispatch_send_feedback(
             UnsentFeedbackReport {
                 text: text.trim(),
                 image_count: images.len(),
-                failure: NO_SESSION_NOTICE,
+                failure: no_session_notice(),
             },
         );
         return vec![];
@@ -848,10 +848,10 @@ pub(super) fn dispatch_send_btw(
                 agent
                     .scrollback
                     .push_block(crate::scrollback::block::RenderBlock::system(
-                        NO_SESSION_NOTICE,
+                        no_session_notice(),
                     ));
             } else {
-                agent.show_toast(NO_SESSION_NOTICE);
+                agent.show_toast(no_session_notice());
             }
             return vec![];
         };
@@ -1065,7 +1065,7 @@ pub(super) fn dispatch_send_recap(app: &mut AppView, auto: bool) -> Vec<Effect> 
 
     let Some(session_id) = agent.session.session_id.clone() else {
         if !auto {
-            agent.show_toast(NO_SESSION_NOTICE);
+            agent.show_toast(no_session_notice());
         }
         return vec![];
     };

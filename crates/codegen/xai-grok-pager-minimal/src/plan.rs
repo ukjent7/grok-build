@@ -39,10 +39,11 @@ agent back to planning, or quit to abandon.";
 
 /// Controls-strip header for a parked plan approval.
 fn plan_header(has_plan: bool) -> &'static str {
+    let ctx = xai_grok_locale::ctx();
     if has_plan {
-        "Plan ready for review"
+        ctx.tr_static("Plan ready for review")
     } else {
-        "No plan written yet"
+        ctx.tr_static("No plan written yet")
     }
 }
 
@@ -159,13 +160,20 @@ pub fn render(
         .unwrap_or(false)
         || !agent.prompt.text().trim().is_empty();
     // Tab reopens the preview (including the empty-plan placeholder).
+    let ctx = xai_grok_locale::ctx();
     let hint = match foc {
         PlanApprovalFocus::Prompt if has_content => {
-            "enter request changes \u{00b7} tab plan \u{00b7} esc back"
+            ctx.tr_static("enter request changes \u{00b7} tab plan \u{00b7} esc back")
         }
-        PlanApprovalFocus::Prompt => "enter approve \u{00b7} tab plan \u{00b7} esc back",
-        PlanApprovalFocus::Commenting => "enter save comment \u{00b7} esc cancel",
-        PlanApprovalFocus::Preview => "a approve \u{00b7} s revise \u{00b7} q keep planning",
+        PlanApprovalFocus::Prompt => {
+            ctx.tr_static("enter approve \u{00b7} tab plan \u{00b7} esc back")
+        }
+        PlanApprovalFocus::Commenting => {
+            ctx.tr_static("enter save comment \u{00b7} esc cancel")
+        }
+        PlanApprovalFocus::Preview => {
+            ctx.tr_static("a approve \u{00b7} s revise \u{00b7} q keep planning")
+        }
     };
     let hint_style = theme.dim().bg(Color::Reset);
     let controls_rect = Rect {

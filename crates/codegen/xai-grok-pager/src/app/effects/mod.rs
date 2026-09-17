@@ -475,7 +475,7 @@ pub(crate) fn execute(
                             TaskResult::WorktreeSessionFailed {
                                 agent_id,
                                 error: sanitize_user_error(
-                                    &format!("couldn't create session in worktree: {e}"),
+                                    &crate::locale::ctx().tr_format("couldn't create session in worktree: {e}", &[("e", &e.to_string())]),
                                 ),
                                 orphaned_worktree_root: Some(worktree_root),
                                 timed_out: e.timed_out(),
@@ -1097,7 +1097,7 @@ pub(crate) fn execute(
                     else {
                         return TaskResult::SessionRestoreFailed {
                             agent_id,
-                            error: "Failed to load configuration.".into(),
+                            error: crate::locale::ctx().tr("Failed to load configuration.").into_owned(),
                         };
                     };
                     let _ = auth_manager.auth().await;
@@ -2464,9 +2464,7 @@ pub(crate) fn execute(
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't load server list: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't load server list: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -2612,11 +2610,11 @@ pub(crate) fn execute(
                             serde_json::from_value::<
                                 xai_hooks_plugins_types::HooksListResponse,
                             >(inner.clone())
-                                .map_err(|_| "couldn't load hooks".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't load hooks").into_owned())
                         }
                         Err(e) => {
                             Err(
-                                sanitize_user_error(&format!("couldn't load hooks: {e}")),
+                                sanitize_user_error(&crate::locale::ctx().tr_format("couldn't load hooks: {e}", &[("e", &e.to_string())])),
                             )
                         }
                     };
@@ -2649,11 +2647,11 @@ pub(crate) fn execute(
                             serde_json::from_value::<
                                 xai_hooks_plugins_types::PluginsListResponse,
                             >(inner.clone())
-                                .map_err(|_| "couldn't load plugins".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't load plugins").into_owned())
                         }
                         Err(e) => {
                             Err(
-                                sanitize_user_error(&format!("couldn't load plugins: {e}")),
+                                sanitize_user_error(&crate::locale::ctx().tr_format("couldn't load plugins: {e}", &[("e", &e.to_string())])),
                             )
                         }
                     };
@@ -2682,13 +2680,11 @@ pub(crate) fn execute(
                     let result = match acp_send(req, &tx).await {
                         Ok(resp) => {
                             serde_json::from_str::<MemoryListing>(resp.0.get())
-                                .map_err(|_| "Couldn't read the shell's reply.".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("Couldn't read the shell's reply.").into_owned())
                         }
                         Err(e) => {
                             Err(
-                                sanitize_user_error(&format!(
-                        "Couldn't load memory: {e}"
-                    )),
+                                sanitize_user_error(&crate::locale::ctx().tr_format("Couldn't load memory: {e}", &[("e", &e.to_string())])),
                             )
                         }
                     };
@@ -2718,14 +2714,12 @@ pub(crate) fn execute(
                     let result = match acp_send(req, &tx).await {
                         Ok(resp) => {
                             serde_json::from_str::<MemoryToggleResponse>(resp.0.get())
-                                .map_err(|_| "Couldn't read the shell's reply.".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("Couldn't read the shell's reply.").into_owned())
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "Couldn't change memory state: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("Couldn't change memory state: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -2791,14 +2785,12 @@ pub(crate) fn execute(
                     let result = match acp_send(req, &tx).await {
                         Ok(resp) => {
                             serde_json::from_str::<MemoryForgetResponse>(resp.0.get())
-                                .map_err(|_| "Couldn't read the shell's reply.".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("Couldn't read the shell's reply.").into_owned())
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "Couldn't delete the note: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("Couldn't delete the note: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -2834,14 +2826,12 @@ pub(crate) fn execute(
                             serde_json::from_value::<
                                 xai_hooks_plugins_types::ActionOutcome,
                             >(inner.clone())
-                                .map_err(|_| "couldn't complete hooks action".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't complete hooks action").into_owned())
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't complete hooks action: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't complete hooks action: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -2876,14 +2866,12 @@ pub(crate) fn execute(
                             serde_json::from_value::<
                                 xai_hooks_plugins_types::ActionOutcome,
                             >(inner.clone())
-                                .map_err(|_| "couldn't complete plugins action".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't complete plugins action").into_owned())
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't complete plugins action: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't complete plugins action: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -2917,14 +2905,12 @@ pub(crate) fn execute(
                             serde_json::from_value::<
                                 xai_hooks_plugins_types::MarketplaceListResponse,
                             >(inner.clone())
-                                .map_err(|_| "couldn't load marketplace".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't load marketplace").into_owned())
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't load marketplace: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't load marketplace: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -2958,14 +2944,12 @@ pub(crate) fn execute(
                             serde_json::from_value::<
                                 xai_hooks_plugins_types::MarketplaceListResponse,
                             >(inner.clone())
-                                .map_err(|_| "couldn't load marketplace".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't load marketplace").into_owned())
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't load marketplace: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't load marketplace: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -3001,11 +2985,11 @@ pub(crate) fn execute(
                                     xai_grok_tools::implementations::skills::types::SkillInfo,
                                 >,
                             >(inner.get("skills").cloned().unwrap_or_default())
-                                .map_err(|_| "couldn't load skills".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't load skills").into_owned())
                         }
                         Err(e) => {
                             Err(
-                                sanitize_user_error(&format!("couldn't load skills: {e}")),
+                                sanitize_user_error(&crate::locale::ctx().tr_format("couldn't load skills: {e}", &[("e", &e.to_string())])),
                             )
                         }
                     };
@@ -3038,14 +3022,12 @@ pub(crate) fn execute(
                             serde_json::from_value::<
                                 Vec<crate::views::extensions_modal::WorkflowInfo>,
                             >(inner.get("workflows").cloned().unwrap_or_default())
-                                .map_err(|_| "couldn't load workflows".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't load workflows").into_owned())
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't load workflows: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't load workflows: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -3084,7 +3066,7 @@ pub(crate) fn execute(
                                     xai_grok_tools::implementations::skills::types::SkillInfo,
                                 >,
                             >(inner.get("skills").cloned().unwrap_or_default())
-                                .map_err(|_| "couldn't toggle skill".to_string());
+                                .map_err(|_| crate::locale::ctx().tr("couldn't toggle skill").into_owned());
                             if parsed.is_ok() {
                                 let refresh = acp::ExtRequest::new(
                                     "x.ai/skills/refresh-baseline",
@@ -3098,7 +3080,7 @@ pub(crate) fn execute(
                         }
                         Err(e) => {
                             Err(
-                                sanitize_user_error(&format!("couldn't toggle skill: {e}")),
+                                sanitize_user_error(&crate::locale::ctx().tr_format("couldn't toggle skill: {e}", &[("e", &e.to_string())])),
                             )
                         }
                     };
@@ -3254,15 +3236,13 @@ pub(crate) fn execute(
                             >(inner.clone())
                                 .map_err(|e| {
                                     tracing::debug!("failed to parse marketplace action response: {e}");
-                                    "couldn't complete marketplace action".to_string()
+                                    crate::locale::ctx().tr("couldn't complete marketplace action").into_owned()
                                 })
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't complete marketplace action: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't complete marketplace action: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -3313,15 +3293,13 @@ pub(crate) fn execute(
                             >(inner.clone())
                                 .map_err(|e| {
                                     tracing::debug!("failed to parse marketplace action response: {e}");
-                                    "couldn't complete marketplace action".to_string()
+                                    crate::locale::ctx().tr("couldn't complete marketplace action").into_owned()
                                 })
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't complete marketplace action: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't complete marketplace action: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -3357,14 +3335,12 @@ pub(crate) fn execute(
                             serde_json::from_value::<
                                 xai_hooks_plugins_types::ActionOutcome,
                             >(inner.clone())
-                                .map_err(|_| "couldn't complete plugins action".to_string())
+                                .map_err(|_| crate::locale::ctx().tr("couldn't complete plugins action").into_owned())
                         }
                         Err(e) => {
                             Err(
                                 sanitize_user_error(
-                                    &format!(
-                        "couldn't complete plugins action: {e}"
-                    ),
+                                    &crate::locale::ctx().tr_format("couldn't complete plugins action: {e}", &[("e", &e.to_string())]),
                                 ),
                             )
                         }
@@ -3460,7 +3436,7 @@ pub(crate) fn execute(
                         Ok(_) => Ok(()),
                         Err(e) => {
                             Err(
-                                sanitize_user_error(&format!("couldn't delete server: {e}")),
+                                sanitize_user_error(&crate::locale::ctx().tr_format("couldn't delete server: {e}", &[("e", &e.to_string())])),
                             )
                         }
                     };
@@ -3522,7 +3498,7 @@ pub(crate) fn execute(
                         Ok(_) => Ok(()),
                         Err(e) => {
                             Err(
-                                sanitize_user_error(&format!("couldn't toggle tool: {e}")),
+                                sanitize_user_error(&crate::locale::ctx().tr_format("couldn't toggle tool: {e}", &[("e", &e.to_string())])),
                             )
                         }
                     };
@@ -3576,7 +3552,7 @@ pub(crate) fn execute(
                                 Err(_) => {
                                     TaskResult::ShareSessionFailed {
                                         agent_id,
-                                        error: "couldn't share session".to_string(),
+                                        error: crate::locale::ctx().tr("couldn't share session").into_owned(),
                                     }
                                 }
                             }
@@ -3585,7 +3561,7 @@ pub(crate) fn execute(
                             TaskResult::ShareSessionFailed {
                                 agent_id,
                                 error: sanitize_user_error(
-                                    &format!("couldn't share session: {e}"),
+                                    &crate::locale::ctx().tr_format("couldn't share session: {e}", &[("e", &e.to_string())]),
                                 ),
                             }
                         }
@@ -3774,7 +3750,7 @@ pub(crate) fn execute(
                                 source,
                                 session_id,
                                 error: sanitize_user_error(
-                                    &format!("couldn't delete session: {e}"),
+                                    &crate::locale::ctx().tr_format("couldn't delete session: {e}", &[("e", &e.to_string())]),
                                 ),
                             }
                         }
@@ -3961,9 +3937,7 @@ pub(crate) fn execute(
                                 feedback_text,
                                 image_count,
                                 error: sanitize_user_error(
-                                    &format!(
-                                "couldn't serialize feedback: {e}"
-                            ),
+                                    &crate::locale::ctx().tr_format("couldn't serialize feedback: {e}", &[("e", &e.to_string())]),
                                 ),
                             };
                         }
@@ -4014,9 +3988,7 @@ pub(crate) fn execute(
                                                 feedback_text,
                                                 image_count,
                                                 error: sanitize_user_error(
-                                                    &format!(
-                                "couldn't decode feedback response: {error}"
-                            ),
+                                                    &crate::locale::ctx().tr_format("couldn't decode feedback response: {error}", &[("error", &error.to_string())]),
                                                 ),
                                             }
                                         }
@@ -4042,7 +4014,7 @@ pub(crate) fn execute(
                                         feedback_text,
                                         image_count,
                                         error: sanitize_user_error(
-                                            &format!("couldn't send feedback: {e}"),
+                                            &crate::locale::ctx().tr_format("couldn't send feedback: {e}", &[("e", &e.to_string())]),
                                         ),
                                     }
                                 }
@@ -4076,9 +4048,7 @@ pub(crate) fn execute(
                                         generation,
                                         result: Err(
                                             sanitize_user_error(
-                                                &format!(
-                                        "couldn't serialize feedback draft list: {error}"
-                                    ),
+                                                &crate::locale::ctx().tr_format("couldn't serialize feedback draft list: {error}", &[("error", &error.to_string())]),
                                             ),
                                         ),
                                     };
@@ -4135,9 +4105,7 @@ pub(crate) fn execute(
                                         load,
                                         result: Err(
                                             sanitize_user_error(
-                                                &format!(
-                                        "couldn't serialize feedback draft get: {error}"
-                                    ),
+                                                &crate::locale::ctx().tr_format("couldn't serialize feedback draft get: {error}", &[("error", &error.to_string())]),
                                             ),
                                         ),
                                     };
@@ -4193,9 +4161,7 @@ pub(crate) fn execute(
                                         delete,
                                         result: Err(
                                             sanitize_user_error(
-                                                &format!(
-                                        "couldn't serialize feedback draft delete: {error}"
-                                    ),
+                                                &crate::locale::ctx().tr_format("couldn't serialize feedback draft delete: {error}", &[("error", &error.to_string())]),
                                             ),
                                         ),
                                     };
@@ -4249,9 +4215,7 @@ pub(crate) fn execute(
                                         update,
                                         result: Err(
                                             sanitize_user_error(
-                                                &format!(
-                                        "couldn't serialize feedback draft update: {error}"
-                                    ),
+                                                &crate::locale::ctx().tr_format("couldn't serialize feedback draft update: {error}", &[("error", &error.to_string())]),
                                             ),
                                         ),
                                     };
@@ -4308,9 +4272,7 @@ pub(crate) fn execute(
                                 submission_id,
                                 error: Some(
                                     sanitize_user_error(
-                                        &format!(
-                                "couldn't serialize trace upload: {e}"
-                            ),
+                                        &crate::locale::ctx().tr_format("couldn't serialize trace upload: {e}", &[("e", &e.to_string())]),
                                     ),
                                 ),
                             };
@@ -4607,7 +4569,7 @@ pub(crate) fn execute(
                                 Err(e) => {
                                     tracing::debug!("failed to parse catalog entry response: {e}");
                                     TaskResult::CatalogEntryFailed {
-                                        error: "couldn't load entry".to_string(),
+                                        error: crate::locale::ctx().tr("couldn't load entry").into_owned(),
                                     }
                                 }
                             }
@@ -4615,7 +4577,7 @@ pub(crate) fn execute(
                         Err(e) => {
                             TaskResult::CatalogEntryFailed {
                                 error: sanitize_user_error(
-                                    &format!("couldn't load entry: {e}"),
+                                    &crate::locale::ctx().tr_format("couldn't load entry: {e}", &[("e", &e.to_string())]),
                                 ),
                             }
                         }
@@ -4665,7 +4627,7 @@ pub(crate) fn execute(
                                 }
                                 Err(_) => {
                                     TaskResult::BundleStatusFailed {
-                                        error: "couldn't fetch bundle status".to_string(),
+                                        error: crate::locale::ctx().tr("couldn't fetch bundle status").into_owned(),
                                     }
                                 }
                             }
@@ -4673,7 +4635,7 @@ pub(crate) fn execute(
                         Err(e) => {
                             TaskResult::BundleStatusFailed {
                                 error: sanitize_user_error(
-                                    &format!("couldn't fetch bundle status: {e}"),
+                                    &crate::locale::ctx().tr_format("couldn't fetch bundle status: {e}", &[("e", &e.to_string())]),
                                 ),
                             }
                         }
@@ -5291,7 +5253,7 @@ async fn fetch_session_info(
     );
     let resp = acp_send(request, tx)
         .await
-        .map_err(|e| sanitize_user_error(&format!("couldn't fetch session info: {e}")))?;
+        .map_err(|e| sanitize_user_error(&crate::locale::ctx().tr_format("couldn't fetch session info: {e}", &[("e", &e.to_string())])))?;
     let envelope: ExtMethodResult<SessionInfoResponse> = serde_json::from_str(
             resp.0.get(),
         )
@@ -5343,10 +5305,12 @@ async fn session_rename_rpc(
     tx: &AcpAgentTx,
     request: actions::RenameSessionRequest,
 ) -> Result<(), String> {
+    // Localized as fragments so the `couldn't {verb}: {e}` template below reads as one
+    // Chinese sentence instead of an English verb dropped into it.
     let verb = if request.reset_to_auto {
-        "reset session title"
+        crate::locale::ctx().tr_static("reset session title")
     } else {
-        "rename session"
+        crate::locale::ctx().tr_static("rename session")
     };
     let ext = acp::ExtRequest::new(
         "x.ai/session/rename",
@@ -5367,7 +5331,10 @@ async fn session_rename_rpc(
             }
             Ok(())
         }
-        Err(e) => Err(sanitize_user_error(&format!("couldn't {verb}: {e}"))),
+        Err(e) => Err(sanitize_user_error(&crate::locale::ctx().tr_format(
+            "couldn't {verb}: {e}",
+            &[("verb", verb), ("e", &e.to_string())],
+        ))),
     }
 }
 /// Session title from local persistence: loads only this session's summary, never the all-sessions list.
@@ -5668,9 +5635,10 @@ pub(crate) fn spawn_ordered_interjects(
                     leftover.extend(pending);
                     return TaskResult::InterjectFailed {
                         agent_id,
-                        error: sanitize_user_error(
-                            &format!("couldn't send interjection: {e}"),
-                        ),
+                        error: sanitize_user_error(&crate::locale::ctx().tr_format(
+                            "couldn't send interjection: {e}",
+                            &[("e", &e.to_string())],
+                        )),
                         remaining: leftover,
                     };
                 }

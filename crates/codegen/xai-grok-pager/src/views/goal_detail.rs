@@ -808,7 +808,10 @@ pub fn render_goal_detail(
                 x,
                 y,
                 &Line::from(Span::styled(
-                    format!("  +{remaining} more"),
+                    crate::locale::ctx().tr_format(
+                        "  +{remaining} more",
+                        &[("remaining", &remaining.to_string())],
+                    ),
                     Style::default().fg(theme.gray),
                 )),
                 w,
@@ -925,7 +928,10 @@ pub fn render_goal_detail(
                     x,
                     y,
                     &Line::from(Span::styled(
-                        format!("  +{remaining} more"),
+                        crate::locale::ctx().tr_format(
+                        "  +{remaining} more",
+                        &[("remaining", &remaining.to_string())],
+                    ),
                         Style::default().fg(theme.gray),
                     )),
                     w,
@@ -1014,7 +1020,10 @@ pub fn render_goal_detail(
                 x,
                 y,
                 &Line::from(vec![
-                    Span::styled("  Details: ", Style::default().fg(theme.gray)),
+                    Span::styled(
+                        crate::locale::ctx().tr_static("  Details: "),
+                        Style::default().fg(theme.gray),
+                    ),
                     Span::styled(
                         path_display.to_owned(),
                         Style::default().fg(theme.text_secondary),

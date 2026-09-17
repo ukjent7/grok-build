@@ -121,7 +121,10 @@ pub(crate) fn apply_deferred_switch_outcome(
     outcome: DeferredSwitchOutcome,
 ) -> Option<DeferredModelSwitch> {
     if let Some(err) = outcome.effort_error {
-        let msg = format!("--effort/--reasoning-effort: {}", err.message());
+        let msg = format!(
+            "--effort/--reasoning-effort: {}",
+            err.message(crate::locale::ctx())
+        );
         tracing::warn!("{msg}");
         agent.show_toast(&msg);
         agent.scrollback.push_block(RenderBlock::system(msg));
@@ -264,24 +267,34 @@ pub(in crate::app::dispatch) fn open_agent_type_mismatch_question(
         return vec![];
     };
     if agent.question_view.is_some() {
-        app.show_toast("Finish answering the current question first");
+        app.show_toast(crate::locale::ctx().tr_static(
+            "Finish answering the current question first",
+        ));
         return vec![];
     }
+    // A local question: `translate_local_submit` maps the selection by index, so the
+    // labels are display-only and never reach the agent.
+    let ctx = crate::locale::ctx();
     let question = Question {
-        question: format!("Switching to {model_name} requires starting a new session. Continue?"),
+        question: ctx.tr_format(
+            "Switching to {model_name} requires starting a new session. Continue?",
+            &[("model_name", model_name)],
+        ),
         id: None,
         options: vec![
             QuestionOption {
-                label: "Yes".into(),
-                description: format!("Start a new session with {model_name}"),
+                label: ctx.tr_static("Yes").into(),
+                description: ctx.tr_format(
+                    "Start a new session with {model_name}",
+                    &[("model_name", model_name)],
+                ),
                 preview: None,
                 id: None,
             },
             QuestionOption {
-                label: "No".into(),
-                description: crate::locale::ctx()
-                    .tr_static("Continue the current session",
-                    )
+                label: ctx.tr_static("No").into(),
+                description: ctx
+                    .tr_static("Continue the current session")
                     .into(),
                 preview: None,
                 id: None,

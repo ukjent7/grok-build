@@ -85,7 +85,11 @@ fn tool_summary(tc: &ToolCallBlock) -> String {
         ToolCallBlock::UseTool(u) => format!("UseTool: {}", u.tool_name),
         ToolCallBlock::IntegrationSearch(_) => "IntegrationSearch (MCP tool discovery)".into(),
         ToolCallBlock::MemorySearch(_) => "MemorySearch".into(),
-        ToolCallBlock::SentMessage(message) => message.header_text(),
+        // English on purpose: this line lands in `grok export` / `/export` / `/transcript`
+        // output, which a script or another tool reads. See `header_text_with`.
+        ToolCallBlock::SentMessage(message) => {
+            message.header_text_with(crate::locale::english())
+        }
         ToolCallBlock::Skill(o) | ToolCallBlock::Other(o) => format!("Tool: {}", o.name),
     }
 }

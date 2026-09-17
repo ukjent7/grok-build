@@ -1862,9 +1862,12 @@ fn tool_call_to_block(
                     let error_msg = if let Some(sig) = &bash.signal {
                         sig.clone()
                     } else if bash.exit_code != 0 {
-                        format!("exit code {}", bash.exit_code)
+                        crate::locale::ctx().tr_format(
+                            "exit code {code}",
+                            &[("code", &bash.exit_code.to_string())],
+                        )
                     } else {
-                        "Command failed".into()
+                        crate::locale::ctx().tr_static("Command failed").into()
                     };
                     block = block.with_error(error_msg);
                 }
@@ -1879,7 +1882,7 @@ fn tool_call_to_block(
                 if !success {
                     let text = content_text(tc);
                     let error_msg = if text.is_empty() {
-                        "Command failed".to_string()
+                        crate::locale::ctx().tr_static("Command failed").to_string()
                     } else {
                         text
                     };
@@ -2298,9 +2301,12 @@ fn tool_call_to_block(
                         let error_msg = if let Some(sig) = &bash.signal {
                             sig.clone()
                         } else if bash.exit_code != 0 {
-                            format!("exit code {}", bash.exit_code)
+                            crate::locale::ctx().tr_format(
+                            "exit code {code}",
+                            &[("code", &bash.exit_code.to_string())],
+                        )
                         } else {
-                            "Command failed".into()
+                            crate::locale::ctx().tr_static("Command failed").into()
                         };
                         block = block.with_error(error_msg);
                     }
@@ -2314,7 +2320,7 @@ fn tool_call_to_block(
                 if !success {
                     let text = content_text(tc);
                     block = block.with_error(if text.is_empty() {
-                        "Command failed".to_string()
+                        crate::locale::ctx().tr_static("Command failed").to_string()
                     } else {
                         text
                     });

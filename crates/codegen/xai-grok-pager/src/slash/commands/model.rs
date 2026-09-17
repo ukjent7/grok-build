@@ -141,7 +141,11 @@ fn build_model_items(models: &ModelState) -> Vec<ArgItem> {
         let supports = supports_reasoning_effort(info);
 
         let display = if is_current {
-            format!("{} (current)", info.name)
+            format!(
+                "{}{}",
+                info.name,
+                crate::locale::ctx().tr_static(" (current)")
+            )
         } else {
             info.name.clone()
         };

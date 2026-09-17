@@ -7,9 +7,15 @@ use crate::app::app_view::{ActiveView, AppView, WelcomeAnnouncementState};
 use crate::scrollback::state::ScrollbackState;
 use agent_client_protocol as acp;
 
-/// Refusal shown when a dispatch path can't proceed without a bound session.
+/// English source of the refusal shown when a dispatch path can't proceed without a bound session.
 /// Every path in this module tree that says exactly this uses it; the action-specific variants ("No active session to delete") stay separate.
 pub(super) const NO_SESSION_NOTICE: &str = "No active session";
+
+/// Localized [`NO_SESSION_NOTICE`]. A function rather than a const because the toast is
+/// built at dispatch time, after the composition root has published the locale.
+pub(super) fn no_session_notice() -> &'static str {
+    crate::locale::ctx().tr_static(NO_SESSION_NOTICE)
+}
 
 /// The active agent's root session id, if any.
 /// Used to scope server-queue edit Effects to the foregrounded session.

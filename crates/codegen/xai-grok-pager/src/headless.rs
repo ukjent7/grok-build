@@ -780,7 +780,11 @@ async fn apply_headless_model_and_effort(
                 );
                 None
             }
-            Err(err) => anyhow::bail!("--effort/--reasoning-effort: {}", err.message()),
+            // English: this message reaches the `--output-format json` payload on stdout.
+            Err(err) => anyhow::bail!(
+                "--effort/--reasoning-effort: {}",
+                err.message(crate::locale::english())
+            ),
         },
     };
 
@@ -840,6 +844,8 @@ fn headless_materialize_ctx(
         restore_code,
         recent_session_selection: crate::app::session_startup::RecentSessionSelection::Any,
         restore_progress_on_stdout: false,
+        // English: a headless failure lands on stderr beside a stdout stream a script parses.
+        locale: crate::locale::english(),
     }
 }
 

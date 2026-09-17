@@ -14343,6 +14343,7 @@ dependencies = [
  "xai-dirs",
  "xai-grok-config",
  "xai-grok-gboom",
+ "xai-grok-locale",
  "xai-grok-markdown",
  "xai-grok-paths",
  "xai-grok-shared",

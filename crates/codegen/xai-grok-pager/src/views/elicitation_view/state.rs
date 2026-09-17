@@ -272,15 +272,20 @@ fn sanitize_spec(spec: &mut ElicitFieldSpec) {
 /// Validate a URL elicitation target before it is ever offered for consent: it must parse, be plain http(s), and carry no embedded credentials.
 /// The returned URL is the parser's normalized form (Unicode hosts render as their Punycode labels, which the card then flags).
 pub(super) fn check_elicit_url(raw: &str) -> Result<UrlDisplay, String> {
-    let parsed = url::Url::parse(raw.trim()).map_err(|_| "malformed URL".to_string())?;
+    let ctx = crate::locale::ctx();
+    let parsed = url::Url::parse(raw.trim())
+        .map_err(|_| ctx.tr("malformed URL").into_owned())?;
     if !matches!(parsed.scheme(), "http" | "https") {
-        return Err(format!("unsupported scheme \"{}\"", parsed.scheme()));
+        return Err(ctx.tr_format(
+            "unsupported scheme \"{scheme}\"",
+            &[("scheme", parsed.scheme())],
+        ));
     }
     if !parsed.username().is_empty() || parsed.password().is_some() {
-        return Err("URL embeds credentials".to_string());
+        return Err(ctx.tr("URL embeds credentials").into_owned());
     }
     let Some(host) = parsed.host_str() else {
-        return Err("URL has no host".to_string());
+        return Err(ctx.tr("URL has no host").into_owned());
     };
     let punycode_host = host.split('.').any(|label| label.starts_with("xn--"));
     Ok(UrlDisplay {
@@ -367,16 +372,21 @@ impl ElicitationViewState {
     }
 
     pub fn title(&self) -> String {
+        let ctx = crate::locale::ctx();
+        let server = self.server_name.as_str();
         match &self.stage {
-            ElicitationStage::Form(_) => {
-                format!("MCP “{}” requests your input", self.server_name)
-            }
-            ElicitationStage::UrlConsent(_) => {
-                format!("MCP “{}” wants to open a URL", self.server_name)
-            }
-            ElicitationStage::UrlWaiting(_) => {
-                format!("MCP “{}”, waiting for completion", self.server_name)
-            }
+            ElicitationStage::Form(_) => ctx.tr_format(
+                "MCP “{server}” requests your input",
+                &[("server", server)],
+            ),
+            ElicitationStage::UrlConsent(_) => ctx.tr_format(
+                "MCP “{server}” wants to open a URL",
+                &[("server", server)],
+            ),
+            ElicitationStage::UrlWaiting(_) => ctx.tr_format(
+                "MCP “{server}”, waiting for completion",
+                &[("server", server)],
+            ),
         }
     }
 

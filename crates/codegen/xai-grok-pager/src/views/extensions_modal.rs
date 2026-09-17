@@ -295,11 +295,17 @@ pub struct PluginGroup {
 }
 
 impl PluginGroup {
+    /// `label` is the English source of a fixed group header; a dynamic one (a marketplace or
+    /// source name) is built with the struct literal instead and stays as it arrived.
+    ///
+    /// The lookup lives here rather than at the ten call sites so a new `PluginOrigin` arm
+    /// cannot forget it. `key` stays canonical: it is the persisted collapse key, so the
+    /// groups a user has folded shut survive a locale change.
     fn new(rank: u8, key: &str, label: &str) -> Self {
         Self {
             rank,
             key: key.to_string(),
-            label: label.to_string(),
+            label: crate::locale::ctx().tr(label).into_owned(),
         }
     }
 

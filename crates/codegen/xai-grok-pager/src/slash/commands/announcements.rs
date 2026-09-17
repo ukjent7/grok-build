@@ -23,13 +23,17 @@ impl SlashCommand for AnnouncementsCommand {
                 display: "hide".to_string(),
                 match_text: "hide".to_string(),
                 insert_text: "hide".to_string(),
-                description: "Hide the announcement banner".to_string(),
+                description: crate::locale::ctx()
+                    .tr_static("Hide the announcement banner")
+                    .to_string(),
             },
             ArgItem {
                 display: "show".to_string(),
                 match_text: "show".to_string(),
                 insert_text: "show".to_string(),
-                description: "Show the announcement banner".to_string(),
+                description: crate::locale::ctx()
+                    .tr_static("Show the announcement banner")
+                    .to_string(),
             },
         ])
     }

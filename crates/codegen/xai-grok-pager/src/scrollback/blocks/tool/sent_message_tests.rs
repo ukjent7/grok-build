@@ -679,3 +679,29 @@ fn rejected_and_unconfirmed_have_distinct_failure_semantics() {
             .starts_with("Message unconfirmed \u{b7} subagent sub-123")
     );
 }
+
+/// `grok export` / `/export` / `/transcript` write a transcript a script or another tool
+/// reads, so the export line must stay English under any `[ui].locale`. The screen row and
+/// the export line share one match, so this also proves the zh-CN path is reached at all.
+#[test]
+fn export_header_stays_english_under_a_chinese_locale() {
+    let zh = crate::locale::LocaleContext::new(crate::locale::ResolvedLocale {
+        locale: crate::locale::UiLocale::ZhCn,
+        source: crate::locale::LocaleSource::Config,
+    });
+    let block = sent(named(SentMessageDelivery::Queue, "follow up"));
+
+    let english = block.header_text_with(crate::locale::english());
+    assert!(english.starts_with("Message "), "{english}");
+    assert!(english.contains("queued for"), "{english}");
+
+    let chinese = block.header_text_with(&zh);
+    assert_ne!(
+        chinese, english,
+        "the screen row must localize, or the export fix is untested"
+    );
+    assert!(
+        !chinese.starts_with("Message "),
+        "zh-CN screen row still reads English: {chinese}"
+    );
+}

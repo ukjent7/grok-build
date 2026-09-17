@@ -375,6 +375,17 @@ pub fn ctx() -> &'static LocaleContext {
     CONTEXT.get().unwrap_or(&DEFAULT_CONTEXT)
 }
 
+/// The English context, for a surface that must not follow the UI locale.
+///
+/// Same instance [`ctx`] falls back to before [`init`]. A caller reaches for this
+/// instead of [`ctx`] when its output leaves the TUI for a machine reader — the
+/// `grok export` transcript and headless stdout JSON — because `[ui].locale` must
+/// not change what a script parses. It is also the value a locale-dependent
+/// function takes in tests that pin the English path.
+pub fn english() -> &'static LocaleContext {
+    &DEFAULT_CONTEXT
+}
+
 #[cfg(test)]
 fn placeholders(template: &str) -> BTreeSet<&str> {
     let mut result = BTreeSet::new();
@@ -499,6 +510,19 @@ mod tests {
         // default and pass the English fallback through untouched.
         assert_eq!(ctx().locale(), UiLocale::EnUs);
         assert_eq!(ctx().named_text("ctx.fallback.probe", "fallback"), "fallback");
+    }
+
+    #[test]
+    fn english_context_ignores_the_ui_locale() {
+        // The escape hatch for a surface that must not follow `[ui].locale`: the export
+        // transcript and headless stdout JSON. Same instance `ctx()` falls back to.
+        assert_eq!(english().locale(), UiLocale::EnUs);
+        assert_eq!(english().tr("(no matches)"), "(no matches)");
+        assert_eq!(english().named_text("context.tokens", "tokens"), "tokens");
+        assert_eq!(
+            english().tr_format("({count} matches)", &[("count", "3")]),
+            "(3 matches)"
+        );
     }
 
     #[test]

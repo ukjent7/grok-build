@@ -14,14 +14,15 @@ pub(crate) const EFFORT_LEVELS: &[ReasoningEffort] = &[
 ];
 
 pub(crate) fn effort_description(level: ReasoningEffort) -> &'static str {
+    let ctx = crate::locale::ctx();
     match level {
-        ReasoningEffort::None => "No reasoning",
-        ReasoningEffort::Minimal => "Minimal reasoning",
-        ReasoningEffort::Low => "Faster, lighter reasoning",
-        ReasoningEffort::Medium => "Balanced reasoning",
-        ReasoningEffort::High => "Heavy reasoning",
-        ReasoningEffort::Xhigh => "Extended reasoning",
-        ReasoningEffort::Max => "Maximum reasoning",
+        ReasoningEffort::None => ctx.tr_static("No reasoning"),
+        ReasoningEffort::Minimal => ctx.tr_static("Minimal reasoning"),
+        ReasoningEffort::Low => ctx.tr_static("Faster, lighter reasoning"),
+        ReasoningEffort::Medium => ctx.tr_static("Balanced reasoning"),
+        ReasoningEffort::High => ctx.tr_static("Heavy reasoning"),
+        ReasoningEffort::Xhigh => ctx.tr_static("Extended reasoning"),
+        ReasoningEffort::Max => ctx.tr_static("Maximum reasoning"),
     }
 }
 
@@ -54,7 +55,11 @@ pub(crate) fn build_effort_arg_items(
         .enumerate()
         .map(|(idx, option)| {
             let active = mark_active && current_effort == Some(option.value);
-            let active_suffix = if active { " (active)" } else { "" };
+            let active_suffix = if active {
+                crate::locale::ctx().tr_static(" (active)")
+            } else {
+                ""
+            };
             let insert_text = insert_text_for(option);
             // Sort-key prefix: 'a' for top row, 'b' for next, etc
             // Only affects matcher tiebreak ordering, never rendered

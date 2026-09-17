@@ -206,7 +206,7 @@ pub(super) fn dispatch_execute_plan(
         return vec![];
     }
     let Some(session_id) = agent.session.session_id.clone() else {
-        agent.show_toast(super::ctx::NO_SESSION_NOTICE);
+        agent.show_toast(super::ctx::no_session_notice());
         return vec![];
     };
     if !agent.session.state.is_idle() {

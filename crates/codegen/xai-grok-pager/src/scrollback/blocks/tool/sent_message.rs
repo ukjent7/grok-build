@@ -61,12 +61,12 @@ impl SentMessageTarget {
     /// The label, `parent`, or `subagent …<last chars>`; an empty id is just `subagent`. The label and the id are
     /// model-authored, so both are scrubbed of characters that would split or reorder the one-line row.
     /// The two constant nouns are localized; a resolved label or a raw id is data and stays as it arrived.
-    fn noun(&self) -> Cow<'_, str> {
+    fn noun(&self, locale: &crate::locale::LocaleContext) -> Cow<'_, str> {
         match self {
             Self::Named { label, .. } => scrub_display(label),
-            Self::Parent => Cow::Borrowed(crate::locale::ctx().tr_static(PARENT_NOUN)),
+            Self::Parent => Cow::Borrowed(locale.tr_static(PARENT_NOUN)),
             Self::Unresolved { subagent_id } => {
-                let noun = crate::locale::ctx().tr_static(FALLBACK_NOUN);
+                let noun = locale.tr_static(FALLBACK_NOUN);
                 let id = scrub_display(subagent_id);
                 match id.char_indices().nth_back(SHORT_ID_CHARS) {
                     // The char just before the last `SHORT_ID_CHARS`; the tail starts after it.
@@ -166,9 +166,18 @@ impl SentMessageToolCallBlock {
         }
     }
 
-    /// One line for export and search: label, verb, target. Never the text, the reason, or a raw id behind a label.
+    /// One line for the collapsed row and the search anchor: label, verb, target. Never the text, the reason, or a raw id behind a label.
     pub(crate) fn header_text(&self) -> String {
-        format!("{}{}", header_label(), self.verb_and_target())
+        self.header_text_with(crate::locale::ctx())
+    }
+
+    /// [`Self::header_text`] against an explicit locale.
+    ///
+    /// Export passes [`crate::locale::english`]: `grok export` writes a transcript that a
+    /// script, a diff, or a shared log reads, so its header must not follow `[ui].locale`.
+    /// One match behind both, so the screen row and the export line cannot drift apart.
+    pub(crate) fn header_text_with(&self, locale: &crate::locale::LocaleContext) -> String {
+        format!("{}{}", header_label(locale), self.verb_and_target(locale))
     }
 
     /// The collapsed verb names the outcome: a steer stays unmarked and an unrecognized delivery reads like one; a
@@ -176,12 +185,13 @@ impl SentMessageToolCallBlock {
     ///
     /// Each verb is its own anchor, spelled at the call site so `scripts/i18n/wrap-check.py`
     /// can see it; a verb upstream adds falls back to its English until a translation lands.
-    fn verb_and_target(&self) -> String {
-        let locale = crate::locale::ctx();
+    fn verb_and_target(&self, locale: &crate::locale::LocaleContext) -> String {
         let noun = self
             .input
             .as_ref()
-            .map_or(Cow::Borrowed(FALLBACK_NOUN), |input| input.target.noun());
+            .map_or(Cow::Borrowed(FALLBACK_NOUN), |input| {
+                input.target.noun(locale)
+            });
         let noun: &str = &noun;
         match &self.presentation {
             SentMessagePresentation::Sending => {
@@ -345,8 +355,8 @@ impl SentMessageToolCallBlock {
 }
 
 /// The bold label the row opens with; localized as a fragment so the verb after it keeps its own styling.
-fn header_label() -> &'static str {
-    crate::locale::ctx().tr_static(HEADER_LABEL)
+fn header_label(locale: &crate::locale::LocaleContext) -> &'static str {
+    locale.tr_static(HEADER_LABEL)
 }
 
 /// Drops the characters that would split or reorder a one-line row; borrows when there are none.

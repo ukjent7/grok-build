@@ -1,7 +1,7 @@
 //! Tests for feedback / remember / btw / recap dispatchers.
 
 use super::*;
-use crate::app::dispatch::ctx::NO_SESSION_NOTICE;
+use crate::app::dispatch::ctx::no_session_notice;
 use crate::app::dispatch::{recap_unavailable_toast, scrollback_has_user_messages};
 
 fn agent_ref(app: &AppView, id: AgentId) -> &AgentView {
@@ -1064,7 +1064,7 @@ fn feedback_modal_open_refuses_visibly_on_dashboard() {
     assert!(effects.is_empty());
     let dashboard = app.dashboard.as_ref().unwrap();
     assert_eq!(dashboard.dispatch.text(), "");
-    let expected = format!("{} {NO_SESSION_NOTICE}", crate::glyphs::ballot_x());
+    let expected = format!("{} {no_session_notice()}", crate::glyphs::ballot_x());
     assert_eq!(dashboard.error_toast.as_deref(), Some(expected.as_str()));
     assert!(agent_ref(&app, AgentId(0)).feedback_modal.is_none());
 }

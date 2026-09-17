@@ -32,13 +32,17 @@ impl SlashCommand for DocsCommand {
                 display: "how-to".into(),
                 match_text: "how-to".into(),
                 insert_text: "how-to".into(),
-                description: "Browse in-TUI How-to Guides".into(),
+                description: crate::locale::ctx()
+                    .tr_static("Browse in-TUI How-to Guides")
+                    .into(),
             },
             ArgItem {
                 display: "web".into(),
                 match_text: "web".into(),
                 insert_text: "web".into(),
-                description: "Open docs.x.ai/build in the browser".into(),
+                description: crate::locale::ctx()
+                    .tr_static("Open docs.x.ai/build in the browser")
+                    .into(),
             },
         ];
         items.extend(all_titles().map(|title| ArgItem {

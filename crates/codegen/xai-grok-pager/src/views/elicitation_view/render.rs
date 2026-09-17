@@ -45,7 +45,10 @@ enum BodyRow {
 fn url_rows(rows: &mut Vec<BodyRow>, display: &UrlDisplay, content_w: usize, theme: &Theme) {
     if let Some(host) = &display.host {
         rows.push(BodyRow::Text(Line::from(vec![
-            Span::styled("Host: ", Style::default().fg(theme.gray)),
+            Span::styled(
+                crate::locale::ctx().tr_static("Host: "),
+                Style::default().fg(theme.gray),
+            ),
             Span::styled(
                 host.clone(),
                 Style::default()
@@ -55,7 +58,9 @@ fn url_rows(rows: &mut Vec<BodyRow>, display: &UrlDisplay, content_w: usize, the
         ])));
         if display.punycode_host {
             rows.push(BodyRow::Text(Line::from(vec![Span::styled(
-                "Punycode host: check it is the site you expect".to_string(),
+                crate::locale::ctx()
+                    .tr_static("Punycode host: check it is the site you expect")
+                    .to_string(),
                 Style::default().fg(theme.accent_error),
             )])));
         }
@@ -95,7 +100,9 @@ fn build_body_rows(
         ElicitationStage::UrlWaiting(waiting) => {
             url_rows(&mut rows, &waiting.display, content_w, theme);
             rows.push(BodyRow::Text(Line::from(vec![Span::styled(
-                "Waiting for the server to confirm…".to_string(),
+                crate::locale::ctx()
+                    .tr_static("Waiting for the server to confirm…")
+                    .to_string(),
                 Style::default().fg(theme.gray),
             )])));
         }
@@ -139,17 +146,20 @@ fn build_body_rows(
 }
 
 fn actions(state: &ElicitationViewState) -> Vec<(ElicitHit, char, &'static str)> {
+    let ctx = crate::locale::ctx();
     match &state.stage {
         ElicitationStage::Form(_) => vec![
-            (ElicitHit::Accept, 'y', "Accept"),
-            (ElicitHit::Decline, 'd', "Decline"),
+            (ElicitHit::Accept, 'y', ctx.tr_static("Accept")),
+            (ElicitHit::Decline, 'd', ctx.tr_static("Decline")),
         ],
         ElicitationStage::UrlConsent(_) => vec![
-            (ElicitHit::Accept, 'y', "Open URL"),
-            (ElicitHit::Decline, 'd', "Decline"),
+            (ElicitHit::Accept, 'y', ctx.tr_static("Open URL")),
+            (ElicitHit::Decline, 'd', ctx.tr_static("Decline")),
         ],
         // The response is already sent: the only local action left is dismissing the waiting chrome ('o' reopens via the shortcut bar)
-        ElicitationStage::UrlWaiting(_) => vec![(ElicitHit::Accept, 'y', "Done")],
+        ElicitationStage::UrlWaiting(_) => {
+            vec![(ElicitHit::Accept, 'y', ctx.tr_static("Done"))]
+        }
     }
 }
 
@@ -274,7 +284,14 @@ pub fn render_elicitation_view(
 
     // The "↑ more" and "↓ more" markers paint into the separator rows the layout already has
     if scroll > 0 {
-        paint_more_marker(buf, content_x, above_body_y, content_width, "↑ more", theme);
+        paint_more_marker(
+            buf,
+            content_x,
+            above_body_y,
+            content_width,
+            crate::locale::ctx().tr_static("↑ more"),
+            theme,
+        );
     }
     if total > scroll + body_h {
         paint_more_marker(
@@ -282,7 +299,7 @@ pub fn render_elicitation_view(
             content_x,
             actions_y.saturating_sub(1),
             content_width,
-            "↓ more",
+            crate::locale::ctx().tr_static("↓ more"),
             theme,
         );
     }
@@ -469,7 +486,11 @@ pub(super) fn form_value_column(fields: &[FormFieldUi], content_w: usize) -> usi
     let max_left = fields
         .iter()
         .map(|f| {
-            let req = if f.spec.required { " (required)" } else { "" };
+            let req = if f.spec.required {
+            crate::locale::ctx().tr_static(" (required)")
+        } else {
+            ""
+        };
             2 + f.spec.title.width() + req.width()
         })
         .max()
@@ -490,7 +511,7 @@ fn multi_select_summary(field: &FormFieldUi) -> String {
         .filter_map(|(i, o)| field.option_selected(i).then_some(o.label.as_str()))
         .collect();
     if labels.is_empty() {
-        "(none selected)".into()
+        crate::locale::ctx().tr_static("(none selected)").into()
     } else {
         labels.join(", ")
     }
@@ -537,7 +558,7 @@ fn field_row(
         ) => index
             .and_then(|i| options.get(i))
             .map(|o| o.label.clone())
-            .unwrap_or_else(|| "(select)".into()),
+            .unwrap_or_else(|| crate::locale::ctx().tr_static("(select)").into()),
         (super::state::FieldValueUi::Multi { .. }, _) => multi_select_summary(field),
         (super::state::FieldValueUi::Text { draft }, _) => {
             let mut draft = draft.clone();
@@ -552,7 +573,7 @@ fn field_row(
 
     let prefix = format!("{shortcut} ");
     let req = if field.spec.required {
-        " (required)"
+        crate::locale::ctx().tr_static(" (required)")
     } else {
         ""
     };

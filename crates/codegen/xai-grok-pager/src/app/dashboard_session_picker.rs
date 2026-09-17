@@ -7,7 +7,7 @@ use crate::views::picker::{PickerConfig, PickerOutcome, handle_picker_input};
 use crate::views::session_picker::{
     PickerItem, build_entry_map, effective_filter_query, repo_name_from_cwd,
 };
-use crate::views::session_picker_surface::DASHBOARD_PICKER_TITLE;
+use crate::views::session_picker_surface::dashboard_picker_title;
 
 impl AppView {
     pub(super) fn handle_dashboard_session_picker_input(
@@ -49,7 +49,7 @@ impl AppView {
         );
         let non_selectable: Vec<bool> = entry_map.iter().map(Option::is_none).collect();
         let config = PickerConfig {
-            title: Some(DASHBOARD_PICKER_TITLE),
+            title: Some(dashboard_picker_title()),
             show_search_hint: true,
             expandable: false,
             esc_clears_query: true,

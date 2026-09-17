@@ -1,6 +1,6 @@
 //! Conversation rewind dispatchers and prompt-entry lookup helpers.
 
-use super::ctx::NO_SESSION_NOTICE;
+use super::ctx::no_session_notice;
 use crate::app::actions::Effect;
 use crate::app::agent::AgentId;
 use crate::app::app_view::{ActiveView, AppView};
@@ -86,7 +86,7 @@ pub(super) fn dispatch_rewind(app: &mut AppView) -> Vec<Effect> {
         return vec![];
     };
     let Some(session_id) = agent.session.session_id.clone() else {
-        app.show_toast(NO_SESSION_NOTICE);
+        app.show_toast(no_session_notice());
         return vec![];
     };
 
@@ -130,7 +130,7 @@ pub(super) fn dispatch_rewind_show_picker(app: &mut AppView) -> Vec<Effect> {
         return vec![];
     };
     let Some(session_id) = agent.session.session_id.clone() else {
-        app.show_toast(NO_SESSION_NOTICE);
+        app.show_toast(no_session_notice());
         return vec![];
     };
 
@@ -360,7 +360,7 @@ pub(super) fn dispatch_inline_edit_submit(app: &mut AppView) -> Vec<Effect> {
         return vec![];
     };
     let Some(session_id) = agent.session.session_id.clone() else {
-        app.show_toast(NO_SESSION_NOTICE);
+        app.show_toast(no_session_notice());
         return vec![];
     };
     let Some(edit) = agent.inline_edit.as_ref() else {

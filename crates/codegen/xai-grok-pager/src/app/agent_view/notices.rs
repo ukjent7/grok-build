@@ -213,9 +213,16 @@ impl AgentView {
         // The mouse-off banner advertises how to re-enable
         // `Ctrl+R` only works from scrollback, so show `/toggle-mouse-reporting` when the prompt is focused (it toggles from any pane)
         // Storage keeps the scrollback form; swap the displayed text here.
-        if sticky == crate::app::MOUSE_OFF_HINT_SCROLLBACK && self.active_pane == ActivePane::Prompt
-        {
-            return Some(crate::app::MOUSE_OFF_HINT_PROMPT);
+        //
+        // The identity test is against the stored English const, so it keeps working under
+        // zh-CN; only the string handed back is localized.
+        if sticky == crate::app::MOUSE_OFF_HINT_SCROLLBACK {
+            let ctx = crate::locale::ctx();
+            return Some(if self.active_pane == ActivePane::Prompt {
+                ctx.tr_static(crate::app::MOUSE_OFF_HINT_PROMPT)
+            } else {
+                ctx.tr_static(crate::app::MOUSE_OFF_HINT_SCROLLBACK)
+            });
         }
         Some(sticky)
     }
@@ -224,7 +231,12 @@ impl AgentView {
     /// Triggered on Shift+Tab mode cycles.
     /// Renders at full visibility for 2 s, then fades out over the final 0.3 s.
     pub fn show_mode_switch_banner(&mut self, mode_name: &str) {
-        let msg = format!("Switched to mode: {}", mode_name);
+        // Only the sentence localizes: a mode name is a canonical identifier also shown
+        // in the prompt info-line, so it stays English (see `mode.always_approve.label`).
+        let msg = crate::locale::ctx().tr_format(
+            "Switched to mode: {mode}",
+            &[("mode", mode_name)],
+        );
         self.mode_switch_banner = Some((msg, MODE_BANNER_TOTAL_TICKS));
     }
 

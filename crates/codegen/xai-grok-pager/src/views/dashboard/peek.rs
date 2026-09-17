@@ -918,16 +918,42 @@ fn block_short_text(block: &crate::scrollback::block::RenderBlock) -> Option<Str
     match block {
         RenderBlock::UserPrompt(b) => Some(format!("\u{2771} {}", first_line_of(&b.text))),
         RenderBlock::AgentMessage(b) => Some(first_line_of(&b.text())),
-        RenderBlock::Thinking(b) => Some(format!("(thinking) {}", first_line_of(&b.text()))),
-        RenderBlock::System(_) => Some("(system event)".to_string()),
-        RenderBlock::SessionEvent(_) => Some("(session event)".to_string()),
-        RenderBlock::ToolCall(_) => Some("(tool call)".to_string()),
-        RenderBlock::BgTask(_) => Some("(background task)".to_string()),
-        RenderBlock::Subagent(_) => Some("(subagent)".to_string()),
-        RenderBlock::Workflow(_) => Some("(workflow)".to_string()),
-        RenderBlock::Btw(_) => Some("(btw)".to_string()),
-        RenderBlock::ContextInfo(_) => Some("(context info)".to_string()),
-        RenderBlock::MemoryCapture(_) => Some("(memory capture)".to_string()),
+        RenderBlock::Thinking(b) => Some(format!(
+            "{}{}",
+            crate::locale::ctx().tr_static("(thinking) "),
+            first_line_of(&b.text())
+        )),
+        RenderBlock::System(_) => Some(
+            crate::locale::ctx().tr_static("(system event)").to_string(),
+        ),
+        RenderBlock::SessionEvent(_) => Some(
+            crate::locale::ctx()
+                .tr_static("(session event)")
+                .to_string(),
+        ),
+        RenderBlock::ToolCall(_) => Some(
+            crate::locale::ctx().tr_static("(tool call)").to_string(),
+        ),
+        RenderBlock::BgTask(_) => Some(
+            crate::locale::ctx()
+                .tr_static("(background task)")
+                .to_string(),
+        ),
+        RenderBlock::Subagent(_) => Some(
+            crate::locale::ctx().tr_static("(subagent)").to_string(),
+        ),
+        RenderBlock::Workflow(_) => Some(
+            crate::locale::ctx().tr_static("(workflow)").to_string(),
+        ),
+        RenderBlock::Btw(_) => Some(crate::locale::ctx().tr_static("(btw)").to_string()),
+        RenderBlock::ContextInfo(_) => Some(
+            crate::locale::ctx().tr_static("(context info)").to_string(),
+        ),
+        RenderBlock::MemoryCapture(_) => Some(
+            crate::locale::ctx()
+                .tr_static("(memory capture)")
+                .to_string(),
+        ),
         RenderBlock::Stub(_) => None,
     }
 }

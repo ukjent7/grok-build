@@ -78,7 +78,9 @@ impl SlashCommand for DoctorCommand {
             display: "fix".into(),
             match_text: "fix".into(),
             insert_text: "fix".into(),
-            description: "Show automatic fixes available here".into(),
+            description: crate::locale::ctx()
+                .tr_static("Show automatic fixes available here")
+                .into(),
         }])
     }
 
