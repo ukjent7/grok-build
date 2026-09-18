@@ -116,18 +116,10 @@ impl MvpAgent {
         // FORK(byok): third-party endpoints may not serve the compiled-in default slug,
         // so they fall back to the session's own model; first-party keeps the upstream
         // default. Same endpoint split as `ClientDefaults::byok_compat`.
-        let slug = match self.resolve_session_summary_model() {
-            Some(slug) => slug,
-            None => {
-                if xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
-                    &primary.base_url,
-                ) {
-                    primary.model.clone()
-                } else {
-                    crate::models::default_session_summary_model().to_owned()
-                }
-            }
-        };
+        let slug = crate::agent::config::resolve_aux_model_slug(
+            self.resolve_session_summary_model().as_deref(),
+            Some((&primary.base_url, &primary.model)),
+        );
         let session_key = self.auth_manager.current_or_expired().map(|a| a.key.clone());
         let models = self.models_manager.models();
         let endpoints = self.models_manager.endpoints();

@@ -578,20 +578,19 @@ impl SessionActor {
     }
 
     /// Model for a one-shot side request (`/recap`-style helpers), mirroring the
-    /// endpoint split in `MvpAgent::build_summary_client`: third-party endpoints may
-    /// not serve the xAI-only compiled slug, so they take the session's own model;
-    /// first-party endpoints keep the compiled default.
+    /// endpoint split in `MvpAgent::build_summary_client`; the shared policy lives in
+    /// `agent::config::resolve_aux_model_slug`.
     pub(super) async fn side_request_model(&self, model_override: Option<&str>) -> String {
         if let Some(model) = model_override {
             return model.to_owned();
         }
         let session = self.chat_state_handle.get_sampling_config().await;
-        match session.filter(|config| {
-            xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(&config.base_url)
-        }) {
-            Some(config) => config.model,
-            None => crate::models::default_session_summary_model().to_owned(),
-        }
+        crate::agent::config::resolve_aux_model_slug(
+            None,
+            session
+                .as_ref()
+                .map(|config| (&config.base_url, &config.model)),
+        )
     }
 
     /// Handle an AI-powered shell command suggestion request.

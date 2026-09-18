@@ -4837,6 +4837,28 @@ fn with_resolved_model<T>(model_id: &str, f: impl FnOnce(ModelLookup) -> T) -> T
     let models = resolve_model_list(&cfg, None);
     f(ModelLookup::Loaded(find_model_by_id(&models, model_id)))
 }
+/// FORK(byok): the aux-model fallback policy shared by every one-shot side request
+/// (session summary, `/recap`, ...): an explicit override wins; otherwise a third-party
+/// endpoint may not serve the compiled-in default slug, so it takes the session's own
+/// model, and first-party keeps the compiled default. Same endpoint split as
+/// `ClientDefaults::byok_compat`.
+/// `primary` is the active session's `(base_url, model)`; callers pass it as a pair
+/// because the session config reaches them through two different structs.
+pub(crate) fn resolve_aux_model_slug(
+    override_slug: Option<&str>,
+    primary: Option<(&str, &str)>,
+) -> String {
+    if let Some(slug) = override_slug {
+        return slug.to_owned();
+    }
+    match primary.filter(|(base_url, _)| {
+        xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(base_url)
+    }) {
+        Some((_, model)) => model.to_owned(),
+        None => crate::models::default_session_summary_model().to_owned(),
+    }
+}
+
 /// Resolve a standalone `SamplerConfig` for an auxiliary model slug (image description, session summary, ...).
 /// Resolved through the catalog so a `[model.*]` override redirects it to its own endpoint, credentials, and routing `model`.
 /// On `None` the caller falls back to the active session's model.

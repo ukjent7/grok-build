@@ -13,10 +13,16 @@
 //!   `is_ignorable_response_event`. A frame that fails the `#[serde(tag = "type")]`
 //!   event enum, or that carries a float where an int is declared, is a non-retryable
 //!   turn-ending error on any endpoint, so leniency there is not a BYOK feature.
+//! * `screen_message_payload`, the one deliberate exception to that rule: it **is**
+//!   gated behind `byok_compat`. First-party Messages routes are trusted not to emit
+//!   the unparsable heartbeat frames it filters, and first-party behavior must stay
+//!   byte-identical to upstream, so first-party Messages streams skip screening
+//!   entirely. Do not "fix" this asymmetry by ungating it.
 //!
 //! First-party requests therefore do enter this file, through the recovery path of
 //! `client.rs::deserialize_response_event`. Read an ungated call as intended
-//! leniency, not as a missed flag.
+//! leniency, not as a missed flag; conversely, the gated `screen_message_payload`
+//! call is equally deliberate. Both are load-bearing -- leave them as they are.
 //! NOTE: this file is covered by BYOK CI (`cargo test -p xai-grok-sampler`).
 
 use xai_grok_sampling_types::{

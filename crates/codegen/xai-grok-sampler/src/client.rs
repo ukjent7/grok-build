@@ -963,17 +963,21 @@ impl SamplingClient {
             builder,
             sent_bearer,
         } = self.post(self.endpoint("chat/completions"));
-        // FORK(byok): third-party validators may reject non-standard message shapes
-        let mut body = serde_json::to_value(&payload).map_err(|e| {
-            tracing::error!("Failed to serialize chat completion request: {}", e);
-            SamplingError::Serialization(e)
-        })?;
-        if self.defaults.byok_compat {
+        // FORK(byok): third-party validators may reject non-standard message shapes, so
+        // only that path pays for the intermediate `Value` and normalization; first-party
+        // serializes the payload directly, exactly as upstream.
+        let built_request = if self.defaults.byok_compat {
+            let mut body = serde_json::to_value(&payload).map_err(|e| {
+                tracing::error!("Failed to serialize chat completion request: {}", e);
+                SamplingError::Serialization(e)
+            })?;
             normalize_byok_chat_message_content(&mut body);
-        }
-        let built_request = self
-            .build_json_request(grok_headers.apply(builder), &body)
-            .await?;
+            self.build_json_request(grok_headers.apply(builder), &body)
+                .await?
+        } else {
+            self.build_json_request(grok_headers.apply(builder), &payload)
+                .await?
+        };
         let response = self.send(built_request).await?;
 
         let status = response.status();
@@ -1109,18 +1113,23 @@ impl SamplingClient {
             builder,
             sent_bearer,
         } = self.post(self.endpoint("chat/completions"));
-        // FORK(byok): third-party validators may reject non-standard message shapes
-        let mut body = serde_json::to_value(&streaming_request).map_err(|e| {
-            tracing::error!("Failed to serialize chat completion stream request: {}", e);
-            SamplingError::Serialization(e)
-        })?;
-        if self.defaults.byok_compat {
-            normalize_byok_chat_message_content(&mut body);
-        }
         let http_request = grok_headers
             .apply(builder)
             .header(ACCEPT, HeaderValue::from_static("text/event-stream"));
-        let built_request = self.build_json_request(http_request, &body).await?;
+        // FORK(byok): third-party validators may reject non-standard message shapes, so
+        // only that path pays for the intermediate `Value` and normalization; first-party
+        // serializes the request directly, exactly as upstream.
+        let built_request = if self.defaults.byok_compat {
+            let mut body = serde_json::to_value(&streaming_request).map_err(|e| {
+                tracing::error!("Failed to serialize chat completion stream request: {}", e);
+                SamplingError::Serialization(e)
+            })?;
+            normalize_byok_chat_message_content(&mut body);
+            self.build_json_request(http_request, &body).await?
+        } else {
+            self.build_json_request(http_request, &streaming_request)
+                .await?
+        };
 
         tracing::debug!(
             url = %built_request.url(),
@@ -1918,8 +1927,12 @@ impl SamplingClient {
 
         // FORK(byok): third-party endpoints inject frames the tagged `MessageStreamEvent`
         // enum can never parse (`event: error` + `data: {}` from opencode zen, typeless
-        // keep-alives from relays). Screen payloads before the strict parse; first-party
-        // requests skip screening entirely.
+        // keep-alives from relays). Screen payloads before the strict parse. The gate is
+        // deliberate, not a missed flag: first-party Messages routes are trusted not to
+        // send unparsable heartbeats, and skipping screening keeps first-party behavior
+        // byte-identical to upstream -- unlike the Responses `ping` skip and the
+        // chat-chunk leniency, which run on every endpoint. See the note in
+        // `client_third_party`.
         let byok_compat = self.defaults.byok_compat;
 
         // Map SSE events into MessageStreamEvent.

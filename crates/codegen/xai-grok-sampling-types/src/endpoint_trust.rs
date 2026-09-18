@@ -22,6 +22,14 @@ pub fn matches_trusted_base_url(candidate: &str, trusted_base: &str) -> bool {
         return false;
     };
     let trusted_path = trusted.path();
+    // A configured base URL may end in a trailing slash; trim one (but never past the
+    // root "/") so `strip_prefix` below yields a subpath that still starts with '/' and
+    // subpath matching works for both spellings of the base.
+    let trusted_path = if trusted_path.len() > 1 {
+        trusted_path.strip_suffix('/').unwrap_or(trusted_path)
+    } else {
+        trusted_path
+    };
     let candidate_path = candidate.path();
     let path_matches = candidate_path == trusted_path
         || candidate_path
@@ -40,11 +48,10 @@ pub fn is_prod_cli_chat_proxy_url(url: &str) -> bool {
 
 /// True for configured first-party cli-chat-proxy routes, excluding arbitrary loopback URLs.
 /// It is suitable for xAI-only request extensions.
+/// Currently the production base only; kept as a named seam so a non-prod trusted
+/// route is a one-line change here, not at every caller.
 pub fn is_trusted_cli_chat_proxy_url(url: &str) -> bool {
-    if is_prod_cli_chat_proxy_url(url) {
-        return true;
-    }
-    false
+    is_prod_cli_chat_proxy_url(url)
 }
 
 /// True for trusted first-party xAI HTTPS routes, excluding arbitrary loopback URLs.
@@ -116,5 +123,32 @@ mod tests {
         assert!(is_third_party_base_url("https://api.anthropic.com/v1"));
         assert!(is_third_party_base_url("https://api.example.com/v1"));
         assert!(is_third_party_base_url("https://gateway.example.com/v1"));
+    }
+
+    #[test]
+    fn trailing_slash_on_trusted_base_matches_the_same_subpaths() {
+        // No-slash base: the pre-existing behavior.
+        assert!(matches_trusted_base_url(
+            "https://proxy.x.ai/v1/chat",
+            "https://proxy.x.ai/v1"
+        ));
+        // A trailing slash on the base must not break subpath matching.
+        assert!(matches_trusted_base_url(
+            "https://proxy.x.ai/v1/chat",
+            "https://proxy.x.ai/v1/"
+        ));
+        assert!(matches_trusted_base_url(
+            "https://proxy.x.ai/v1",
+            "https://proxy.x.ai/v1/"
+        ));
+        // A different path under the same host is still not trusted.
+        assert!(!matches_trusted_base_url(
+            "https://proxy.x.ai/other/chat",
+            "https://proxy.x.ai/v1"
+        ));
+        assert!(!matches_trusted_base_url(
+            "https://proxy.x.ai/other/chat",
+            "https://proxy.x.ai/v1/"
+        ));
     }
 }
