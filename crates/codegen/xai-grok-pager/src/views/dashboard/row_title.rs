@@ -9,7 +9,7 @@ use unicode_width::UnicodeWidthStr;
 
 use crate::render::line_utils::truncate_str;
 use crate::theme::Theme;
-use crate::views::dashboard::row::{DashboardRow, NEW_SESSION_LABEL, RowBadge};
+use crate::views::dashboard::row::{DashboardRow, RowBadge, new_session_label};
 
 pub(crate) struct RowTitle<'a> {
     pub row: &'a DashboardRow,
@@ -39,13 +39,17 @@ impl RowTitle<'_> {
             } else {
                 Style::default().bg(bg).fg(theme.text_primary)
             };
-            // The # distinguishes the fallback from user titles beginning with "New session".
+            // The ` #`, not the words, tells this fallback apart from a user title that
+            // happens to begin the same way -- in either language. Split against the
+            // localized label: matching the English fallback would silently miss every
+            // Chinese row and paint its ` #<id>` in the label colour.
+            let fallback = new_session_label();
             let dim_suffix = (!row.is_more_placeholder)
-                .then(|| row.label.strip_prefix(NEW_SESSION_LABEL))
+                .then(|| row.label.strip_prefix(fallback))
                 .flatten()
                 .filter(|rest| rest.starts_with(" #"));
             if let Some(suffix) = dim_suffix {
-                let head = truncate_str(NEW_SESSION_LABEL, usize::from(area.width));
+                let head = truncate_str(fallback, usize::from(area.width));
                 cx = buf
                     .set_stringn(cx, area.y, head, usize::from(area.width), label_style)
                     .0;

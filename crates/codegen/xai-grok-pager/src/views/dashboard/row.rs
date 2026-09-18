@@ -15,14 +15,15 @@ use std::time::{Instant, SystemTime};
 /// Title prefix for a session that has no name / generated title / prompt yet.
 /// The renderer paints this part in the primary colour and the trailing ` #<id>` suffix in dim gray
 /// (see [`RowTitle::render_wide`](crate::views::dashboard::row_title::RowTitle::render_wide)).
-/// A function rather than a const: the label is localized, and `render.rs` matches the row label against this same text.
-pub(crate) fn new_session_label() -> String {
-    crate::locale::ctx()
-        .named_text("dashboard.row.new_session", "New session")
-        .into_owned()
+/// A function rather than a const because the label is localized; it borrows from the
+/// catalog, so a per-frame caller pays nothing.
+pub(crate) fn new_session_label() -> &'static str {
+    crate::locale::ctx().named_static_text("dashboard.row.new_session", NEW_SESSION_LABEL)
 }
 
-/// The English base of [`new_session_label`], used by `row_title` to split the title from its ` #<id>` suffix.
+/// The English fallback of [`new_session_label`], for a caller that needs a `const`.
+/// Nothing may match a rendered row label against this: under `[ui].locale = "zh-CN"`
+/// the label is the catalog value, so an English comparison silently never matches.
 pub(crate) const NEW_SESSION_LABEL: &str = "New session";
 /// A single row in the dashboard. Built per-frame from `app.agents`.
 #[derive(Debug, Clone)]
@@ -582,7 +583,7 @@ fn top_level_label(agent: &AgentView) -> String {
         let short: String = sid.0.chars().take(8).collect();
         return format!("{} #{short}", new_session_label());
     }
-    new_session_label()
+    new_session_label().to_string()
 }
 fn top_level_row(id: AgentId, agent: &AgentView, pinned: bool, home: Option<&str>) -> DashboardRow {
     let state = classify_top_level(agent);
