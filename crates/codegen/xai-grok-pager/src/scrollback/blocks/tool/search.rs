@@ -158,12 +158,8 @@ impl SearchToolCallBlock {
         let locale = crate::locale::ctx();
         if self.match_count == 0 {
             return match self.meta.output_mode {
-                SearchOutputMode::FilesWithMatches => locale
-                    .tr("(no files)")
-                    .into_owned(),
-                _ => locale
-                    .tr("(no matches)")
-                    .into_owned(),
+                SearchOutputMode::FilesWithMatches => locale.tr("(no files)").into_owned(),
+                _ => locale.tr("(no matches)").into_owned(),
             };
         }
         match self.meta.output_mode {
@@ -177,29 +173,19 @@ impl SearchToolCallBlock {
                         &[("count", &count), ("files", &files)],
                     )
                 } else if self.match_count == 1 {
-                    locale
-                        .tr("(1 match)")
-                        .into_owned()
+                    locale.tr("(1 match)").into_owned()
                 } else {
                     let count = self.match_count.to_string();
-                    locale.tr_format(
-                        "({count} matches)",
-                        &[("count", &count)],
-                    )
+                    locale.tr_format("({count} matches)", &[("count", &count)])
                 }
             }
             SearchOutputMode::FilesWithMatches => {
                 let n = self.match_count; // match_count = # of files in this mode
                 if n == 1 {
-                    locale
-                        .tr("(1 file)")
-                        .into_owned()
+                    locale.tr("(1 file)").into_owned()
                 } else {
                     let count = n.to_string();
-                    locale.tr_format(
-                        "({count} files)",
-                        &[("count", &count)],
-                    )
+                    locale.tr_format("({count} files)", &[("count", &count)])
                 }
             }
             SearchOutputMode::Count => {
@@ -212,15 +198,10 @@ impl SearchToolCallBlock {
                         &[("count", &count), ("files", &files)],
                     )
                 } else if self.match_count == 1 {
-                    locale
-                        .tr("(1 match)")
-                        .into_owned()
+                    locale.tr("(1 match)").into_owned()
                 } else {
                     let count = self.match_count.to_string();
-                    locale.tr_format(
-                        "({count} matches)",
-                        &[("count", &count)],
-                    )
+                    locale.tr_format("({count} matches)", &[("count", &count)])
                 }
             }
         }
@@ -262,10 +243,7 @@ impl SearchToolCallBlock {
             theme.fg(theme.path)
         };
 
-        let mut spans = vec![Span::styled(
-            "Search ".to_string(),
-            bold_style,
-        )];
+        let mut spans = vec![Span::styled("Search ".to_string(), bold_style)];
 
         // The search term: the glob when it replaces a trivial pattern, otherwise the quoted pattern
         if self.is_trivial_pattern()
@@ -279,10 +257,7 @@ impl SearchToolCallBlock {
 
             // Case 2: glob shown as the first "in" scope (string-styled, not path-styled)
             if let Some(ref glob) = self.meta.glob {
-                spans.push(Span::styled(
-                    " in ".to_string(),
-                    text_style,
-                ));
+                spans.push(Span::styled(" in ".to_string(), text_style));
                 spans.push(Span::styled(glob.to_string(), pattern_style));
             }
         }
@@ -290,10 +265,7 @@ impl SearchToolCallBlock {
         // Path scope (always after glob if both present).
         // When width is constrained, shorten the path the way the fish shell does
         if let Some(ref path) = self.meta.path {
-            spans.push(Span::styled(
-                " in ".to_string(),
-                text_style,
-            ));
+            spans.push(Span::styled(" in ".to_string(), text_style));
             if let Some(w) = width {
                 let used: usize = spans
                     .iter()
@@ -374,44 +346,26 @@ impl SearchToolCallBlock {
             SearchOutputMode::Count => "count",
         };
         parts.push(vec![
-            Span::styled(
-                "mode: ".to_owned(),
-                label_style,
-            ),
+            Span::styled("mode: ".to_owned(), label_style),
             Span::styled(mode_str.to_string(), value_style),
         ]);
 
         if let Some(ref ft) = self.meta.file_type {
             parts.push(vec![
-                Span::styled(
-                    "type: ".to_owned(),
-                    label_style,
-                ),
+                Span::styled("type: ".to_owned(), label_style),
                 Span::styled(ft.to_string(), value_style),
             ]);
         }
         if self.meta.case_insensitive {
             parts.push(vec![
-                Span::styled(
-                    "case-insensitive: ".to_owned(),
-                    label_style,
-                ),
-                Span::styled(
-                    "true".to_owned(),
-                    value_style,
-                ),
+                Span::styled("case-insensitive: ".to_owned(), label_style),
+                Span::styled("true".to_owned(), value_style),
             ]);
         }
         if self.meta.multiline {
             parts.push(vec![
-                Span::styled(
-                    "multiline: ".to_owned(),
-                    label_style,
-                ),
-                Span::styled(
-                    "true".to_owned(),
-                    value_style,
-                ),
+                Span::styled("multiline: ".to_owned(), label_style),
+                Span::styled("true".to_owned(), value_style),
             ]);
         }
 
@@ -477,9 +431,7 @@ impl BlockContent for SearchToolCallBlock {
                     lines.push(Line::from("").into());
                     lines.push(
                         Line::from(Span::styled(
-                            crate::locale::ctx()
-                                .tr("  (no results)")
-                                .into_owned(),
+                            crate::locale::ctx().tr("  (no results)").into_owned(),
                             theme.muted(),
                         ))
                         .into(),

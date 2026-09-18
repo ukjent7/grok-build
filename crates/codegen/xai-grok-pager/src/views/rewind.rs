@@ -368,22 +368,16 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 len: points.len(),
                 selected: *selected,
             }
-            .render(
-                buf,
-                area,
-                &title,
-                focused,
-                |i, ctx| {
+            .render(buf, area, &title, focused, |i, ctx| {
                 let Some(point) = points.get(i) else {
                     return Line::from("");
                 };
                 let dot_style = Style::default().fg(theme.gray).bg(ctx.row_bg);
                 let preview: String = crate::render::line_utils::truncate_str(
-                    point.prompt_preview.as_deref().unwrap_or(
-                        crate::locale::ctx()
-                            .tr("(no preview)")
-                            .as_ref(),
-                    ),
+                    point
+                        .prompt_preview
+                        .as_deref()
+                        .unwrap_or(crate::locale::ctx().tr("(no preview)").as_ref()),
                     ctx.content_width.saturating_sub(8) as usize,
                 );
                 let text_style = Style::default()
@@ -424,8 +418,7 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 y,
                 &Line::from(Span::styled(
                     crate::locale::ctx()
-                        .tr("Would you like to cancel it before rewinding?",
-                        )
+                        .tr("Would you like to cancel it before rewinding?")
                         .into_owned(),
                     Style::default().fg(theme.gray),
                 )),
@@ -462,9 +455,7 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 content_x,
                 y,
                 &Line::from(Span::styled(
-                    crate::locale::ctx()
-                        .tr("Rewinding...")
-                        .into_owned(),
+                    crate::locale::ctx().tr("Rewinding...").into_owned(),
                     Style::default().fg(theme.gray),
                 )),
                 content_w,
@@ -480,9 +471,7 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
             let prefix = crate::locale::ctx()
                 .tr("Rewind conversation to \u{201C}")
                 .into_owned();
-            let suffix = crate::locale::ctx()
-                .tr("\u{201D}?")
-                .into_owned();
+            let suffix = crate::locale::ctx().tr("\u{201D}?").into_owned();
             let chrome = prefix.chars().count() + suffix.chars().count();
             let max_preview = (content_w as usize).saturating_sub(chrome + 1);
             let preview_trunc: String = if preview_text.chars().count() > max_preview {
@@ -520,8 +509,7 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
                 y,
                 content_w,
                 'a',
-                &crate::locale::ctx()
-                    .tr("Yes, and don't ask again"),
+                &crate::locale::ctx().tr("Yes, and don't ask again"),
                 *active_idx == 1,
                 focused,
                 &theme,
@@ -540,17 +528,13 @@ pub fn render_rewind_overlay(buf: &mut Buffer, area: Rect, phase: &RewindPhase, 
             );
         }
         RewindPhase::Error { message } => {
-            let dismiss_label = crate::locale::ctx()
-                .tr("Dismiss")
-                .into_owned();
+            let dismiss_label = crate::locale::ctx().tr("Dismiss").into_owned();
             let mut y = area.y + 1;
             buf.set_line(
                 content_x,
                 y,
                 &Line::from(Span::styled(
-                    crate::locale::ctx()
-                        .tr("Rewind failed")
-                        .into_owned(),
+                    crate::locale::ctx().tr("Rewind failed").into_owned(),
                     Style::default()
                         .fg(theme.accent_error)
                         .add_modifier(Modifier::BOLD),

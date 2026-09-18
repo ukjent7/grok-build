@@ -3152,7 +3152,10 @@ fn explicit_auth_scheme_bearer_overrides_messages_auto_default() {
     );
     let model = models.get("gateway-messages").expect("model should exist");
     assert_eq!(model.info.auth_scheme, AuthScheme::Bearer);
-    assert_eq!(resolve_sampling(model, None).auth_scheme, AuthScheme::Bearer);
+    assert_eq!(
+        resolve_sampling(model, None).auth_scheme,
+        AuthScheme::Bearer
+    );
 }
 #[test]
 fn byok_responses_model_gets_clean_payload_flag() {
@@ -3172,9 +3175,7 @@ fn byok_responses_model_gets_clean_payload_flag() {
     // endpoint_trust); config only routes the URL through untouched.
     let sampling = resolve_sampling(model, None);
     assert_eq!(sampling.base_url, "https://api.example.com/v1");
-    assert!(xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
-        &sampling.base_url
-    ));
+    assert!(xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(&sampling.base_url));
 }
 #[test]
 fn first_party_model_keeps_xai_extensions() {
@@ -3186,9 +3187,7 @@ fn first_party_model_keeps_xai_extensions() {
         None,
     );
     let sampling = resolve_sampling(&model, Some("session-jwt"));
-    assert!(!xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(
-        &sampling.base_url
-    ));
+    assert!(!xai_grok_sampling_types::endpoint_trust::is_third_party_base_url(&sampling.base_url));
 }
 #[test]
 #[serial]

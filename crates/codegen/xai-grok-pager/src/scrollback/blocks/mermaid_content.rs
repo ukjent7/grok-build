@@ -293,10 +293,7 @@ pub(crate) struct AffordanceRow {
 fn affordance_buttons(start_col: u16) -> [AffordanceButton; 3] {
     let ctx = crate::locale::ctx();
     let specs = [
-        (
-            ctx.tr_static(AFFORDANCE_OPEN),
-            AffordanceKind::Open,
-        ),
+        (ctx.tr_static(AFFORDANCE_OPEN), AffordanceKind::Open),
         (
             ctx.tr_static(AFFORDANCE_COPY_PATH),
             AffordanceKind::CopyPath,
@@ -323,10 +320,7 @@ pub(crate) fn affordance_row(rendering: bool) -> AffordanceRow {
     let buttons = affordance_buttons(buttons_start);
     let status = rendering.then(|| buttons.last()).flatten().map(|last| {
         let after = last.col + UnicodeWidthStr::width(last.label) as u16 + AFFORDANCE_GAP;
-        (
-            after,
-            crate::locale::ctx().tr_static(MERMAID_RENDERING),
-        )
+        (after, crate::locale::ctx().tr_static(MERMAID_RENDERING))
     });
     AffordanceRow {
         label: (0, label),

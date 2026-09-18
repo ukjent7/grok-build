@@ -44,23 +44,12 @@ impl PersonaField {
     fn label(self) -> &'static str {
         match self {
             Self::Name => crate::locale::ctx().tr_static("Name"),
-            Self::Description => {
-                crate::locale::ctx().tr_static("Description")
-            }
+            Self::Description => crate::locale::ctx().tr_static("Description"),
             Self::Model => crate::locale::ctx().tr_static("Model"),
-            Self::ReasoningEffort => {
-                crate::locale::ctx().tr_static("Effort")
-            }
-            Self::Isolation => {
-                crate::locale::ctx().tr_static("Isolation")
-            }
-            Self::Instructions => {
-                crate::locale::ctx().tr_static("Instructions")
-            }
-            Self::InstructionsFile => {
-                crate::locale::ctx()
-                    .tr_static("Instr. file")
-            }
+            Self::ReasoningEffort => crate::locale::ctx().tr_static("Effort"),
+            Self::Isolation => crate::locale::ctx().tr_static("Isolation"),
+            Self::Instructions => crate::locale::ctx().tr_static("Instructions"),
+            Self::InstructionsFile => crate::locale::ctx().tr_static("Instr. file"),
         }
     }
 
@@ -317,15 +306,16 @@ impl PersonaDetailState {
                 .into_owned());
         };
         let content = std::fs::read_to_string(path).map_err(|e| {
-            crate::locale::ctx().tr_format("Failed to read file: {error}",
-                &[("error", &e.to_string())],
-            )
+            crate::locale::ctx()
+                .tr_format("Failed to read file: {error}", &[("error", &e.to_string())])
         })?;
-        let mut doc: toml_edit::DocumentMut = content.parse().map_err(|e: toml_edit::TomlError| {
-            crate::locale::ctx().tr_format("Failed to parse TOML: {error}",
-                &[("error", &e.to_string())],
-            )
-        })?;
+        let mut doc: toml_edit::DocumentMut =
+            content.parse().map_err(|e: toml_edit::TomlError| {
+                crate::locale::ctx().tr_format(
+                    "Failed to parse TOML: {error}",
+                    &[("error", &e.to_string())],
+                )
+            })?;
 
         // Update simple string fields.
         let fields: &[(&str, &str)] = &[
@@ -384,8 +374,7 @@ pub fn render_persona_detail(
     theme: &Theme,
     compact: bool,
 ) {
-    let title = crate::locale::ctx()
-        .tr_format("persona: {name}", &[("name", &state.name)]);
+    let title = crate::locale::ctx().tr_format("persona: {name}", &[("name", &state.name)]);
     let shortcuts = build_shortcuts(state);
     let config = ModalWindowConfig {
         title: &title,
@@ -480,9 +469,7 @@ pub fn render_persona_detail(
                 buf.set_string(
                     value_x,
                     y,
-                    crate::locale::ctx()
-                        .tr("(empty)")
-                        .as_ref(),
+                    crate::locale::ctx().tr("(empty)").as_ref(),
                     empty_style,
                 );
             } else {
@@ -517,7 +504,8 @@ pub fn render_persona_detail(
                         y += 1;
                         if y < max_y {
                             let count = (total - max_collapsed).to_string();
-                            let hint = crate::locale::ctx().tr_format("  ... ({count} more lines: e to expand, j/k to scroll)",
+                            let hint = crate::locale::ctx().tr_format(
+                                "  ... ({count} more lines: e to expand, j/k to scroll)",
                                 &[("count", &count)],
                             );
                             buf.set_string(
@@ -559,7 +547,8 @@ pub fn render_persona_detail(
                         } else {
                             String::new()
                         };
-                        let hint = crate::locale::ctx().tr_format("  (e to collapse, j/k to scroll{position})",
+                        let hint = crate::locale::ctx().tr_format(
+                            "  (e to collapse, j/k to scroll{position})",
                             &[("position", &pos_hint)],
                         );
                         buf.set_string(
@@ -612,13 +601,12 @@ pub fn render_persona_detail(
     }
 
     // I/O sections
-    let inputs_label = crate::locale::ctx()
-        .tr("Inputs")
-        .into_owned();
-    let outputs_label = crate::locale::ctx()
-        .tr("Outputs")
-        .into_owned();
-    for (section, items) in [(inputs_label, &state.inputs), (outputs_label, &state.outputs)] {
+    let inputs_label = crate::locale::ctx().tr("Inputs").into_owned();
+    let outputs_label = crate::locale::ctx().tr("Outputs").into_owned();
+    for (section, items) in [
+        (inputs_label, &state.inputs),
+        (outputs_label, &state.outputs),
+    ] {
         if items.is_empty() || y >= max_y {
             continue;
         }
@@ -636,9 +624,7 @@ pub fn render_persona_detail(
                 break;
             }
             let req = if entry.required {
-                crate::locale::ctx()
-                    .tr(", required")
-                    .into_owned()
+                crate::locale::ctx().tr(", required").into_owned()
             } else {
                 String::new()
             };
@@ -684,9 +670,8 @@ pub fn render_persona_detail(
     if y < max_y
         && let Some(ref path) = state.source_path
     {
-        let src = crate::locale::ctx().tr_format("Source: {path}",
-            &[("path", &path.display().to_string())],
-        );
+        let src = crate::locale::ctx()
+            .tr_format("Source: {path}", &[("path", &path.display().to_string())]);
         let truncated: String = src.chars().take(w).collect();
         buf.set_string(
             content_area.x,
@@ -714,14 +699,12 @@ fn build_shortcuts(state: &PersonaDetailState) -> Vec<Shortcut<'static>> {
     if state.is_editing() {
         vec![
             Shortcut {
-                label: crate::locale::ctx()
-                    .tr_static("Enter save"),
+                label: crate::locale::ctx().tr_static("Enter save"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: crate::locale::ctx()
-                    .tr_static("Esc cancel"),
+                label: crate::locale::ctx().tr_static("Esc cancel"),
                 clickable: false,
                 id: 0,
             },
@@ -734,16 +717,14 @@ fn build_shortcuts(state: &PersonaDetailState) -> Vec<Shortcut<'static>> {
         }];
         if state.editable {
             shortcuts.push(Shortcut {
-                label: crate::locale::ctx()
-                    .tr_static("e edit field"),
+                label: crate::locale::ctx().tr_static("e edit field"),
                 clickable: false,
                 id: 0,
             });
         }
         if state.source_path.is_some() && state.editable {
             shortcuts.push(Shortcut {
-                label: crate::locale::ctx()
-                    .tr_static("i $EDITOR"),
+                label: crate::locale::ctx().tr_static("i $EDITOR"),
                 clickable: false,
                 id: 0,
             });
@@ -829,8 +810,7 @@ fn handle_browse_key(state: &mut PersonaDetailState, key: &KeyEvent) -> PersonaD
             if !state.editable {
                 state.message = Some(
                     crate::locale::ctx()
-                        .tr("Bundled personas are read-only",
-                        )
+                        .tr("Bundled personas are read-only")
                         .into_owned(),
                 );
                 return PersonaDetailOutcome::Changed;
@@ -839,8 +819,7 @@ fn handle_browse_key(state: &mut PersonaDetailState, key: &KeyEvent) -> PersonaD
             if !field.is_editable() {
                 state.message = Some(
                     crate::locale::ctx()
-                        .tr("This field cannot be edited inline",
-                        )
+                        .tr("This field cannot be edited inline")
                         .into_owned(),
                 );
                 return PersonaDetailOutcome::Changed;
@@ -849,8 +828,7 @@ fn handle_browse_key(state: &mut PersonaDetailState, key: &KeyEvent) -> PersonaD
             if current.contains(['\n', '\r']) {
                 state.message = Some(
                     crate::locale::ctx()
-                        .tr("Multiline values must be edited in the source file",
-                        )
+                        .tr("Multiline values must be edited in the source file")
                         .into_owned(),
                 );
                 return PersonaDetailOutcome::Changed;
@@ -872,16 +850,11 @@ fn handle_browse_key(state: &mut PersonaDetailState, key: &KeyEvent) -> PersonaD
                 }
                 state.message = Some(
                     crate::locale::ctx()
-                        .tr("Bundled personas are read-only",
-                        )
+                        .tr("Bundled personas are read-only")
                         .into_owned(),
                 );
             } else {
-                state.message = Some(
-                    crate::locale::ctx()
-                        .tr("No source file")
-                        .into_owned(),
-                );
+                state.message = Some(crate::locale::ctx().tr("No source file").into_owned());
             }
             PersonaDetailOutcome::Changed
         }
@@ -910,15 +883,10 @@ fn handle_editing_key(state: &mut PersonaDetailState, key: &KeyEvent) -> Persona
             state.set_field_value(field, new_value);
             state.dirty = true;
             if let Err(e) = state.save_to_file() {
-                state.message = Some(crate::locale::ctx().tr_format("Save failed: {error}",
-                    &[("error", &e)],
-                ));
+                state.message =
+                    Some(crate::locale::ctx().tr_format("Save failed: {error}", &[("error", &e)]));
             } else {
-                state.message = Some(
-                    crate::locale::ctx()
-                        .tr("Saved")
-                        .into_owned(),
-                );
+                state.message = Some(crate::locale::ctx().tr("Saved").into_owned());
             }
         }
         return PersonaDetailOutcome::Changed;

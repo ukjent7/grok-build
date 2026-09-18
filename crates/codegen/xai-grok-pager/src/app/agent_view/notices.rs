@@ -233,10 +233,8 @@ impl AgentView {
     pub fn show_mode_switch_banner(&mut self, mode_name: &str) {
         // Only the sentence localizes: a mode name is a canonical identifier also shown
         // in the prompt info-line, so it stays English (see `mode.always_approve.label`).
-        let msg = crate::locale::ctx().tr_format(
-            "Switched to mode: {mode}",
-            &[("mode", mode_name)],
-        );
+        let msg =
+            crate::locale::ctx().tr_format("Switched to mode: {mode}", &[("mode", mode_name)]);
         self.mode_switch_banner = Some((msg, MODE_BANNER_TOTAL_TICKS));
     }
 

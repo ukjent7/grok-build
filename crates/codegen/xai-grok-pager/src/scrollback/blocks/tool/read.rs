@@ -174,9 +174,7 @@ impl ReadToolCallBlock {
         if let Some(skill) = self.skill_name() {
             return Line::from(vec![
                 Span::styled(
-                    crate::locale::ctx()
-                        .tr_static("Skill ")
-                        .to_string(),
+                    crate::locale::ctx().tr_static("Skill ").to_string(),
                     bold_style,
                 ),
                 Span::styled(skill.to_owned(), path_style),
@@ -192,7 +190,8 @@ impl ReadToolCallBlock {
                 {
                     let range = r.to_string();
                     let total = total.to_string();
-                    crate::locale::ctx().tr_format(" ({range} of {total})",
+                    crate::locale::ctx().tr_format(
+                        " ({range} of {total})",
                         &[("range", &range), ("total", &total)],
                     )
                 } else {
@@ -202,19 +201,13 @@ impl ReadToolCallBlock {
             .unwrap_or_default();
         // Extra suffix for errors or empty content
         let extra_suffix = if self.content.as_ref().is_some_and(|c| c.is_empty()) {
-            crate::locale::ctx()
-                .tr(" (empty)")
-                .into_owned()
+            crate::locale::ctx().tr(" (empty)").into_owned()
         } else if let Some(media) = &self.media_kind {
             match media {
-                ReadMediaKind::Image => crate::locale::ctx()
-                    .tr(" (image)")
-                    .into_owned(),
+                ReadMediaKind::Image => crate::locale::ctx().tr(" (image)").into_owned(),
                 ReadMediaKind::Pdf { pages } => {
                     let count = pages.to_string();
-                    crate::locale::ctx().tr_format(" ({count} pages)",
-                        &[("count", &count)],
-                    )
+                    crate::locale::ctx().tr_format(" ({count} pages)", &[("count", &count)])
                 }
             }
         } else {

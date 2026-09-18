@@ -29,9 +29,7 @@ pub fn render_new_worktree_dialog(area: Rect, buf: &mut Buffer, state: &NewWorkt
         // Too small to render. Draw a minimal hint so the user knows the dialog is still active and can press Esc to dismiss.
         if area.height >= 1 && area.width >= 16 {
             let hint = Line::from(Span::styled(
-                crate::locale::ctx()
-                    .tr("[Esc] to close")
-                    .into_owned(),
+                crate::locale::ctx().tr("[Esc] to close").into_owned(),
                 Style::default().fg(theme.gray_dim),
             ));
             hint.render(Rect::new(area.x, area.y, area.width.min(16), 1), buf);
@@ -116,9 +114,7 @@ pub fn render_new_worktree_dialog(area: Rect, buf: &mut Buffer, state: &NewWorkt
 
     // Row 1: Title
     let title = Line::from(Span::styled(
-        crate::locale::ctx()
-            .tr("New Worktree")
-            .into_owned(),
+        crate::locale::ctx().tr("New Worktree").into_owned(),
         Style::default()
             .fg(theme.text_primary)
             .add_modifier(Modifier::BOLD),
@@ -145,31 +141,23 @@ pub fn render_new_worktree_dialog(area: Rect, buf: &mut Buffer, state: &NewWorkt
     // Row 3: Hints
     let hints = Line::from(vec![
         Span::styled(
-            crate::locale::ctx()
-                .tr("enter")
-                .into_owned(),
+            crate::locale::ctx().tr("enter").into_owned(),
             Style::default()
                 .fg(theme.accent_user)
                 .add_modifier(Modifier::BOLD),
         ),
         Span::styled(
-            crate::locale::ctx()
-                .tr(" = create   ")
-                .into_owned(),
+            crate::locale::ctx().tr(" = create   ").into_owned(),
             Style::default().fg(theme.gray),
         ),
         Span::styled(
-            crate::locale::ctx()
-                .tr("esc")
-                .into_owned(),
+            crate::locale::ctx().tr("esc").into_owned(),
             Style::default()
                 .fg(theme.accent_user)
                 .add_modifier(Modifier::BOLD),
         ),
         Span::styled(
-            crate::locale::ctx()
-                .tr(" = cancel")
-                .into_owned(),
+            crate::locale::ctx().tr(" = cancel").into_owned(),
             Style::default().fg(theme.gray),
         ),
     ]);

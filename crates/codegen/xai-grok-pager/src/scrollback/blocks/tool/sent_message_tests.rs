@@ -685,8 +685,7 @@ fn rejected_and_unconfirmed_have_distinct_failure_semantics() {
 /// the export line share one match, so this also proves the zh-CN path is reached at all.
 #[test]
 fn export_header_stays_english_under_a_chinese_locale() {
-    let zh =
-        crate::locale::LocaleContext::new(crate::locale::UiLocale::ZhCn);
+    let zh = crate::locale::LocaleContext::new(crate::locale::UiLocale::ZhCn);
     let block = sent(named(SentMessageDelivery::Queue, "follow up"));
 
     let english = block.header_text_with(crate::locale::english());

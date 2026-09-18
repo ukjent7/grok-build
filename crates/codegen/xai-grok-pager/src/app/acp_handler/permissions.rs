@@ -182,7 +182,8 @@ fn resolve_subagent_label(agent: &AgentView, session_id: &acp::SessionId) -> Opt
     if let Some(info) = agent.subagent_sessions.get(sid) {
         let name: &str = info.description.as_ref();
         let kind: &str = info.subagent_type.as_ref();
-        return Some(crate::locale::ctx().tr_format("Subagent \"{name}\" ({kind}):",
+        return Some(crate::locale::ctx().tr_format(
+            "Subagent \"{name}\" ({kind}):",
             &[("name", name), ("kind", kind)],
         ));
     }
@@ -236,12 +237,9 @@ pub(super) fn build_permission_display(
             .map(|t| t.to_string())
             .unwrap_or_else(
                 || match bash_highlights.and_then(|h| h.highlighted_words.first()) {
-                    Some(bin) => crate::locale::ctx().tr_format("Allow `{target}`?",
-                        &[("target", bin.as_str())],
-                    ),
-                    None => crate::locale::ctx()
-                        .tr("Allow Execute?")
-                        .into_owned(),
+                    Some(bin) => crate::locale::ctx()
+                        .tr_format("Allow `{target}`?", &[("target", bin.as_str())]),
+                    None => crate::locale::ctx().tr("Allow Execute?").into_owned(),
                 },
             )
     } else if is_edit_permission(req) {
@@ -253,38 +251,22 @@ pub(super) fn build_permission_display(
             .and_then(|v| v.get("file_path"))
             .and_then(|v| v.as_str());
         if let Some(path) = file_path {
-            crate::locale::ctx().tr_format("Allow Edit to {target}?",
-                &[("target", path)],
-            )
+            crate::locale::ctx().tr_format("Allow Edit to {target}?", &[("target", path)])
         } else if let Some(t) = acp_title {
             let pretty = xai_grok_workspace::permission::mcp_pretty_name_if_qualified(t);
-            crate::locale::ctx().tr_format("Allow {action}?",
-                &[("action", pretty.as_str())],
-            )
+            crate::locale::ctx().tr_format("Allow {action}?", &[("action", pretty.as_str())])
         } else {
-            crate::locale::ctx()
-                .tr("Allow Edit?")
-                .into_owned()
+            crate::locale::ctx().tr("Allow Edit?").into_owned()
         }
     } else if let Some(t) = acp_title {
         let pretty = xai_grok_workspace::permission::mcp_pretty_name_if_qualified(t);
-        crate::locale::ctx().tr_format("Allow {action}?",
-            &[("action", pretty.as_str())],
-        )
+        crate::locale::ctx().tr_format("Allow {action}?", &[("action", pretty.as_str())])
     } else {
         match req.tool_call.fields.kind {
-            Some(acp::ToolKind::Edit) => crate::locale::ctx()
-                .tr("Allow Edit?")
-                .into_owned(),
-            Some(acp::ToolKind::Execute) => crate::locale::ctx()
-                .tr("Allow Execute?")
-                .into_owned(),
-            Some(acp::ToolKind::Delete) => crate::locale::ctx()
-                .tr("Allow Delete?")
-                .into_owned(),
-            _ => crate::locale::ctx()
-                .tr("Allow?")
-                .into_owned(),
+            Some(acp::ToolKind::Edit) => crate::locale::ctx().tr("Allow Edit?").into_owned(),
+            Some(acp::ToolKind::Execute) => crate::locale::ctx().tr("Allow Execute?").into_owned(),
+            Some(acp::ToolKind::Delete) => crate::locale::ctx().tr("Allow Delete?").into_owned(),
+            _ => crate::locale::ctx().tr("Allow?").into_owned(),
         }
     };
 
@@ -301,9 +283,7 @@ fn qualify_permission_title_for_local_workspace(
     if !session_local_workspace {
         return title;
     }
-    let machine = crate::locale::ctx()
-        .tr("(on your machine)")
-        .into_owned();
+    let machine = crate::locale::ctx().tr("(on your machine)").into_owned();
     // Guard against double-qualification, in either language.
     if title.contains("(on your machine)") || title.contains(machine.as_str()) {
         return title;
@@ -340,11 +320,13 @@ fn localized_hook_ask_line(ask: &xai_grok_workspace::permission::HookAsk) -> Str
     let reason = ask.reason.as_deref().unwrap_or_default();
     let reason = reason.split_whitespace().collect::<Vec<_>>().join(" ");
     if reason.is_empty() {
-        ctx.tr_format("hook '{hook_name}' asks for confirmation",
+        ctx.tr_format(
+            "hook '{hook_name}' asks for confirmation",
             &[("hook_name", &ask.hook_name)],
         )
     } else {
-        ctx.tr_format("hook '{hook_name}' asks: {reason}",
+        ctx.tr_format(
+            "hook '{hook_name}' asks: {reason}",
             &[("hook_name", &ask.hook_name), ("reason", &reason)],
         )
     }
@@ -407,7 +389,8 @@ pub(super) fn mcp_args_lines(req: &acp::RequestPermissionRequest) -> Vec<String>
         let hidden = lines.len() - MCP_ARGS_MAX_LINES;
         lines.truncate(MCP_ARGS_MAX_LINES);
         let hidden_str = hidden.to_string();
-        lines.push(crate::locale::ctx().tr_format("\u{2026} (+{hidden} more lines)",
+        lines.push(crate::locale::ctx().tr_format(
+            "\u{2026} (+{hidden} more lines)",
             &[("hidden", hidden_str.as_str())],
         ));
     }

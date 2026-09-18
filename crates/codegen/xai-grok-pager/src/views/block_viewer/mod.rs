@@ -558,10 +558,7 @@ impl BlockViewerPane {
         // Metadata
         if let Some(limit) = st.limit {
             lines.push(Line::from(vec![
-                Span::styled(
-                    crate::locale::ctx().tr_static("limit: "),
-                    label,
-                ),
+                Span::styled(crate::locale::ctx().tr_static("limit: "), label),
                 Span::styled(limit.to_string(), value),
             ]));
         }

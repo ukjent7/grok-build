@@ -487,10 +487,10 @@ pub(super) fn form_value_column(fields: &[FormFieldUi], content_w: usize) -> usi
         .iter()
         .map(|f| {
             let req = if f.spec.required {
-            crate::locale::ctx().tr_static(" (required)")
-        } else {
-            ""
-        };
+                crate::locale::ctx().tr_static(" (required)")
+            } else {
+                ""
+            };
             2 + f.spec.title.width() + req.width()
         })
         .max()

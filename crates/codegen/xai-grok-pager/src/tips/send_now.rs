@@ -19,17 +19,9 @@ pub fn send_now_tip() -> EphemeralTip {
     EphemeralTip::new(
         SEND_NOW_TIP_KEY,
         Line::from(vec![
-            Span::styled(
-                crate::locale::ctx()
-                    .tr_static("Queued · "),
-                dim,
-            ),
+            Span::styled(crate::locale::ctx().tr_static("Queued · "), dim),
             Span::styled("Enter", key_style),
-            Span::styled(
-                crate::locale::ctx()
-                    .tr_static(" to send now"),
-                dim,
-            ),
+            Span::styled(crate::locale::ctx().tr_static(" to send now"), dim),
         ]),
     )
     .with_session_seen_cap(SEND_NOW_TIP_SEEN_KEY, SEND_NOW_TIP_SEEN_CAP)

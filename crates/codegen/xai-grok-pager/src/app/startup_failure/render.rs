@@ -8,51 +8,33 @@ pub(super) fn render(failure: &StartupFailure) -> String {
     let locale = crate::locale::ctx();
     let context = &failure.context;
     let mut rows = vec![
-        (
-            locale.tr("Mode").into_owned(),
-            attempted_agents(context),
-        ),
-        (
-            locale
-                .tr("Version")
-                .into_owned(),
-            context.version.clone(),
-        ),
+        (locale.tr("Mode").into_owned(), attempted_agents(context)),
+        (locale.tr("Version").into_owned(), context.version.clone()),
     ];
     let mut report = match &failure.reason {
         Reason::TimedOut { waited, timings } => {
             let advice = advice_for(timings, context.attempt);
-            rows.push((
-                locale
-                    .tr("Steps")
-                    .into_owned(),
-                format_steps(timings),
-            ));
+            rows.push((locale.tr("Steps").into_owned(), format_steps(timings)));
             if let Some(command) = advice.next_step.command() {
-                rows.push((
-                    locale
-                        .tr("Try")
-                        .into_owned(),
-                    command.to_owned(),
-                ));
+                rows.push((locale.tr("Try").into_owned(), command.to_owned()));
             }
             let explanation = fill_indented(&advice.explanation(), "  ", "  ");
             let seconds = whole_seconds(*waited);
-            locale.tr_format("Couldn't start Grok: startup timed out after {seconds}.\n\n{explanation}",
+            locale.tr_format(
+                "Couldn't start Grok: startup timed out after {seconds}.\n\n{explanation}",
                 &[("seconds", &seconds), ("explanation", &explanation)],
             )
         }
         Reason::Cancelled => {
             let agent = agent_name(context.target).to_string();
-            locale.tr_format("Startup cancelled while connecting to the {agent}.",
+            locale.tr_format(
+                "Startup cancelled while connecting to the {agent}.",
                 &[("agent", &agent)],
             )
         }
     };
     rows.push((
-        locale
-            .tr("Log")
-            .into_owned(),
+        locale.tr("Log").into_owned(),
         context.log_path.display().to_string(),
     ));
     let _ = write!(report, "\n\n{}", label_rows(&rows));
@@ -81,19 +63,16 @@ impl Advice {
     fn explanation(&self) -> String {
         let locale = crate::locale::ctx();
         let mut explanation = match self.doing {
-            Some(doing) => locale.tr_format("The longest step was {doing}.",
-                &[("doing", doing)],
-            ),
-            None => locale
-                .tr("No startup step had begun.")
-                .into_owned(),
+            Some(doing) => locale.tr_format("The longest step was {doing}.", &[("doing", doing)]),
+            None => locale.tr("No startup step had begun.").into_owned(),
         };
         if let Some(earlier) = self.earlier {
             let target = agent_name(earlier.target).to_string();
             let _ = write!(
                 explanation,
                 " {}",
-                locale.tr_format("Grok spent the first {seconds} on the {target}.",
+                locale.tr_format(
+                    "Grok spent the first {seconds} on the {target}.",
                     &[
                         ("seconds", &whole_seconds(earlier.wait)),
                         ("target", &target)
@@ -176,10 +155,10 @@ impl NextStep {
     fn text(self) -> &'static str {
         let locale = crate::locale::ctx();
         match self {
-            Self::Retry => locale.tr_static("Start Grok again.",
-            ),
-            Self::CheckNetworkThenRetry => locale.tr_static("Check your network connection, then start Grok again.",
-            ),
+            Self::Retry => locale.tr_static("Start Grok again."),
+            Self::CheckNetworkThenRetry => {
+                locale.tr_static("Check your network connection, then start Grok again.")
+            }
             Self::RestartSharedLeader => locale.named_static_text(
                 "startup_failure.next_step.restart_leader",
                 "Stop it with the command below, which also stops any other Grok \
@@ -200,63 +179,35 @@ fn step_advice(phase: StartupPhase) -> (&'static str, NextStep) {
     use NextStep::{CheckNetworkThenRetry as Network, RestartSharedLeader, Retry};
     let locale = crate::locale::ctx();
     match phase {
-        StartupPhase::ConfigLoad => (
-            locale.tr_static("reading your local configuration",
-            ),
-            Retry,
-        ),
+        StartupPhase::ConfigLoad => (locale.tr_static("reading your local configuration"), Retry),
         StartupPhase::ManagedPolicy => (
-            locale.tr_static("checking your organization's managed policy",
-            ),
+            locale.tr_static("checking your organization's managed policy"),
             Network,
         ),
-        StartupPhase::Bootstrap => (
-            locale.tr_static("loading your account settings",
-            ),
-            Network,
-        ),
+        StartupPhase::Bootstrap => (locale.tr_static("loading your account settings"), Network),
         StartupPhase::ModelCatalog => (
-            locale.tr_static("reading the list of available models",
-            ),
+            locale.tr_static("reading the list of available models"),
             Retry,
         ),
-        StartupPhase::WorkerSpawn => (
-            locale.tr_static("starting the local agent",
-            ),
-            Retry,
-        ),
+        StartupPhase::WorkerSpawn => (locale.tr_static("starting the local agent"), Retry),
         StartupPhase::LeaderConnect => (
-            locale.tr_static("connecting to the shared leader",
-            ),
+            locale.tr_static("connecting to the shared leader"),
             RestartSharedLeader,
         ),
-        StartupPhase::AcpInitialize => (
-            locale.tr_static("waiting for the agent to respond",
-            ),
-            Retry,
-        ),
-        StartupPhase::EagerAuth => (
-            locale.tr_static("refreshing your sign-in",
-            ),
-            Network,
-        ),
-        StartupPhase::AppInit => (
-            locale.tr_static("preparing the interface",
-            ),
-            Retry,
-        ),
-        StartupPhase::SessionCreate => (
-            locale.tr_static("creating the session",
-            ),
-            Retry,
-        ),
+        StartupPhase::AcpInitialize => {
+            (locale.tr_static("waiting for the agent to respond"), Retry)
+        }
+        StartupPhase::EagerAuth => (locale.tr_static("refreshing your sign-in"), Network),
+        StartupPhase::AppInit => (locale.tr_static("preparing the interface"), Retry),
+        StartupPhase::SessionCreate => (locale.tr_static("creating the session"), Retry),
     }
 }
 fn attempted_agents(context: &Context) -> String {
     let target = agent_name(context.target);
     match context.attempt {
         ConnectAttempt::First => target.to_owned(),
-        ConnectAttempt::AfterFallback(earlier) => crate::locale::ctx().tr_format("{first}, then {target}",
+        ConnectAttempt::AfterFallback(earlier) => crate::locale::ctx().tr_format(
+            "{first}, then {target}",
             &[("first", agent_name(earlier.target)), ("target", target)],
         ),
     }
@@ -264,12 +215,8 @@ fn attempted_agents(context: &Context) -> String {
 fn agent_name(agent: AgentKind) -> &'static str {
     let locale = crate::locale::ctx();
     match agent {
-        AgentKind::Embedded => {
-            locale.tr_static("local agent")
-        }
-        AgentKind::Leader => {
-            locale.tr_static("shared leader")
-        }
+        AgentKind::Embedded => locale.tr_static("local agent"),
+        AgentKind::Leader => locale.tr_static("shared leader"),
     }
 }
 /// Rounded: a truncated total can print smaller than the steps it sums.

@@ -171,7 +171,9 @@ pub(super) fn dispatch_open_dashboard(app: &mut AppView) -> Vec<Effect> {
     use crate::views::dashboard::dashboard_enabled;
 
     if !dashboard_enabled() {
-        app.show_toast(&crate::locale::ctx().tr("Agent dashboard is disabled in this configuration"));
+        app.show_toast(
+            &crate::locale::ctx().tr("Agent dashboard is disabled in this configuration"),
+        );
         return vec![];
     }
     // Gate behind auth. Until login completes the backend rejects new sessions, and activating the dashboard view visually dismisses the auth UI.
@@ -191,7 +193,9 @@ pub(super) fn dispatch_open_dashboard(app: &mut AppView) -> Vec<Effect> {
     // Same rationale for folder trust: opening the dashboard would visually dismiss the trust question with the folder still unanswered
     // Toast and stay put (mirrors the auth gate above) so the question is resolved first
     if matches!(app.trust_state, TrustState::Pending { .. }) {
-        app.show_toast(&crate::locale::ctx().tr("Answer the folder-trust question to open the dashboard"));
+        app.show_toast(
+            &crate::locale::ctx().tr("Answer the folder-trust question to open the dashboard"),
+        );
         return vec![];
     }
     // Opening from the dashboard view itself just closes: Ctrl+\ is a single-shot toggle between the agent view and the dashboard view
@@ -411,7 +415,10 @@ fn dispatch_dashboard_load_local_build(
         });
 
     let Some((resolved_id, resolved_cwd)) = resolved else {
-        app.show_toast(&crate::locale::ctx().named_text("dashboard.toast.session_missing", "Session not found locally"));
+        app.show_toast(&crate::locale::ctx().named_text(
+            "dashboard.toast.session_missing",
+            "Session not found locally",
+        ));
         return vec![];
     };
 
@@ -683,8 +690,7 @@ pub(super) fn dispatch_dashboard_overlay_stop(app: &mut AppView) -> Vec<Effect> 
             d.error_toast = Some(format!(
                 "{} {}",
                 crate::glyphs::check_mark(),
-                crate::locale::ctx()
-                    .tr_static("Session closed")
+                crate::locale::ctx().tr_static("Session closed")
             ));
         }
     }
@@ -953,7 +959,9 @@ pub(super) fn dispatch_dashboard_open_location_picker(app: &mut AppView) -> Vec<
         // `/cd` reached from a non-dashboard surface; the location picker is a dashboard affordance, so guide the user there
         // Gate on the dashboard being the foreground view
         // `app.dashboard.is_some()` stays true for the rest of the session once the dashboard has been opened even once
-        app.show_toast(&crate::locale::ctx().tr("Open the dashboard (/dashboard) to change location"));
+        app.show_toast(
+            &crate::locale::ctx().tr("Open the dashboard (/dashboard) to change location"),
+        );
         return vec![];
     }
     // Idempotent: re-triggering while open keeps the current query
@@ -1023,7 +1031,9 @@ pub(super) fn dispatch_dashboard_change_location(app: &mut AppView, input: Strin
     // `/cd <path>` typed from another surface (welcome, an agent session, the dashboard overlay) would otherwise silently change the process cwd
     // `app.dashboard` stays `Some` for the rest of the session once opened.
     if !matches!(app.active_view, ActiveView::AgentDashboard) {
-        app.show_toast(&crate::locale::ctx().tr("Open the dashboard (/dashboard) to change location"));
+        app.show_toast(
+            &crate::locale::ctx().tr("Open the dashboard (/dashboard) to change location"),
+        );
         return vec![];
     }
     let path = match resolve_location_input(&input, &app.cwd).filter(|p| p.is_dir()) {
@@ -1034,10 +1044,16 @@ pub(super) fn dispatch_dashboard_change_location(app: &mut AppView, input: Strin
                 .as_mut()
                 .and_then(|d| d.location_picker.as_mut())
             {
-                lp.error = Some(crate::locale::ctx().tr_format("Not a directory: {path}", &[("path", &input.trim().to_string())]));
+                lp.error = Some(crate::locale::ctx().tr_format(
+                    "Not a directory: {path}",
+                    &[("path", &input.trim().to_string())],
+                ));
             } else if let Some(d) = app.dashboard.as_mut() {
                 // `/cd <bad path>` typed into the dispatch box (no picker open): show the error as a dashboard toast
-                d.set_error_toast(&crate::locale::ctx().tr_format("Not a directory: {path}", &[("path", &input.trim().to_string())]));
+                d.set_error_toast(&crate::locale::ctx().tr_format(
+                    "Not a directory: {path}",
+                    &[("path", &input.trim().to_string())],
+                ));
             }
             return vec![];
         }
@@ -1108,7 +1124,9 @@ pub(super) fn dispatch_dashboard_confirm_worktree(
             if let Some(p) = prompt {
                 d.dispatch.restore(p);
             }
-            d.set_error_toast(&crate::locale::ctx().tr("Not a git repository: can't create a worktree here"));
+            d.set_error_toast(
+                &crate::locale::ctx().tr("Not a git repository: can't create a worktree here"),
+            );
         }
         return vec![];
     }
@@ -1284,7 +1302,8 @@ pub(super) fn dispatch_dashboard_dispatch(
         let chars = text.chars().count();
         if let Some(d) = app.dashboard.as_mut() {
             let bytes = text.len();
-            d.set_error_toast(&crate::locale::ctx().tr_format("Prompt too long ({chars} chars / {bytes} bytes; max ~64 KiB)",
+            d.set_error_toast(&crate::locale::ctx().tr_format(
+                "Prompt too long ({chars} chars / {bytes} bytes; max ~64 KiB)",
                 &[("chars", &chars.to_string()), ("bytes", &bytes.to_string())],
             ));
         }
@@ -1424,7 +1443,8 @@ pub(super) fn dispatch_dashboard_dispatch_slash(app: &mut AppView, text: String)
             let token = invocation.token.to_string();
             if let Some(d) = app.dashboard.as_mut() {
                 d.dispatch.set_text("");
-                d.set_error_toast(&crate::locale::ctx().tr_format("/{token} requires SuperGrok: upgrade at {url}",
+                d.set_error_toast(&crate::locale::ctx().tr_format(
+                    "/{token} requires SuperGrok: upgrade at {url}",
                     &[
                         ("token", &token),
                         ("command", &token),
@@ -1452,7 +1472,10 @@ pub(super) fn dispatch_dashboard_dispatch_slash(app: &mut AppView, text: String)
             let name = command.name();
             if let Some(d) = app.dashboard.as_mut() {
                 d.dispatch.set_text("");
-                d.set_error_toast(&crate::locale::ctx().tr_format("/{name} only works in a session", &[("name", &name)]));
+                d.set_error_toast(
+                    &crate::locale::ctx()
+                        .tr_format("/{name} only works in a session", &[("name", &name)]),
+                );
             }
             return vec![];
         }
@@ -1895,9 +1918,15 @@ fn workspace_layout_target(
 fn refuse_workspace_layout(app: &mut AppView, refusal: impl Into<LayoutRefusal>) {
     let message = match refusal.into() {
         LayoutRefusal::NotWorkspaceRow => return,
-        LayoutRefusal::NotFound => crate::locale::ctx().tr_static("Session is no longer in the workspace"),
-        LayoutRefusal::ReadOnly => crate::locale::ctx().tr_static("Dashboard workspace is read-only"),
-        LayoutRefusal::NotSavedYet => crate::locale::ctx().tr_static("Session isn't saved to the workspace yet"),
+        LayoutRefusal::NotFound => {
+            crate::locale::ctx().tr_static("Session is no longer in the workspace")
+        }
+        LayoutRefusal::ReadOnly => {
+            crate::locale::ctx().tr_static("Dashboard workspace is read-only")
+        }
+        LayoutRefusal::NotSavedYet => {
+            crate::locale::ctx().tr_static("Session isn't saved to the workspace yet")
+        }
     };
     app.show_toast(message);
 }
@@ -2128,7 +2157,9 @@ pub(super) fn dispatch_dashboard_stop(app: &mut AppView) -> Vec<Effect> {
                 return match stopped {
                     Some(effects) => effects,
                     None => {
-                        app.show_toast(&crate::locale::ctx().tr("Stop the session before deleting"));
+                        app.show_toast(
+                            &crate::locale::ctx().tr("Stop the session before deleting"),
+                        );
                         vec![]
                     }
                 };
@@ -2176,7 +2207,9 @@ pub(super) fn dispatch_dashboard_stop(app: &mut AppView) -> Vec<Effect> {
                 }
                 // Chat conversations can't be deleted from here yet, so don't arm a confirm that could never succeed
                 Some(e) if e.origin.kind == "conversation" => {
-                    app.show_toast(&crate::locale::ctx().tr("Deleting chat conversations isn't supported yet"));
+                    app.show_toast(
+                        &crate::locale::ctx().tr("Deleting chat conversations isn't supported yet"),
+                    );
                     vec![]
                 }
                 // No local turn to cancel, so a busy roster row can't delete.
@@ -2415,7 +2448,9 @@ fn delete_dashboard_row(
             }]
         }
         DashboardRowId::Subagent { .. } => {
-            app.show_toast(&crate::locale::ctx().tr("Subagent rows can't be deleted from the dashboard"));
+            app.show_toast(
+                &crate::locale::ctx().tr("Subagent rows can't be deleted from the dashboard"),
+            );
             vec![]
         }
         DashboardRowId::Roster { session_id } => {
@@ -2430,7 +2465,9 @@ fn delete_dashboard_row(
                 return vec![];
             };
             if entry.origin.kind == "conversation" {
-                app.show_toast(&crate::locale::ctx().tr("Deleting chat conversations isn't supported yet"));
+                app.show_toast(
+                    &crate::locale::ctx().tr("Deleting chat conversations isn't supported yet"),
+                );
                 return vec![];
             }
             if !crate::views::dashboard::roster_activity_to_state(entry.activity).allows_delete() {
@@ -2489,14 +2526,18 @@ fn archive_dashboard_row(
                     .get(id)
                     .is_some_and(|agent| !dashboard_stop_readiness(agent).can_close())
             }) {
-                app.show_toast(&crate::locale::ctx().tr("Session became active; stop it before archiving"));
+                app.show_toast(
+                    &crate::locale::ctx().tr("Session became active; stop it before archiving"),
+                );
                 return vec![];
             }
             (session_id, loaded_ids)
         }
         DashboardRowId::Workspace { session_id } => (session_id.clone(), Vec::new()),
         DashboardRowId::Subagent { .. } => {
-            app.show_toast(&crate::locale::ctx().tr("Subagent rows can't be archived from the dashboard"));
+            app.show_toast(
+                &crate::locale::ctx().tr("Subagent rows can't be archived from the dashboard"),
+            );
             return vec![];
         }
         DashboardRowId::Roster { .. } => return vec![],

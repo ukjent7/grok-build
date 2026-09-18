@@ -3,8 +3,7 @@ use super::{TabDataState, WorkflowInfo, cmp_str_ci, fuzzy_matches};
 /// Placeholder row when the catalog comes back empty (also what a disabled workflows feature looks like on the wire, hence the hedged phrasing).
 pub(super) fn workflows_empty_placeholder() -> String {
     crate::locale::ctx()
-        .tr("No workflows available. Ask Grok to help make you one!",
-        )
+        .tr("No workflows available. Ask Grok to help make you one!")
         .into_owned()
 }
 
@@ -40,9 +39,9 @@ pub(super) fn build_workflows_picker_rows(
     let workflows = match data {
         TabDataState::Loaded(workflows) => workflows,
         TabDataState::Error(msg) => {
-            return vec![WorkflowRow::notice(crate::locale::ctx().tr_format("Error: {error}",
-                &[("error", &msg)],
-            ))]
+            return vec![WorkflowRow::notice(
+                crate::locale::ctx().tr_format("Error: {error}", &[("error", &msg)]),
+            )];
         }
         // The render path never builds entries while the tab loads; it shows a spinner instead
         TabDataState::Loading => return Vec::new(),
@@ -63,7 +62,10 @@ pub(super) fn build_workflows_picker_rows(
                 fields.push((crate::locale::ctx().tr("path").to_string(), p.clone()));
             }
             if let Some(ref w) = wf.when_to_use {
-                fields.push((crate::locale::ctx().tr("when to use").to_string(), w.clone()));
+                fields.push((
+                    crate::locale::ctx().tr("when to use").to_string(),
+                    w.clone(),
+                ));
             }
             WorkflowRow {
                 label: wf.name.clone(),

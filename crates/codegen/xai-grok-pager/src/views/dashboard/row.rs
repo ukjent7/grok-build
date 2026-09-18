@@ -434,16 +434,8 @@ fn append_roster_rows(
             .unwrap_or_else(|| sanitize(&entry.session_id));
         let state = roster_activity_to_state(entry.activity);
         let activity = match state {
-            RowState::NeedsInput => Some(
-                crate::locale::ctx()
-                    .tr("Awaiting input")
-                    .into_owned(),
-            ),
-            RowState::Working => Some(
-                crate::locale::ctx()
-                    .tr("Working")
-                    .into_owned(),
-            ),
+            RowState::NeedsInput => Some(crate::locale::ctx().tr("Awaiting input").into_owned()),
+            RowState::Working => Some(crate::locale::ctx().tr("Working").into_owned()),
             _ => None,
         };
         let mut badges = Vec::new();
@@ -799,11 +791,7 @@ fn subagent_activity(info: &SubagentInfo, state: RowState) -> Option<String> {
             .map(|s| s.as_ref())
             .unwrap_or("");
         if last_tool.is_empty() {
-            Some(
-                crate::locale::ctx()
-                    .tr("Working")
-                    .into_owned(),
-            )
+            Some(crate::locale::ctx().tr("Working").into_owned())
         } else {
             Some(sanitize(&format_activity_label(
                 &TurnActivity::ToolRunning {
@@ -816,7 +804,8 @@ fn subagent_activity(info: &SubagentInfo, state: RowState) -> Option<String> {
         let turns = info.attempt.turns.unwrap_or(0);
         let tools = info.attempt.tool_calls.unwrap_or(0);
         let toks = info.attempt.tokens_used.unwrap_or(0);
-        Some(crate::locale::ctx().tr_format("{tools} tools · {toks} tok · {turns} turns",
+        Some(crate::locale::ctx().tr_format(
+            "{tools} tools · {toks} tok · {turns} turns",
             &[
                 ("tools", &tools.to_string()),
                 ("toks", &toks.to_string()),

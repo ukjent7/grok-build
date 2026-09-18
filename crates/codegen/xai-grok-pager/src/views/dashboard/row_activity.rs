@@ -26,17 +26,14 @@ pub(crate) fn top_level_secondary_line(
             if let Some(perm) = agent.permission_queue.front() {
                 let title = perm.title.trim();
                 if !title.is_empty() {
-                    return Some(crate::locale::ctx().tr_format("Pending: {detail}",
-                        &[("detail", &sanitize(title))],
-                    ));
+                    return Some(
+                        crate::locale::ctx()
+                            .tr_format("Pending: {detail}", &[("detail", &sanitize(title))]),
+                    );
                 }
             }
             if agent.question_view.is_some() {
-                return Some(
-                    crate::locale::ctx()
-                        .tr("Pending: question")
-                        .into_owned(),
-                );
+                return Some(crate::locale::ctx().tr("Pending: question").into_owned());
             }
             activity.map(sanitize)
         }
@@ -85,22 +82,14 @@ fn first_nonempty_line(s: &str) -> Option<&str> {
 
 pub(crate) fn top_level_activity(agent: &AgentView, state: RowState) -> Option<String> {
     match state {
-        RowState::NeedsInput => Some(
-            crate::locale::ctx()
-                .tr("Awaiting your input")
-                .into_owned(),
-        ),
+        RowState::NeedsInput => Some(crate::locale::ctx().tr("Awaiting your input").into_owned()),
         RowState::Working if has_live_parent_activity(agent) => {
             if let Some(cmd) = agent.session.state.command_in_flight() {
                 Some(format!("{}…", cmd.display_name()))
             } else if let Some(activity) = agent.resolve_turn_activity() {
                 Some(sanitize(&format_activity_label(&activity)))
             } else if agent.session.loading_replay {
-                Some(
-                    crate::locale::ctx()
-                        .tr("Loading…")
-                        .into_owned(),
-                )
+                Some(crate::locale::ctx().tr("Loading…").into_owned())
             } else {
                 Some(crate::locale::ctx().tr("Working").into_owned())
             }

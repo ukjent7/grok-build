@@ -93,7 +93,10 @@ pub(in crate::app::dispatch) fn restart_required_toast(message: &str) -> String 
 }
 
 /// Format the "already at default" toast for a reset no-op.
-pub(in crate::app::dispatch) fn setting_already_default_toast(setting_key: &str, label: &str) -> String {
+pub(in crate::app::dispatch) fn setting_already_default_toast(
+    setting_key: &str,
+    label: &str,
+) -> String {
     let label = crate::locale::ctx().setting_label(setting_key, label);
     crate::locale::ctx()
         .tr("{label}: already at default")
@@ -452,8 +455,7 @@ pub(in crate::app::dispatch) fn dispatch_confirm_reset_setting(
                     "reset skipped — setting already at default",
                 );
                 with_active_agent(app, |agent| {
-                    agent
-                        .show_toast(&setting_already_default_toast(meta.key, meta.label));
+                    agent.show_toast(&setting_already_default_toast(meta.key, meta.label));
                 });
                 return vec![];
             }
@@ -589,8 +591,7 @@ pub(in crate::app::dispatch) fn dispatch_toggle_mouse_capture(app: &mut AppView)
         }
         with_active_agent(app, |agent| {
             toast_applied = true;
-            let toast =
-                crate::locale::ctx().tr_static("Mouse reporting on");
+            let toast = crate::locale::ctx().tr_static("Mouse reporting on");
             agent.show_toast(toast);
         });
     } else {
@@ -1155,8 +1156,7 @@ pub(in crate::app::dispatch) fn apply_setting_rollback(
                 "rollback path has no arm for this setting key; in-memory cache is now \
                  inconsistent with the on-disk state (which already failed to write)"
             );
-            app.show_toast(crate::locale::ctx().tr_static(ROLLBACK_NO_ARM_TOAST,
-            ));
+            app.show_toast(crate::locale::ctx().tr_static(ROLLBACK_NO_ARM_TOAST));
             return companion_effects;
         }
     }

@@ -283,23 +283,17 @@ impl ThinkingBlock {
         } else if let Some(time_str) = self.format_time() {
             Line::from(vec![
                 Span::styled(
-                    crate::locale::ctx()
-                        .tr_static("Thought")
-                        .to_string(),
+                    crate::locale::ctx().tr_static("Thought").to_string(),
                     label_style,
                 ),
                 Span::styled(
-                    crate::locale::ctx().tr_format(" for {duration}",
-                        &[("duration", &time_str)],
-                    ),
+                    crate::locale::ctx().tr_format(" for {duration}", &[("duration", &time_str)]),
                     detail_style,
                 ),
             ])
         } else {
             Line::from(Span::styled(
-                crate::locale::ctx()
-                    .tr_static("Thought")
-                    .to_string(),
+                crate::locale::ctx().tr_static("Thought").to_string(),
                 label_style,
             ))
         }

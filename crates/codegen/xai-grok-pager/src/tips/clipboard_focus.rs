@@ -54,17 +54,9 @@ pub fn clipboard_image_tip() -> EphemeralTip {
     EphemeralTip::new(
         CLIPBOARD_IMAGE_TIP_KEY,
         Line::from(vec![
-            Span::styled(
-                crate::locale::ctx().tr_static("Image in clipboard · ",
-                ),
-                dim,
-            ),
+            Span::styled(crate::locale::ctx().tr_static("Image in clipboard · "), dim),
             Span::styled(paste_label(), chord),
-            Span::styled(
-                crate::locale::ctx()
-                    .tr_static(" to paste"),
-                dim,
-            ),
+            Span::styled(crate::locale::ctx().tr_static(" to paste"), dim),
         ]),
     )
 }

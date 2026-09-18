@@ -148,7 +148,8 @@ fn empty_placeholder_message(todos_empty: bool, counts: TodoCounts) -> String {
     match (counts.completed, counts.cancelled) {
         (_, 0) => ctx.tr("All done.").into_owned(),
         (0, c) => ctx.tr_format("{cancelled} cancelled.", &[("cancelled", &c.to_string())]),
-        (d, c) => ctx.tr_format("{done} done. {cancelled} cancelled.",
+        (d, c) => ctx.tr_format(
+            "{done} done. {cancelled} cancelled.",
             &[("done", &d.to_string()), ("cancelled", &c.to_string())],
         ),
     }

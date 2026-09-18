@@ -8,9 +8,8 @@ fn main() {
         Some(tag) => format!("pub const RELEASE: Option<&str> = Some({tag:?});"),
         None => "pub const RELEASE: Option<&str> = None;".to_string(),
     };
-    let out = std::path::PathBuf::from(
-        std::env::var("OUT_DIR").expect("OUT_DIR is always set by cargo"),
-    )
-    .join("byok_release.rs");
+    let out =
+        std::path::PathBuf::from(std::env::var("OUT_DIR").expect("OUT_DIR is always set by cargo"))
+            .join("byok_release.rs");
     std::fs::write(out, decl).expect("write byok_release.rs");
 }

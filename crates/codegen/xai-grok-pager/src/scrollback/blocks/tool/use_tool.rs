@@ -194,7 +194,8 @@ impl BlockContent for UseToolCallBlock {
                                 BlockLine::from(Line::from(Span::styled(
                                     format!(
                                         "{indent}{}",
-                                        crate::locale::ctx().tr_format("... ({count} more lines, press Enter to view)",
+                                        crate::locale::ctx().tr_format(
+                                            "... ({count} more lines, press Enter to view)",
                                             &[("count", &remaining.to_string())],
                                         )
                                     ),

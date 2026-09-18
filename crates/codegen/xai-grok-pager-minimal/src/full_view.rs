@@ -97,10 +97,7 @@ fn finish_transcript(app: &mut AppView, id: xai_grok_pager::app::agent::AgentId,
                 .scrollback
                 .push_block(xai_grok_pager::scrollback::block::RenderBlock::system(
                     xai_grok_locale::ctx()
-                        .named_text(
-                            "transcript.empty",
-                            "No conversation transcript to view yet",
-                        )
+                        .named_text("transcript.empty", "No conversation transcript to view yet")
                         .into_owned(),
                 ));
         }

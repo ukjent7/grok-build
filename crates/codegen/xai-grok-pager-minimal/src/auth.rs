@@ -204,8 +204,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         y,
                         bottom,
                         Line::from(Span::styled(
-                            xai_grok_locale::ctx().tr("Open this URL in your browser to approve:",
-                            ),
+                            xai_grok_locale::ctx().tr("Open this URL in your browser to approve:"),
                             gray,
                         )),
                     );
@@ -225,11 +224,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                             y,
                             bottom,
                             Line::from(vec![
-                                Span::styled(
-                                    xai_grok_locale::ctx()
-                                        .tr("Code: "),
-                                    gray,
-                                ),
+                                Span::styled(xai_grok_locale::ctx().tr("Code: "), gray),
                                 Span::styled(code.clone(), bold),
                             ]),
                         );
@@ -241,8 +236,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         y,
                         bottom,
                         Line::from(Span::styled(
-                            xai_grok_locale::ctx()
-                                .tr("Waiting for approval\u{2026}"),
+                            xai_grok_locale::ctx().tr("Waiting for approval\u{2026}"),
                             gray,
                         )),
                     );
@@ -254,8 +248,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                         y,
                         bottom,
                         Line::from(Span::styled(
-                            xai_grok_locale::ctx().tr("Opening your browser to sign in\u{2026}",
-                            ),
+                            xai_grok_locale::ctx().tr("Opening your browser to sign in\u{2026}"),
                             gray,
                         )),
                     );
@@ -295,8 +288,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().tr("Do you trust the contents of this directory?",
-                    ),
+                    xai_grok_locale::ctx().tr("Do you trust the contents of this directory?"),
                     bold,
                 )),
             );
@@ -315,8 +307,8 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().tr("Grok Build may run or modify contents in this directory,",
-                    ),
+                    xai_grok_locale::ctx()
+                        .tr("Grok Build may run or modify contents in this directory,"),
                     gray,
                 )),
             );
@@ -341,10 +333,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                     // Leading spaces stay outside the wrap so the zh-CN text
                     // needs no padding to align with the "n" row below.
                     Span::styled("  ", gray),
-                    Span::styled(
-                        xai_grok_locale::ctx().tr("Yes, proceed"),
-                        gray,
-                    ),
+                    Span::styled(xai_grok_locale::ctx().tr("Yes, proceed"), gray),
                 ]),
             );
             y = put_line(
@@ -355,10 +344,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 Line::from(vec![
                     Span::styled("n", bold),
                     Span::styled("  ", gray),
-                    Span::styled(
-                        xai_grok_locale::ctx().tr("No, quit"),
-                        gray,
-                    ),
+                    Span::styled(xai_grok_locale::ctx().tr("No, quit"), gray),
                 ]),
             );
             y = put_line(buf, area, y, bottom, Line::default());
@@ -368,8 +354,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().tr("Enter or y to trust \u{00b7} n or Esc to quit",
-                    ),
+                    xai_grok_locale::ctx().tr("Enter or y to trust \u{00b7} n or Esc to quit"),
                     gray,
                 )),
             );
@@ -381,8 +366,7 @@ pub(super) fn render_auth(buf: &mut Buffer, area: Rect, theme: &Theme, hint: &Mi
                 y,
                 bottom,
                 Line::from(Span::styled(
-                    xai_grok_locale::ctx().tr("Signing in\u{2026} starting your session.",
-                    ),
+                    xai_grok_locale::ctx().tr("Signing in\u{2026} starting your session."),
                     gray,
                 )),
             );

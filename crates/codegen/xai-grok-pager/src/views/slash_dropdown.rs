@@ -256,13 +256,11 @@ struct BadgeLayout {
 fn localized_provenance_badge(provenance: &crate::slash::CommandProvenance) -> String {
     match provenance {
         crate::slash::CommandProvenance::Builtin | crate::slash::CommandProvenance::Shell => {
-            crate::locale::ctx()
-                .tr("built-in")
-                .into_owned()
+            crate::locale::ctx().tr("built-in").into_owned()
         }
-        crate::slash::CommandProvenance::Skill { source } => crate::locale::ctx().tr_format("skill · {source}",
-            &[("source", source.as_str())],
-        ),
+        crate::slash::CommandProvenance::Skill { source } => {
+            crate::locale::ctx().tr_format("skill · {source}", &[("source", source.as_str())])
+        }
     }
 }
 

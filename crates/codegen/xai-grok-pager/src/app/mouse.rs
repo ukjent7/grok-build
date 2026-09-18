@@ -175,8 +175,9 @@ impl AgentView {
                     }
                     if !was_visible && !self.watching_cue_toast_shown {
                         self.watching_cue_toast_shown = true;
-                        self.show_toast(crate::locale::ctx().tr_static("Tip: Ctrl+G toggles the tasks pane",
-                        ));
+                        self.show_toast(
+                            crate::locale::ctx().tr_static("Tip: Ctrl+G toggles the tasks pane"),
+                        );
                     }
                     return InputOutcome::Changed;
                 }

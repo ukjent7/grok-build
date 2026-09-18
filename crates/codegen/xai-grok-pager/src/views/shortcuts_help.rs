@@ -292,13 +292,10 @@ pub fn build_entries(
         }
         // Scrollback search (`/`) has no registered ActionDef yet (vim-only, handled inline); list it here for discoverability
         if vim_mode && cat == Category::ConversationNav {
-            let mut item = HintItem::new(
-                crate::key!('/'),
-                crate::locale::ctx().tr_static("search"),
-            );
+            let mut item =
+                HintItem::new(crate::key!('/'), crate::locale::ctx().tr_static("search"));
             item.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx()
-                    .tr_static("Search scrollback"),
+                crate::locale::ctx().tr_static("Search scrollback"),
             ));
             let dimmed = !active_contexts.contains(&When::ScrollbackFocused);
             entries.push(ShortcutsHelpEntry::Hint {
@@ -311,14 +308,11 @@ pub fn build_entries(
         // Simple mode reaches scrollback search via the `/find` slash command, not a keystroke
         // Use a null key and a custom display so the raw key list stays empty of `/`
         if !vim_mode && cat == Category::ConversationNav {
-            let mut item = HintItem::new(
-                crate::key!(Null),
-                crate::locale::ctx().tr_static("search"),
-            );
+            let mut item =
+                HintItem::new(crate::key!(Null), crate::locale::ctx().tr_static("search"));
             item.custom_display = Some("/find");
             item.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx()
-                    .tr_static("Search scrollback"),
+                crate::locale::ctx().tr_static("Search scrollback"),
             ));
             // `/find` is a slash command typed at the prompt (not a scrollback keystroke like the vim `/` above)
             // It is available when the prompt is focused, so dim on `!PromptFocused`, not scrollback
@@ -351,8 +345,7 @@ pub fn build_entries(
                 crate::locale::ctx().tr_static("paste"),
             );
             paste.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx().tr_static("Paste images (and text) from the clipboard",
-                ),
+                crate::locale::ctx().tr_static("Paste images (and text) from the clipboard"),
             ));
             #[cfg(target_os = "windows")]
             paste.keys.push(crate::key!('v', ALT));
@@ -363,8 +356,7 @@ pub fn build_entries(
                 crate::locale::ctx().tr_static("undo"),
             );
             undo.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx().tr_static("Undo the last prompt edit",
-                ),
+                crate::locale::ctx().tr_static("Undo the last prompt edit"),
             ));
             push_pseudo(&mut entries, undo, Some(undo_long_help()));
 
@@ -374,8 +366,7 @@ pub fn build_entries(
                 crate::locale::ctx().tr_static("redo"),
             );
             redo.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx().tr_static("Redo the last undone prompt edit",
-                ),
+                crate::locale::ctx().tr_static("Redo the last undone prompt edit"),
             ));
             redo.keys.push(crate::key!('z', ALT));
             push_pseudo(&mut entries, redo, Some(redo_long_help()));
@@ -383,13 +374,10 @@ pub fn build_entries(
             // Prompt history (Up / /history)
             // It is not part of the shared paste/undo/redo `dimmed`: that also lights on DashboardFocused
             // Up-history is prompt-only, so give it its own dim scoped to PromptFocused
-            let mut history = HintItem::new(
-                crate::key!(Up),
-                crate::locale::ctx().tr_static("history"),
-            );
+            let mut history =
+                HintItem::new(crate::key!(Up), crate::locale::ctx().tr_static("history"));
             history.description = Some(std::borrow::Cow::Borrowed(
-                crate::locale::ctx()
-                    .tr_static("Prompt history"),
+                crate::locale::ctx().tr_static("Prompt history"),
             ));
             let history_dimmed = !active_contexts.contains(&When::PromptFocused);
             entries.push(ShortcutsHelpEntry::Hint {
@@ -752,8 +740,7 @@ pub fn render_detail_body<'a>(
     if dimmed_note {
         lines.push(Line::from(""));
         lines.push(Line::from(Span::styled(
-            crate::locale::ctx().tr_static("(not active in current context)",
-            ),
+            crate::locale::ctx().tr_static("(not active in current context)"),
             Style::default().fg(theme.gray_dim),
         )));
     }
@@ -1102,30 +1089,25 @@ pub fn modal_footer(filter_active: bool) -> Vec<crate::views::modal_window::Shor
         },
         Shortcut {
             label: if filter_active {
-                crate::locale::ctx()
-                    .tr_static("f show all")
+                crate::locale::ctx().tr_static("f show all")
             } else {
-                crate::locale::ctx()
-                    .tr_static("f filter")
+                crate::locale::ctx().tr_static("f filter")
             },
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("e/Space/\u{2192} expand"),
+            label: crate::locale::ctx().tr_static("e/Space/\u{2192} expand"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("\u{2190} collapse"),
+            label: crate::locale::ctx().tr_static("\u{2190} collapse"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("Enter details"),
+            label: crate::locale::ctx().tr_static("Enter details"),
             clickable: false,
             id: 0,
         },

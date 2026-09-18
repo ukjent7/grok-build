@@ -107,10 +107,7 @@ pub(super) fn render_header(
             label,
             Line::from(vec![
                 Span::styled(glyph, bg.fg(color)),
-                Span::styled(
-                    format!(" {count} {}", chip_label(label)),
-                    bg.fg(theme.gray),
-                ),
+                Span::styled(format!(" {count} {}", chip_label(label)), bg.fg(theme.gray)),
             ]),
         );
     }
@@ -157,10 +154,7 @@ pub(super) fn render_header(
     buf.set_line(area.x, area.y, &location, location_w);
 
     let mut choose_hint = hint_line(
-        Span::styled(
-            crate::locale::ctx().tr_static("Choose"),
-            dim,
-        ),
+        Span::styled(crate::locale::ctx().tr_static("Choose"), dim),
         chord_hint(
             theme,
             registry,
@@ -274,12 +268,9 @@ pub(super) fn render_actions_row(
 
     let worktree_armed = state.worktree_armed();
     let new_agent_label = if worktree_armed {
-        crate::locale::ctx()
-            .tr_static("+ New Agent in Worktree",
-            )
+        crate::locale::ctx().tr_static("+ New Agent in Worktree")
     } else {
-        crate::locale::ctx()
-            .tr_static("+ New Agent")
+        crate::locale::ctx().tr_static("+ New Agent")
     };
     let new_agent_w = (UnicodeWidthStr::width(new_agent_label) as u16).min(area.width);
 
@@ -306,11 +297,9 @@ pub(super) fn render_actions_row(
         };
 
     let worktree_label = if worktree_armed {
-        crate::locale::ctx()
-            .tr_static("Disable Worktree")
+        crate::locale::ctx().tr_static("Disable Worktree")
     } else {
-        crate::locale::ctx()
-            .tr_static("Worktree")
+        crate::locale::ctx().tr_static("Worktree")
     };
     let worktree_hint = hint_line(
         Span::styled(
@@ -336,8 +325,7 @@ pub(super) fn render_actions_row(
         // The session picker has no dashboard chord (`Ctrl+R` is rename here), so the hint names the slash command that opens it
         let open_previous = hint_line(
             Span::styled(
-                crate::locale::ctx()
-                    .tr_static("Open Previous"),
+                crate::locale::ctx().tr_static("Open Previous"),
                 bg.fg(button_fg(
                     state.open_session_button_focused(),
                     state.open_session_button_hit.hovered,

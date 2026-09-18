@@ -14,8 +14,7 @@ use crate::scrollback::block::RenderBlock;
 
 /// Temporary kill switch: client share links are disabled.
 pub(super) fn dispatch_share_session(app: &mut AppView) -> Vec<Effect> {
-    app.show_toast(&crate::locale::ctx().tr("Session sharing is temporarily disabled",
-    ));
+    app.show_toast(&crate::locale::ctx().tr("Session sharing is temporarily disabled"));
     vec![]
 }
 
@@ -237,8 +236,9 @@ pub(super) fn set_coding_data_sharing(
     source: xai_grok_telemetry::events::CodingDataConsentSource,
 ) -> Vec<Effect> {
     if app.is_zdr {
-        app.show_toast(&crate::locale::ctx().tr("\u{2717} Cannot change: Zero Data Retention enabled",
-        ));
+        app.show_toast(
+            &crate::locale::ctx().tr("\u{2717} Cannot change: Zero Data Retention enabled"),
+        );
         return vec![];
     }
     if app.team_name.is_some() {
@@ -247,8 +247,9 @@ pub(super) fn set_coding_data_sharing(
             .as_deref()
             .is_some_and(|r| r.eq_ignore_ascii_case("admin"));
         if !is_admin {
-            app.show_toast(&crate::locale::ctx().tr("\u{2717} Data sharing is controlled by your team admin",
-            ));
+            app.show_toast(
+                &crate::locale::ctx().tr("\u{2717} Data sharing is controlled by your team admin"),
+            );
             return vec![];
         }
     }
@@ -361,8 +362,7 @@ pub(super) fn dispatch_show_usage(app: &mut AppView) -> Vec<Effect> {
                     &mut agent.scrollback,
                     RenderBlock::system(
                         crate::locale::ctx()
-                            .tr("Session usage is unavailable until the session starts.",
-                            )
+                            .tr("Session usage is unavailable until the session starts.")
                             .into_owned(),
                     ),
                 );
@@ -463,11 +463,12 @@ pub(crate) fn commit_minimal_update_notice(app: &mut AppView, latest_version: &s
     if let ActiveView::Agent(id) = app.active_view
         && let Some(agent) = app.agents.get_mut(&id)
     {
-        agent.scrollback.push_block(RenderBlock::system(
-            crate::locale::ctx().tr_format("Update available: v{version}. Restart to apply.",
+        agent
+            .scrollback
+            .push_block(RenderBlock::system(crate::locale::ctx().tr_format(
+                "Update available: v{version}. Restart to apply.",
                 &[("version", latest_version)],
-            ),
-        ));
+            )));
     }
 }
 
@@ -509,13 +510,11 @@ pub(super) fn dispatch_open_gboom(app: &mut AppView) -> Vec<Effect> {
         return vec![];
     };
     if detect_graphics_protocol() == GraphicsProtocol::None {
-        agent.show_toast(
-            &crate::locale::ctx().named_text(
-                "status.gboom_needs_graphics",
-                "No demons here: GBOOM needs a graphics-capable terminal \
+        agent.show_toast(&crate::locale::ctx().named_text(
+            "status.gboom_needs_graphics",
+            "No demons here: GBOOM needs a graphics-capable terminal \
                  (kitty, Ghostty, WezTerm, iTerm2)",
-            ),
-        );
+        ));
         return vec![];
     }
     // Close other media modals: they share the kitty placement id
@@ -597,7 +596,8 @@ pub(super) fn handle_coding_data_sharing_failed(
     }
     refresh_open_settings_modals(app);
     let scrubbed = scrub_error_for_toast(&error);
-    app.show_toast(&crate::locale::ctx().tr_format("\u{2717} Couldn't update coding data sharing: {error}",
+    app.show_toast(&crate::locale::ctx().tr_format(
+        "\u{2717} Couldn't update coding data sharing: {error}",
         &[("error", &scrubbed)],
     ));
     tracing::warn!(

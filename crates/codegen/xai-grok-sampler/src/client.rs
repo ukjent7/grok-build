@@ -35,13 +35,13 @@ use xai_grok_sampling_types::{
     is_check_event, messages, rs,
 };
 
-use crate::config::{AuthScheme, OriginClientInfo, RequestCompression, SamplerConfig};
 use crate::client_third_party::{
-    backfill_usage_details, coerce_integral_floats_to_ints, deserialize_chat_chunk,
-    deserialize_chat_response, deserialize_response_body, is_ignorable_response_event,
-    normalize_byok_chat_message_content, retain_byok_hosted_tool_entries, screen_message_payload,
-    strip_byok_response_extensions, ScreenedMessagePayload,
+    ScreenedMessagePayload, backfill_usage_details, coerce_integral_floats_to_ints,
+    deserialize_chat_chunk, deserialize_chat_response, deserialize_response_body,
+    is_ignorable_response_event, normalize_byok_chat_message_content,
+    retain_byok_hosted_tool_entries, screen_message_payload, strip_byok_response_extensions,
 };
+use crate::config::{AuthScheme, OriginClientInfo, RequestCompression, SamplerConfig};
 use crate::events::SamplingErrorInfo;
 use crate::request_compression::{compress_body, should_compress};
 use crate::span_timing::{ERROR, STATUS_CODE, SUCCESS, StreamSpanTiming};
@@ -2296,8 +2296,8 @@ fn stream_collect_error(info: SamplingErrorInfo) -> SamplingError {
 mod tests {
     use super::*;
     use crate::client_third_party::{
-        deserialize_chat_chunk, deserialize_chat_response,
-        deserialize_response_body, is_ignorable_response_event, retain_byok_hosted_tool_entries,
+        deserialize_chat_chunk, deserialize_chat_response, deserialize_response_body,
+        is_ignorable_response_event, retain_byok_hosted_tool_entries,
         strip_byok_response_extensions,
     };
 
@@ -2355,10 +2355,7 @@ mod tests {
     fn ignorable_response_event_covers_both_ping_shapes() {
         assert!(is_ignorable_response_event("ping", ""));
         assert!(is_ignorable_response_event("ping", "{}"));
-        assert!(is_ignorable_response_event(
-            "message",
-            r#"{"type":"ping"}"#
-        ));
+        assert!(is_ignorable_response_event("message", r#"{"type":"ping"}"#));
         assert!(!is_ignorable_response_event(
             "response.created",
             r#"{"type":"response.created"}"#

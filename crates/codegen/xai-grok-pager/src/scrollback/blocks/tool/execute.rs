@@ -195,13 +195,11 @@ impl ExecuteToolCallBlock {
                 } else {
                     theme.primary().add_modifier(Modifier::BOLD)
                 };
-                let run_label =
-                    crate::locale::ctx().tr("Run ");
+                let run_label = crate::locale::ctx().tr("Run ");
                 let mut spans = vec![Span::styled(run_label.clone(), label_style)];
                 let mut hang = UnicodeWidthStr::width(run_label.as_ref());
                 if self.bash_mode {
-                    let user_label =
-                        crate::locale::ctx().tr("(user) ");
+                    let user_label = crate::locale::ctx().tr("(user) ");
                     spans.push(Span::styled(user_label.clone(), theme.muted()));
                     hang += UnicodeWidthStr::width(user_label.as_ref());
                 }
@@ -293,17 +291,13 @@ impl ExecuteToolCallBlock {
             theme.primary().add_modifier(Modifier::BOLD)
         };
         let mut spans = vec![Span::styled(
-            crate::locale::ctx()
-                .tr("Run ")
-                .into_owned(),
+            crate::locale::ctx().tr("Run ").into_owned(),
             label_style,
         )];
         if self.bash_mode {
             // Same style as session event messages (e.g. "Worked for 2.3s")
             spans.push(Span::styled(
-                crate::locale::ctx()
-                    .tr("(user) ")
-                    .into_owned(),
+                crate::locale::ctx().tr("(user) ").into_owned(),
                 theme.muted(),
             ));
         }
@@ -563,7 +557,8 @@ impl ExecuteToolCallBlock {
                     let hidden = total - threshold;
                     lines.push(apply_pad(
                         BlockLine::separator(Line::from(Span::styled(
-                            crate::locale::ctx().tr_format("\u{2026} +{count} lines",
+                            crate::locale::ctx().tr_format(
+                                "\u{2026} +{count} lines",
                                 &[("count", &hidden.to_string())],
                             ),
                             theme.muted(),

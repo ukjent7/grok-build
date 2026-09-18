@@ -109,41 +109,23 @@ impl VerbGroupKind {
     pub fn verb(self, running: bool) -> &'static str {
         let ctx = crate::locale::ctx();
         let (past, present) = match self {
-            VerbGroupKind::File | VerbGroupKind::Skill => (
-                ctx.tr_static("Read"),
-                ctx.tr_static("Reading"),
-            ),
+            VerbGroupKind::File | VerbGroupKind::Skill => {
+                (ctx.tr_static("Read"), ctx.tr_static("Reading"))
+            }
             VerbGroupKind::Search
             | VerbGroupKind::WebSearch
             | VerbGroupKind::MemorySearch
-            | VerbGroupKind::IntegrationSearch => (
-                ctx.tr_static("Searched"),
-                ctx.tr_static("Searching"),
-            ),
-            VerbGroupKind::Dir => (
-                ctx.tr_static("Listed"),
-                ctx.tr_static("Listing"),
-            ),
-            VerbGroupKind::WebFetch => (
-                ctx.tr_static("Fetched"),
-                ctx.tr_static("Fetching"),
-            ),
-            VerbGroupKind::Subagent | VerbGroupKind::Command | VerbGroupKind::OtherTool => (
-                ctx.tr_static("Ran"),
-                ctx.tr_static("Running"),
-            ),
-            VerbGroupKind::Message => (
-                ctx.tr_static("Sent"),
-                ctx.tr_static("Sending"),
-            ),
-            VerbGroupKind::EditFile => (
-                ctx.tr_static("Edited"),
-                ctx.tr_static("Editing"),
-            ),
-            VerbGroupKind::McpCall => (
-                ctx.tr_static("Called"),
-                ctx.tr_static("Calling"),
-            ),
+            | VerbGroupKind::IntegrationSearch => {
+                (ctx.tr_static("Searched"), ctx.tr_static("Searching"))
+            }
+            VerbGroupKind::Dir => (ctx.tr_static("Listed"), ctx.tr_static("Listing")),
+            VerbGroupKind::WebFetch => (ctx.tr_static("Fetched"), ctx.tr_static("Fetching")),
+            VerbGroupKind::Subagent | VerbGroupKind::Command | VerbGroupKind::OtherTool => {
+                (ctx.tr_static("Ran"), ctx.tr_static("Running"))
+            }
+            VerbGroupKind::Message => (ctx.tr_static("Sent"), ctx.tr_static("Sending")),
+            VerbGroupKind::EditFile => (ctx.tr_static("Edited"), ctx.tr_static("Editing")),
+            VerbGroupKind::McpCall => (ctx.tr_static("Called"), ctx.tr_static("Calling")),
         };
         if running { present } else { past }
     }
@@ -152,34 +134,22 @@ impl VerbGroupKind {
     pub fn noun(self, count: usize) -> &'static str {
         let ctx = crate::locale::ctx();
         let (one, many) = match self {
-            VerbGroupKind::File | VerbGroupKind::EditFile => (
-                ctx.tr_static("file"),
-                ctx.tr_static("files"),
-            ),
+            VerbGroupKind::File | VerbGroupKind::EditFile => {
+                (ctx.tr_static("file"), ctx.tr_static("files"))
+            }
             VerbGroupKind::Skill => (
                 ctx.tr_static("skill"),
                 ctx.named_static_text("scrollback.verb_group.noun.skill.many", "skills"),
             ),
-            VerbGroupKind::Search => (
-                ctx.tr_static("pattern"),
-                ctx.tr_static("patterns"),
-            ),
-            VerbGroupKind::Dir => (
-                ctx.tr_static("dir"),
-                ctx.tr_static("dirs"),
-            ),
-            VerbGroupKind::WebFetch | VerbGroupKind::WebSearch => (
-                ctx.tr_static("website"),
-                ctx.tr_static("websites"),
-            ),
-            VerbGroupKind::MemorySearch => (
-                ctx.tr_static("memory"),
-                ctx.tr_static("memories"),
-            ),
-            VerbGroupKind::IntegrationSearch | VerbGroupKind::McpCall => (
-                ctx.tr_static("MCP tool"),
-                ctx.tr_static("MCP tools"),
-            ),
+            VerbGroupKind::Search => (ctx.tr_static("pattern"), ctx.tr_static("patterns")),
+            VerbGroupKind::Dir => (ctx.tr_static("dir"), ctx.tr_static("dirs")),
+            VerbGroupKind::WebFetch | VerbGroupKind::WebSearch => {
+                (ctx.tr_static("website"), ctx.tr_static("websites"))
+            }
+            VerbGroupKind::MemorySearch => (ctx.tr_static("memory"), ctx.tr_static("memories")),
+            VerbGroupKind::IntegrationSearch | VerbGroupKind::McpCall => {
+                (ctx.tr_static("MCP tool"), ctx.tr_static("MCP tools"))
+            }
             VerbGroupKind::Subagent => (
                 ctx.named_static_text("scrollback.verb_group.noun.subagent.one", "subagent"),
                 ctx.named_static_text("scrollback.verb_group.noun.subagent.many", "subagents"),
@@ -188,10 +158,7 @@ impl VerbGroupKind {
                 ctx.named_static_text("scrollback.verb_group.noun.command.one", "command"),
                 ctx.named_static_text("scrollback.verb_group.noun.command.many", "commands"),
             ),
-            VerbGroupKind::Message => (
-                ctx.tr_static("message"),
-                ctx.tr_static("messages"),
-            ),
+            VerbGroupKind::Message => (ctx.tr_static("message"), ctx.tr_static("messages")),
             VerbGroupKind::OtherTool => (
                 ctx.tr_static("tool"),
                 ctx.named_static_text("scrollback.verb_group.noun.tool.many", "tools"),

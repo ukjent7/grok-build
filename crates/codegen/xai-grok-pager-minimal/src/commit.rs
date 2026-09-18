@@ -294,7 +294,8 @@ fn paint_committed(
         // Clear any clipped content that landed on the footer row first.
         buf.set_style(row, style);
         let hidden_count = hidden.to_string();
-        let text = xai_grok_locale::ctx().tr_format("\u{2026} {hidden} more lines \u{00b7} /transcript to view",
+        let text = xai_grok_locale::ctx().tr_format(
+            "\u{2026} {hidden} more lines \u{00b7} /transcript to view",
             &[("hidden", &hidden_count)],
         );
         buf.set_span(buf.area.x, y, &Span::styled(text, style), width);

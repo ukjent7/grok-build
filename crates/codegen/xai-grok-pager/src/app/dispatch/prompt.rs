@@ -143,36 +143,27 @@ pub(super) fn open_doctor_fix_question(
     if agent.question_view.is_some() {
         agent.scrollback.push_block(RenderBlock::system(
             crate::locale::ctx()
-                .tr_static("Close the current question before applying this fix.",
-                )
+                .tr_static("Close the current question before applying this fix.")
                 .to_string(),
         ));
         return;
     }
     let preview = crate::diagnostics::format_fix_preview(&plan);
     let question = Question {
-        question: crate::locale::ctx()
-            .tr_static("Apply this fix?")
-            .to_owned(),
+        question: crate::locale::ctx().tr_static("Apply this fix?").to_owned(),
         options: vec![
             QuestionOption {
-                label: crate::locale::ctx()
-                    .tr_static("Apply")
-                    .to_owned(),
+                label: crate::locale::ctx().tr_static("Apply").to_owned(),
                 description: crate::locale::ctx()
-                    .tr_static("Make the changes shown above.",
-                    )
+                    .tr_static("Make the changes shown above.")
                     .to_owned(),
                 preview: Some(preview),
                 id: None,
             },
             QuestionOption {
-                label: crate::locale::ctx()
-                    .tr_static("Cancel")
-                    .to_owned(),
+                label: crate::locale::ctx().tr_static("Cancel").to_owned(),
                 description: crate::locale::ctx()
-                    .tr_static("Do not change the configuration.",
-                    )
+                    .tr_static("Do not change the configuration.")
                     .to_owned(),
                 preview: None,
                 id: None,
@@ -643,8 +634,7 @@ pub(super) fn dispatch_send_prompt_submission(
     app.pending_action = None;
 
     if app.reconnect_pending {
-        app.show_toast(crate::locale::ctx().tr_static(RECONNECTING_NOTICE,
-        ));
+        app.show_toast(crate::locale::ctx().tr_static(RECONNECTING_NOTICE));
         return vec![];
     }
 
@@ -1247,8 +1237,7 @@ pub(super) fn dispatch_send_prompt_submission(
 /// Bash commands go through the same enqueue/drain pipeline as normal prompts, just with `QueueEntryKind::BashCommand`. No scrollback block is pushed here; the execute block from the shell IS the visual entry.
 pub(super) fn dispatch_send_bash_command(app: &mut AppView, command: String) -> Vec<Effect> {
     if app.reconnect_pending {
-        app.show_toast(crate::locale::ctx().tr_static(RECONNECTING_NOTICE,
-        ));
+        app.show_toast(crate::locale::ctx().tr_static(RECONNECTING_NOTICE));
         return vec![];
     }
 
@@ -1635,20 +1624,17 @@ pub(super) fn handle_prompt_response(
         let notification = match (&result, was_cancelling) {
             (Ok(_), false) if !agent.bash_turn => {
                 let body = match elapsed {
-                    Some(d) => crate::locale::ctx().tr_format("Turn complete in {duration}.",
+                    Some(d) => crate::locale::ctx().tr_format(
+                        "Turn complete in {duration}.",
                         &[("duration", &crate::util::format_duration(d))],
                     ),
-                    None => crate::locale::ctx()
-                        .tr("Turn complete.")
-                        .into_owned(),
+                    None => crate::locale::ctx().tr("Turn complete.").into_owned(),
                 };
                 Some((NotificationEventKind::TurnComplete, body))
             }
             (Err(err), _) if !dedicated_ux_shown => Some((
                 NotificationEventKind::AgentError,
-                crate::locale::ctx().tr_format("Error: {error}",
-                    &[("error", err)],
-                ),
+                crate::locale::ctx().tr_format("Error: {error}", &[("error", err)]),
             )),
             _ => None,
         };

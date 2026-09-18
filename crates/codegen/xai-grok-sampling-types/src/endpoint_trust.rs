@@ -88,9 +88,13 @@ mod tests {
     #[test]
     fn first_party_urls_are_not_third_party() {
         assert!(!is_third_party_base_url("https://api.x.ai/v1"));
-        assert!(!is_third_party_base_url("https://api.x.ai/v1/chat/completions"));
+        assert!(!is_third_party_base_url(
+            "https://api.x.ai/v1/chat/completions"
+        ));
         assert!(!is_third_party_base_url("https://sub.api.x.ai/v1"));
-        assert!(!is_third_party_base_url(xai_grok_env::PROD_CLI_CHAT_PROXY_BASE_URL));
+        assert!(!is_third_party_base_url(
+            xai_grok_env::PROD_CLI_CHAT_PROXY_BASE_URL
+        ));
     }
 
     #[test]

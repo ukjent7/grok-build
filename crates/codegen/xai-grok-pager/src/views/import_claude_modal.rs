@@ -112,19 +112,11 @@ impl ItemKind {
 
     fn label(&self) -> &'static str {
         match self {
-            Self::Permission => {
-                crate::locale::ctx().tr_static("Permissions")
-            }
-            Self::EnvVar => {
-                crate::locale::ctx().tr_static("Env vars")
-            }
-            Self::McpServer => {
-                crate::locale::ctx().tr_static("MCP servers")
-            }
+            Self::Permission => crate::locale::ctx().tr_static("Permissions"),
+            Self::EnvVar => crate::locale::ctx().tr_static("Env vars"),
+            Self::McpServer => crate::locale::ctx().tr_static("MCP servers"),
             Self::Hook => crate::locale::ctx().tr_static("Hooks"),
-            Self::PathEntry => {
-                crate::locale::ctx().tr_static("Paths")
-            }
+            Self::PathEntry => crate::locale::ctx().tr_static("Paths"),
         }
     }
 
@@ -586,7 +578,8 @@ pub fn render_import_claude_modal(
     compact: bool,
 ) {
     let ctx = crate::locale::ctx();
-    let confirm_label = ctx.tr_format("Enter import {count}",
+    let confirm_label = ctx.tr_format(
+        "Enter import {count}",
         &[("count", &state.selected_count().to_string())],
     );
     let shortcuts = [
@@ -627,8 +620,7 @@ pub fn render_import_claude_modal(
         },
     ];
     let config = ModalWindowConfig {
-        title: ctx
-            .tr_static("Import Claude settings"),
+        title: ctx.tr_static("Import Claude settings"),
         tabs: None,
         shortcuts: &shortcuts,
         sizing: ModalSizing::default().with_compact(compact),
@@ -715,8 +707,7 @@ fn build_rows(
         let scope_start = flat_index;
         let scope_key = format!("scope:{:?}", Scope::Global);
         let label = crate::locale::ctx()
-            .tr("Global  ~/.grok/config.toml",
-            )
+            .tr("Global  ~/.grok/config.toml")
             .into_owned();
         // Placeholder header; flat_indices filled after children are pushed.
         let scope_header_pos = rows.len();
@@ -747,7 +738,8 @@ fn build_rows(
         let project_config = find_project_root(cwd)
             .join(".grok")
             .join(xai_grok_config::USER_CONFIG_FILENAME);
-        let label = crate::locale::ctx().tr_format("Project  {path}",
+        let label = crate::locale::ctx().tr_format(
+            "Project  {path}",
             &[("path", &project_config.display().to_string())],
         );
         let scope_header_pos = rows.len();

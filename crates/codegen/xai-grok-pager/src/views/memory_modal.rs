@@ -126,9 +126,7 @@ fn disabled_state_markdown(reason: Option<MemoryDisabledReason>) -> &'static str
             ctx.tr_static(MEMORY_OFF_SESSION_TOGGLE)
         }
         Some(MemoryDisabledReason::ConfigOptOut) => ctx.tr_static(MEMORY_OFF_CONFIG_OPTOUT),
-        Some(MemoryDisabledReason::ProcessDisabled) => {
-            ctx.tr_static(MEMORY_OFF_PROCESS_DISABLED)
-        }
+        Some(MemoryDisabledReason::ProcessDisabled) => ctx.tr_static(MEMORY_OFF_PROCESS_DISABLED),
         Some(MemoryDisabledReason::RolloutRestricted) => {
             ctx.tr_static(MEMORY_OFF_ROLLOUT_RESTRICTED)
         }
@@ -484,10 +482,8 @@ impl MemoryModalState {
                 self.clamp_selected();
                 self.load_preview();
                 MemoryStatusLine {
-                    text: crate::locale::ctx().tr_format(
-                        "Deleted {label}.",
-                        &[("label", &label.unwrap_or_default())],
-                    ),
+                    text: crate::locale::ctx()
+                        .tr_format("Deleted {label}.", &[("label", &label.unwrap_or_default())]),
                     is_error: false,
                     ticks_remaining: None,
                 }
@@ -769,7 +765,9 @@ impl MemoryModalState {
                 Some(MarkdownContent::new(text))
             }
             NoteRead::TooLarge => Some(MarkdownContent::new(
-                crate::locale::ctx().tr("*(File too large to preview)*").into_owned(),
+                crate::locale::ctx()
+                    .tr("*(File too large to preview)*")
+                    .into_owned(),
             )),
             NoteRead::Unreadable => None,
         });
@@ -883,24 +881,9 @@ pub fn build_entries(
             entries.extend(items);
         }
     };
-    push_section(
-        crate::locale::ctx()
-            .tr("Global")
-            .as_ref(),
-        global,
-    );
-    push_section(
-        crate::locale::ctx()
-            .tr("Workspace")
-            .as_ref(),
-        workspace,
-    );
-    push_section(
-        crate::locale::ctx()
-            .tr("Sessions")
-            .as_ref(),
-        session,
-    );
+    push_section(crate::locale::ctx().tr("Global").as_ref(), global);
+    push_section(crate::locale::ctx().tr("Workspace").as_ref(), workspace);
+    push_section(crate::locale::ctx().tr("Sessions").as_ref(), session);
     entries
 }
 
@@ -1097,13 +1080,9 @@ fn render_file_list(buf: &mut Buffer, area: Rect, state: &mut MemoryModalState, 
     let viewport = state.query.viewport(area.width as usize);
     if state.query().is_empty() {
         let placeholder = if filter_focused {
-            crate::locale::ctx()
-                .tr("type to filter...")
-                .into_owned()
+            crate::locale::ctx().tr("type to filter...").into_owned()
         } else {
-            crate::locale::ctx()
-                .tr("/ to filter...")
-                .into_owned()
+            crate::locale::ctx().tr("/ to filter...").into_owned()
         };
         buf.set_span(
             area.x,
@@ -1423,10 +1402,8 @@ pub fn handle_memory_key(state: &mut MemoryModalState, key: &KeyEvent) -> InputO
             let path = entry.path.clone();
             state.pending_delete = Some(path.clone());
             state.status = Some(MemoryStatusLine {
-                text: crate::locale::ctx().tr_format(
-                    "Deleting {label}…",
-                    &[("label", entry.label.as_str())],
-                ),
+                text: crate::locale::ctx()
+                    .tr_format("Deleting {label}…", &[("label", entry.label.as_str())]),
                 is_error: false,
                 ticks_remaining: None,
             });
@@ -1837,9 +1814,7 @@ fn handle_browse(state: &mut MemoryModalState, key: &KeyEvent) -> InputOutcome {
             if state.preview_hash.is_none() {
                 state.status = Some(MemoryStatusLine {
                     text: crate::locale::ctx()
-                        .tr_static(
-                            "Can't delete: this note couldn't be read for verification.",
-                        )
+                        .tr_static("Can't delete: this note couldn't be read for verification.")
                         .to_owned(),
                     is_error: true,
                     ticks_remaining: None,
@@ -1978,22 +1953,19 @@ fn build_shortcuts(state: &MemoryModalState) -> Vec<Shortcut<'static>> {
                 id: 0,
             },
             Shortcut {
-                label: crate::locale::ctx()
-                    .tr_static("Esc exit filter"),
+                label: crate::locale::ctx().tr_static("Esc exit filter"),
                 clickable: false,
                 id: 0,
             },
         ],
         MemoryModalMode::ConfirmingDelete { .. } => vec![
             Shortcut {
-                label: crate::locale::ctx()
-                    .tr_static("x confirm delete"),
+                label: crate::locale::ctx().tr_static("x confirm delete"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: crate::locale::ctx()
-                    .tr_static("any key cancel"),
+                label: crate::locale::ctx().tr_static("any key cancel"),
                 clickable: false,
                 id: 0,
             },
@@ -2041,12 +2013,18 @@ fn observation_key_label(file_name: &str) -> Option<String> {
     } else {
         crate::locale::ctx().tr_format(
             "turns {from}\u{2013}{through}",
-            &[("from", &from.to_string()), ("through", &through.to_string())],
+            &[
+                ("from", &from.to_string()),
+                ("through", &through.to_string()),
+            ],
         )
     };
     Some(crate::locale::ctx().tr_format(
         "observation, {turns} (#{ordinal})",
-        &[("turns", turns.as_str()), ("ordinal", &(ordinal + 1).to_string())],
+        &[
+            ("turns", turns.as_str()),
+            ("ordinal", &(ordinal + 1).to_string()),
+        ],
     ))
 }
 

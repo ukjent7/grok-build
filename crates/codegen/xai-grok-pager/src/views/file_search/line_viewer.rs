@@ -1690,11 +1690,9 @@ pub fn render_line_viewer(
         let ctx = crate::locale::ctx();
         let action_label: String = if is_approval {
             if comment_count > 0 {
-                ctx.tr("approve w/ comments")
-                    .into_owned()
+                ctx.tr("approve w/ comments").into_owned()
             } else {
-                ctx.tr("approve")
-                    .into_owned()
+                ctx.tr("approve").into_owned()
             }
         } else if comment_count > 0 {
             ctx.tr("send").into_owned()
@@ -1702,9 +1700,19 @@ pub fn render_line_viewer(
             String::new()
         };
         let action_spans: Option<Vec<Span>> = if is_approval {
-            Some(build_shortcut_button('a', &action_label, approve_hovered, theme))
+            Some(build_shortcut_button(
+                'a',
+                &action_label,
+                approve_hovered,
+                theme,
+            ))
         } else if comment_count > 0 {
-            Some(build_shortcut_button('s', &action_label, approve_hovered, theme))
+            Some(build_shortcut_button(
+                's',
+                &action_label,
+                approve_hovered,
+                theme,
+            ))
         } else {
             None
         };
@@ -1716,9 +1724,7 @@ pub fn render_line_viewer(
         // `s revise` button, always visible in approval mode so the user can request changes (switches to prompt for revision notes)
         let (revise_w, revise_spans): (u16, Option<Vec<Span>>) = if is_approval {
             let send_hovered = viewer.plan_ref().is_some_and(|p| p.send_hovered);
-            let revise_label = ctx
-                .tr("request changes")
-                .into_owned();
+            let revise_label = ctx.tr("request changes").into_owned();
             let spans = build_shortcut_button('s', &revise_label, send_hovered, theme);
             let w: u16 = spans.iter().map(|s| s.width() as u16).sum();
             (w, Some(spans))
@@ -1728,9 +1734,7 @@ pub fn render_line_viewer(
 
         // Quit button only renders in approval mode (casual closes via X).
         let quit_spans = if is_approval {
-            let quit_label = ctx
-                .tr("quit plan")
-                .into_owned();
+            let quit_label = ctx.tr("quit plan").into_owned();
             let s = build_shortcut_button('q', &quit_label, abandon_hovered, theme);
             let w: u16 = s.iter().map(|s| s.width() as u16).sum();
             Some((s, w))

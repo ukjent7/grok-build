@@ -1695,14 +1695,8 @@ pub fn picker_shortcuts() -> &'static [HintItem] {
                 description: None,
                 pinned: false,
             },
-            HintItem::new(
-                crate::key!(Enter),
-                ctx.tr_static("select"),
-            ),
-            HintItem::new(
-                crate::key!(Esc),
-                ctx.tr_static("close"),
-            ),
+            HintItem::new(crate::key!(Enter), ctx.tr_static("select")),
+            HintItem::new(crate::key!(Esc), ctx.tr_static("close")),
         ]
     });
     &SHORTCUTS
@@ -1932,10 +1926,7 @@ fn render_picker_content_inner(
             .get((loading_tick / 4) as usize % spinner_frames.len())
             .copied()
             .unwrap_or("");
-        let msg = format!(
-            "{frame} {}",
-            crate::locale::ctx().tr("Loading…")
-        );
+        let msg = format!("{frame} {}", crate::locale::ctx().tr("Loading…"));
         let msg_style = Style::default().fg(theme.gray);
         let cx = content_area.x + content_area.width.saturating_sub(msg.width() as u16) / 2;
         let cy = content_area.y + content_area.height / 2;
@@ -1951,10 +1942,7 @@ fn render_picker_content_inner(
         buf.set_string(
             content_area.x,
             content_area.y,
-            &format!(
-                "  {}",
-                crate::locale::ctx().tr("No matches")
-            ),
+            &format!("  {}", crate::locale::ctx().tr("No matches")),
             msg_style,
         );
         return empty_hit;
@@ -2406,18 +2394,14 @@ pub fn render_picker(
         if config.expandable && !config.compact_bottom_bar {
             all_hints.push(HintItem {
                 keys: vec![],
-                label: std::borrow::Cow::Borrowed(
-                    crate::locale::ctx().tr_static("expand"),
-                ),
+                label: std::borrow::Cow::Borrowed(crate::locale::ctx().tr_static("expand")),
                 custom_display: Some("e/Shift+e"),
                 description: None,
                 pinned: false,
             });
             all_hints.push(HintItem {
                 keys: vec![],
-                label: std::borrow::Cow::Borrowed(
-                    crate::locale::ctx().tr_static("copy"),
-                ),
+                label: std::borrow::Cow::Borrowed(crate::locale::ctx().tr_static("copy")),
                 custom_display: Some("y"),
                 description: None,
                 pinned: false,

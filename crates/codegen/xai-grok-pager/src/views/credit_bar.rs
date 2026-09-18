@@ -38,12 +38,8 @@ impl CreditBalance {
     pub fn usage_label(&self) -> &'static str {
         let ctx = crate::locale::ctx();
         match self.period_type.as_deref() {
-            Some(t) if t.contains("WEEKLY") => {
-                ctx.tr_static("Weekly limit")
-            }
-            Some(t) if t.contains("MONTHLY") => {
-                ctx.tr_static("Monthly limit")
-            }
+            Some(t) if t.contains("WEEKLY") => ctx.tr_static("Weekly limit"),
+            Some(t) if t.contains("MONTHLY") => ctx.tr_static("Monthly limit"),
             _ => ctx.tr_static("Usage"),
         }
     }
@@ -101,13 +97,12 @@ pub fn format_usage_summary(balance: &CreditBalance, autotopup: Option<&AutoTopu
     let ctx = crate::locale::ctx();
     // Floor to match the backend SpendingLimiter's `as u8` truncation (99.994% renders as 99%, never 100% until truly exhausted)
     let pct = balance.usage_pct.floor() as i64;
-    let mut lines = vec![ctx.tr_format("{label}: {pct}%",
+    let mut lines = vec![ctx.tr_format(
+        "{label}: {pct}%",
         &[("label", balance.usage_label()), ("pct", &pct.to_string())],
     )];
     if let Some(reset) = &balance.period_end_display {
-        lines.push(ctx.tr_format("Next reset: {reset}",
-            &[("reset", reset)],
-        ));
+        lines.push(ctx.tr_format("Next reset: {reset}", &[("reset", reset)]));
     }
 
     // Billing stores credit / top-up amounts as negative cents (accounting convention); display the absolute USD value, matching the web clients
@@ -124,19 +119,18 @@ pub fn format_usage_summary(balance: &CreditBalance, autotopup: Option<&AutoTopu
         ));
         match autotopup {
             Some(at) if at.enabled && at.topup_amount_cents.is_some() => {
-                lines.push(ctx.tr_format("Auto topup: {amount}",
+                lines.push(ctx.tr_format(
+                    "Auto topup: {amount}",
                     &[("amount", &fmt_dollars(at.topup_amount_cents.unwrap().abs()))],
                 ));
                 if let Some(max) = at.max_amount_cents {
-                    lines.push(ctx.tr_format("Max monthly topup: {amount}",
+                    lines.push(ctx.tr_format(
+                        "Max monthly topup: {amount}",
                         &[("amount", &fmt_dollars(max.abs()))],
                     ));
                 }
             }
-            _ => lines.push(
-                ctx.tr("Auto topup: disabled")
-                    .into_owned(),
-            ),
+            _ => lines.push(ctx.tr("Auto topup: disabled").into_owned()),
         }
     }
 
@@ -146,7 +140,8 @@ pub fn format_usage_summary(balance: &CreditBalance, autotopup: Option<&AutoTopu
         let used = balance.on_demand_used_cents.unwrap_or(0).abs() as f64 / 100.0;
         let cap = balance.on_demand_cap_cents.unwrap_or(0).abs() as f64 / 100.0;
         lines.push(String::new());
-        lines.push(ctx.tr_format("Pay-as-you-go: ${used} used of ${cap} limit",
+        lines.push(ctx.tr_format(
+            "Pay-as-you-go: ${used} used of ${cap} limit",
             &[
                 ("used", &format!("{used:.2}")),
                 ("cap", &format!("{cap:.2}")),
@@ -197,7 +192,8 @@ pub fn usage_warning_for_session(
                 let used = balance.on_demand_used_cents.unwrap_or(0).abs();
                 let remaining = (cap - used).max(0);
                 if remaining <= LOW_BALANCE_CENTS {
-                    let text = crate::locale::ctx().tr_format("Pay-as-you-go limit left: {amount}",
+                    let text = crate::locale::ctx().tr_format(
+                        "Pay-as-you-go limit left: {amount}",
                         &[("amount", &fmt_dollars(remaining))],
                     );
                     return Some((text, remaining <= PAY_AS_YOU_GO_CRITICAL_CENTS));
@@ -212,7 +208,8 @@ pub fn usage_warning_for_session(
             let remaining = (100 - pct.floor() as i64).max(0);
             let label = balance.usage_label();
             let ctx = crate::locale::ctx();
-            let text = ctx.tr_format("{label} left: {remaining}%",
+            let text = ctx.tr_format(
+                "{label} left: {remaining}%",
                 &[("label", label), ("remaining", &remaining.to_string())],
             );
             return Some((text, pct > 95.0));
@@ -227,7 +224,8 @@ pub fn usage_warning_for_session(
 
     let credits_warning = || {
         (
-            crate::locale::ctx().tr_format("Credits left: {amount}",
+            crate::locale::ctx().tr_format(
+                "Credits left: {amount}",
                 &[("amount", &fmt_dollars(credits_cents))],
             ),
             true,
@@ -274,9 +272,8 @@ pub fn credit_bar_line_for_session(
         theme.accent_success
     };
 
-    let text = crate::locale::ctx().tr_format("Credits used: {pct}%",
-        &[("pct", &format!("{pct:.0}"))],
-    );
+    let text =
+        crate::locale::ctx().tr_format("Credits used: {pct}%", &[("pct", &format!("{pct:.0}"))]);
 
     let style = Style::default().fg(color).bg(theme.bg_base);
     Some(Line::from(Span::styled(text, style)))

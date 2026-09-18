@@ -113,7 +113,9 @@ impl<T: ListItem> StatefulWidget for ListPane<'_, T> {
         // Rendered after the indicators so it can replace the bottom-right indicator instead of overlapping it
         if state.copy_toast_active() && content_area.height > 0 && content_area.width > 8 {
             let toast_text = crate::locale::ctx().tr(" Copied!").into_owned();
-            let x = content_area.right().saturating_sub(unicode_width::UnicodeWidthStr::width(toast_text.as_str()) as u16);
+            let x = content_area
+                .right()
+                .saturating_sub(unicode_width::UnicodeWidthStr::width(toast_text.as_str()) as u16);
             let y = content_area.bottom().saturating_sub(1);
             // Write each char, keeping bg (selection highlight) but overriding fg and modifiers so content styles don't leak
             for (i, ch) in toast_text.chars().enumerate() {
@@ -529,15 +531,9 @@ fn render_bottom_bar(
     if let Some(mode) = state.input_mode() {
         // Active input bar: left-aligned, editable
         let label = match mode {
-            super::state::InputBarMode::Search => {
-                crate::locale::ctx().tr("search: ").into_owned()
-            }
-            super::state::InputBarMode::Filter => {
-                crate::locale::ctx().tr("filter: ").into_owned()
-            }
-            super::state::InputBarMode::GotoLine => {
-                crate::locale::ctx().tr("go to: ").into_owned()
-            }
+            super::state::InputBarMode::Search => crate::locale::ctx().tr("search: ").into_owned(),
+            super::state::InputBarMode::Filter => crate::locale::ctx().tr("filter: ").into_owned(),
+            super::state::InputBarMode::GotoLine => crate::locale::ctx().tr("go to: ").into_owned(),
             super::state::InputBarMode::Comment => {
                 crate::locale::ctx().tr("comment: ").into_owned()
             }
@@ -562,12 +558,8 @@ fn render_bottom_bar(
     } else if let Some(matcher) = state.matcher() {
         // Accepted matcher: right-aligned, dim
         let mode_word = match matcher.mode {
-            super::state::MatchMode::Filter => {
-                crate::locale::ctx().tr("filter").into_owned()
-            }
-            super::state::MatchMode::Search => {
-                crate::locale::ctx().tr("search").into_owned()
-            }
+            super::state::MatchMode::Filter => crate::locale::ctx().tr("filter").into_owned(),
+            super::state::MatchMode::Search => crate::locale::ctx().tr("search").into_owned(),
         };
         let status = format!("[{}: {}]  ", mode_word, matcher.query());
         let status_w = status.len() as u16;

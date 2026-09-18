@@ -278,9 +278,7 @@ pub(super) fn maybe_show_x11_primary_paste_hint(
     }
     show_clipboard_toast(
         target,
-        &crate::locale::ctx()
-            .tr(X11_PRIMARY_PASTE_HINT)
-            .into_owned(),
+        &crate::locale::ctx().tr(X11_PRIMARY_PASTE_HINT).into_owned(),
         app,
     );
 }
@@ -931,7 +929,8 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
         }
         TaskResult::ConsentPersistFailed { error } => {
             tracing::warn!(%error, "consent answer not persisted; the notice re-arms next launch");
-            app.show_toast(&crate::locale::ctx().tr_static("\u{2717} Could not save your answer, so this notice returns next launch",
+            app.show_toast(&crate::locale::ctx().tr_static(
+                "\u{2717} Could not save your answer, so this notice returns next launch",
             ));
             vec![]
         }
@@ -1702,7 +1701,8 @@ pub(super) fn dispatch_task_result(result: TaskResult, app: &mut AppView) -> Vec
             app,
             agent_id,
             &session_id,
-            crate::locale::ctx().tr_format("Couldn't load session usage: {error}",
+            crate::locale::ctx().tr_format(
+                "Couldn't load session usage: {error}",
                 &[("error", error.as_str())],
             ),
             nonce,

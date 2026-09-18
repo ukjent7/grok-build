@@ -355,7 +355,8 @@ impl<'e> BucketAccumulator<'e> {
             spans.push(Span::styled(segment, text_style));
         }
         if self.failed_count > 0 {
-            let suffix = crate::locale::ctx().tr_format(" · {count} failed",
+            let suffix = crate::locale::ctx().tr_format(
+                " · {count} failed",
                 &[("count", &self.failed_count.to_string())],
             );
             text.push_str(&suffix);

@@ -205,8 +205,9 @@ pub(super) fn note_hook_blocked_turn(
             open_prompt_blocked_card(agent, &blocked, text);
         }
         // A hold with no requeued row (foreign turn, or no stash) has no card; the toast keeps the parked queue from being silent
-        None => agent.show_toast(&crate::locale::ctx().tr("A hook blocked the last prompt — the queue is paused",
-        )),
+        None => agent.show_toast(
+            &crate::locale::ctx().tr("A hook blocked the last prompt — the queue is paused"),
+        ),
     }
 }
 
@@ -252,8 +253,10 @@ fn open_prompt_blocked_card(
         // Modal collision or a composer busy with a queue edit
         // The hold, the requeued row, and the stored context (for a later reopen) already protect the queue
         // Leave a plain toast so the parked state isn't silent
-        agent.show_toast(&crate::locale::ctx().tr("Prompt blocked by a hook — it is held at the front of the queue",
-        ));
+        agent.show_toast(
+            &crate::locale::ctx()
+                .tr("Prompt blocked by a hook — it is held at the front of the queue"),
+        );
         return;
     }
 
@@ -270,9 +273,8 @@ fn open_prompt_blocked_card(
     // `\n\n` splits the card header into a bold label plus dimmed description lines (one per paragraph)
     // The paragraphs: framing, hook reason verbatim, queue context
     let hook_label = short_hook_name.to_string();
-    let mut question = crate::locale::ctx().tr_format("Prompt blocked by {hook}",
-        &[("hook", hook_label.as_str())],
-    );
+    let mut question = crate::locale::ctx()
+        .tr_format("Prompt blocked by {hook}", &[("hook", hook_label.as_str())]);
     if !reason.is_empty() {
         question.push_str("\n\n");
         question.push_str(reason);
@@ -281,16 +283,14 @@ fn open_prompt_blocked_card(
     let waiting = agent.session.pending_prompts.len().saturating_sub(1);
     if was_combined {
         question.push_str("\n\n");
-        question.push_str(crate::locale::ctx().tr_static("This was a combined submission.",
-        ));
+        question.push_str(crate::locale::ctx().tr_static("This was a combined submission."));
     }
     if waiting > 0 {
         let waiting_text = if waiting == 1 {
-            crate::locale::ctx().tr_format("1 more prompt waiting (queue paused).",
-                &[],
-            )
+            crate::locale::ctx().tr_format("1 more prompt waiting (queue paused).", &[])
         } else {
-            crate::locale::ctx().tr_format("{count} more prompts waiting (queue paused).",
+            crate::locale::ctx().tr_format(
+                "{count} more prompts waiting (queue paused).",
                 &[("count", &waiting.to_string())],
             )
         };
@@ -301,33 +301,23 @@ fn open_prompt_blocked_card(
     let preview = Some(prompt_text);
     let options = vec![
         QuestionOption {
-            label: crate::locale::ctx()
-                .tr_static("Edit")
-                .into(),
+            label: crate::locale::ctx().tr_static("Edit").into(),
+            description: crate::locale::ctx().tr_static("Fix your prompt").into(),
+            preview: preview.clone(),
+            id: None,
+        },
+        QuestionOption {
+            label: crate::locale::ctx().tr_static("Resend").into(),
             description: crate::locale::ctx()
-                .tr_static("Fix your prompt")
+                .tr_static("Send it unchanged. The hook may block it again.")
                 .into(),
             preview: preview.clone(),
             id: None,
         },
         QuestionOption {
-            label: crate::locale::ctx()
-                .tr_static("Resend")
-                .into(),
+            label: crate::locale::ctx().tr_static("Discard").into(),
             description: crate::locale::ctx()
-                .tr_static("Send it unchanged. The hook may block it again.",
-                )
-                .into(),
-            preview: preview.clone(),
-            id: None,
-        },
-        QuestionOption {
-            label: crate::locale::ctx()
-                .tr_static("Discard")
-                .into(),
-            description: crate::locale::ctx()
-                .tr_static("Remove it from the queue",
-                )
+                .tr_static("Remove it from the queue")
                 .into(),
             preview,
             id: None,

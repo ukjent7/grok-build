@@ -392,16 +392,10 @@ impl GoalDisplayStatus {
         let ctx = crate::locale::ctx();
         match self {
             Self::UserPaused => ctx.tr_static("Paused"),
-            Self::BackOffPaused => {
-                ctx.tr_static("Paused (back-off)")
-            }
-            Self::NoProgressPaused => ctx.tr_static("Paused (no progress)",
-            ),
-            Self::InfraPaused => {
-                ctx.tr_static("Paused (error)")
-            }
-            Self::Blocked => ctx.tr_static("Paused (verification blocked)",
-            ),
+            Self::BackOffPaused => ctx.tr_static("Paused (back-off)"),
+            Self::NoProgressPaused => ctx.tr_static("Paused (no progress)"),
+            Self::InfraPaused => ctx.tr_static("Paused (error)"),
+            Self::Blocked => ctx.tr_static("Paused (verification blocked)"),
             Self::Active
             | Self::Failed
             | Self::Interrupted

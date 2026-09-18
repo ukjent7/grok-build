@@ -893,7 +893,8 @@ pub(super) fn default_actions(
         actions.push(ActionDef {
             id: ActionId::ToggleMouseCapture,
             label: crate::locale::ctx().tr_static("mouse reporting"),
-            description: crate::locale::ctx().tr_static("Toggle mouse reporting (native copy/paste)"),
+            description: crate::locale::ctx()
+                .tr_static("Toggle mouse reporting (native copy/paste)"),
             default_key: key!('r', CONTROL),
             alt_keys: vec![],
             category: Category::Panels,

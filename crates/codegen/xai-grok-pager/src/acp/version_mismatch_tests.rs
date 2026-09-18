@@ -1,6 +1,6 @@
 use super::{
-    is_version_mismatch_banner, version_mismatch_banner, VERSION_MISMATCH_BANNER_EN,
-    VERSION_MISMATCH_MARKER, VERSION_MISMATCH_MARKER_ZH,
+    VERSION_MISMATCH_BANNER_EN, VERSION_MISMATCH_MARKER, VERSION_MISMATCH_MARKER_ZH,
+    is_version_mismatch_banner, version_mismatch_banner,
 };
 use crate::glyphs::sanitize_toast_message;
 use crate::locale::{LocaleContext, UiLocale};

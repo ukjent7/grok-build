@@ -152,8 +152,7 @@ struct GhRelease {
 async fn fetch_all_tags(repo: &str) -> Result<Vec<String>> {
     let mut tags = Vec::new();
     for page in 1..=5 {
-        let url =
-            format!("https://api.github.com/repos/{repo}/releases?per_page=100&page={page}");
+        let url = format!("https://api.github.com/repos/{repo}/releases?per_page=100&page={page}");
         // `raw_len` is what GitHub served, `page_tags` what survived the stability
         // filter. Only the former can end the scan: a page of drafts/prereleases
         // shrinks `page_tags` below the page size and would stop the walk early,
@@ -171,12 +170,11 @@ async fn fetch_all_tags(repo: &str) -> Result<Vec<String>> {
 /// Stable (non-draft, non-prerelease) tag names on this page, plus the number of
 /// releases the page actually carried. See `fetch_all_tags` for why both are needed.
 async fn fetch_tags_once(url: &str) -> Result<(Vec<String>, usize)> {
-    let mut builder = xai_grok_extra_ca::build_reqwest_client(|b| {
-        b.timeout(std::time::Duration::from_secs(15))
-    })?
-    .get(url)
-    .header("User-Agent", "grok-build-byok-updater")
-    .header("Accept", "application/vnd.github+json");
+    let mut builder =
+        xai_grok_extra_ca::build_reqwest_client(|b| b.timeout(std::time::Duration::from_secs(15)))?
+            .get(url)
+            .header("User-Agent", "grok-build-byok-updater")
+            .header("Accept", "application/vnd.github+json");
     if let Ok(token) = std::env::var("GITHUB_TOKEN") {
         let token = token.trim().to_string();
         if !token.is_empty() {
@@ -227,10 +225,7 @@ pub fn asset_name() -> Result<&'static str> {
 }
 
 /// Download and activate the fork release. Returns the bare semver activated.
-pub async fn install(
-    target: Option<&str>,
-    _update_config: &UpdateConfig,
-) -> Result<String> {
+pub async fn install(target: Option<&str>, _update_config: &UpdateConfig) -> Result<String> {
     let version = match target {
         Some(v) => {
             let bare = normalize_pin(v);
@@ -266,12 +261,14 @@ pub async fn install(
     eprintln!("  Downloading grok {tag} ({platform}) from {repo}...");
     // FORK(byok): point users who cannot reach GitHub at a mirror that exists on
     // their platform -- see `reinstall_command`.
-    super::auto_update::download_with_progress(&url, &binary_path).await.map_err(|e| {
-        anyhow::anyhow!(
-            "{e:#}\n  hint: if GitHub is unreachable, reinstall without it:\n    {}",
-            reinstall_command()
-        )
-    })?;
+    super::auto_update::download_with_progress(&url, &binary_path)
+        .await
+        .map_err(|e| {
+            anyhow::anyhow!(
+                "{e:#}\n  hint: if GitHub is unreachable, reinstall without it:\n    {}",
+                reinstall_command()
+            )
+        })?;
     // FORK(byok): install.ps1 verifies its download; the in-app path must not be weaker.
     verify_sha256(&repo, &tag, &asset, &binary_path).await?;
     super::auto_update::smoke_test_binary(&binary_path)
@@ -283,8 +280,7 @@ pub async fn install(
     #[cfg(unix)]
     {
         let latest_path = download_dir.join("grok-latest");
-        let rel_target =
-            super::auto_update::relative_symlink_target(&binary_path, &latest_path);
+        let rel_target = super::auto_update::relative_symlink_target(&binary_path, &latest_path);
         if let Err(e) = super::auto_update::atomic_symlink_swap(&rel_target, &latest_path).await {
             tracing::warn!("Failed to update grok-latest symlink: {e}");
         }
@@ -371,11 +367,10 @@ fn is_sha256_hex(s: &str) -> bool {
 
 /// Fetch a small text file (a checksum) with the same TLS/CA settings as the releases API.
 async fn fetch_text(url: &str) -> Result<String> {
-    let mut builder = xai_grok_extra_ca::build_reqwest_client(|b| {
-        b.timeout(std::time::Duration::from_secs(15))
-    })?
-    .get(url)
-    .header("User-Agent", "grok-build-byok-updater");
+    let mut builder =
+        xai_grok_extra_ca::build_reqwest_client(|b| b.timeout(std::time::Duration::from_secs(15)))?
+            .get(url)
+            .header("User-Agent", "grok-build-byok-updater");
     // raw.githubusercontent.com needs no token for public repos; private
     // forks-of-fork do, so pass GITHUB_TOKEN through like fetch_tags_once.
     if let Ok(token) = std::env::var("GITHUB_TOKEN") {

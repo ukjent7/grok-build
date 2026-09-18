@@ -23,8 +23,7 @@ pub(in crate::app::dispatch) fn dispatch_fork(
     args: crate::slash::commands::fork::ForkArgs,
 ) -> Vec<Effect> {
     let ActiveView::Agent(parent_id) = app.active_view else {
-        app.show_toast(crate::locale::ctx().tr_static("/fork only works inside a session",
-        ));
+        app.show_toast(crate::locale::ctx().tr_static("/fork only works inside a session"));
         return vec![];
     };
     let (has_session, in_git_repo) = app
@@ -33,14 +32,16 @@ pub(in crate::app::dispatch) fn dispatch_fork(
         .map(|a| (a.session.session_id.is_some(), a.current_branch.is_some()))
         .unwrap_or((false, false));
     if !has_session {
-        app.show_toast(crate::locale::ctx().tr_static("Cannot fork: session is still being created",
-        ));
+        app.show_toast(
+            crate::locale::ctx().tr_static("Cannot fork: session is still being created"),
+        );
         return vec![];
     }
     match args.worktree_override {
         Some(true) if !in_git_repo => {
-            app.show_toast(crate::locale::ctx().tr_static("Cannot create worktree: not in a git repository",
-            ));
+            app.show_toast(
+                crate::locale::ctx().tr_static("Cannot create worktree: not in a git repository"),
+            );
             vec![]
         }
         Some(worktree) => dispatch_fork_resolved(app, worktree, args.directive),
@@ -76,23 +77,17 @@ pub(super) fn worktree_persist_options()
     use xai_grok_tools::implementations::grok_build::ask_user_question::QuestionOption;
     [
         QuestionOption {
-            label: crate::locale::ctx()
-                .tr_static("Always worktree")
-                .into(),
+            label: crate::locale::ctx().tr_static("Always worktree").into(),
             description: crate::locale::ctx()
-                .tr_static("Use worktree and stop asking (reset in config.toml)",
-                )
+                .tr_static("Use worktree and stop asking (reset in config.toml)")
                 .into(),
             preview: None,
             id: None,
         },
         QuestionOption {
-            label: crate::locale::ctx()
-                .tr_static("Never worktree")
-                .into(),
+            label: crate::locale::ctx().tr_static("Never worktree").into(),
             description: crate::locale::ctx()
-                .tr_static("Skip worktree and stop asking (reset in config.toml)",
-                )
+                .tr_static("Skip worktree and stop asking (reset in config.toml)")
                 .into(),
             preview: None,
             id: None,
@@ -113,26 +108,20 @@ fn open_fork_question(app: &mut AppView, directive: Option<String>) -> Vec<Effec
         return vec![];
     };
     if agent.question_view.is_some() {
-        app.show_toast(&crate::locale::ctx().tr("Finish answering the current question first",
-        ));
+        app.show_toast(&crate::locale::ctx().tr("Finish answering the current question first"));
         return vec![];
     }
     let mut options = vec![
         QuestionOption {
-            label: crate::locale::ctx()
-                .tr_static("Yes")
-                .to_owned(),
+            label: crate::locale::ctx().tr_static("Yes").to_owned(),
             description: crate::locale::ctx()
-                .tr_static("Fork in a new isolated git worktree",
-                )
+                .tr_static("Fork in a new isolated git worktree")
                 .into(),
             preview: None,
             id: None,
         },
         QuestionOption {
-            label: crate::locale::ctx()
-                .tr_static("No")
-                .to_owned(),
+            label: crate::locale::ctx().tr_static("No").to_owned(),
             description: crate::locale::ctx()
                 .tr_static("Fork in the current cwd")
                 .into(),
@@ -143,8 +132,7 @@ fn open_fork_question(app: &mut AppView, directive: Option<String>) -> Vec<Effec
     options.extend(worktree_persist_options());
     let question = Question {
         question: crate::locale::ctx()
-            .tr_static("Run this fork in an isolated git worktree?",
-            )
+            .tr_static("Run this fork in an isolated git worktree?")
             .into(),
         id: None,
         options,
@@ -177,8 +165,7 @@ pub(in crate::app::dispatch) fn dispatch_fork_resolved(
         return vec![];
     };
     let Some(parent_session_id) = parent.session.session_id.clone() else {
-        app.show_toast(crate::locale::ctx().tr_static("Cannot fork: session not yet created",
-        ));
+        app.show_toast(crate::locale::ctx().tr_static("Cannot fork: session not yet created"));
         return vec![];
     };
     let parent_cwd = parent.session.cwd.clone();
@@ -187,12 +174,8 @@ pub(in crate::app::dispatch) fn dispatch_fork_resolved(
     app.next_agent_id += 1;
     let new_agent = build_fork_placeholder(app, new_id, parent_id, &parent_cwd, worktree);
     let parent_marker = match directive.as_deref() {
-        Some(d) => crate::locale::ctx().tr_format("Forked: {directive}",
-            &[("directive", d)],
-        ),
-        None => crate::locale::ctx()
-            .tr_static("Forked")
-            .to_string(),
+        Some(d) => crate::locale::ctx().tr_format("Forked: {directive}", &[("directive", d)]),
+        None => crate::locale::ctx().tr_static("Forked").to_string(),
     };
     let parent_chat_kind = parent.chat_kind || app.chat_mode;
     let parent_conversation_entry = parent.conversation_entry;
@@ -232,10 +215,9 @@ pub(in crate::app::dispatch) fn dispatch_fork_resolved(
             worktree,
         });
         if worktree {
-            agent
-                .scrollback
-                .push_block(RenderBlock::system(crate::locale::ctx().tr_static("Creating worktree\u{2026}",
-                )));
+            agent.scrollback.push_block(RenderBlock::system(
+                crate::locale::ctx().tr_static("Creating worktree\u{2026}"),
+            ));
         }
         agent.pending_first_prompt = directive;
     }
@@ -348,7 +330,8 @@ pub(in crate::app::dispatch) fn build_child_fork_marker(
             ],
         )
     } else {
-        crate::locale::ctx().tr_format("Session {session_id} (forked from {parent_sid})",
+        crate::locale::ctx().tr_format(
+            "Session {session_id} (forked from {parent_sid})",
             &[("session_id", session_id), ("parent_sid", parent_sid)],
         )
     };
@@ -357,8 +340,7 @@ pub(in crate::app::dispatch) fn build_child_fork_marker(
     } else {
         format!(
             "{header}\n  {}",
-            crate::locale::ctx().tr("(both agents share cwd)",
-            )
+            crate::locale::ctx().tr("(both agents share cwd)",)
         )
     }
 }
@@ -443,27 +425,26 @@ pub(in crate::app::dispatch) fn handle_worktree_forked(
         crate::git_info::populate_from_cwd_async(session_cwd.clone());
         app.restore_code = None;
         agent.prompt.file_search.retarget(&session_cwd);
-        agent.scrollback.push_block(RenderBlock::system(
-            crate::locale::ctx().tr_format("Worktree ready: {path}",
+        agent
+            .scrollback
+            .push_block(RenderBlock::system(crate::locale::ctx().tr_format(
+                "Worktree ready: {path}",
                 &[("path", &worktree_path.display().to_string())],
-            ),
-        ));
+            )));
         if let Some(summary) = strategy_summary {
             agent.scrollback.push_block(RenderBlock::system(summary));
         }
         match (code_restored, restore_summary.as_deref()) {
             (true, Some(s)) => {
                 agent.scrollback.push_block(RenderBlock::system(
-                    crate::locale::ctx().tr_format("\u{2713} Code restored: {summary}",
-                        &[("summary", s)],
-                    ),
+                    crate::locale::ctx()
+                        .tr_format("\u{2713} Code restored: {summary}", &[("summary", s)]),
                 ));
             }
             (false, Some(s)) => {
                 agent.scrollback.push_block(RenderBlock::system(
-                    crate::locale::ctx().tr_format("\u{26A0} Code restore failed: {summary}",
-                        &[("summary", s)],
-                    ),
+                    crate::locale::ctx()
+                        .tr_format("\u{26A0} Code restore failed: {summary}", &[("summary", s)]),
                 ));
             }
             _ => {}

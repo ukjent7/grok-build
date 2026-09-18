@@ -87,36 +87,36 @@ impl BlockContent for WorkflowBlock {
 
         let locale = crate::locale::ctx();
         let mut spans = vec![Span::styled(
-            locale
-                .tr_static("Workflow ")
-                .to_string(),
+            locale.tr_static("Workflow ").to_string(),
             bold,
         )];
         let verb = match &self.status {
-            WorkflowBlockStatus::Running => locale.tr_format("{name}: ",
-                &[("name", &self.name)],
-            ),
+            WorkflowBlockStatus::Running => locale.tr_format("{name}: ", &[("name", &self.name)]),
             WorkflowBlockStatus::Done { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.tr_format("{name} done in {duration}: ",
+                locale.tr_format(
+                    "{name} done in {duration}: ",
                     &[("name", &self.name), ("duration", &duration)],
                 )
             }
             WorkflowBlockStatus::Failed { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.tr_format("{name} failed in {duration}: ",
+                locale.tr_format(
+                    "{name} failed in {duration}: ",
                     &[("name", &self.name), ("duration", &duration)],
                 )
             }
             WorkflowBlockStatus::Cancelled { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.tr_format("{name} ◌ cancelled after {duration}: ",
+                locale.tr_format(
+                    "{name} ◌ cancelled after {duration}: ",
                     &[("name", &self.name), ("duration", &duration)],
                 )
             }
             WorkflowBlockStatus::Paused { elapsed } => {
                 let duration = format_duration(*elapsed);
-                locale.tr_format("{name} paused at {duration}: ",
+                locale.tr_format(
+                    "{name} paused at {duration}: ",
                     &[("name", &self.name), ("duration", &duration)],
                 )
             }
@@ -135,7 +135,8 @@ impl BlockContent for WorkflowBlock {
         }
         if matches!(self.status, WorkflowBlockStatus::Running) && self.active_agents > 0 {
             spans.push(Span::styled(
-                crate::locale::ctx().tr_format("  ({count} agents)",
+                crate::locale::ctx().tr_format(
+                    "  ({count} agents)",
                     &[("count", &self.active_agents.to_string())],
                 ),
                 muted,

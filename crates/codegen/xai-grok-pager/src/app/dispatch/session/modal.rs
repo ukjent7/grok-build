@@ -63,8 +63,9 @@ pub(in crate::app::dispatch) fn dispatch_sessions_confirm_close(
         return vec![];
     }
     if app.agents.len() == 1 {
-        app.show_toast(crate::locale::ctx().tr_static("Cannot close the only session -- use /home to exit",
-        ));
+        app.show_toast(
+            crate::locale::ctx().tr_static("Cannot close the only session -- use /home to exit"),
+        );
         return vec![];
     }
     if matches!(app.active_view, ActiveView::Agent(id) if id == closed_id) {
@@ -139,9 +140,9 @@ pub(in crate::app::dispatch) fn dispatch_reset_session_title(app: &mut AppView) 
     if kind == xai_grok_shell::session::unified_list::SessionKind::Chat {
         agent
             .scrollback
-            .push_block(crate::scrollback::block::RenderBlock::system(crate::locale::ctx().tr_static(
-                "Chat conversations have no auto-title to restore",
-            )));
+            .push_block(crate::scrollback::block::RenderBlock::system(
+                crate::locale::ctx().tr_static("Chat conversations have no auto-title to restore"),
+            ));
         return vec![];
     }
     let previous_display_name = agent.display_name.clone();

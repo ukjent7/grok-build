@@ -954,8 +954,8 @@ fn run_pending_mode_switch(
                     crate::app::mode_switch::push_block_behind_live_stream(
                         &mut agent.scrollback,
                         crate::scrollback::block::RenderBlock::system(
-                            crate::locale::ctx().tr("Switched to minimal mode · /fullscreen to go back",
-                            ),
+                            crate::locale::ctx()
+                                .tr("Switched to minimal mode · /fullscreen to go back"),
                         ),
                     );
                 }
@@ -968,8 +968,10 @@ fn run_pending_mode_switch(
                 if let ActiveView::Agent(id) = app.active_view
                     && let Some(agent) = app.agents.get_mut(&id)
                 {
-                    agent.show_toast(&crate::locale::ctx().tr("Switched to fullscreen mode · /minimal to go back",
-                    ));
+                    agent.show_toast(
+                        &crate::locale::ctx()
+                            .tr("Switched to fullscreen mode · /minimal to go back"),
+                    );
                 }
             }
             tracing::info!(
@@ -987,11 +989,10 @@ fn run_pending_mode_switch(
             {
                 crate::app::mode_switch::push_block_behind_live_stream(
                     &mut agent.scrollback,
-                    crate::scrollback::block::RenderBlock::system(
-                        crate::locale::ctx().tr_format("Couldn't switch to {mode} mode: {reason}",
-                            &[("mode", target.meta_label()), ("reason", reason.as_str())],
-                        ),
-                    ),
+                    crate::scrollback::block::RenderBlock::system(crate::locale::ctx().tr_format(
+                        "Couldn't switch to {mode} mode: {reason}",
+                        &[("mode", target.meta_label()), ("reason", reason.as_str())],
+                    )),
                 );
             }
             presenter.request_presentation(app, terminal, true);

@@ -26,13 +26,9 @@ pub fn entry_title(agent: &AgentView) -> String {
     match agent.session.session_id.as_ref() {
         Some(sid) => {
             let short: String = sid.0.chars().take(8).collect();
-            crate::locale::ctx().tr_format("session {short}",
-                &[("short", &short)],
-            )
+            crate::locale::ctx().tr_format("session {short}", &[("short", &short)])
         }
-        None => crate::locale::ctx()
-            .tr("loading...")
-            .into_owned(),
+        None => crate::locale::ctx().tr("loading...").into_owned(),
     }
 }
 
@@ -188,35 +184,25 @@ pub(crate) fn format_relative_time(elapsed: Duration) -> String {
     let ctx = crate::locale::ctx();
     let secs = elapsed.as_secs();
     if secs < 1 {
-        return ctx
-            .tr("now")
-            .into_owned();
+        return ctx.tr("now").into_owned();
     }
     if secs < 60 {
         let value = secs.to_string();
-        return ctx.tr_format("{value}s ago",
-            &[("value", &value)],
-        );
+        return ctx.tr_format("{value}s ago", &[("value", &value)]);
     }
     let mins = secs / 60;
     if mins < 60 {
         let value = mins.to_string();
-        return ctx.tr_format("{value}m ago",
-            &[("value", &value)],
-        );
+        return ctx.tr_format("{value}m ago", &[("value", &value)]);
     }
     let hours = mins / 60;
     if hours < 24 {
         let value = hours.to_string();
-        return ctx.tr_format("{value}h ago",
-            &[("value", &value)],
-        );
+        return ctx.tr_format("{value}h ago", &[("value", &value)]);
     }
     let days = hours / 24;
     let value = days.to_string();
-    ctx.tr_format("{value}d ago",
-        &[("value", &value)],
-    )
+    ctx.tr_format("{value}d ago", &[("value", &value)])
 }
 
 #[cfg(test)]

@@ -168,9 +168,7 @@ pub fn render(
         PlanApprovalFocus::Prompt => {
             ctx.tr_static("enter approve \u{00b7} tab plan \u{00b7} esc back")
         }
-        PlanApprovalFocus::Commenting => {
-            ctx.tr_static("enter save comment \u{00b7} esc cancel")
-        }
+        PlanApprovalFocus::Commenting => ctx.tr_static("enter save comment \u{00b7} esc cancel"),
         PlanApprovalFocus::Preview => {
             ctx.tr_static("a approve \u{00b7} s revise \u{00b7} q keep planning")
         }

@@ -676,13 +676,12 @@ impl SessionEventBlock {
         };
         let header_style = header_text_style.add_modifier(Modifier::BOLD);
         // Non-selectable chrome (same as Thinking / tool label prefixes).
-        let header_line =
-            || BlockLine::separator(Line::from(Span::styled(
-                crate::locale::ctx()
-                    .tr_static("Recap")
-                    .to_string(),
+        let header_line = || {
+            BlockLine::separator(Line::from(Span::styled(
+                crate::locale::ctx().tr_static("Recap").to_string(),
                 header_style,
-            )));
+            )))
+        };
 
         // Loading: header only; the animated gray sidebar is the feedback.
         if ctx.is_running {
@@ -694,9 +693,7 @@ impl SessionEventBlock {
         match ctx.mode {
             DisplayMode::Collapsed => {
                 let mut spans = vec![Span::styled(
-                    crate::locale::ctx()
-                        .tr_static("Recap")
-                        .to_string(),
+                    crate::locale::ctx().tr_static("Recap").to_string(),
                     header_style,
                 )];
                 let preview = summary.lines().next().unwrap_or(summary).trim();

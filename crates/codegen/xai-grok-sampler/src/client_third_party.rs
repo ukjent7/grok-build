@@ -151,10 +151,7 @@ pub(crate) fn normalize_byok_chat_message_content(body: &mut serde_json::Value) 
                             } else {
                                 "(no tool output)".to_string()
                             };
-                            obj.insert(
-                                "content".to_string(),
-                                serde_json::Value::String(content),
-                            );
+                            obj.insert("content".to_string(), serde_json::Value::String(content));
                         }
                         // String-content tool messages pass through unchanged.
                         other => {
@@ -221,7 +218,9 @@ pub(crate) fn coerce_integral_floats_to_ints(value: &mut serde_json::Value) {
             items.iter_mut().for_each(coerce_integral_floats_to_ints);
         }
         serde_json::Value::Object(members) => {
-            members.values_mut().for_each(coerce_integral_floats_to_ints);
+            members
+                .values_mut()
+                .for_each(coerce_integral_floats_to_ints);
         }
         _ => {}
     }

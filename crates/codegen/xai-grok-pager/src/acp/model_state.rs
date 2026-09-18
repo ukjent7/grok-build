@@ -30,8 +30,7 @@ impl EffortTokenError {
     pub(crate) fn message(&self, locale: &crate::locale::LocaleContext) -> String {
         match self {
             Self::Unsupported => locale
-                .tr("current model does not support reasoning effort",
-                )
+                .tr("current model does not support reasoning effort")
                 .into_owned(),
             Self::UnknownToken { token, offered } => {
                 if offered.is_empty() {
@@ -40,15 +39,13 @@ impl EffortTokenError {
                     )
                 } else {
                     let options = offered.join(", ");
-                    locale.tr_format("unknown effort level '{token}'; use one of: {options}",
+                    locale.tr_format(
+                        "unknown effort level '{token}'; use one of: {options}",
                         &[("token", token), ("options", options.as_str())],
                     )
                 }
             }
-            Self::NoActiveModel => locale
-                .tr("no active model to apply effort to",
-                )
-                .into_owned(),
+            Self::NoActiveModel => locale.tr("no active model to apply effort to").into_owned(),
         }
     }
 }

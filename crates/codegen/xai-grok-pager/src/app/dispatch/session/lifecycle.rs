@@ -208,8 +208,7 @@ pub(in crate::app::dispatch) fn open_new_session_question(app: &mut AppView) -> 
         QuestionOption {
             label: "Yes".into(),
             description: crate::locale::ctx()
-                .tr_static("New session in a new isolated git worktree",
-                )
+                .tr_static("New session in a new isolated git worktree")
                 .into(),
             preview: None,
             id: None,
@@ -217,8 +216,7 @@ pub(in crate::app::dispatch) fn open_new_session_question(app: &mut AppView) -> 
         QuestionOption {
             label: "No".into(),
             description: crate::locale::ctx()
-                .tr_static("New session in the current cwd",
-                )
+                .tr_static("New session in the current cwd")
                 .into(),
             preview: None,
             id: None,
@@ -227,8 +225,7 @@ pub(in crate::app::dispatch) fn open_new_session_question(app: &mut AppView) -> 
     options.extend(worktree_persist_options());
     let question = Question {
         question: crate::locale::ctx()
-            .tr_static("Start the new session in an isolated git worktree?",
-            )
+            .tr_static("Start the new session in an isolated git worktree?")
             .into(),
         id: None,
         options,
@@ -267,9 +264,9 @@ pub(in crate::app::dispatch) fn open_agent_type_mismatch_question(
         return vec![];
     };
     if agent.question_view.is_some() {
-        app.show_toast(crate::locale::ctx().tr_static(
-            "Finish answering the current question first",
-        ));
+        app.show_toast(
+            crate::locale::ctx().tr_static("Finish answering the current question first"),
+        );
         return vec![];
     }
     // A local question: `translate_local_submit` maps the selection by index, so the
@@ -293,9 +290,7 @@ pub(in crate::app::dispatch) fn open_agent_type_mismatch_question(
             },
             QuestionOption {
                 label: ctx.tr_static("No").into(),
-                description: ctx
-                    .tr_static("Continue the current session")
-                    .into(),
+                description: ctx.tr_static("Continue the current session").into(),
                 preview: None,
                 id: None,
             },
@@ -357,17 +352,18 @@ fn apply_welcome_workspace_on_new_session(app: &mut AppView) -> Result<(), Vec<E
             // anchor here is dynamic (`&raw_error`), so the wrap gate cannot
             // baseline it. Do not split per variant without also matching on
             // the resolved text, not the raw error.
-            let display_error =
-                if raw_error == "local-workspace resolve returned no config after own-mode request"
-                    || raw_error == "local-workspace resolve returned no config after ack"
-                {
-                    crate::locale::ctx()
-                        .named_text("session.workspace.local_resolve_missing", &raw_error)
-                        .into_owned()
-                } else {
-                    raw_error
-                };
-            app.show_toast(&crate::locale::ctx().tr_format("Local workspace unavailable ({error}); using sandbox",
+            let display_error = if raw_error
+                == "local-workspace resolve returned no config after own-mode request"
+                || raw_error == "local-workspace resolve returned no config after ack"
+            {
+                crate::locale::ctx()
+                    .named_text("session.workspace.local_resolve_missing", &raw_error)
+                    .into_owned()
+            } else {
+                raw_error
+            };
+            app.show_toast(&crate::locale::ctx().tr_format(
+                "Local workspace unavailable ({error}); using sandbox",
                 &[("error", &display_error)],
             ));
             app.welcome_session_local_workspace = Some(None);
@@ -568,18 +564,15 @@ pub(in crate::app::dispatch) fn open_delete_current_session_question(
     let delete_description = if after_delete_current_session(app, id)
         == crate::app::actions::AfterSessionDelete::Dashboard
     {
-        crate::locale::ctx().tr_static("Remove history and return to the dashboard",
-        )
+        crate::locale::ctx().tr_static("Remove history and return to the dashboard")
     } else {
-        crate::locale::ctx().tr_static("Remove history and return home",
-        )
+        crate::locale::ctx().tr_static("Remove history and return home")
     };
     let Some(agent) = app.agents.get_mut(&id) else {
         return vec![];
     };
     if agent.session.session_id.is_none() {
-        app.show_toast(crate::locale::ctx()
-            .tr_static("No active session to delete"));
+        app.show_toast(crate::locale::ctx().tr_static("No active session to delete"));
         return vec![];
     }
     if agent.question_view.is_some() {
@@ -588,27 +581,19 @@ pub(in crate::app::dispatch) fn open_delete_current_session_question(
     }
     let question = Question {
         question: crate::locale::ctx()
-            .tr_static("Delete this session permanently?",
-            )
+            .tr_static("Delete this session permanently?")
             .into(),
         id: None,
         options: vec![
             QuestionOption {
-                label: crate::locale::ctx()
-                    .tr_static("Delete")
-                    .into(),
+                label: crate::locale::ctx().tr_static("Delete").into(),
                 description: delete_description.into(),
                 preview: None,
                 id: None,
             },
             QuestionOption {
-                label: crate::locale::ctx()
-                    .tr_static("Cancel")
-                    .into(),
-                description: crate::locale::ctx()
-                    .tr_static("Keep the session",
-                    )
-                    .into(),
+                label: crate::locale::ctx().tr_static("Cancel").into(),
+                description: crate::locale::ctx().tr_static("Keep the session").into(),
                 preview: None,
                 id: None,
             },
@@ -651,8 +636,7 @@ pub(in crate::app::dispatch) fn dispatch_delete_current_session_answered(
             Some((session_id, cwd, running_bg_tasks, !agent.conversation_entry))
         })
     else {
-        app.show_toast(crate::locale::ctx()
-            .tr_static("No active session to delete"));
+        app.show_toast(crate::locale::ctx().tr_static("No active session to delete"));
         return vec![];
     };
     if build_session
@@ -677,8 +661,7 @@ pub(in crate::app::dispatch) fn dispatch_delete_current_session_answered(
                 source: xai_grok_shell::extensions::task::TaskKillSource::Teardown,
             }),
     );
-    app.show_toast(crate::locale::ctx()
-        .tr_static("Deleting session\u{2026}"));
+    app.show_toast(crate::locale::ctx().tr_static("Deleting session\u{2026}"));
     effects.push(Effect::DeleteSession {
         source: "current".into(),
         session_id: session_id.to_string(),
@@ -1221,7 +1204,8 @@ pub(in crate::app::dispatch) fn dispatch_new_worktree_session(
     }
     if !app.cwd_has_git_ancestor {
         let msg: String = crate::locale::ctx()
-            .tr_static("Not inside a git repository. Navigate to a git repo or run 'git init' first.",
+            .tr_static(
+                "Not inside a git repository. Navigate to a git repo or run 'git init' first.",
             )
             .to_string();
         if !app.startup_warnings.iter().any(|w| w.message == msg) {
@@ -1593,11 +1577,12 @@ pub(in crate::app::dispatch) fn handle_worktree_session_created(
             app.current_ui.permission_mode = Some("ask".into());
         }
         agent.prompt.file_search.retarget(&session_cwd);
-        agent.scrollback.push_block(RenderBlock::system(
-            crate::locale::ctx().tr_format("Worktree ready: {path}",
+        agent
+            .scrollback
+            .push_block(RenderBlock::system(crate::locale::ctx().tr_format(
+                "Worktree ready: {path}",
                 &[("path", &worktree_path.display().to_string())],
-            ),
-        ));
+            )));
         if let Some(summary) = strategy_summary {
             agent.scrollback.push_block(RenderBlock::system(summary));
         }

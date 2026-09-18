@@ -228,11 +228,7 @@ impl FeedbackModalState {
     pub fn mark_draft_submit_pending(&mut self) {
         self.invalidate_draft_load();
         self.submit_pending = true;
-        self.error = Some(
-            crate::locale::ctx()
-                .tr("Sending draft…")
-                .into_owned(),
-        );
+        self.error = Some(crate::locale::ctx().tr("Sending draft…").into_owned());
     }
 
     pub fn cancel_draft_submit_pending(&mut self, error: String) {

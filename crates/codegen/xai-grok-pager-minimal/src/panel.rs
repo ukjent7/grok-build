@@ -131,8 +131,8 @@ fn render_dim_line(buf: &mut Buffer, row: Rect, theme: &Theme, text: &str) {
 
 /// `/resume` session picker: Enter picks a session.
 fn resume_footer() -> &'static str {
-    xai_grok_locale::ctx().tr_static("\u{2191}/\u{2193} navigate \u{00b7} enter confirm \u{00b7} esc cancel",
-    )
+    xai_grok_locale::ctx()
+        .tr_static("\u{2191}/\u{2193} navigate \u{00b7} enter confirm \u{00b7} esc cancel")
 }
 
 /// `/mcps` list: Enter expands tools; reconnect is space (off then on); `r` re-lists status.
@@ -451,9 +451,7 @@ fn render_mcps(
                 expandeds = exp;
             }
             TabDataState::Loading => {
-                subtitle = xai_grok_locale::ctx()
-                    .tr("loading\u{2026}")
-                    .into_owned();
+                subtitle = xai_grok_locale::ctx().tr("loading\u{2026}").into_owned();
                 labels = vec![];
                 group_keys = vec![];
                 data_indices = vec![];
@@ -465,9 +463,8 @@ fn render_mcps(
                 expandeds = vec![];
             }
             TabDataState::Error(msg) => {
-                subtitle = xai_grok_locale::ctx().tr_format("error: {message}",
-                    &[("message", msg.as_str())],
-                );
+                subtitle = xai_grok_locale::ctx()
+                    .tr_format("error: {message}", &[("message", msg.as_str())]);
                 labels = vec![];
                 group_keys = vec![];
                 data_indices = vec![];

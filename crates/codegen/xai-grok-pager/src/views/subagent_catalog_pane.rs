@@ -263,8 +263,7 @@ impl SubagentCatalogPane {
             if inner.height > 0 && inner.width > 0 {
                 let theme = Theme::current();
                 let span = Span::styled(
-                    crate::locale::ctx()
-                        .tr_static("No bundled items."),
+                    crate::locale::ctx().tr_static("No bundled items."),
                     Style::default().fg(theme.gray_bright),
                 );
                 buf.set_span(inner.x, inner.y, &span, inner.width);

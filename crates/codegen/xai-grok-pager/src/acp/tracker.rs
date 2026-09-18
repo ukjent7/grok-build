@@ -136,21 +136,18 @@ impl WaitingReason {
             Self::TasksComplete => crate::locale::ctx()
                 .tr_static("Waiting on tasks…")
                 .to_string(),
-            Self::Sleep => crate::locale::ctx()
-                .tr_static("Sleeping…")
-                .to_string(),
+            Self::Sleep => crate::locale::ctx().tr_static("Sleeping…").to_string(),
             Self::Hooks { event_name, count } if *count > 1 => {
                 let count = count.to_string();
-                crate::locale::ctx().tr_format("Running {count} {event_name} hooks…",
+                crate::locale::ctx().tr_format(
+                    "Running {count} {event_name} hooks…",
                     &[("count", &count), ("event_name", event_name)],
                 )
             }
-            Self::Hooks { event_name, .. } => crate::locale::ctx().tr_format("Running {event_name} hook…",
-                &[("event_name", event_name)],
-            ),
+            Self::Hooks { event_name, .. } => crate::locale::ctx()
+                .tr_format("Running {event_name} hook…", &[("event_name", event_name)]),
             Self::PromptAck => crate::locale::ctx()
-                .tr_static("Waiting for the agent to accept the prompt…",
-                )
+                .tr_static("Waiting for the agent to accept the prompt…")
                 .to_string(),
         }
     }
@@ -193,50 +190,48 @@ impl WritingToolCall {
             n => format!(" ({n})"),
         };
         match self.tool_name.as_deref() {
-            Some(name) if xai_grok_tools::is_task_tool_id(name) => ctx.tr_format("Writing subagent prompt{ordinal}…",
+            Some(name) if xai_grok_tools::is_task_tool_id(name) => ctx.tr_format(
+                "Writing subagent prompt{ordinal}…",
                 &[("ordinal", &ordinal)],
             ),
-            Some(xai_grok_tools::USE_TOOL_NAME) => ctx.tr_format("Preparing MCP tool{ordinal}…",
-                &[("ordinal", &ordinal)],
-            ),
-            Some(xai_grok_tools::SEARCH_TOOL_NAME) => ctx.tr_format("Searching MCP tools{ordinal}…",
-                &[("ordinal", &ordinal)],
-            ),
+            Some(xai_grok_tools::USE_TOOL_NAME) => {
+                ctx.tr_format("Preparing MCP tool{ordinal}…", &[("ordinal", &ordinal)])
+            }
+            Some(xai_grok_tools::SEARCH_TOOL_NAME) => {
+                ctx.tr_format("Searching MCP tools{ordinal}…", &[("ordinal", &ordinal)])
+            }
             Some(name) => {
                 use xai_grok_tools::types::tool::ToolKind;
                 let ordinal_arg: &[(&str, &str)] = &[("ordinal", &ordinal)];
                 match xai_grok_tools::tool_taxonomy::writing_tool_kind(name) {
-                    Some(ToolKind::Write) => {
-                        ctx.tr_format("Writing file{ordinal}…", ordinal_arg)
+                    Some(ToolKind::Write) => ctx.tr_format("Writing file{ordinal}…", ordinal_arg),
+                    Some(ToolKind::Edit) => ctx.tr_format("Writing edit{ordinal}…", ordinal_arg),
+                    Some(ToolKind::Execute) => {
+                        ctx.tr_format("Writing command{ordinal}…", ordinal_arg)
                     }
-                    Some(ToolKind::Edit) => {
-                        ctx.tr_format("Writing edit{ordinal}…", ordinal_arg)
+                    Some(ToolKind::Plan) => {
+                        ctx.tr_format("Updating todo list{ordinal}…", ordinal_arg)
                     }
-                    Some(ToolKind::Execute) => ctx.tr_format("Writing command{ordinal}…",
-                        ordinal_arg,
-                    ),
-                    Some(ToolKind::Plan) => ctx.tr_format("Updating todo list{ordinal}…",
-                        ordinal_arg,
-                    ),
-                    Some(ToolKind::Workflow) => ctx.tr_format("Writing workflow{ordinal}…",
-                        ordinal_arg,
-                    ),
-                    Some(ToolKind::Feedback) => ctx.tr_format("Writing feedback draft{ordinal}…",
-                        ordinal_arg,
-                    ),
-                    Some(ToolKind::ImageGen) => ctx.tr_format("Writing image prompt{ordinal}…",
-                        ordinal_arg,
-                    ),
-                    Some(ToolKind::ImageToVideo | ToolKind::ReferenceToVideo) => ctx.tr_format("Writing video prompt{ordinal}…",
-                        ordinal_arg,
-                    ),
-                    Some(ToolKind::AskUser) => ctx.tr_format("Preparing question{ordinal}…",
-                        ordinal_arg,
-                    ),
+                    Some(ToolKind::Workflow) => {
+                        ctx.tr_format("Writing workflow{ordinal}…", ordinal_arg)
+                    }
+                    Some(ToolKind::Feedback) => {
+                        ctx.tr_format("Writing feedback draft{ordinal}…", ordinal_arg)
+                    }
+                    Some(ToolKind::ImageGen) => {
+                        ctx.tr_format("Writing image prompt{ordinal}…", ordinal_arg)
+                    }
+                    Some(ToolKind::ImageToVideo | ToolKind::ReferenceToVideo) => {
+                        ctx.tr_format("Writing video prompt{ordinal}…", ordinal_arg)
+                    }
+                    Some(ToolKind::AskUser) => {
+                        ctx.tr_format("Preparing question{ordinal}…", ordinal_arg)
+                    }
                     _ => {
                         let name =
                             xai_grok_workspace::permission::mcp_pretty_name_if_qualified(name);
-                        ctx.tr_format("Preparing {subject}{ordinal}…",
+                        ctx.tr_format(
+                            "Preparing {subject}{ordinal}…",
                             &[
                                 ("subject", &clamp_activity_subject(&name)),
                                 ("ordinal", &ordinal),
@@ -245,9 +240,7 @@ impl WritingToolCall {
                     }
                 }
             }
-            None => ctx.tr_format("Preparing tool call{ordinal}…",
-                &[("ordinal", &ordinal)],
-            ),
+            None => ctx.tr_format("Preparing tool call{ordinal}…", &[("ordinal", &ordinal)]),
         }
     }
 }
@@ -1862,10 +1855,8 @@ fn tool_call_to_block(
                     let error_msg = if let Some(sig) = &bash.signal {
                         sig.clone()
                     } else if bash.exit_code != 0 {
-                        crate::locale::ctx().tr_format(
-                            "exit code {code}",
-                            &[("code", &bash.exit_code.to_string())],
-                        )
+                        crate::locale::ctx()
+                            .tr_format("exit code {code}", &[("code", &bash.exit_code.to_string())])
                     } else {
                         crate::locale::ctx().tr_static("Command failed").into()
                     };
@@ -2302,9 +2293,9 @@ fn tool_call_to_block(
                             sig.clone()
                         } else if bash.exit_code != 0 {
                             crate::locale::ctx().tr_format(
-                            "exit code {code}",
-                            &[("code", &bash.exit_code.to_string())],
-                        )
+                                "exit code {code}",
+                                &[("code", &bash.exit_code.to_string())],
+                            )
                         } else {
                             crate::locale::ctx().tr_static("Command failed").into()
                         };

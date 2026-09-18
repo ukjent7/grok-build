@@ -543,7 +543,10 @@ mod tests {
             MessageStreamEvent::ContentBlockStart { index, .. } => assert_eq!(index, 0),
             other => panic!("expected ContentBlockStart, got {other:?}"),
         }
-        assert!(matches!(parse(r#"{"type":"ping"}"#), MessageStreamEvent::Ping));
+        assert!(matches!(
+            parse(r#"{"type":"ping"}"#),
+            MessageStreamEvent::Ping
+        ));
         match parse(
             r#"{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hi"}}"#,
         ) {

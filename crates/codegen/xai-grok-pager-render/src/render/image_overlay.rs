@@ -153,8 +153,7 @@ fn render_image_overlay_inner(
     let meta = build_meta_line(image, plan.display_path);
     // Display columns, not bytes: every label here is localized, and `图片` costs 6
     // bytes for 4 columns. `+ 6` is the `─` joiner and its spaces, not a label width.
-    let full_title =
-        if meta.width() + title_text.width() + 6 < overlay_rect.width as usize {
+    let full_title = if meta.width() + title_text.width() + 6 < overlay_rect.width as usize {
         format!("{}\u{2500} {} ", title_text, meta)
     } else {
         title_text.clone()

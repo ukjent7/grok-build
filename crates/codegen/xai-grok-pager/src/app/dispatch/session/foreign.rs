@@ -184,8 +184,7 @@ pub(in crate::app::dispatch) fn handle_session_list_loaded(
         let empty_notice = partial.map_or_else(
             || {
                 crate::locale::ctx()
-                    .tr_static("No sessions found for this directory",
-                    )
+                    .tr_static("No sessions found for this directory")
                     .to_owned()
             },
             |partial| partial.picker_notice().to_owned(),
@@ -205,9 +204,11 @@ pub(in crate::app::dispatch) fn handle_session_list_loaded(
         // Notify once per directory; the browse is scoped to `app.cwd`.
         app.session_picker_relaxed_notified_for = Some(app.cwd.clone());
         let message = match scope {
-            ListScope::Repo => crate::locale::ctx().tr_static("No sessions in this directory. Showing other sessions from this repository.",
+            ListScope::Repo => crate::locale::ctx().tr_static(
+                "No sessions in this directory. Showing other sessions from this repository.",
             ),
-            _ => crate::locale::ctx().tr_static("No sessions in this directory. Showing sessions from other directories.",
+            _ => crate::locale::ctx().tr_static(
+                "No sessions in this directory. Showing sessions from other directories.",
             ),
         };
         app.show_toast(message);
@@ -236,7 +237,8 @@ pub(in crate::app::dispatch) fn handle_session_list_failed(
             return vec![];
         };
         tracing::warn!(error = %error, "session list fetch failed");
-        let error_notice = crate::locale::ctx().tr_format("Couldn't load sessions: {error}",
+        let error_notice = crate::locale::ctx().tr_format(
+            "Couldn't load sessions: {error}",
             &[("error", error.as_str())],
         );
         notice = target.native_failed(error_notice, is_search, chat_mode);

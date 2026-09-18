@@ -83,14 +83,11 @@ impl MemorySearchToolCallBlock {
             theme.fg(theme.command)
         };
 
-        let prefix =
-            crate::locale::ctx().tr("Memory Search ");
+        let prefix = crate::locale::ctx().tr("Memory Search ");
         let count = self.results.len();
         let suffix = if count > 0 {
             let count = count.to_string();
-            crate::locale::ctx().tr_format(" ({count} results)",
-                &[("count", &count)],
-            )
+            crate::locale::ctx().tr_format(" ({count} results)", &[("count", &count)])
         } else {
             String::new()
         };
@@ -184,9 +181,7 @@ impl BlockContent for MemorySearchToolCallBlock {
                 if self.results.is_empty() && self.error.is_none() {
                     lines.push(BlockLine::separator(Line::from("")));
                     lines.push(BlockLine::separator(Line::from(Span::styled(
-                        crate::locale::ctx()
-                            .tr("  (no results)")
-                            .into_owned(),
+                        crate::locale::ctx().tr("  (no results)").into_owned(),
                         theme.muted(),
                     ))));
                 }

@@ -1,9 +1,9 @@
 //! Wiring tests for MCP tool-layer images through `handle_bridge_tool_success`.
 use super::support::*;
 use super::*;
+use base64::Engine as _;
 use xai_grok_sampling_types::{ContentPart, ConversationItem};
 use xai_grok_tools::types::output::{MCPOutput, ToolOutput, ToolRunResult};
-use base64::Engine as _;
 use xai_grok_tools::util::base64_images::{ExtractedImage, IMAGE_CONTENT_PLACEHOLDER};
 /// A 32×32 solid PNG, above the vision minimum side and area, so normalize keeps it.
 fn vision_ok_png_b64() -> String {

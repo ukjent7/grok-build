@@ -144,9 +144,7 @@ impl WebFetchToolCallBlock {
         if let Some(code) = self.status_code {
             parts.push(vec![
                 Span::styled(
-                    crate::locale::ctx()
-                        .tr("status: ")
-                        .into_owned(),
+                    crate::locale::ctx().tr("status: ").into_owned(),
                     label_style,
                 ),
                 Span::styled(code.to_string(), value_style),
@@ -155,10 +153,7 @@ impl WebFetchToolCallBlock {
         if let Some(ref ct) = self.content_type {
             parts.push(vec![
                 Span::styled(
-                    crate::locale::ctx()
-                        .tr("content_type: ",
-                        )
-                        .into_owned(),
+                    crate::locale::ctx().tr("content_type: ").into_owned(),
                     label_style,
                 ),
                 Span::styled(ct.clone(), value_style),
@@ -166,12 +161,7 @@ impl WebFetchToolCallBlock {
         }
         if let Some(bytes) = self.bytes {
             parts.push(vec![
-                Span::styled(
-                    crate::locale::ctx()
-                        .tr("size: ")
-                        .into_owned(),
-                    label_style,
-                ),
+                Span::styled(crate::locale::ctx().tr("size: ").into_owned(), label_style),
                 Span::styled(crate::util::format_bytes(bytes as u64), value_style),
             ]);
         }
@@ -261,7 +251,8 @@ impl BlockContent for WebFetchToolCallBlock {
                                 BlockLine::from(Line::from(Span::styled(
                                     format!(
                                         "{indent}{}",
-                                        crate::locale::ctx().tr_format("... ({count} more lines, press Enter to view)",
+                                        crate::locale::ctx().tr_format(
+                                            "... ({count} more lines, press Enter to view)",
                                             &[("count", &remaining.to_string())],
                                         )
                                     ),
@@ -287,9 +278,7 @@ impl BlockContent for WebFetchToolCallBlock {
                     lines.push(Line::from("").into());
                     lines.push(
                         Line::from(Span::styled(
-                            crate::locale::ctx()
-                                .tr("  (no content)")
-                                .into_owned(),
+                            crate::locale::ctx().tr("  (no content)").into_owned(),
                             theme.muted(),
                         ))
                         .into(),

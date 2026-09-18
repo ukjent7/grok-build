@@ -341,8 +341,7 @@ pub(super) fn handle_auth_complete(
                 if let Some(prompt) = agent.reauth_stashed_prompt.take() {
                     agent.scrollback.push_block(RenderBlock::system(
                         crate::locale::ctx()
-                            .tr("Re-authenticated. Retrying\u{2026}",
-                            )
+                            .tr("Re-authenticated. Retrying\u{2026}")
                             .into_owned(),
                     ));
                     agent.session.enqueue_in_flight_prompt_front(prompt);

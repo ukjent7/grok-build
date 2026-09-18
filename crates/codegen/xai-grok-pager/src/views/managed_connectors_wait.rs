@@ -142,11 +142,9 @@ pub(crate) fn render_managed_connectors_wait(
         Url(&'a str),
     }
     let mut lines = vec![
-        Line::Text(crate::locale::ctx().tr_static("Finish in the browser.",
-        )),
+        Line::Text(crate::locale::ctx().tr_static("Finish in the browser.")),
         Line::Spacer,
-        Line::Text(crate::locale::ctx().tr_static("Refresh when you're done.",
-        )),
+        Line::Text(crate::locale::ctx().tr_static("Refresh when you're done.")),
         Line::Spacer,
         Line::Btn(btn),
     ];

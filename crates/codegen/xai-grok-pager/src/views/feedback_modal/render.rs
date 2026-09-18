@@ -4,8 +4,8 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
 use super::{
-    CANCEL_SHORTCUT_ID, DraftSubmitTerminal, DraftsState, feedback_tabs, FeedbackModalRender,
-    FeedbackModalState, FeedbackModalStep, FeedbackTab, FeedbackTraceChoice,
+    CANCEL_SHORTCUT_ID, DraftSubmitTerminal, DraftsState, FeedbackModalRender, FeedbackModalState,
+    FeedbackModalStep, FeedbackTab, FeedbackTraceChoice, feedback_tabs,
 };
 use crate::theme::Theme;
 use crate::views::modal_window::{self, ModalSizing, ModalWindowConfig, Shortcut};
@@ -146,8 +146,7 @@ impl FeedbackModalState {
             buf.set_stringn(
                 content.x,
                 content.y,
-                &ctx.tr("Discard the current Write composition and open the selected draft?",
-                ),
+                &ctx.tr("Discard the current Write composition and open the selected draft?"),
                 content.width as usize,
                 normal,
             );
@@ -166,11 +165,9 @@ impl FeedbackModalState {
         if let Some(draft_id) = self.delete_confirm.as_ref() {
             let ctx = crate::locale::ctx();
             let prompt = if self.metadata.draft_id.as_ref() == Some(draft_id) {
-                ctx.tr_static("Delete the stored recovery copy? Your current edits will remain.",
-                )
+                ctx.tr_static("Delete the stored recovery copy? Your current edits will remain.")
             } else {
-                ctx.tr_static("Delete this feedback draft?",
-                )
+                ctx.tr_static("Delete this feedback draft?")
             };
             buf.set_stringn(content.x, content.y, prompt, content.width as usize, normal);
             buf.set_stringn(
@@ -179,8 +176,7 @@ impl FeedbackModalState {
                 if self.draft_delete.is_some() {
                     crate::locale::ctx().tr_static("Deleting…")
                 } else {
-                    crate::locale::ctx()
-                        .tr_static("y delete  |  n cancel")
+                    crate::locale::ctx().tr_static("y delete  |  n cancel")
                 },
                 content.width as usize,
                 dim,
@@ -199,8 +195,7 @@ impl FeedbackModalState {
                 buf.set_stringn(
                     content.x,
                     content.y,
-                    &crate::locale::ctx()
-                        .tr("Open Drafts to load saved feedback."),
+                    &crate::locale::ctx().tr("Open Drafts to load saved feedback."),
                     content.width as usize,
                     dim,
                 );
@@ -209,8 +204,7 @@ impl FeedbackModalState {
                 buf.set_stringn(
                     content.x,
                     content.y,
-                    &crate::locale::ctx()
-                        .tr("Loading drafts…"),
+                    &crate::locale::ctx().tr("Loading drafts…"),
                     content.width as usize,
                     dim,
                 );
@@ -285,10 +279,10 @@ impl FeedbackModalState {
                         .r#type
                         .as_ref()
                         .map_or(ctx.tr_static("Unclassified"), |value| value.label());
-                    let task = draft.task_category.as_ref().map_or(
-                        ctx.tr_static("Other"),
-                        |value| value.label(),
-                    );
+                    let task = draft
+                        .task_category
+                        .as_ref()
+                        .map_or(ctx.tr_static("Other"), |value| value.label());
                     let line = format!("{marker} {type} · {task}{failure} · {preview}");
                     let style = if is_selected {
                         ratatui::style::Style::default()
@@ -392,8 +386,7 @@ impl FeedbackModalState {
         PromptStyle {
             show_prefix: false,
             placeholder_when_focused: true,
-            placeholder_override: Some(crate::locale::ctx()
-                .tr_static("Tell us what happened")),
+            placeholder_override: Some(crate::locale::ctx().tr_static("Tell us what happened")),
             // Chips only: the fullscreen preview overlay would paint over the modal.
             image_preview: false,
             ..PromptStyle::overlay()

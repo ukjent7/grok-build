@@ -133,10 +133,10 @@ pub(crate) fn retry_clause(attempt: u32, max_retries: u32, style: RetryLabelStyl
     let attempt = attempt.to_string();
     let max_retries = max_retries.to_string();
     match style {
-        RetryLabelStyle::Status => crate::locale::ctx().tr_format("Retrying (attempt {attempt})...",
-            &[("attempt", &attempt)],
-        ),
-        RetryLabelStyle::Compact => crate::locale::ctx().tr_format("Retrying ({attempt}/{max_retries})",
+        RetryLabelStyle::Status => crate::locale::ctx()
+            .tr_format("Retrying (attempt {attempt})...", &[("attempt", &attempt)]),
+        RetryLabelStyle::Compact => crate::locale::ctx().tr_format(
+            "Retrying ({attempt}/{max_retries})",
             &[("attempt", &attempt), ("max_retries", &max_retries)],
         ),
     }
@@ -316,7 +316,9 @@ fn classify(status: Option<u16>, wire: WireErrorType) -> Classified {
             ),
             _ => (
                 fixed("Server error"),
-                Some(fixed("Something went wrong on our side. Wait a minute and send again.")),
+                Some(fixed(
+                    "Something went wrong on our side. Wait a minute and send again.",
+                )),
                 None,
             ),
         };
@@ -359,7 +361,9 @@ fn classify(status: Option<u16>, wire: WireErrorType) -> Classified {
         ),
         WireErrorType::Api => (
             fixed("Server error"),
-            Some(fixed("Something went wrong on our side. Wait a minute and send again.")),
+            Some(fixed(
+                "Something went wrong on our side. Wait a minute and send again.",
+            )),
             None,
         ),
         WireErrorType::AuthTransient => (

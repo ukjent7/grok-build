@@ -1211,8 +1211,7 @@ impl AgentView {
         })?;
         if running.len() > 1 {
             let n = running.len();
-            let subagents = crate::locale::ctx().tr_static("subagents: ",
-            );
+            let subagents = crate::locale::ctx().tr_static("subagents: ");
             return Some(budgeted_subject(
                 &format!("{n} {subagents}"),
                 &description,
@@ -1226,10 +1225,8 @@ impl AgentView {
             .filter(|label| !label.is_empty());
         match activity {
             Some(activity) => {
-                let prefix = crate::locale::ctx().tr_static("Subagent (",
-                );
-                let suffix_head = crate::locale::ctx().tr_static("): ",
-                );
+                let prefix = crate::locale::ctx().tr_static("Subagent (");
+                let suffix_head = crate::locale::ctx().tr_static("): ");
                 let subagent_affix_chars = prefix.chars().count() + suffix_head.chars().count();
                 const ACTIVITY_FLOOR: usize = 8;
                 let desc_claim = description.chars().count().min(
@@ -1250,8 +1247,7 @@ impl AgentView {
                 ))
             }
             None => Some(budgeted_subject(
-                crate::locale::ctx().tr_static("Subagent: ",
-                ),
+                crate::locale::ctx().tr_static("Subagent: "),
                 &description,
                 "",
             )),

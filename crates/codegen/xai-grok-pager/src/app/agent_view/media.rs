@@ -419,12 +419,10 @@ impl AgentView {
     /// The `[Open]` button, the inline-image click target, and the Enter-key handler all route here.
     pub(crate) fn open_media_natively(&mut self, path: &std::path::Path) -> bool {
         if crate::app::link_opener::open_path(path) {
-            self.show_toast(crate::locale::ctx().tr_static("Opening in default app\u{2026}",
-            ));
+            self.show_toast(crate::locale::ctx().tr_static("Opening in default app\u{2026}"));
             true
         } else {
-            self.show_toast(crate::locale::ctx().tr_static("Could not open file",
-            ));
+            self.show_toast(crate::locale::ctx().tr_static("Could not open file"));
             false
         }
     }
@@ -446,8 +444,7 @@ impl AgentView {
         let path_owned = path.to_path_buf();
         let (tx, rx) = std::sync::mpsc::channel();
         self.video_load_rx = Some(rx);
-        self.show_toast(crate::locale::ctx()
-            .tr_static("Loading video\u{2026}"));
+        self.show_toast(crate::locale::ctx().tr_static("Loading video\u{2026}"));
         std::thread::spawn(move || {
             let result =
                 crate::prompt_images::VideoViewerState::open_from_path(&path_owned).map(|viewer| {
@@ -514,8 +511,7 @@ impl AgentView {
                     tracing::debug!("copy image failed: {e}");
                 }
             });
-            self.show_toast(crate::locale::ctx()
-                .tr_static("Copied image"));
+            self.show_toast(crate::locale::ctx().tr_static("Copied image"));
             return Some(InputOutcome::Changed);
         }
 

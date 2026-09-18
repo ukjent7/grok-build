@@ -70,9 +70,9 @@ fn localized_validation_error(err: &str) -> std::borrow::Cow<'_, str> {
                 .strip_prefix("Unknown model: \"")
                 .and_then(|value| value.strip_suffix('"'))
                 .unwrap_or_default();
-            return std::borrow::Cow::Owned(crate::locale::ctx().tr_format("Unknown model: \"{model}\"",
-                &[("model", model)],
-            ));
+            return std::borrow::Cow::Owned(
+                crate::locale::ctx().tr_format("Unknown model: \"{model}\"", &[("model", model)]),
+            );
         }
         _ => return std::borrow::Cow::Borrowed(err),
     };
@@ -81,10 +81,7 @@ fn localized_validation_error(err: &str) -> std::borrow::Cow<'_, str> {
 
 /// Localized " · restart" pill appended to the value column while expanded.
 fn localized_restart_pill() -> String {
-    format!(
-        " \u{00B7} {}",
-        crate::locale::ctx().tr("restart")
-    )
+    format!(" \u{00B7} {}", crate::locale::ctx().tr("restart"))
 }
 
 /// Localized modal title ("Settings"). Shared with `ActiveModal::Settings::message`,
@@ -502,10 +499,9 @@ pub(super) fn render_row_list_with_search_bar(
 }
 
 pub(super) fn render_docs_footer(buf: &mut Buffer, area: Rect, theme: &Theme) {
-    let long = crate::locale::ctx().tr_static("Tip · Ask Grok: \"change theme to grokday\" or \"what does compact mode do?\"",
-    );
-    let short = crate::locale::ctx().tr_static("Tip · Ask Grok to change a setting",
-    );
+    let long = crate::locale::ctx()
+        .tr_static("Tip · Ask Grok: \"change theme to grokday\" or \"what does compact mode do?\"");
+    let short = crate::locale::ctx().tr_static("Tip · Ask Grok to change a setting");
     let text = modal_window::fit_tip_line(&[long, short], area.width as usize);
     modal_window::render_centered_tip_footer(buf, area, theme, text.as_ref());
 }
@@ -542,9 +538,7 @@ pub(super) fn render_rows(
             // Fixed overhead = template width with an empty query (lead-in + surrounding quotes),
             // so the truncation budget works for any locale's wrap of the message.
             let overhead = crate::locale::ctx()
-                .tr_format("No matches for \"{query}\"",
-                    &[("query", "")],
-                )
+                .tr_format("No matches for \"{query}\"", &[("query", "")])
                 .width();
             let available_for_query = (area.width as usize).saturating_sub(overhead);
             let q_disp = if state.query().width() <= available_for_query {
@@ -552,9 +546,8 @@ pub(super) fn render_rows(
             } else {
                 truncate_str(state.query(), available_for_query)
             };
-            let msg = crate::locale::ctx().tr_format("No matches for \"{query}\"",
-                &[("query", &q_disp)],
-            );
+            let msg =
+                crate::locale::ctx().tr_format("No matches for \"{query}\"", &[("query", &q_disp)]);
             let style = Style::default().fg(theme.gray_dim).bg(theme.bg_base);
             let msg_w = (msg.width() as u16).min(area.width);
             let cx = area.x + area.width.saturating_sub(msg_w) / 2;
@@ -1082,14 +1075,8 @@ pub(super) fn render_picking_enum(
     // Choosers need title + gap (2 rows) before the description renders
     let label = localized_setting_label(meta);
     let description = localized_setting_description(meta);
-    let header_rows = render_sub_pane_header(
-        buf,
-        area,
-        theme,
-        label.as_ref(),
-        description.as_ref(),
-        2,
-    );
+    let header_rows =
+        render_sub_pane_header(buf, area, theme, label.as_ref(), description.as_ref(), 2);
     if area.height <= header_rows {
         return;
     }
@@ -1314,7 +1301,8 @@ pub(super) fn render_picking_enum(
         let overflow_y = y_cursor;
         if overflow_y < choices_y + max_choices_h as u16 && overflow_y < area.y + area.height {
             let overflow_style = Style::default().fg(theme.gray_dim).bg(theme.bg_base);
-            let raw = crate::locale::ctx().tr_format("\u{2026} {count} more",
+            let raw = crate::locale::ctx().tr_format(
+                "\u{2026} {count} more",
                 &[("count", &more_count.to_string())],
             );
             let overflow_text: std::borrow::Cow<'_, str> = if raw.width() <= area.width as usize {
@@ -1630,34 +1618,28 @@ fn int_step_footer_labels(min: i64, max: i64) -> (&'static str, &'static str) {
     match (small, large) {
         (1, 1) => (
             locale.tr_static("\u{2191}/\u{2193} +/-1"),
-            locale
-                .tr_static("\u{2190}/\u{2192} +/-1"),
+            locale.tr_static("\u{2190}/\u{2192} +/-1"),
         ),
         (1, 5) => (
             locale.tr_static("\u{2191}/\u{2193} +/-1"),
-            locale
-                .tr_static("\u{2190}/\u{2192} +/-5"),
+            locale.tr_static("\u{2190}/\u{2192} +/-5"),
         ),
         (5, 10) => (
             locale.tr_static("\u{2191}/\u{2193} +/-5"),
-            locale
-                .tr_static("\u{2190}/\u{2192} +/-10"),
+            locale.tr_static("\u{2190}/\u{2192} +/-10"),
         ),
         // Defensive fallback if thresholds change without new static pairs.
         (1, _) => (
             locale.tr_static("\u{2191}/\u{2193} +/-1"),
-            locale
-                .tr_static("\u{2190}/\u{2192} step"),
+            locale.tr_static("\u{2190}/\u{2192} step"),
         ),
         (5, _) => (
             locale.tr_static("\u{2191}/\u{2193} +/-5"),
-            locale
-                .tr_static("\u{2190}/\u{2192} step"),
+            locale.tr_static("\u{2190}/\u{2192} step"),
         ),
         _ => (
             locale.tr_static("\u{2191}/\u{2193} step"),
-            locale
-                .tr_static("\u{2190}/\u{2192} step"),
+            locale.tr_static("\u{2190}/\u{2192} step"),
         ),
     }
 }
@@ -1788,8 +1770,9 @@ pub(super) fn render_editing_value(
     if buffer.is_empty() {
         let placeholder: std::borrow::Cow<'static, str> = match &meta.kind {
             SettingKind::String { validator, .. } => match validator {
-                StringValidator::KnownModel => crate::locale::ctx().tr("<empty: uses shell default>",
-                ),
+                StringValidator::KnownModel => {
+                    crate::locale::ctx().tr("<empty: uses shell default>")
+                }
                 StringValidator::NonEmptyToken | StringValidator::Any => {
                     crate::locale::ctx().tr("<type a value>")
                 }
@@ -2010,8 +1993,7 @@ fn render_max_thoughts_width_preview(
     }
     // Defensive guard: catch future editors who add `\n` / `\t` (or any other control char that bypasses word_wrap_line's flow) to the sample
     // `wrap_description` has the same debug_assert for the same reason
-    let preview_sample = crate::locale::ctx().tr(MAX_THOUGHTS_WIDTH_PREVIEW_SAMPLE,
-    );
+    let preview_sample = crate::locale::ctx().tr(MAX_THOUGHTS_WIDTH_PREVIEW_SAMPLE);
     debug_assert!(
         !preview_sample.contains('\n') && !preview_sample.contains('\t'),
         "MAX_THOUGHTS_WIDTH_PREVIEW_SAMPLE must not contain `\\n` or `\\t`; \
@@ -2146,7 +2128,8 @@ fn render_preview_block(
             .saturating_add(1);
         let area_end_y = area.y.saturating_add(area.height);
         if note_y < area_end_y {
-            let note_text = crate::locale::ctx().tr_format("note: clamped at {cols} cols",
+            let note_text = crate::locale::ctx().tr_format(
+                "note: clamped at {cols} cols",
                 &[("cols", &effective_width.to_string())],
             );
             let note_text_truncated: std::borrow::Cow<'_, str> =
@@ -2261,9 +2244,7 @@ pub(super) fn value_display(
         }
         SettingValue::String(s) => {
             if s.is_empty() && matches!(meta.kind, SettingKind::DynamicEnum { .. }) {
-                locale
-                    .tr("(no override)")
-                    .into_owned()
+                locale.tr("(no override)").into_owned()
             } else {
                 s.clone()
             }
@@ -2447,7 +2428,12 @@ pub(super) fn render_setting_row(
 
     // Fall back to one-line if only 1 line was allocated.
     let row_label = localized_setting_label(meta);
-    let layout_decision = row_layout(area.width, row_label.as_ref(), value_text, show_restart_pill);
+    let layout_decision = row_layout(
+        area.width,
+        row_label.as_ref(),
+        value_text,
+        show_restart_pill,
+    );
     let layout = if area.height < 2 {
         // Only 1 line is available: collapse to a one-line render and accept that the label might collide with the value column
         RowLayout::OneLine
@@ -2676,8 +2662,7 @@ fn render_setting_row_no_value(
     } else {
         std::borrow::Cow::Owned(truncate_str(label.as_ref(), label_max_w as usize))
     };
-    let no_read_mapping =
-        crate::locale::ctx().tr("no read mapping");
+    let no_read_mapping = crate::locale::ctx().tr("no read mapping");
     let text = format!(" !   {label_truncated} ({no_read_mapping})");
     let w = text.width() as u16;
     buf.set_span(
@@ -2768,8 +2753,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
             };
             let mut shortcuts = vec![
                 Shortcut {
-                    label: locale
-                        .tr_static("\u{2191}/\u{2193}/j/k nav"),
+                    label: locale.tr_static("\u{2191}/\u{2193}/j/k nav"),
                     clickable: false,
                     id: 0,
                 },
@@ -2793,8 +2777,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
             }
             shortcuts.extend([
                 Shortcut {
-                    label: locale
-                        .tr_static("\u{2192} expand"),
+                    label: locale.tr_static("\u{2192} expand"),
                     clickable: false,
                     id: 0,
                 },
@@ -2822,8 +2805,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
         }
         SettingsMode::FilterFocused => vec![
             Shortcut {
-                label: locale
-                    .named_static_text("settings.shortcut.type_filter", "type to filter"),
+                label: locale.named_static_text("settings.shortcut.type_filter", "type to filter"),
                 clickable: false,
                 id: 0,
             },
@@ -2833,8 +2815,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                 id: 0,
             },
             Shortcut {
-                label: locale
-                    .tr_static("Backspace edit"),
+                label: locale.tr_static("Backspace edit"),
                 clickable: false,
                 id: 0,
             },
@@ -2880,8 +2861,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                     id: 0,
                 },
                 Shortcut {
-                    label: locale
-                        .tr_static("double-click select"),
+                    label: locale.tr_static("double-click select"),
                     clickable: false,
                     id: 0,
                 },
@@ -2939,8 +2919,7 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
                 id: 0,
             },
             Shortcut {
-                label: locale
-                    .tr_static("\u{2190}/\u{2192} cursor"),
+                label: locale.tr_static("\u{2190}/\u{2192} cursor"),
                 clickable: false,
                 id: 0,
             },
@@ -2957,14 +2936,12 @@ pub(super) fn build_shortcuts(state: &SettingsModalState) -> Vec<Shortcut<'stati
         ],
         SettingsMode::PickingGroup { .. } => vec![
             Shortcut {
-                label: locale
-                    .tr_static("\u{2191}/\u{2193}/j/k nav"),
+                label: locale.tr_static("\u{2191}/\u{2193}/j/k nav"),
                 clickable: false,
                 id: 0,
             },
             Shortcut {
-                label: locale
-                    .tr_static("Space/Enter toggle"),
+                label: locale.tr_static("Space/Enter toggle"),
                 clickable: false,
                 id: 0,
             },

@@ -1,7 +1,7 @@
 //! Prompt-queue dispatch: the server-authoritative immediate-send routing helpers and the optimistic queue echoes.
 //! It also holds the local drip-feed drain ([`maybe_drain_queue`]), the turn-start shim, and the queue-interject action arm.
 
-use super::ctx::{no_session_notice, active_agent_session_id, with_active_agent};
+use super::ctx::{active_agent_session_id, no_session_notice, with_active_agent};
 use crate::acp::meta::user_prompt_meta;
 use crate::app::actions::Effect;
 use crate::app::agent::{AgentCommand, AgentId};
@@ -122,8 +122,7 @@ pub(super) fn drain_prompt_state_to_last_queued(agent: &mut AgentView) {
 
     // wire_blocks policy: skill-injected prompts do not carry prompt images.
     if entry.wire_blocks.is_some() {
-        agent.show_toast(crate::locale::ctx().tr_static("Images removed (skill prompt)",
-        ));
+        agent.show_toast(crate::locale::ctx().tr_static("Images removed (skill prompt)"));
         return;
     }
 
@@ -1166,10 +1165,10 @@ pub(super) fn dispatch_run_edited_queued_command(
 ) -> Vec<Effect> {
     if app.reconnect_pending {
         // Nothing runs and nothing drains while reconnecting (see `dispatch_drain_queue`), so the row just stays put
-        app.show_toast(crate::locale::ctx().named_static_text(
-            "reconnect.wait",
-            super::prompt::RECONNECTING_NOTICE,
-        ));
+        app.show_toast(
+            crate::locale::ctx()
+                .named_static_text("reconnect.wait", super::prompt::RECONNECTING_NOTICE),
+        );
         preserve_queued_image_paths(app, &mut submission);
         return vec![];
     }

@@ -198,9 +198,7 @@ impl BlockContent for SubagentBlock {
                 let desc = quoted_desc(&self.description, w.saturating_sub(overhead));
                 let mut spans = vec![
                     Span::styled(
-                        crate::locale::ctx()
-                            .tr_static("Subagent ")
-                            .to_string(),
+                        crate::locale::ctx().tr_static("Subagent ").to_string(),
                         bold,
                     ),
                     Span::styled(verb, muted),
@@ -220,15 +218,12 @@ impl BlockContent for SubagentBlock {
                 let desc = quoted_desc(&self.description, w.saturating_sub(prefix_len));
                 Line::from(vec![
                     Span::styled(
-                        crate::locale::ctx()
-                            .tr_static("Subagent ")
-                            .to_string(),
+                        crate::locale::ctx().tr_static("Subagent ").to_string(),
                         bold,
                     ),
                     Span::styled(
-                        crate::locale::ctx().tr_format("completed in {duration}: ",
-                            &[("duration", &time_str)],
-                        ),
+                        crate::locale::ctx()
+                            .tr_format("completed in {duration}: ", &[("duration", &time_str)]),
                         muted,
                     ),
                     Span::styled(desc, muted),
@@ -245,13 +240,12 @@ impl BlockContent for SubagentBlock {
                 let desc = quoted_desc(&self.description, w.saturating_sub(prefix_len));
                 Line::from(vec![
                     Span::styled(
-                        crate::locale::ctx()
-                            .tr_static("Subagent ")
-                            .to_string(),
+                        crate::locale::ctx().tr_static("Subagent ").to_string(),
                         bold,
                     ),
                     Span::styled(
-                        crate::locale::ctx().tr_format("failed in {duration}{detail}: ",
+                        crate::locale::ctx().tr_format(
+                            "failed in {duration}{detail}: ",
                             &[("duration", &time_str), ("detail", &detail)],
                         ),
                         muted,
@@ -267,15 +261,12 @@ impl BlockContent for SubagentBlock {
                 let desc = quoted_desc(&self.description, w.saturating_sub(prefix_len));
                 Line::from(vec![
                     Span::styled(
-                        crate::locale::ctx()
-                            .tr_static("Subagent ")
-                            .to_string(),
+                        crate::locale::ctx().tr_static("Subagent ").to_string(),
                         bold,
                     ),
                     Span::styled(
-                        crate::locale::ctx().tr_format("cancelled in {duration}: ",
-                            &[("duration", &time_str)],
-                        ),
+                        crate::locale::ctx()
+                            .tr_format("cancelled in {duration}: ", &[("duration", &time_str)]),
                         muted,
                     ),
                     Span::styled(desc, muted),

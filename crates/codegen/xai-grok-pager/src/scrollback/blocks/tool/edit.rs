@@ -167,7 +167,8 @@ fn render_diff_hunks_core(
                 .and_then(|j| hunks.get(j))
                 .and_then(|prev| hunk_gap_lines(prev, hunk))
             {
-                Some(1) => locale.tr_format("{separator} 1 unchanged line",
+                Some(1) => locale.tr_format(
+                    "{separator} 1 unchanged line",
                     &[
                         ("separator", config.hunk_separator.as_str()),
                         ("count", "1"),
@@ -175,7 +176,8 @@ fn render_diff_hunks_core(
                 ),
                 Some(n) => {
                     let count = n.to_string();
-                    locale.tr_format("{separator} {count} unchanged lines",
+                    locale.tr_format(
+                        "{separator} {count} unchanged lines",
                         &[
                             ("separator", config.hunk_separator.as_str()),
                             ("count", &count),
@@ -813,8 +815,7 @@ impl EditToolCallBlock {
             started_at: None,
             elapsed_ms: None,
             prefix: if display_name.is_some() {
-                crate::locale::ctx()
-                    .tr_static("Editing workflow ")
+                crate::locale::ctx().tr_static("Editing workflow ")
             } else {
                 crate::locale::ctx().tr_static("Edit ")
             },
@@ -833,8 +834,7 @@ impl EditToolCallBlock {
 
     pub fn with_prefix(mut self, prefix: &'static str) -> Self {
         self.prefix = if self.display_name.is_some() && prefix == "Creating " {
-            crate::locale::ctx()
-                .tr_static("Creating workflow ")
+            crate::locale::ctx().tr_static("Creating workflow ")
         } else if prefix == "Creating " {
             crate::locale::ctx().tr_static("Creating ")
         } else {
@@ -983,9 +983,7 @@ impl EditToolCallBlock {
             } else if collapsed && self.edit_count > 1 {
                 let count = self.edit_count.to_string();
                 vec![Span::styled(
-                    crate::locale::ctx().tr_format(" ({count} edits)",
-                        &[("count", &count)],
-                    ),
+                    crate::locale::ctx().tr_format(" ({count} edits)", &[("count", &count)]),
                     detail_style,
                 )]
             } else {

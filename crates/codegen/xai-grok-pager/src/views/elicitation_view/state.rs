@@ -273,8 +273,7 @@ fn sanitize_spec(spec: &mut ElicitFieldSpec) {
 /// The returned URL is the parser's normalized form (Unicode hosts render as their Punycode labels, which the card then flags).
 pub(super) fn check_elicit_url(raw: &str) -> Result<UrlDisplay, String> {
     let ctx = crate::locale::ctx();
-    let parsed = url::Url::parse(raw.trim())
-        .map_err(|_| ctx.tr("malformed URL").into_owned())?;
+    let parsed = url::Url::parse(raw.trim()).map_err(|_| ctx.tr("malformed URL").into_owned())?;
     if !matches!(parsed.scheme(), "http" | "https") {
         return Err(ctx.tr_format(
             "unsupported scheme \"{scheme}\"",
@@ -375,14 +374,12 @@ impl ElicitationViewState {
         let ctx = crate::locale::ctx();
         let server = self.server_name.as_str();
         match &self.stage {
-            ElicitationStage::Form(_) => ctx.tr_format(
-                "MCP “{server}” requests your input",
-                &[("server", server)],
-            ),
-            ElicitationStage::UrlConsent(_) => ctx.tr_format(
-                "MCP “{server}” wants to open a URL",
-                &[("server", server)],
-            ),
+            ElicitationStage::Form(_) => {
+                ctx.tr_format("MCP “{server}” requests your input", &[("server", server)])
+            }
+            ElicitationStage::UrlConsent(_) => {
+                ctx.tr_format("MCP “{server}” wants to open a URL", &[("server", server)])
+            }
             ElicitationStage::UrlWaiting(_) => ctx.tr_format(
                 "MCP “{server}”, waiting for completion",
                 &[("server", server)],

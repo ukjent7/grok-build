@@ -227,7 +227,11 @@ pub(in crate::app::dispatch) fn set_voice_keybind_enabled(
     set_voice_keybind_enabled_inner(app, new);
     refresh_open_settings_modals(app);
     tracing::info!(target: "settings", key = "voice_keybind_enabled", value = new, "setting changed");
-    app.show_toast(&save_setting_bool_toast("voice_keybind_enabled", "Voice shortcut", new));
+    app.show_toast(&save_setting_bool_toast(
+        "voice_keybind_enabled",
+        "Voice shortcut",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "voice_keybind_enabled",
         value: crate::settings::SettingValue::Bool(new),
@@ -281,8 +285,8 @@ pub(in crate::app::dispatch) fn set_voice_stt_language(
         "setting changed"
     );
     let toast = if canonical == xai_grok_voice::STT_LANGUAGE_AUTO {
-        let system = crate::locale::ctx()
-            .setting_choice_label("voice_stt_language", canonical, "System");
+        let system =
+            crate::locale::ctx().setting_choice_label("voice_stt_language", canonical, "System");
         format!("{system} ({effective})")
     } else {
         let name = xai_grok_voice::stt_language_by_code(canonical).map_or(canonical, |l| l.name);
@@ -290,7 +294,11 @@ pub(in crate::app::dispatch) fn set_voice_stt_language(
             .setting_choice_label("voice_stt_language", canonical, name)
             .into_owned()
     };
-    app.show_toast(&save_setting_value_toast("voice_stt_language", "Voice language", &toast));
+    app.show_toast(&save_setting_value_toast(
+        "voice_stt_language",
+        "Voice language",
+        &toast,
+    ));
     vec![Effect::PersistSetting {
         key: "voice_stt_language",
         value: crate::settings::SettingValue::Enum(canonical),
@@ -440,7 +448,11 @@ pub(in crate::app::dispatch) fn set_show_thinking_blocks(
         value = new,
         "setting changed",
     );
-    app.show_toast(&save_setting_bool_toast("show_thinking_blocks", "Thinking blocks", new));
+    app.show_toast(&save_setting_bool_toast(
+        "show_thinking_blocks",
+        "Thinking blocks",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "show_thinking_blocks",
         value: crate::settings::SettingValue::Bool(new),
@@ -478,7 +490,11 @@ pub(in crate::app::dispatch) fn set_group_tool_verbs(app: &mut AppView, new: boo
         value = new,
         "setting changed",
     );
-    app.show_toast(&save_setting_bool_toast("group_tool_verbs", "Group tool calls", new));
+    app.show_toast(&save_setting_bool_toast(
+        "group_tool_verbs",
+        "Group tool calls",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "group_tool_verbs",
         value: crate::settings::SettingValue::Bool(new),
@@ -521,7 +537,11 @@ pub(in crate::app::dispatch) fn set_collapsed_edit_blocks(
         value = new,
         "setting changed",
     );
-    app.show_toast(&save_setting_bool_toast("collapsed_edit_blocks", "Collapsed edit blocks", new));
+    app.show_toast(&save_setting_bool_toast(
+        "collapsed_edit_blocks",
+        "Collapsed edit blocks",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "collapsed_edit_blocks",
         value: crate::settings::SettingValue::Bool(new),
@@ -553,7 +573,11 @@ pub(in crate::app::dispatch) fn set_prompt_suggestions(
         value = new,
         "setting changed",
     );
-    app.show_toast(&save_setting_bool_toast("prompt_suggestions", "Prompt suggestions", new));
+    app.show_toast(&save_setting_bool_toast(
+        "prompt_suggestions",
+        "Prompt suggestions",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "prompt_suggestions",
         value: crate::settings::SettingValue::Bool(new),
@@ -696,7 +720,11 @@ pub(in crate::app::dispatch) fn set_invert_scroll(app: &mut AppView, new: bool) 
         value = new,
         "setting changed",
     );
-    app.show_toast(&save_setting_bool_toast("invert_scroll", "Invert scroll", new));
+    app.show_toast(&save_setting_bool_toast(
+        "invert_scroll",
+        "Invert scroll",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "invert_scroll",
         value: crate::settings::SettingValue::Bool(new),
@@ -768,7 +796,11 @@ pub(in crate::app::dispatch) fn set_respect_manual_folds(
         value = new,
         "setting changed",
     );
-    app.show_toast(&save_setting_bool_toast("respect_manual_folds", "Respect manual folds", new));
+    app.show_toast(&save_setting_bool_toast(
+        "respect_manual_folds",
+        "Respect manual folds",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "respect_manual_folds",
         value: crate::settings::SettingValue::Bool(new),
@@ -866,11 +898,16 @@ pub(in crate::app::dispatch) fn set_compact_mode(app: &mut AppView, new: bool) -
     // the UI compact; say so instead of implying the layout will loosen.
     if !new && crate::views::agent::effective_compact(false, app.last_known_terminal_rows) {
         let message = save_setting_bool_toast("compact_mode", "Compact mode", false);
-        app.show_toast(&crate::locale::ctx().tr_format("{message} (auto-compact active on small terminal)",
+        app.show_toast(&crate::locale::ctx().tr_format(
+            "{message} (auto-compact active on small terminal)",
             &[("message", &message)],
         ));
     } else {
-        app.show_toast(&save_setting_bool_toast("compact_mode", "Compact mode", new));
+        app.show_toast(&save_setting_bool_toast(
+            "compact_mode",
+            "Compact mode",
+            new,
+        ));
     }
     vec![Effect::PersistSetting {
         key: "compact_mode",
@@ -902,7 +939,11 @@ pub(in crate::app::dispatch) fn set_timestamps(app: &mut AppView, new: bool) -> 
     set_timestamps_inner(app, new);
     refresh_open_settings_modals(app);
     tracing::info!(target: "settings", key = "show_timestamps", value = new, "setting changed");
-    app.show_toast(&save_setting_bool_toast("show_timestamps", "Timestamps", new));
+    app.show_toast(&save_setting_bool_toast(
+        "show_timestamps",
+        "Timestamps",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "show_timestamps",
         value: crate::settings::SettingValue::Bool(new),
@@ -934,7 +975,11 @@ pub(in crate::app::dispatch) fn set_timeline(app: &mut AppView, new: bool) -> Ve
     set_timeline_inner(app, new);
     refresh_open_settings_modals(app);
     tracing::info!(target: "settings", key = "show_timeline", value = new, "setting changed");
-    app.show_toast(&save_setting_bool_toast("show_timeline", "Timeline sidebar", new));
+    app.show_toast(&save_setting_bool_toast(
+        "show_timeline",
+        "Timeline sidebar",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "show_timeline",
         value: crate::settings::SettingValue::Bool(new),
@@ -956,7 +1001,11 @@ pub(in crate::app::dispatch) fn set_page_flip_on_send(app: &mut AppView, new: bo
     set_page_flip_on_send_inner(app, new);
     refresh_open_settings_modals(app);
     tracing::info!(target: "settings", key = "page_flip_on_send", value = new, "setting changed");
-    app.show_toast(&save_setting_bool_toast("page_flip_on_send", "Snap prompt to top on send", new));
+    app.show_toast(&save_setting_bool_toast(
+        "page_flip_on_send",
+        "Snap prompt to top on send",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "page_flip_on_send",
         value: crate::settings::SettingValue::Bool(new),
@@ -980,7 +1029,11 @@ pub(in crate::app::dispatch) fn set_confirm_before_rewind(
     set_confirm_before_rewind_inner(app, new);
     refresh_open_settings_modals(app);
     tracing::info!(target: "settings", key = "confirm_before_rewind", value = new, "setting changed");
-    app.show_toast(&save_setting_bool_toast("confirm_before_rewind", "Confirm before rewind", new));
+    app.show_toast(&save_setting_bool_toast(
+        "confirm_before_rewind",
+        "Confirm before rewind",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "confirm_before_rewind",
         value: crate::settings::SettingValue::Bool(new),
@@ -1005,7 +1058,11 @@ pub(in crate::app::dispatch) fn set_combine_queued_prompts(
     set_combine_queued_prompts_inner(app, new);
     refresh_open_settings_modals(app);
     tracing::info!(target: "settings", key = "combine_queued_prompts", value = new, "setting changed");
-    app.show_toast(&save_setting_bool_toast("combine_queued_prompts", "Combine queued prompts", new));
+    app.show_toast(&save_setting_bool_toast(
+        "combine_queued_prompts",
+        "Combine queued prompts",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "combine_queued_prompts",
         value: crate::settings::SettingValue::Bool(new),
@@ -1086,7 +1143,11 @@ pub(in crate::app::dispatch) fn set_simple_mode(app: &mut AppView, new: bool) ->
     refresh_open_settings_modals(app);
     tracing::info!(target: "settings", key = "simple_mode", value = new, "setting changed");
     // Toast label mirrors the renamed registry label ("Disable vim input mode") so the user sees the same name in the modal and the toast
-    app.show_toast(&save_setting_bool_toast("simple_mode", "Disable vim input mode", new));
+    app.show_toast(&save_setting_bool_toast(
+        "simple_mode",
+        "Disable vim input mode",
+        new,
+    ));
     vec![Effect::PersistSetting {
         key: "simple_mode",
         value: crate::settings::SettingValue::Bool(new),
@@ -1919,7 +1980,10 @@ pub(in crate::app::dispatch) fn clear_fork_secondary_model(app: &mut AppView) ->
     );
     set_fork_secondary_model_inner(app, baseline);
     refresh_open_settings_modals(app);
-    app.show_toast(&setting_cleared_toast("fork_secondary_model", "Fork secondary model"));
+    app.show_toast(&setting_cleared_toast(
+        "fork_secondary_model",
+        "Fork secondary model",
+    ));
     vec![Effect::PersistSetting {
         key: "fork_secondary_model",
         // Persist payload is the empty sentinel: the shell helper interprets empty as "restore the baseline default", the same contract as `default_model`

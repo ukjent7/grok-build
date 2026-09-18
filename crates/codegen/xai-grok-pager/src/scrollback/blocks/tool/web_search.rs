@@ -106,11 +106,7 @@ impl WebSearchToolCallBlock {
         let prefix = self
             .label
             .clone()
-            .unwrap_or_else(|| {
-                crate::locale::ctx()
-                    .tr("Web Search ")
-                    .into_owned()
-            });
+            .unwrap_or_else(|| crate::locale::ctx().tr("Web Search ").into_owned());
 
         match max_width {
             Some(w) => {
@@ -119,9 +115,7 @@ impl WebSearchToolCallBlock {
                 let site_count = self.unique_domains().len();
                 let suffix = if site_count > 0 {
                     let count = site_count.to_string();
-                    crate::locale::ctx().tr_format(" ({count} sites)",
-                        &[("count", &count)],
-                    )
+                    crate::locale::ctx().tr_format(" ({count} sites)", &[("count", &count)])
                 } else {
                     String::new()
                 };
@@ -191,9 +185,7 @@ impl WebSearchToolCallBlock {
         let value_style = theme.primary();
 
         let mut spans: Vec<Span<'static>> = vec![Span::styled(
-            crate::locale::ctx()
-                .tr("  Sources: ")
-                .into_owned(),
+            crate::locale::ctx().tr("  Sources: ").into_owned(),
             label_style,
         )];
 
@@ -209,9 +201,7 @@ impl WebSearchToolCallBlock {
         if remaining > 0 {
             let count = remaining.to_string();
             spans.push(Span::styled(
-                crate::locale::ctx().tr_format(" (+{count} more)",
-                    &[("count", &count)],
-                ),
+                crate::locale::ctx().tr_format(" (+{count} more)", &[("count", &count)]),
                 label_style,
             ));
         }
@@ -291,7 +281,8 @@ impl BlockContent for WebSearchToolCallBlock {
                                 BlockLine::from(Line::from(Span::styled(
                                     format!(
                                         "{indent}{}",
-                                        crate::locale::ctx().tr_format("... ({count} more lines, press Enter to view)",
+                                        crate::locale::ctx().tr_format(
+                                            "... ({count} more lines, press Enter to view)",
                                             &[("count", &remaining.to_string())],
                                         )
                                     ),
@@ -328,9 +319,7 @@ impl BlockContent for WebSearchToolCallBlock {
                     lines.push(Line::from("").into());
                     lines.push(
                         Line::from(Span::styled(
-                            crate::locale::ctx()
-                                .tr("  (no content)")
-                                .into_owned(),
+                            crate::locale::ctx().tr("  (no content)").into_owned(),
                             theme.muted(),
                         ))
                         .into(),

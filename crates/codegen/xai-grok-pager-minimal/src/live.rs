@@ -90,8 +90,7 @@ pub fn draw_live(app: &mut AppView, terminal: &mut PagerTerminal, ctx: &Terminal
     let pending_hint = minimal_pending_hint(&app.pending_action);
     let transcript_hint: std::borrow::Cow<'static, str> =
         if minimal_api::minimal_ctrl_o_opens_transcript(app) {
-            xai_grok_locale::ctx().tr("ctrl+o transcript",
-            )
+            xai_grok_locale::ctx().tr("ctrl+o transcript")
         } else {
             std::borrow::Cow::Borrowed("/transcript")
         };
@@ -545,7 +544,8 @@ fn render_minimal_status(
             area.x,
             area.y,
             &Span::styled(
-                xai_grok_locale::ctx().tr_format("rendering transcript… {done}/{total}",
+                xai_grok_locale::ctx().tr_format(
+                    "rendering transcript… {done}/{total}",
                     &[("done", &done.to_string()), ("total", &total.to_string())],
                 ),
                 style,
@@ -701,8 +701,7 @@ fn render_prompt_info(
     if queued > 0 {
         let count = queued.to_string();
         segs.push((
-            xai_grok_locale::ctx()
-                .tr_format("{count} queued", &[("count", &count)]),
+            xai_grok_locale::ctx().tr_format("{count} queued", &[("count", &count)]),
             base,
         ));
         segs.push(("/queue".to_string(), base));
@@ -733,7 +732,8 @@ fn minimal_pending_hint(
     }
     let label = pending.label?;
     let shortcut = pending.shortcut.display().to_string();
-    Some(xai_grok_locale::ctx().tr_format("press {shortcut} again to {action}",
+    Some(xai_grok_locale::ctx().tr_format(
+        "press {shortcut} again to {action}",
         &[("shortcut", &shortcut), ("action", label)],
     ))
 }

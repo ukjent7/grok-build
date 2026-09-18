@@ -1690,20 +1690,17 @@ impl AgentView {
             // Standard footer shortcuts for picker-style modals.
             let mut picker_shortcuts: Vec<Shortcut> = vec![
                 Shortcut {
-                    label: crate::locale::ctx()
-                        .tr_static("\u{2191}/\u{2193} nav"),
+                    label: crate::locale::ctx().tr_static("\u{2191}/\u{2193} nav"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
-                    label: crate::locale::ctx()
-                        .tr_static("Enter select"),
+                    label: crate::locale::ctx().tr_static("Enter select"),
                     clickable: false,
                     id: 0,
                 },
                 Shortcut {
-                    label: crate::locale::ctx()
-                        .tr_static("Esc close"),
+                    label: crate::locale::ctx().tr_static("Esc close"),
                     clickable: false,
                     id: 0,
                 },

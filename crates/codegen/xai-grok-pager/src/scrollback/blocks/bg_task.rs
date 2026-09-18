@@ -135,31 +135,17 @@ impl BlockContent for BgTaskBlock {
         };
         let line = match &self.kind {
             BgTaskKind::Started => Line::from(vec![
-                Span::styled(
-                    crate::locale::ctx()
-                        .tr_static("Task ")
-                        .to_string(),
-                    bold,
-                ),
-                Span::styled(
-                    crate::locale::ctx().tr("started: "),
-                    muted,
-                ),
+                Span::styled(crate::locale::ctx().tr_static("Task ").to_string(), bold),
+                Span::styled(crate::locale::ctx().tr("started: "), muted),
                 Span::styled(display, muted),
             ]),
             BgTaskKind::Completed { elapsed } => {
                 let duration = format_duration(*elapsed);
                 Line::from(vec![
+                    Span::styled(crate::locale::ctx().tr_static("Task ").to_string(), bold),
                     Span::styled(
                         crate::locale::ctx()
-                            .tr_static("Task ")
-                            .to_string(),
-                        bold,
-                    ),
-                    Span::styled(
-                        crate::locale::ctx().tr_format("completed in {duration}: ",
-                            &[("duration", &duration)],
-                        ),
+                            .tr_format("completed in {duration}: ", &[("duration", &duration)]),
                         muted,
                     ),
                     Span::styled(display, muted),
@@ -185,23 +171,19 @@ impl BlockContent for BgTaskBlock {
                 } else {
                     match (exit_code, signal) {
                         (_, Some(sig)) => format!(" ({})", sig),
-                        (Some(code), None) => locale.tr_format(" (exit {code})",
-                            &[("code", &code.to_string())],
-                        ),
+                        (Some(code), None) => {
+                            locale.tr_format(" (exit {code})", &[("code", &code.to_string())])
+                        }
                         (None, None) => String::new(),
                     }
                 };
                 let duration = format_duration(*elapsed);
-                let verb_head = locale.tr_format("{verb} in {duration}: ",
+                let verb_head = locale.tr_format(
+                    "{verb} in {duration}: ",
                     &[("verb", verb), ("duration", &duration)],
                 );
                 Line::from(vec![
-                    Span::styled(
-                        locale
-                            .tr_static("Task ")
-                            .to_string(),
-                        bold,
-                    ),
+                    Span::styled(locale.tr_static("Task ").to_string(), bold),
                     Span::styled(verb_head, muted),
                     Span::styled(format!("{}{}", display, detail), muted),
                 ])

@@ -115,41 +115,39 @@ pub fn render_jump_overlay(buf: &mut Buffer, area: Rect, state: &JumpState, focu
     // Ordinal gutter sized to the widest turn number.
     let ord_width = state.entries.len().to_string().len();
 
-    state
-        .list()
-        .render(
-            buf,
-            area,
-            &crate::locale::ctx().tr("Jump to which turn?"),
-            focused,
-            |i, ctx| {
-                let Some(entry) = state.entries.get(i) else {
-                    return Line::from("");
-                };
-                let ordinal = format!("{:>ord_width$} ", entry.turn_idx + 1);
-                let ord_style = Style::default().fg(theme.gray).bg(ctx.row_bg);
-                let preview: String = if entry.preview.is_empty() {
-                    crate::locale::ctx().tr("(no preview)").into_owned()
+    state.list().render(
+        buf,
+        area,
+        &crate::locale::ctx().tr("Jump to which turn?"),
+        focused,
+        |i, ctx| {
+            let Some(entry) = state.entries.get(i) else {
+                return Line::from("");
+            };
+            let ordinal = format!("{:>ord_width$} ", entry.turn_idx + 1);
+            let ord_style = Style::default().fg(theme.gray).bg(ctx.row_bg);
+            let preview: String = if entry.preview.is_empty() {
+                crate::locale::ctx().tr("(no preview)").into_owned()
+            } else {
+                truncate_str(
+                    &entry.preview,
+                    ctx.content_width.saturating_sub(ord_width as u16 + 3) as usize,
+                )
+            };
+            let text_style = Style::default()
+                .fg(theme.text_primary)
+                .bg(ctx.row_bg)
+                .add_modifier(if ctx.is_cursor {
+                    Modifier::BOLD
                 } else {
-                    truncate_str(
-                        &entry.preview,
-                        ctx.content_width.saturating_sub(ord_width as u16 + 3) as usize,
-                    )
-                };
-                let text_style = Style::default()
-                    .fg(theme.text_primary)
-                    .bg(ctx.row_bg)
-                    .add_modifier(if ctx.is_cursor {
-                        Modifier::BOLD
-                    } else {
-                        Modifier::empty()
-                    });
-                Line::from(vec![
-                    Span::styled(ordinal, ord_style),
-                    Span::styled(preview, text_style),
-                ])
-            },
-        );
+                    Modifier::empty()
+                });
+            Line::from(vec![
+                Span::styled(ordinal, ord_style),
+                Span::styled(preview, text_style),
+            ])
+        },
+    );
 }
 
 #[cfg(test)]

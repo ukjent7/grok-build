@@ -324,9 +324,8 @@ pub fn render(buf: &mut Buffer, area: Rect, theme: &Theme, data: &DockData) {
                 let arrow = crate::glyphs::disclosure_open();
                 let indent_len = MORE_INDENT.len().min(area.width.saturating_sub(1) as usize);
                 let count = hidden.to_string();
-                let more_text = crate::locale::ctx().tr_format("show {count} more",
-                    &[("count", &count)],
-                );
+                let more_text =
+                    crate::locale::ctx().tr_format("show {count} more", &[("count", &count)]);
                 let line = Line::from(Span::styled(
                     format!(
                         "{}{arrow} {more_text}",

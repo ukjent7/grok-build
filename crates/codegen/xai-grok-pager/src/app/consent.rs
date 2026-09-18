@@ -299,8 +299,7 @@ impl ConsentNotice {
             version,
             title: text_or(
                 gate.title.as_deref(),
-                &crate::locale::ctx()
-                    .tr("Updates to our terms"),
+                &crate::locale::ctx().tr("Updates to our terms"),
                 MAX_CONSENT_TITLE_COLS,
             ),
             segments,

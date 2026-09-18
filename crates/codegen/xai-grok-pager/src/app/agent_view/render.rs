@@ -548,27 +548,18 @@ impl AgentView {
         // doesn't inherit one from the translated string.
         left_spans.push(Span::styled("\u{2191}/\u{2193}", hint_key));
         left_spans.push(Span::styled(" ", hint_style));
-        left_spans.push(Span::styled(
-            ctx.tr_static("navigate"),
-            hint_style,
-        ));
+        left_spans.push(Span::styled(ctx.tr_static("navigate"), hint_style));
         if qv.questions.len() > 1 {
             left_spans.push(Span::styled(" \u{b7} ", hint_style));
             left_spans.push(Span::styled("\u{2190}/\u{2192}", hint_key));
             left_spans.push(Span::styled(" ", hint_style));
-            left_spans.push(Span::styled(
-                ctx.tr_static("question"),
-                hint_style,
-            ));
+            left_spans.push(Span::styled(ctx.tr_static("question"), hint_style));
         }
         if !qv.is_prompt_blocked() {
             left_spans.push(Span::styled(" \u{b7} ", hint_style));
             left_spans.push(Span::styled("y", hint_key));
             left_spans.push(Span::styled(" ", hint_style));
-            left_spans.push(Span::styled(
-                ctx.tr_static("copy"),
-                hint_style,
-            ));
+            left_spans.push(Span::styled(ctx.tr_static("copy"), hint_style));
         }
         left_spans
     }
@@ -2326,15 +2317,18 @@ impl AgentView {
                 None
             };
             Some(if approval_is_commenting || casual_commenting {
-            commenting_label = match commenting_range {
-                Some(r) if r.len() == 1 => crate::locale::ctx().tr_format("commenting L{line}",
-                    &[("line", &r.start.to_string())],
-                ),
-                Some(r) => crate::locale::ctx().tr_format("commenting L{start}-{end}",
-                    &[("start", &r.start.to_string()), ("end", &(r.end - 1).to_string())],
-                ),
-                None => "commenting".to_string(),
-            };
+                commenting_label = match commenting_range {
+                    Some(r) if r.len() == 1 => crate::locale::ctx()
+                        .tr_format("commenting L{line}", &[("line", &r.start.to_string())]),
+                    Some(r) => crate::locale::ctx().tr_format(
+                        "commenting L{start}-{end}",
+                        &[
+                            ("start", &r.start.to_string()),
+                            ("end", &(r.end - 1).to_string()),
+                        ],
+                    ),
+                    None => "commenting".to_string(),
+                };
                 commenting_label.as_str()
             } else if self.plan_approval_view.is_some() {
                 "plan approval"
@@ -2372,7 +2366,8 @@ impl AgentView {
             },
             PromptMode::EditingQueued { id, .. } => {
                 let pos = self.session.queue_position(*id).map(|i| i + 1).unwrap_or(1);
-                editing_label = crate::locale::ctx().tr_format("editing queued #{position}",
+                editing_label = crate::locale::ctx().tr_format(
+                    "editing queued #{position}",
                     &[("position", &pos.to_string())],
                 );
                 PromptInfo {

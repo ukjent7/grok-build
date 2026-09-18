@@ -312,8 +312,7 @@ resume a conversation or start a new chat (/chat)";
 /// Localized [`CHAT_MODE_LOCAL_BUILD_REFUSAL`] for UI surfaces (toasts, startup warnings).
 pub fn chat_mode_local_build_refusal() -> String {
     crate::locale::ctx()
-        .tr(CHAT_MODE_LOCAL_BUILD_REFUSAL,
-        )
+        .tr(CHAT_MODE_LOCAL_BUILD_REFUSAL)
         .into_owned()
 }
 /// User-facing error when `--chat` is combined with leader mode.
@@ -817,7 +816,8 @@ async fn most_recent_session_id(
         .iter()
         .find(|summary| selection.admits(summary) && !summary.is_unused_optimistic_husk())
         .ok_or_else(|| {
-            anyhow::anyhow!(locale.tr_static("No session found for current directory. Use 'grok' to start a new session.",
+            anyhow::anyhow!(locale.tr_static(
+                "No session found for current directory. Use 'grok' to start a new session.",
             ))
         })?;
     Ok((first.info.id.to_string(), first.display_title_opt()))
@@ -897,7 +897,8 @@ pub async fn materialize_startup_for_cwd(
                 anyhow::bail!("chat-mode resume requires a build with the `chat` cargo feature");
             }
             let started = std::time::Instant::now();
-            let (id, title) = most_recent_session_id(cwd, ctx.recent_session_selection, ctx.locale).await?;
+            let (id, title) =
+                most_recent_session_id(cwd, ctx.recent_session_selection, ctx.locale).await?;
             tracing::info!(
                 source = "local",
                 elapsed_ms = started.elapsed().as_millis() as u64,
@@ -919,7 +920,8 @@ pub async fn materialize_startup_for_cwd(
             if let Some(ref nid) = new_session_id {
                 ensure_session_id_available(nid, cwd)?;
             }
-            let (id, title) = most_recent_session_id(cwd, ctx.recent_session_selection, ctx.locale).await?;
+            let (id, title) =
+                most_recent_session_id(cwd, ctx.recent_session_selection, ctx.locale).await?;
             Ok(MaterializedStartup::Fork {
                 parent_session_id: id,
                 parent_cwd: None,
@@ -1002,11 +1004,7 @@ async fn resolve_existing_session(
         tracing::info!(session_id = %session_id, local_id = %local_id, "Session found locally");
         if !in_place_restore_code_allowed(ctx.restore_code, ctx.has_worktree, session_id, &local_id)
         {
-            anyhow::bail!(
-                "{}",
-                ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,
-                )
-            );
+            anyhow::bail!("{}", ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,));
         }
         return Ok(ResolvedExisting {
             id: local_id,
@@ -1056,11 +1054,7 @@ async fn resolve_existing_session(
                 session_id
             );
             if !ctx.restore_code {
-                eprintln!(
-                    "{}",
-                    ctx.locale.tr(WORKTREE_NO_RESTORE_CODE_NOTICE,
-                    )
-                );
+                eprintln!("{}", ctx.locale.tr(WORKTREE_NO_RESTORE_CODE_NOTICE,));
             }
             Ok(ResolvedExisting {
                 id: session_id.to_string(),
@@ -1074,37 +1068,31 @@ async fn resolve_existing_session(
             if title_miss_hint {
                 anyhow::bail!(
                     "{}; {}",
-                    ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,
-                    ),
+                    ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,),
                     super::session_title_resolve::title_miss_hint(session_id)
                 );
             }
-            anyhow::bail!(
-                "{}",
-                ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,
-                )
-            )
+            anyhow::bail!("{}", ctx.locale.tr(REMOTE_RESTORE_NEEDS_WORKTREE,))
         }
         RemoteMissPlan::NotFound { title_miss_hint } => {
             if title_miss_hint {
                 let hint = super::session_title_resolve::title_miss_hint(session_id);
                 anyhow::bail!(
                     "{}",
-                    ctx.locale.tr_format("Session does not exist: {hint}",
-                        &[("hint", hint.as_str())],
-                    )
+                    ctx.locale
+                        .tr_format("Session does not exist: {hint}", &[("hint", hint.as_str())],)
                 );
             }
-            anyhow::bail!(
-                "{}",
-                ctx.locale
-                    .tr_static("Session does not exist")
-            )
+            anyhow::bail!("{}", ctx.locale.tr_static("Session does not exist"))
         }
         RemoteMissPlan::RestoreConversation => {
-            let restored =
-                restore_session_from_remote(session_id, cwd, ctx.restore_progress_on_stdout, ctx.locale)
-                    .await;
+            let restored = restore_session_from_remote(
+                session_id,
+                cwd,
+                ctx.restore_progress_on_stdout,
+                ctx.locale,
+            )
+            .await;
             if arg_is_uuid {
                 return restored;
             }
@@ -1361,7 +1349,8 @@ pub(crate) fn classify_remote_restore(
     }
     RemoteRestoreOutcome::Failed(
         locale
-            .tr_static("Failed to restore session from remote: conversation history was unavailable.",
+            .tr_static(
+                "Failed to restore session from remote: conversation history was unavailable.",
             )
             .to_string(),
     )
@@ -2048,7 +2037,13 @@ mod tests {
     #[test]
     fn classify_remote_restore_prefers_returned_local_id() {
         assert_eq!(
-            classify_remote_restore(false, Some("child"), Some("boom"), Some("other"), crate::locale::ctx()),
+            classify_remote_restore(
+                false,
+                Some("child"),
+                Some("boom"),
+                Some("other"),
+                crate::locale::ctx()
+            ),
             RemoteRestoreOutcome::Restored {
                 local_session_id: "child".into(),
             }
@@ -2063,7 +2058,13 @@ mod tests {
             }
         );
         assert_eq!(
-            classify_remote_restore(false, Some(""), Some("network"), Some("child"), crate::locale::ctx()),
+            classify_remote_restore(
+                false,
+                Some(""),
+                Some("network"),
+                Some("child"),
+                crate::locale::ctx()
+            ),
             RemoteRestoreOutcome::RecoveredAfterFailure {
                 local_session_id: "child".into(),
             }
@@ -2078,7 +2079,13 @@ mod tests {
             }
             other => panic!("expected Failed, got {other:?}"),
         }
-        match classify_remote_restore(false, None, Some("registry 404"), None, crate::locale::ctx()) {
+        match classify_remote_restore(
+            false,
+            None,
+            Some("registry 404"),
+            None,
+            crate::locale::ctx(),
+        ) {
             RemoteRestoreOutcome::Failed(msg) => {
                 assert!(msg.contains("Failed to restore"), "{msg}");
                 assert!(msg.contains("registry 404"), "{msg}");

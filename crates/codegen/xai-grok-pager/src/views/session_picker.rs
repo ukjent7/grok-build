@@ -713,9 +713,7 @@ pub(crate) fn build_session_entry_data(
                 };
             };
             let summary = if entry.summary.is_empty() {
-                crate::locale::ctx()
-                    .tr("(no prompt)")
-                    .into_owned()
+                crate::locale::ctx().tr("(no prompt)").into_owned()
             } else {
                 entry.summary.clone()
             };
@@ -751,7 +749,11 @@ pub(crate) fn build_session_entry_data(
                     "Updated",
                     fmt_time(entry.updated_at),
                 ));
-                field_data.push(field("session.field.source", "Source", entry.source.clone()));
+                field_data.push(field(
+                    "session.field.source",
+                    "Source",
+                    entry.source.clone(),
+                ));
                 if let Some(ref host) = entry.hostname {
                     field_data.push(field("session.field.host", "Host", host.clone()));
                 }
@@ -783,13 +785,17 @@ pub(crate) fn build_session_entry_data(
                     ));
                 }
                 if let Some(ref detail) = entry.card_detail {
-                    let turns = ctx.tr_format("{turns}    Tools  {tools}",
+                    let turns = ctx.tr_format(
+                        "{turns}    Tools  {tools}",
                         &[
                             ("turns", &detail.turn_count.to_string()),
                             ("tools", &detail.tool_call_count.to_string()),
                         ],
                     );
-                    field_data.push((field("session.field.turns", "Turns", String::new()).0, turns));
+                    field_data.push((
+                        field("session.field.turns", "Turns", String::new()).0,
+                        turns,
+                    ));
                     if !detail.first_prompt_preview.is_empty() {
                         let preview = truncate_str(&detail.first_prompt_preview, max_w);
                         field_data.push(field("session.field.prompt", "Prompt", preview));
@@ -970,8 +976,7 @@ pub(crate) fn build_content_header_label(
         )
     } else if has_content_rows {
         crate::locale::ctx()
-            .tr("Extended search results (remote and local sessions)",
-            )
+            .tr("Extended search results (remote and local sessions)")
             .into_owned()
     } else {
         String::new()
@@ -990,7 +995,8 @@ pub(crate) fn hidden_external_hint(
                 .filter(|entry| crate::app::is_foreign_picker_source(&entry.source))
                 .count();
             (hidden > 0).then(|| {
-                crate::locale::ctx().tr_format("{count} external session(s) hidden \u{b7} f to show",
+                crate::locale::ctx().tr_format(
+                    "{count} external session(s) hidden \u{b7} f to show",
                     &[("count", &hidden.to_string())],
                 )
             })
@@ -1006,28 +1012,19 @@ pub(crate) fn format_time_ago(dt: chrono::DateTime<chrono::Utc>) -> String {
 
     let ctx = crate::locale::ctx();
     let raw = if duration.num_minutes() < 1 {
-        ctx.tr("just now")
-            .into_owned()
+        ctx.tr("just now").into_owned()
     } else if duration.num_minutes() < 60 {
         let value = duration.num_minutes().to_string();
-        ctx.tr_format("{value}m ago",
-            &[("value", &value)],
-        )
+        ctx.tr_format("{value}m ago", &[("value", &value)])
     } else if duration.num_hours() < 24 {
         let value = duration.num_hours().to_string();
-        ctx.tr_format("{value}h ago",
-            &[("value", &value)],
-        )
+        ctx.tr_format("{value}h ago", &[("value", &value)])
     } else if duration.num_days() < 30 {
         let value = duration.num_days().to_string();
-        ctx.tr_format("{value}d ago",
-            &[("value", &value)],
-        )
+        ctx.tr_format("{value}d ago", &[("value", &value)])
     } else {
         let value = (duration.num_days() / 30).to_string();
-        ctx.tr_format("{value}mo ago",
-            &[("value", &value)],
-        )
+        ctx.tr_format("{value}mo ago", &[("value", &value)])
     };
     // Right-align to fixed width so the column doesn't jump
     format!("{:>8}", raw)

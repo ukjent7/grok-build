@@ -103,38 +103,32 @@ pub(super) fn open_credit_limit_upsell(
 
     let copy = match mode {
         CreditLimitUpsellMode::UnifiedCredits => CreditLimitCopy {
-            heading: crate::locale::ctx().tr_static("You hit your weekly limit.",
-            ),
-            upgrade_tier_desc: crate::locale::ctx().tr_static("Upgrade to a higher tier for more usage",
-            ),
-            secondary_label: crate::locale::ctx().tr_static("Buy more credits",
-            ),
-            secondary_desc: crate::locale::ctx().tr_static("Purchase credits to keep using Grok Build",
-            ),
+            heading: crate::locale::ctx().tr_static("You hit your weekly limit."),
+            upgrade_tier_desc: crate::locale::ctx()
+                .tr_static("Upgrade to a higher tier for more usage"),
+            secondary_label: crate::locale::ctx().tr_static("Buy more credits"),
+            secondary_desc: crate::locale::ctx()
+                .tr_static("Purchase credits to keep using Grok Build"),
             second_choice: xai_grok_telemetry::events::CreditLimitChoice::PurchaseCredits,
             payg_telemetry: false,
         },
         CreditLimitUpsellMode::LegacyPayg { enabled: true } => CreditLimitCopy {
-            heading: crate::locale::ctx().tr_static("You\u{2019}ve hit your spending cap.",
-            ),
-            upgrade_tier_desc: crate::locale::ctx().tr_static("Upgrade to a higher tier for more credits",
-            ),
-            secondary_label: crate::locale::ctx().tr_static("Increase limit",
-            ),
-            secondary_desc: crate::locale::ctx().tr_static("Raise your pay-as-you-go spending cap",
-            ),
+            heading: crate::locale::ctx().tr_static("You\u{2019}ve hit your spending cap."),
+            upgrade_tier_desc: crate::locale::ctx()
+                .tr_static("Upgrade to a higher tier for more credits"),
+            secondary_label: crate::locale::ctx().tr_static("Increase limit"),
+            secondary_desc: crate::locale::ctx().tr_static("Raise your pay-as-you-go spending cap"),
             second_choice: xai_grok_telemetry::events::CreditLimitChoice::PayAsYouGo,
             payg_telemetry: true,
         },
         CreditLimitUpsellMode::LegacyPayg { enabled: false } => CreditLimitCopy {
-            heading: crate::locale::ctx().tr_static("You\u{2019}ve hit the credit limit for your plan.",
-            ),
-            upgrade_tier_desc: crate::locale::ctx().tr_static("Upgrade to a higher tier for more credits",
-            ),
-            secondary_label: crate::locale::ctx()
-                .tr_static("Pay as you go"),
-            secondary_desc: crate::locale::ctx().tr_static("Enable pay-as-you-go credits for on-demand usage",
-            ),
+            heading: crate::locale::ctx()
+                .tr_static("You\u{2019}ve hit the credit limit for your plan."),
+            upgrade_tier_desc: crate::locale::ctx()
+                .tr_static("Upgrade to a higher tier for more credits"),
+            secondary_label: crate::locale::ctx().tr_static("Pay as you go"),
+            secondary_desc: crate::locale::ctx()
+                .tr_static("Enable pay-as-you-go credits for on-demand usage"),
             second_choice: xai_grok_telemetry::events::CreditLimitChoice::PayAsYouGo,
             payg_telemetry: false,
         },
@@ -152,9 +146,7 @@ pub(super) fn open_credit_limit_upsell(
     let mut choices = Vec::new();
     if !max_tier {
         options.push(QuestionOption {
-            label: crate::locale::ctx()
-                .tr_static("Upgrade tier")
-                .into(),
+            label: crate::locale::ctx().tr_static("Upgrade tier").into(),
             description: copy.upgrade_tier_desc.into(),
             preview: None,
             id: Some(UPSELL_URL_UPGRADE.into()),
@@ -169,12 +161,9 @@ pub(super) fn open_credit_limit_upsell(
     });
     choices.push(copy.second_choice);
     options.push(QuestionOption {
-        label: crate::locale::ctx()
-            .tr_static("Try Again")
-            .into(),
+        label: crate::locale::ctx().tr_static("Try Again").into(),
         description: crate::locale::ctx()
-            .tr_static("Resubmit the last prompt once you have usage again",
-            )
+            .tr_static("Resubmit the last prompt once you have usage again")
             .into(),
         preview: None,
         id: Some(CREDIT_LIMIT_RETRY_OPTION_ID.into()),
@@ -246,14 +235,12 @@ fn open_supergrok_upsell(
 
     let (heading, source, modal_id_prefix) = match reason {
         UpsellReason::FreeUsageLimit => (
-            crate::locale::ctx().tr_static("You hit your free usage limit.",
-            ),
+            crate::locale::ctx().tr_static("You hit your free usage limit."),
             SuperGrokUpsell::FreeUsagePaywall,
             "free-usage-upsell",
         ),
         UpsellReason::RestrictedCommand => (
-            crate::locale::ctx().tr_static("Unlock all features with SuperGrok.",
-            ),
+            crate::locale::ctx().tr_static("Unlock all features with SuperGrok."),
             SuperGrokUpsell::RestrictedCommand,
             "restricted-command-upsell",
         ),
@@ -271,32 +258,27 @@ fn open_supergrok_upsell(
                 .tr_static("Upgrade to SuperGrok")
                 .into(),
             description: crate::locale::ctx()
-                .tr_static("For everyday coding and productivity tasks",
-                )
+                .tr_static("For everyday coding and productivity tasks")
                 .into(),
             preview: None,
             id: Some(UPSELL_URL_UPGRADE.into()),
         },
         QuestionOption {
             label: crate::locale::ctx()
-                .tr_static("Upgrade to SuperGrok Plus",
-                )
+                .tr_static("Upgrade to SuperGrok Plus")
                 .into(),
             description: crate::locale::ctx()
-                .tr_static("Significantly higher usage and rate limits",
-                )
+                .tr_static("Significantly higher usage and rate limits")
                 .into(),
             preview: None,
             id: Some(UPSELL_URL_UPGRADE.into()),
         },
         QuestionOption {
             label: crate::locale::ctx()
-                .tr_static("Upgrade to SuperGrok Heavy",
-                )
+                .tr_static("Upgrade to SuperGrok Heavy")
                 .into(),
             description: crate::locale::ctx()
-                .tr_static("Get the most out of Grok Build. Highest usage limits.",
-                )
+                .tr_static("Get the most out of Grok Build. Highest usage limits.")
                 .into(),
             preview: None,
             id: Some(UPSELL_URL_UPGRADE.into()),
@@ -501,13 +483,16 @@ pub(super) fn handle_credit_limit_recheck_complete(
 
     if tier_changed && !user_moved_on {
         if let Some(prompt) = agent.credit_limit_stashed_prompt.take() {
-            let tier_name = app.subscription_tier.as_deref().unwrap_or(crate::locale::ctx()
-                .tr_static("a higher tier"));
-            agent.scrollback.push_block(RenderBlock::system(
-                crate::locale::ctx().tr_format("Subscription upgraded to {tier}. Retrying\u{2026}",
+            let tier_name = app
+                .subscription_tier
+                .as_deref()
+                .unwrap_or(crate::locale::ctx().tr_static("a higher tier"));
+            agent
+                .scrollback
+                .push_block(RenderBlock::system(crate::locale::ctx().tr_format(
+                    "Subscription upgraded to {tier}. Retrying\u{2026}",
                     &[("tier", tier_name)],
-                ),
-            ));
+                )));
             agent.session.enqueue_in_flight_prompt_front(prompt);
         }
     } else if !user_moved_on {
@@ -545,12 +530,9 @@ pub(super) fn dispatch_retry_credit_limit_prompt(app: &mut AppView) -> Vec<Effec
         return vec![];
     };
     let Some(prompt) = agent.credit_limit_stashed_prompt.take() else {
-        let message = crate::locale::ctx().tr_static("No prompt to retry.",
-        );
+        let message = crate::locale::ctx().tr_static("No prompt to retry.");
         agent.show_toast(message);
-        agent
-            .scrollback
-            .push_block(RenderBlock::system(message));
+        agent.scrollback.push_block(RenderBlock::system(message));
         return vec![];
     };
     agent.session.enqueue_in_flight_prompt_front(prompt);
@@ -563,10 +545,9 @@ pub(super) fn dispatch_retry_credit_limit_prompt(app: &mut AppView) -> Vec<Effec
                 | Effect::SendBashCommand { .. }
         )
     }) {
-        agent
-            .scrollback
-            .push_block(RenderBlock::system(crate::locale::ctx().tr_static("Trying again\u{2026}",
-            )));
+        agent.scrollback.push_block(RenderBlock::system(
+            crate::locale::ctx().tr_static("Trying again\u{2026}"),
+        ));
     }
     note_peek_page_flip(app, agent_id, drain.page_flip_entry);
     drain.effects

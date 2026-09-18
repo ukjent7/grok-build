@@ -2316,9 +2316,7 @@ impl PromptWidget {
     #[allow(dead_code)]
     pub(crate) fn cap_reached_toast() -> String {
         let max = Self::IMAGE_CAP.to_string();
-        crate::locale::ctx().tr_format("Image limit reached (max {max})",
-            &[("max", &max)],
-        )
+        crate::locale::ctx().tr_format("Image limit reached (max {max})", &[("max", &max)])
     }
 
     /// Insert a pasted image as an atomic `[Image #N]` chip. Returns `Err` with a user-facing message
@@ -2335,7 +2333,8 @@ impl PromptWidget {
             let width = w.to_string();
             let height = h.to_string();
             let min = MIN_SIDE.to_string();
-            return Err(crate::locale::ctx().tr_format("Image too small ({width}×{height}). Must be at least {min}×{min} pixels.",
+            return Err(crate::locale::ctx().tr_format(
+                "Image too small ({width}×{height}). Must be at least {min}×{min} pixels.",
                 &[("width", &width), ("height", &height), ("min", &min)],
             ));
         }
@@ -2344,9 +2343,8 @@ impl PromptWidget {
         let display_number = self.image_counter;
         let placeholder = crate::prompt_images::display_text(display_number);
         let number = display_number.to_string();
-        let display_line = chip_line(crate::locale::ctx().tr_format("Image #{number}",
-            &[("number", &number)],
-        ));
+        let display_line =
+            chip_line(crate::locale::ctx().tr_format("Image #{number}", &[("number", &number)]));
 
         let buf_len_before = self.textarea.text().len();
         self.textarea.begin_undo_group();
@@ -2842,22 +2840,15 @@ impl PromptWidget {
         let action = if self.paste_element_at_cursor().is_some() {
             ctx.tr("enter").into_owned()
         } else {
-            ctx.tr("paste again")
-                .into_owned()
+            ctx.tr("paste again").into_owned()
         };
         Line::from(vec![
             Span::styled(action, chord),
+            Span::styled(ctx.tr(" or ").into_owned(), dim),
+            Span::styled(ctx.tr("double-click").into_owned(), chord),
             Span::styled(
-                ctx.tr(" or ").into_owned(),
-                dim,
-            ),
-            Span::styled(
-                ctx.tr("double-click")
+                ctx.named_text("prompt.paste.to_expand", " to expand")
                     .into_owned(),
-                chord,
-            ),
-            Span::styled(
-                ctx.named_text("prompt.paste.to_expand", " to expand").into_owned(),
                 dim,
             ),
         ])
@@ -3278,8 +3269,7 @@ impl PromptWidget {
         {
             let placeholder = style
                 .placeholder_override
-                .unwrap_or(crate::locale::ctx().tr_static("Build anything",
-                ));
+                .unwrap_or(crate::locale::ctx().tr_static("Build anything"));
             // `set_string` clips at the buffer edge, not at the textarea, so a placeholder longer than the box would paint over its border.
             let truncated =
                 crate::render::line_utils::truncate_str(placeholder, ta_area.width as usize);
@@ -3424,20 +3414,14 @@ impl PromptWidget {
                 };
             };
             let labels = crate::render::ImageOverlayLabels {
-                image: crate::locale::ctx()
-                    .tr_static("Image"),
-                format: crate::locale::ctx()
-                    .tr_static("Format:"),
-                dimensions: crate::locale::ctx()
-                    .tr_static("Dimensions:"),
-                preview_unavailable: crate::locale::ctx()
-                    .tr_static("Preview unavailable"),
-                preview_pending: crate::locale::ctx()
-                    .tr_static("Preview pending"),
+                image: crate::locale::ctx().tr_static("Image"),
+                format: crate::locale::ctx().tr_static("Format:"),
+                dimensions: crate::locale::ctx().tr_static("Dimensions:"),
+                preview_unavailable: crate::locale::ctx().tr_static("Preview unavailable"),
+                preview_pending: crate::locale::ctx().tr_static("Preview pending"),
                 size: crate::locale::ctx().tr_static("Size:"),
                 path: crate::locale::ctx().tr_static("Path:"),
-                loading: crate::locale::ctx()
-                    .tr_static("Loading..."),
+                loading: crate::locale::ctx().tr_static("Loading..."),
             };
             post_flush_escapes = crate::render::render_image_overlay_with_labels(
                 buf,
@@ -3803,14 +3787,10 @@ fn paste_chip_display_bytes(byte_len: usize) -> Line<'static> {
         format!("{} KB", byte_len / 1000)
     } else {
         let count = byte_len.to_string();
-        crate::locale::ctx().tr_format("{count} bytes",
-            &[("count", &count)],
-        )
+        crate::locale::ctx().tr_format("{count} bytes", &[("count", &count)])
     };
     let size_str = size.to_string();
-    chip_line(crate::locale::ctx().tr_format("Pasted: {size}",
-        &[("size", &size_str)],
-    ))
+    chip_line(crate::locale::ctx().tr_format("Pasted: {size}", &[("size", &size_str)]))
 }
 
 /// Highest `display_number` present in `images`, or `0` when the slice is empty.

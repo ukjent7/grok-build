@@ -279,10 +279,7 @@ impl BlockContent for OtherToolCallBlock {
                             // "     → answer" or "     (no answer)"
                             let a_line = if answer.is_empty() {
                                 Line::from(Span::styled(
-                                    crate::locale::ctx()
-                                        .tr("     (no answer)",
-                                        )
-                                        .into_owned(),
+                                    crate::locale::ctx().tr("     (no answer)").into_owned(),
                                     theme.dim(),
                                 ))
                             } else {

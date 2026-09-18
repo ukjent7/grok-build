@@ -324,8 +324,7 @@ pub(crate) fn render_dashboard(
                     .is_some_and(|p| p.has_subagent_view(child_session_id));
                 if parent_ok && !loaded {
                     (
-                        Some(crate::locale::ctx().tr_static("Subagent not loaded",
-                        )),
+                        Some(crate::locale::ctx().tr_static("Subagent not loaded")),
                         false,
                     )
                 } else {
@@ -626,20 +625,19 @@ fn render_dashboard_banner(
         &[("count", &total.to_string()), ("agent", agent_word)],
     );
     let mut title_parts: Vec<String> = vec![
-        crate::locale::ctx()
-            .tr("Dashboard")
-            .into_owned(),
+        crate::locale::ctx().tr("Dashboard").into_owned(),
         agent_part,
     ];
     if working > 0 {
-        title_parts.push(crate::locale::ctx().tr_format("{count} working",
-            &[("count", &working.to_string())],
-        ));
+        title_parts.push(
+            crate::locale::ctx().tr_format("{count} working", &[("count", &working.to_string())]),
+        );
     }
     if needs_input > 0 {
-        title_parts.push(crate::locale::ctx().tr_format("{count} awaiting",
-            &[("count", &needs_input.to_string())],
-        ));
+        title_parts.push(
+            crate::locale::ctx()
+                .tr_format("{count} awaiting", &[("count", &needs_input.to_string())]),
+        );
     }
     let title = format!(" {} ", title_parts.join(" · "));
 
@@ -667,8 +665,7 @@ fn render_dashboard_banner(
         return;
     }
     if rows.is_empty() {
-        let hint: &str = crate::locale::ctx().tr_static(" No sessions yet. Esc to dispatch one. ",
-        );
+        let hint: &str = crate::locale::ctx().tr_static(" No sessions yet. Esc to dispatch one. ");
         let trunc = truncate_str(hint, inner.width as usize);
         buf.set_string(inner.x, inner.y, trunc, theme.dim().bg(theme.bg_base));
         return;
@@ -699,26 +696,22 @@ fn render_location_picker(
 
     let mut shortcuts = vec![
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("\u{2191}\u{2193} nav"),
+            label: crate::locale::ctx().tr_static("\u{2191}\u{2193} nav"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("Tab complete"),
+            label: crate::locale::ctx().tr_static("Tab complete"),
             clickable: false,
             id: 1,
         },
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("Enter select"),
+            label: crate::locale::ctx().tr_static("Enter select"),
             clickable: false,
             id: 2,
         },
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("Esc close"),
+            label: crate::locale::ctx().tr_static("Esc close"),
             clickable: false,
             id: 3,
         },
@@ -846,9 +839,7 @@ fn render_location_picker(
             Some(name) if name == &c.label => crate::locale::ctx()
                 .named_static_text("dashboard.location.worktree_badge", "worktree")
                 .to_string(),
-            Some(name) => crate::locale::ctx().tr_format("worktree: {name}",
-                &[("name", name)],
-            ),
+            Some(name) => crate::locale::ctx().tr_format("worktree: {name}", &[("name", name)]),
             None => String::new(),
         })
         .collect();
@@ -1288,10 +1279,14 @@ fn render_rows_with_grouping(
                 let selected = state.selected_section == Some(key);
                 let hovered = state.hovered_section == Some(key);
                 render_group_header(
-                    buf, line_rect, theme,
-                    crate::locale::ctx()
-                        .tr_static("Pinned"),
-                    *count, collapsed, selected, hovered,
+                    buf,
+                    line_rect,
+                    theme,
+                    crate::locale::ctx().tr_static("Pinned"),
+                    *count,
+                    collapsed,
+                    selected,
+                    hovered,
                 );
                 mark(&mut line_bg, 0, theme.bg_base);
                 // Full-height hit rect (label and trailing gap): no hover/click dead zone between items
@@ -1538,12 +1533,14 @@ fn render_idle_overflow(
     }
     .bg(theme.bg_base);
     let label = if expanded {
-        crate::locale::ctx()
-            .tr("show fewer")
-            .into_owned()
+        crate::locale::ctx().tr("show fewer").into_owned()
     } else {
-        crate::locale::ctx().tr_format("{hidden} more",
-            &[("hidden", &hidden.to_string()), ("count", &hidden.to_string())],
+        crate::locale::ctx().tr_format(
+            "{hidden} more",
+            &[
+                ("hidden", &hidden.to_string()),
+                ("count", &hidden.to_string()),
+            ],
         )
     };
     // A `+` / `-` expand indicator in the icon column and the label in the agent-name column, so the row aligns with the Idle rows above
@@ -2020,10 +2017,14 @@ fn render_narrow_rows_with_grouping(
                 let selected = state.selected_section == Some(key);
                 let hovered = state.hovered_section == Some(key);
                 render_group_header_narrow(
-                    buf, line_rect, theme,
-                    crate::locale::ctx()
-                        .tr_static("Pinned"),
-                    *count, collapsed, selected, hovered,
+                    buf,
+                    line_rect,
+                    theme,
+                    crate::locale::ctx().tr_static("Pinned"),
+                    *count,
+                    collapsed,
+                    selected,
+                    hovered,
                 );
                 state
                     .section_rects
@@ -2191,19 +2192,20 @@ fn render_no_match(buf: &mut Buffer, area: Rect, theme: &Theme, filter: &Filter)
         return;
     }
     let hint = match filter {
-        Filter::None => crate::locale::ctx()
-            .tr("No matching rows.")
-            .into_owned(),
-        Filter::Agent(n) => crate::locale::ctx().tr_format("No agents match `a:{n}`. Press Esc to clear the filter.",
+        Filter::None => crate::locale::ctx().tr("No matching rows.").into_owned(),
+        Filter::Agent(n) => crate::locale::ctx().tr_format(
+            "No agents match `a:{n}`. Press Esc to clear the filter.",
             &[("n", n), ("value", n)],
         ),
         Filter::State(s) => {
             let label = s.group_label();
-            crate::locale::ctx().tr_format("No agents in state `{state}`: press Esc to clear the filter.",
+            crate::locale::ctx().tr_format(
+                "No agents in state `{state}`: press Esc to clear the filter.",
                 &[("state", label)],
             )
         }
-        Filter::Substring(n) => crate::locale::ctx().tr_format("No rows match `{n}`: press Esc to clear the filter.",
+        Filter::Substring(n) => crate::locale::ctx().tr_format(
+            "No rows match `{n}`: press Esc to clear the filter.",
             &[("n", n), ("value", n)],
         ),
     };
@@ -2228,8 +2230,7 @@ fn render_empty_state(buf: &mut Buffer, area: Rect, theme: &Theme, loading: bool
     let line = if loading {
         crate::locale::ctx().tr_static("Loading sessions…")
     } else {
-        crate::locale::ctx().tr_static("No agents yet, type a prompt to start one.",
-        )
+        crate::locale::ctx().tr_static("No agents yet, type a prompt to start one.")
     };
     let truncated = truncate_str(line, area.width.saturating_sub(2) as usize);
     // See `render_no_match` for the precedence rationale.
@@ -2431,8 +2432,7 @@ fn render_dispatch(
     // The prefix makes it unmistakable that typing filters rows (Enter confirms) rather than dispatching
     // Chips and multiline are not rendered here
     if state.search_mode {
-        let prefix =
-            crate::locale::ctx().tr_static("Search: ");
+        let prefix = crate::locale::ctx().tr_static("Search: ");
         let prefix_w = UnicodeWidthStr::width(prefix) as u16;
         let painted_prefix_w = prefix_w.min(content.width);
         buf.set_span(
@@ -2452,8 +2452,7 @@ fn render_dispatch(
         let cursor_column = if state.dispatch.text().is_empty() {
             if avail > 0 {
                 let placeholder = truncate_str(
-                    crate::locale::ctx().tr_static("Type to filter sessions\u{2026}",
-                    ),
+                    crate::locale::ctx().tr_static("Type to filter sessions\u{2026}"),
                     avail as usize,
                 );
                 buf.set_string(
@@ -2527,8 +2526,7 @@ fn render_dispatch(
         // whatever row the overview cursor is on. It only paints while the input is UNFOCUSED (matching
         // `PromptWidget::draw`).
         if !input_focused {
-            let msg = crate::locale::ctx()
-                .tr_static("Dispatch a new agent");
+            let msg = crate::locale::ctx().tr_static("Dispatch a new agent");
             let style = theme.dim().bg(theme.bg_base);
             let trunc = truncate_str(msg, content.width.saturating_sub(prefix_w) as usize);
             buf.set_string(content.x + prefix_w, content.y, trunc, style);
@@ -2884,7 +2882,9 @@ fn render_footer(
             let pending = PendingHint {
                 shortcut: stop_key,
                 label: if let Some(action) = state.selected_stop_action {
-                    action.confirmation_label().unwrap_or(hint_text("stop this session"))
+                    action
+                        .confirmation_label()
+                        .unwrap_or(hint_text("stop this session"))
                 } else if state.workspace_membership_mode {
                     hint_text("archive this session")
                 } else {
@@ -3062,7 +3062,11 @@ fn render_footer(
             .as_ref()
             .is_some_and(|p| p.selected_option.is_some());
         let reply_empty = state.peek_reply.text().trim().is_empty();
-        let esc_label = if reply_empty { hint_text("New Agent") } else { hint_text("back") };
+        let esc_label = if reply_empty {
+            hint_text("New Agent")
+        } else {
+            hint_text("back")
+        };
         // Pin Esc when it clears a draft (`back`) so compact doesn't drop it behind stop/help; that matches its importance in handle_peek_key
         let esc_hint = {
             let h = HintItem::new(esc, esc_label);
@@ -3072,7 +3076,14 @@ fn render_footer(
         // Two-focus model: Tab toggles between the reply and row nav. Vim opens the reply unfocused so j/k keep selecting.
         let peek_focused = state.peek.as_ref().map(|p| p.focused).unwrap_or(true);
         let question_focused = peek_focused && has_pending_question;
-        let tab_hint = HintItem::new(key!(Tab), if peek_focused { hint_text("list") } else { hint_text("input") });
+        let tab_hint = HintItem::new(
+            key!(Tab),
+            if peek_focused {
+                hint_text("list")
+            } else {
+                hint_text("input")
+            },
+        );
         // `1-9 select` hint for the question picker (no single bound key).
         let select_hint = HintItem {
             keys: vec![],
@@ -3085,7 +3096,11 @@ fn render_footer(
             // An option is selected, so Enter answers
             // `Tab` unfocuses to the row list (the same two-focus toggle the other peek states show)
             // ↑/↓ still move within the options; the nav chip is dropped to save bottom-bar space
-            vec![HintItem::new(enter, hint_text("answer")), tab_hint, esc_hint]
+            vec![
+                HintItem::new(enter, hint_text("answer")),
+                tab_hint,
+                esc_hint,
+            ]
         } else if has_pending_question && peek_focused {
             // Question pending, focused, nothing selected: navigation and select
             let mut h = vec![
@@ -3142,7 +3157,11 @@ fn render_footer(
             // Focused empty: open is on the submit chord (send_key)
             // Unfocused: bare Enter still attaches
             let open_key = if peek_focused { send_key } else { enter };
-            let mut h = vec![HintItem::new(open_key, hint_text("open")), tab_hint, esc_hint];
+            let mut h = vec![
+                HintItem::new(open_key, hint_text("open")),
+                tab_hint,
+                esc_hint,
+            ];
             if show_ctrl_x {
                 h.push(HintItem::new(stop, stop_label).pinned());
             }
@@ -3351,8 +3370,7 @@ pub fn render_popup_overlay(
         outline.render(area, buf);
         if area.height >= 3 && area.width >= 6 {
             let hint = truncate_str(
-                crate::locale::ctx().tr_static("(terminal too small: Esc to close)",
-                ),
+                crate::locale::ctx().tr_static("(terminal too small: Esc to close)"),
                 area.width.saturating_sub(2) as usize,
             );
             buf.set_string(

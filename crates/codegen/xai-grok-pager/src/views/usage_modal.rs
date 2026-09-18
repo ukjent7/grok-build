@@ -46,15 +46,9 @@ impl UsageInfoTab {
 
     pub fn label(self) -> &'static str {
         match self {
-            UsageInfoTab::ContextUsage => {
-                crate::locale::ctx().tr_static("Context usage")
-            }
-            UsageInfoTab::UsageLimit => {
-                crate::locale::ctx().tr_static("Usage limit")
-            }
-            UsageInfoTab::SessionInfo => {
-                crate::locale::ctx().tr_static("Session info")
-            }
+            UsageInfoTab::ContextUsage => crate::locale::ctx().tr_static("Context usage"),
+            UsageInfoTab::UsageLimit => crate::locale::ctx().tr_static("Usage limit"),
+            UsageInfoTab::SessionInfo => crate::locale::ctx().tr_static("Session info"),
         }
     }
 
@@ -553,22 +547,19 @@ pub fn render_usage_modal(
 
     let mut shortcuts: Vec<Shortcut> = vec![
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("Tab switch"),
+            label: crate::locale::ctx().tr_static("Tab switch"),
             clickable: false,
             id: 0,
         },
         Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("\u{2191}/\u{2193} scroll"),
+            label: crate::locale::ctx().tr_static("\u{2191}/\u{2193} scroll"),
             clickable: false,
             id: 0,
         },
     ];
     if state.ctx.session_id.is_some() {
         shortcuts.push(Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("c copy session ID"),
+            label: crate::locale::ctx().tr_static("c copy session ID"),
             clickable: true,
             id: COPY_SESSION_ID_SHORTCUT,
         });
@@ -577,15 +568,13 @@ pub fn render_usage_modal(
         && state.session_fields.as_ref().is_some_and(|f| !f.is_empty())
     {
         shortcuts.push(Shortcut {
-            label: crate::locale::ctx()
-                .tr_static("y copy all"),
+            label: crate::locale::ctx().tr_static("y copy all"),
             clickable: true,
             id: COPY_ALL_SESSION_INFO_SHORTCUT,
         });
     }
     shortcuts.push(Shortcut {
-        label: crate::locale::ctx()
-            .tr_static("Esc close"),
+        label: crate::locale::ctx().tr_static("Esc close"),
         clickable: false,
         id: 0,
     });
@@ -749,9 +738,8 @@ fn context_tab_lines(state: &UsageInfoModalState, theme: &Theme, width: u16) -> 
     if let Some(error) = &state.context_error {
         return vec![muted_line(
             theme,
-            crate::locale::ctx().tr_format("Couldn't load context usage: {error}",
-                &[("error", error)],
-            ),
+            crate::locale::ctx()
+                .tr_format("Couldn't load context usage: {error}", &[("error", error)]),
         )];
     }
     if let Some(block) = &state.context {
@@ -760,9 +748,7 @@ fn context_tab_lines(state: &UsageInfoModalState, theme: &Theme, width: u16) -> 
     if state.ctx.session_id.is_none() {
         return vec![muted_line(
             theme,
-            crate::locale::ctx()
-                .tr("No active session.")
-                .into_owned(),
+            crate::locale::ctx().tr("No active session.").into_owned(),
         )];
     }
     vec![muted_line(
@@ -787,8 +773,7 @@ fn usage_limit_lines(
         lines.push(muted_line(
             theme,
             crate::locale::ctx()
-                .tr("Usage limits are managed by your team.",
-                )
+                .tr("Usage limits are managed by your team.")
                 .into_owned(),
         ));
     } else if let Some(url) = &state.ctx.billing_redirect_url {
@@ -805,9 +790,7 @@ fn usage_limit_lines(
     } else if let Some(error) = &state.billing_error {
         lines.push(muted_line(
             theme,
-            crate::locale::ctx().tr_format("Couldn't load usage: {error}",
-                &[("error", error)],
-            ),
+            crate::locale::ctx().tr_format("Couldn't load usage: {error}", &[("error", error)]),
         ));
     } else if state.billing_loading {
         lines.push(muted_line(
@@ -887,9 +870,7 @@ fn allowance_lines(
     if let Some(reset) = &bal.period_end_display {
         lines.push(muted_line(
             theme,
-            crate::locale::ctx().tr_format("Resets: {reset}",
-                &[("reset", reset)],
-            ),
+            crate::locale::ctx().tr_format("Resets: {reset}", &[("reset", reset)]),
         ));
     }
 
@@ -922,7 +903,8 @@ fn allowance_lines(
         let cap = format!("${cap:.2}");
         lines.push(muted_line(
             theme,
-            crate::locale::ctx().tr_format("Usage: {used} / {cap} per month",
+            crate::locale::ctx().tr_format(
+                "Usage: {used} / {cap} per month",
                 &[("used", &used), ("cap", &cap)],
             ),
         ));
@@ -934,18 +916,15 @@ fn session_info_content(state: &UsageInfoModalState, theme: &Theme) -> TabConten
     if let Some(error) = &state.session_error {
         return TabContent::from_lines(vec![muted_line(
             theme,
-            crate::locale::ctx().tr_format("Couldn't load session info: {error}",
-                &[("error", error)],
-            ),
+            crate::locale::ctx()
+                .tr_format("Couldn't load session info: {error}", &[("error", error)]),
         )]);
     }
     let Some(fields) = state.session_fields.as_ref().filter(|f| !f.is_empty()) else {
         if state.ctx.session_id.is_none() {
             return TabContent::from_lines(vec![muted_line(
                 theme,
-                crate::locale::ctx()
-                    .tr("No active session.")
-                    .into_owned(),
+                crate::locale::ctx().tr("No active session.").into_owned(),
             )]);
         }
         return TabContent::from_lines(vec![muted_line(
@@ -958,15 +937,12 @@ fn session_info_content(state: &UsageInfoModalState, theme: &Theme) -> TabConten
 
     let mut lines = vec![Line::from(vec![
         Span::styled(
-            crate::locale::ctx()
-                .tr("Session info")
-                .into_owned(),
+            crate::locale::ctx().tr("Session info").into_owned(),
             header_style(theme),
         ),
         Span::styled(
             crate::locale::ctx()
-                .tr("   click or drag to copy",
-                )
+                .tr("   click or drag to copy")
                 .into_owned(),
             Style::default().fg(theme.gray_dim),
         ),

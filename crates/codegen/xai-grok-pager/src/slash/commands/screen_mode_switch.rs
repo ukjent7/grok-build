@@ -73,7 +73,8 @@ impl SlashCommand for ScreenModeSwitchCommand {
             let mode_text = crate::locale::ctx()
                 .setting_choice_label("screen_mode", mode, mode)
                 .into_owned();
-            return CommandResult::Error(crate::locale::ctx().tr_format("No active session to reopen in {mode} mode",
+            return CommandResult::Error(crate::locale::ctx().tr_format(
+                "No active session to reopen in {mode} mode",
                 &[("mode", mode_text.as_str())],
             ));
         }

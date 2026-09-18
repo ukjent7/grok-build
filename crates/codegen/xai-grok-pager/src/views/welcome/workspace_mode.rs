@@ -37,9 +37,7 @@ impl WelcomeWorkspaceMode {
         let ctx = crate::locale::ctx();
         match self {
             Self::Sandbox => ctx.tr_static("Sandbox"),
-            Self::LocalWorkspace => {
-                ctx.tr_static("Local workspace")
-            }
+            Self::LocalWorkspace => ctx.tr_static("Local workspace"),
         }
     }
 
@@ -55,12 +53,8 @@ impl WelcomeWorkspaceMode {
         let ctx = crate::locale::ctx();
         match (self, cli_locked) {
             (Self::Sandbox, _) => ctx.tr_static("Sandbox"),
-            (Self::LocalWorkspace, true) => {
-                ctx.tr_static("Local·CLI")
-            }
-            (Self::LocalWorkspace, false) => {
-                ctx.tr_static("Local")
-            }
+            (Self::LocalWorkspace, true) => ctx.tr_static("Local·CLI"),
+            (Self::LocalWorkspace, false) => ctx.tr_static("Local"),
         }
     }
 
@@ -314,8 +308,7 @@ pub fn render_workspace_mode_picker(
     }
 
     let trailing = if ack_pending {
-        crate::locale::ctx().tr_static("  confirm local workspace? y/N",
-        )
+        crate::locale::ctx().tr_static("  confirm local workspace? y/N")
     } else if startup_locked {
         crate::locale::ctx().tr_static("  locked by CLI")
     } else {
@@ -340,17 +333,10 @@ pub fn render_workspace_mode_picker(
         );
     } else if ack_pending && row.width > 20 {
         // Narrow terminals: paint confirm over the right side so it stays visible.
-        let short =
-            crate::locale::ctx().tr_static("  y/N confirm local",
-            );
+        let short = crate::locale::ctx().tr_static("  y/N confirm local");
         let short_w = UnicodeWidthStr::width(short) as u16;
         let start = row.x + row.width.saturating_sub(short_w);
-        buf.set_span(
-            start,
-            row.y,
-            &Span::styled(short, trailing_style),
-            short_w,
-        );
+        buf.set_span(start, row.y, &Span::styled(short, trailing_style), short_w);
     }
 
     WorkspaceModeHitRects {

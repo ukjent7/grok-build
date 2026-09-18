@@ -43,17 +43,9 @@ pub fn undo_tip() -> EphemeralTip {
     EphemeralTip::new(
         UNDO_TIP_KEY,
         Line::from(vec![
-            Span::styled(
-                crate::locale::ctx()
-                    .tr_static("Input cleared · "),
-                dim,
-            ),
+            Span::styled(crate::locale::ctx().tr_static("Input cleared · "), dim),
             Span::styled(undo_chord_label(), chord),
-            Span::styled(
-                crate::locale::ctx()
-                    .tr_static(" to undo"),
-                dim,
-            ),
+            Span::styled(crate::locale::ctx().tr_static(" to undo"), dim),
         ]),
     )
     .with_session_seen_cap(UNDO_TIP_SEEN_KEY, UNDO_TIP_SEEN_CAP)

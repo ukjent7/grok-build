@@ -95,8 +95,7 @@ pub fn compose_builtin(
                 } else {
                     SegmentTone::Dim
                 };
-                let label =
-                    crate::locale::ctx().tr("ctx");
+                let label = crate::locale::ctx().tr("ctx");
                 Some(StatusSegment::toned(format!("{pct}% {label}"), tone))
             }
             StatusLineItem::Cost => ctx

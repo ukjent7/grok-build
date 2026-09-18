@@ -20,8 +20,7 @@ pub(super) fn dispatch_jump_show_picker(app: &mut AppView) -> Vec<Effect> {
 
     let entries = agent.scrollback.timeline_entries();
     if entries.len() < 2 {
-        app.show_toast(crate::locale::ctx().tr_static("Nothing to jump to yet",
-        ));
+        app.show_toast(crate::locale::ctx().tr_static("Nothing to jump to yet"));
         return vec![];
     }
 

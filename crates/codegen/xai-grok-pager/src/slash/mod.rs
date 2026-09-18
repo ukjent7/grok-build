@@ -202,8 +202,7 @@ fn localized_arg_description(english: &str) -> String {
     if let Some(active_suffix) = english.strip_prefix("auto (follow system)") {
         return format!(
             "{}{active_suffix}",
-            crate::locale::ctx().tr("auto (follow system)"
-            )
+            crate::locale::ctx().tr("auto (follow system)")
         );
     }
     english.to_string()
@@ -748,8 +747,9 @@ impl SlashController {
                 snapshot.command_recognized = true;
                 snapshot.is_skill = command.is_skill();
                 if args_text_empty {
-                    snapshot.args_placeholder =
-                        command.arg_placeholder().map(|s| localized_arg_placeholder(s.to_string()));
+                    snapshot.args_placeholder = command
+                        .arg_placeholder()
+                        .map(|s| localized_arg_placeholder(s.to_string()));
                 }
             }
         }
@@ -941,8 +941,9 @@ impl SlashController {
         snapshot.matches = arg_matches;
         snapshot.selected = Self::carry_selection(previous, &snapshot.matches, false, &input);
         if args_empty {
-            snapshot.args_placeholder =
-                command.arg_placeholder().map(|s| localized_arg_placeholder(s.to_string()));
+            snapshot.args_placeholder = command
+                .arg_placeholder()
+                .map(|s| localized_arg_placeholder(s.to_string()));
         }
 
         snapshot
@@ -1241,7 +1242,10 @@ impl SlashController {
         {
             let command_tags = self.command_tags.borrow();
             for (row, (canonical, _)) in rows.iter_mut().zip(sort_meta.iter()) {
-                row.tag = command_tags.get(canonical.as_str()).cloned().map(localized_tag);
+                row.tag = command_tags
+                    .get(canonical.as_str())
+                    .cloned()
+                    .map(localized_tag);
             }
         }
         // Resolve all recency scores under a single borrow (one keystroke means one borrow, not one per candidate)

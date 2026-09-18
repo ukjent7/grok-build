@@ -144,19 +144,13 @@ fn still_running_label(watchers: Watchers) -> Option<String> {
             watchers.commands,
             ctx.named_static_text("turn.watcher.command", "command"),
         ),
-        (
-            watchers.monitors,
-            ctx.tr_static("monitor"),
-        ),
+        (watchers.monitors, ctx.tr_static("monitor")),
         (watchers.loops, ctx.tr_static("loop")),
         (
             watchers.subagents,
             ctx.named_static_text("turn.watcher.subagent", "subagent"),
         ),
-        (
-            watchers.workflows,
-            ctx.tr_static("workflow"),
-        ),
+        (watchers.workflows, ctx.tr_static("workflow")),
     ])
 }
 
@@ -274,14 +268,13 @@ pub fn render_turn_status(
         // Parked with held queued rows: the queued hint says what Enter does (act on the queue now), so it replaces the generic interrupt copy
         let parked_suffix = if held_queue > 0 && held_queue_top_sendable {
             let count = held_queue.to_string();
-            crate::locale::ctx().tr_format(" \u{00b7} {count} queued, Enter to send now",
+            crate::locale::ctx().tr_format(
+                " \u{00b7} {count} queued, Enter to send now",
                 &[("count", &count)],
             )
         } else if held_queue > 0 {
             let count = held_queue.to_string();
-            crate::locale::ctx().tr_format(" \u{00b7} {count} queued",
-                &[("count", &count)],
-            )
+            crate::locale::ctx().tr_format(" \u{00b7} {count} queued", &[("count", &count)])
         } else {
             crate::locale::ctx()
                 .tr(" \u{00b7} send a message to interrupt")
@@ -372,8 +365,7 @@ pub fn render_turn_status(
         );
     let bg_str = if show_bg {
         if bg_hovered {
-            crate::locale::ctx()
-                .tr_static(" [send to bg]")
+            crate::locale::ctx().tr_static(" [send to bg]")
         } else {
             " [\u{2193}]"
         }
@@ -387,14 +379,8 @@ pub fn render_turn_status(
     // Hover state is conveyed by color (red on hover, see `cancel_style`), not by swapping the label
     let cancel_str: &str = match (show_cancel, show_bg) {
         (false, _) => "",
-        (true, true) => {
-            crate::locale::ctx()
-                .tr_static("[stop]")
-        }
-        (true, false) => {
-            crate::locale::ctx()
-                .tr_static(" [stop]")
-        }
+        (true, true) => crate::locale::ctx().tr_static("[stop]"),
+        (true, false) => crate::locale::ctx().tr_static(" [stop]"),
     };
     let cancel_width = cancel_str.width();
 
@@ -480,9 +466,8 @@ pub fn render_turn_status(
                     .strip_prefix("Ask: ")
                     .or_else(|| title.strip_prefix("Ask "))
                     .unwrap_or(title.as_str());
-                let msg = crate::locale::ctx().tr_format("Waiting on answers for {detail}",
-                    &[("detail", detail)],
-                );
+                let msg = crate::locale::ctx()
+                    .tr_format("Waiting on answers for {detail}", &[("detail", detail)]);
                 let display = truncate_str(&msg, available_for_label);
                 left_spans.push(Span::styled(display, activity_style));
             } else if let Some(desc) = description
@@ -531,13 +516,10 @@ pub fn render_turn_status(
         let suffix = if held_queue > 0 && is_sendable_wait(activity) {
             let count = held_queue.to_string();
             if held_queue_top_sendable {
-                crate::locale::ctx().tr_format(" · {count} queued, Enter to send now",
-                    &[("count", &count)],
-                )
+                crate::locale::ctx()
+                    .tr_format(" · {count} queued, Enter to send now", &[("count", &count)])
             } else {
-                crate::locale::ctx().tr_format(" · {count} queued",
-                    &[("count", &count)],
-                )
+                crate::locale::ctx().tr_format(" · {count} queued", &[("count", &count)])
             }
         } else {
             String::new()
@@ -633,9 +615,7 @@ fn compute_activity(
     match (state, activity) {
         (AgentState::TurnCancelling | AgentState::CommandCancelling { .. }, _) => (
             Style::default().fg(theme.accent_error),
-            crate::locale::ctx()
-                .tr("Cancelling…")
-                .into_owned(),
+            crate::locale::ctx().tr("Cancelling…").into_owned(),
             false,
         ),
         // Goal-mode completion verification runs in-turn after the model stops streaming
@@ -643,9 +623,7 @@ fn compute_activity(
         // Label the whole window "Verifying…" so the multi-minute panel isn't mislabelled as the model responding (or a hung "Waiting…")
         (AgentState::TurnRunning, _) if goal_verifying => (
             Style::default().fg(theme.text_secondary),
-            crate::locale::ctx()
-                .tr("Verifying…")
-                .into_owned(),
+            crate::locale::ctx().tr("Verifying…").into_owned(),
             false,
         ),
         (AgentState::TurnRunning, Some(TurnActivity::Thinking)) => (
@@ -657,9 +635,7 @@ fn compute_activity(
         ),
         (AgentState::TurnRunning, Some(TurnActivity::Responding)) => (
             Style::default().fg(theme.text_secondary),
-            crate::locale::ctx()
-                .tr("Responding…")
-                .into_owned(),
+            crate::locale::ctx().tr("Responding…").into_owned(),
             false,
         ),
         (AgentState::TurnRunning, Some(TurnActivity::ToolRunning { title, description })) => {
@@ -680,9 +656,7 @@ fn compute_activity(
         }
         (AgentState::TurnRunning, Some(TurnActivity::AutoCompacting)) => (
             Style::default().fg(theme.text_secondary),
-            crate::locale::ctx()
-                .tr("Compacting…")
-                .into_owned(),
+            crate::locale::ctx().tr("Compacting…").into_owned(),
             false,
         ),
         (
@@ -719,18 +693,14 @@ fn compute_activity(
         (AgentState::TurnRunning, None) if is_bash_turn => (
             // Bash turn: not inference, show generic "Running…".
             Style::default().fg(theme.text_secondary),
-            crate::locale::ctx()
-                .tr("Running…")
-                .into_owned(),
+            crate::locale::ctx().tr("Running…").into_owned(),
             false,
         ),
         (AgentState::TurnRunning, None) => (
             // Fallback: a running inference turn with no resolved activity
             // The view resolves this gap into Waiting(Model/Subagent) before render, so this is a rarely-hit safety net
             Style::default().fg(theme.text_secondary),
-            crate::locale::ctx()
-                .tr("Waiting…")
-                .into_owned(),
+            crate::locale::ctx().tr("Waiting…").into_owned(),
             false,
         ),
         (

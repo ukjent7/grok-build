@@ -264,10 +264,8 @@ impl DashboardStopAction {
         let locale = crate::locale::ctx();
         match self {
             Self::Stop => None,
-            Self::Archive => Some(locale.tr_static("archive this session",
-            )),
-            Self::Close => Some(locale.tr_static("close this session",
-            )),
+            Self::Archive => Some(locale.tr_static("archive this session")),
+            Self::Close => Some(locale.tr_static("close this session")),
         }
     }
 }
@@ -1401,15 +1399,9 @@ impl DashboardState {
                 locale.tr_static("send")
             }
             ActionsFocus::NewAgent => locale.tr_static("create"),
-            ActionsFocus::OpenPrevious => {
-                locale.tr_static("open previous")
-            }
-            ActionsFocus::Worktree if self.worktree_armed() => {
-                locale.tr_static("disable worktree")
-            }
-            ActionsFocus::Worktree => {
-                locale.tr_static("enable worktree")
-            }
+            ActionsFocus::OpenPrevious => locale.tr_static("open previous"),
+            ActionsFocus::Worktree if self.worktree_armed() => locale.tr_static("disable worktree"),
+            ActionsFocus::Worktree => locale.tr_static("enable worktree"),
         })
     }
 
@@ -2480,8 +2472,10 @@ impl DashboardState {
         let mut attachment = match image {
             ProbedAttachment::Image(pasted) => {
                 if peek_in_question {
-                    self.set_error_toast(&crate::locale::ctx().tr("Pasted image discarded: reply switched to a question",
-                    ));
+                    self.set_error_toast(
+                        &crate::locale::ctx()
+                            .tr("Pasted image discarded: reply switched to a question"),
+                    );
                     ClipboardPasteCompletion::Dropped
                 } else {
                     let (_, completion) = if peek {
@@ -2506,8 +2500,10 @@ impl DashboardState {
             if file_urls.as_deref().is_some_and(|urls| {
                 !crate::prompt_images::try_read_images_from_paste(urls).is_empty()
             }) {
-                self.set_error_toast(&crate::locale::ctx().tr("Pasted image discarded: reply switched to a question",
-                ));
+                self.set_error_toast(
+                    &crate::locale::ctx()
+                        .tr("Pasted image discarded: reply switched to a question"),
+                );
             }
             attachment = ClipboardPasteCompletion::Dropped;
         }
@@ -2572,13 +2568,15 @@ impl DashboardState {
                 });
             } else if !same_row {
                 // Never reply to a row the user is no longer peeking.
-                self.set_error_toast(&crate::locale::ctx().tr("Reply canceled: peek panel changed",
-                ));
+                self.set_error_toast(
+                    &crate::locale::ctx().tr("Reply canceled: peek panel changed"),
+                );
             } else {
                 // A question now owns the panel (Enter answers it there, and the reply dispatch would silently queue a prompt and wipe the draft
                 // behind the dialog); drop the stash; the draft stays put
-                self.set_error_toast(&crate::locale::ctx().tr("Reply canceled: answer the question first",
-                ));
+                self.set_error_toast(
+                    &crate::locale::ctx().tr("Reply canceled: answer the question first"),
+                );
             }
         }
         actions
@@ -2678,8 +2676,12 @@ impl DashboardState {
             let valid = self.peek.as_ref().is_some_and(|p| idx < p.options.len());
             if !valid {
                 let n_opts = self.peek.as_ref().map(|p| p.options.len()).unwrap_or(0);
-                self.set_error_toast(&crate::locale::ctx().tr_format("No such option (only {n_opts} available)",
-                    &[("n_opts", &n_opts.to_string()), ("count", &n_opts.to_string())],
+                self.set_error_toast(&crate::locale::ctx().tr_format(
+                    "No such option (only {n_opts} available)",
+                    &[
+                        ("n_opts", &n_opts.to_string()),
+                        ("count", &n_opts.to_string()),
+                    ],
                 ));
                 return Some(InputOutcome::Changed);
             }

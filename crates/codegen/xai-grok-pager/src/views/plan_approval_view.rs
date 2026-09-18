@@ -25,11 +25,9 @@ The agent exited plan mode without writing a plan.
 /// Empty plans use an active decision prompt instead of "Waiting…", so the UI doesn't look stuck when there is no preview body to open.
 pub fn plan_approval_status_label(has_plan: bool) -> &'static str {
     if has_plan {
-        crate::locale::ctx().tr_static("Waiting on plan approval",
-        )
+        crate::locale::ctx().tr_static("Waiting on plan approval")
     } else {
-        crate::locale::ctx().tr_static("No plan written: approve or request changes",
-        )
+        crate::locale::ctx().tr_static("No plan written: approve or request changes")
     }
 }
 

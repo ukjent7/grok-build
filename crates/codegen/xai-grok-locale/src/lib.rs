@@ -380,7 +380,10 @@ mod tests {
         // No `init` call in this process path: ctx() must serve the English
         // default and pass the English fallback through untouched.
         assert_eq!(ctx().locale(), UiLocale::EnUs);
-        assert_eq!(ctx().named_text("ctx.fallback.probe", "fallback"), "fallback");
+        assert_eq!(
+            ctx().named_text("ctx.fallback.probe", "fallback"),
+            "fallback"
+        );
     }
 
     #[test]
@@ -488,7 +491,11 @@ mod tests {
         // literal text (wrap-check rejects it in CI) and named arguments that the
         // catalog template does not consume leave the template untouched.
         assert_eq!(
-            context.format_named("no.such.id", "No agents in state `{}`", &[("state", "paused")]),
+            context.format_named(
+                "no.such.id",
+                "No agents in state `{}`",
+                &[("state", "paused")]
+            ),
             "No agents in state `{}`"
         );
     }
@@ -496,10 +503,7 @@ mod tests {
     #[test]
     fn chinese_composer_and_shortcut_labels_are_catalog_backed() {
         let context = LocaleContext::new(UiLocale::ZhCn);
-        assert_eq!(
-            context.tr("Build anything"),
-            "告诉我你想做些什么…"
-        );
+        assert_eq!(context.tr("Build anything"), "告诉我你想做些什么…");
         assert_eq!(
             context.named_text("shortcut.clear_search", "clear search"),
             "清除搜索"

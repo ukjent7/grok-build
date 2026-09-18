@@ -52,12 +52,12 @@ impl ModeSupport {
                     ("switch", switch),
                 ],
             ),
-            Remedy::UseInstead(instead) => crate::locale::ctx().tr_format("/{token} isn't available in {current} mode: {instead}.",
+            Remedy::UseInstead(instead) => crate::locale::ctx().tr_format(
+                "/{token} isn't available in {current} mode: {instead}.",
                 &[("token", token), ("current", current), ("instead", instead)],
             ),
-            Remedy::AlreadyInMode => crate::locale::ctx().tr_format("You're already in {current} mode.",
-                &[("current", current)],
-            ),
+            Remedy::AlreadyInMode => crate::locale::ctx()
+                .tr_format("You're already in {current} mode.", &[("current", current)]),
         })
     }
 }

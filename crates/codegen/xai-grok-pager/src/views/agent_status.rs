@@ -172,8 +172,7 @@ pub(crate) fn task_status_line(
     }
     if counts.paused_workflows > 0 {
         let prefix = if counts.running > 0 { "  " } else { "" };
-        let paused =
-            crate::locale::ctx().tr_static("P");
+        let paused = crate::locale::ctx().tr_static("P");
         spans.push(Span::styled(
             format!("{prefix}{paused} {}", counts.paused_workflows),
             paused_style,
@@ -225,16 +224,9 @@ fn goal_phase_label(goal: &GoalDisplayState) -> String {
         | GoalDisplayStatus::NoProgressPaused
         | GoalDisplayStatus::InfraPaused
         | GoalDisplayStatus::Blocked => goal.status.pause_label().into(),
-        GoalDisplayStatus::Failed => {
-            ctx.tr_static("Failed").into()
-        }
-        GoalDisplayStatus::Interrupted => {
-            ctx.tr_static("Interrupted")
-                .into()
-        }
-        GoalDisplayStatus::BudgetLimited => {
-            ctx.tr_static("Budget").into()
-        }
+        GoalDisplayStatus::Failed => ctx.tr_static("Failed").into(),
+        GoalDisplayStatus::Interrupted => ctx.tr_static("Interrupted").into(),
+        GoalDisplayStatus::BudgetLimited => ctx.tr_static("Budget").into(),
         GoalDisplayStatus::Complete => ctx.named_static_text("goal.status.done", "Done").into(),
         GoalDisplayStatus::Active => active_phase_label(goal),
     }
@@ -250,9 +242,7 @@ pub fn active_phase_label(goal: &GoalDisplayState) -> String {
         return if attempts.is_empty() {
             ctx.tr("Verifying").into_owned()
         } else {
-            ctx.tr_format("Verifying ({attempts})",
-                &[("attempts", &attempts)],
-            )
+            ctx.tr_format("Verifying ({attempts})", &[("attempts", &attempts)])
         };
     }
     if goal.planning {
@@ -260,12 +250,8 @@ pub fn active_phase_label(goal: &GoalDisplayState) -> String {
     }
     match goal.phase {
         GoalDisplayPhase::Idle => ctx.tr("Idle").into_owned(),
-        GoalDisplayPhase::Planning => {
-            ctx.tr("Planning").into_owned()
-        }
-        GoalDisplayPhase::Executing => {
-            ctx.tr("Executing").into_owned()
-        }
+        GoalDisplayPhase::Planning => ctx.tr("Planning").into_owned(),
+        GoalDisplayPhase::Executing => ctx.tr("Executing").into_owned(),
     }
 }
 
@@ -299,11 +285,9 @@ pub fn goal_status_line(
     let ctx = crate::locale::ctx();
     let unit = ctx.tr_static("tokens");
     let tokens_display = match goal.token_budget {
-        Some(budget) if budget > 0 => format!(
-            "{}/{} {unit}",
-            tokens_str,
-            format_tokens_compact(budget)
-        ),
+        Some(budget) if budget > 0 => {
+            format!("{}/{} {unit}", tokens_str, format_tokens_compact(budget))
+        }
         _ => format!("{tokens_str} {unit}"),
     };
 
@@ -332,9 +316,7 @@ pub fn goal_status_line(
 
     let ctx = crate::locale::ctx();
     let chip_name = ctx.tr_static("Goal");
-    let chip = ctx.tr_format("{name}: {label}",
-        &[("name", chip_name), ("label", &label)],
-    );
+    let chip = ctx.tr_format("{name}: {label}", &[("name", chip_name), ("label", &label)]);
     let goal_text = if is_active {
         let frames = crate::glyphs::dot_spinner_frames();
         let frame = frames.get((tick / 4) % frames.len()).copied().unwrap_or("");

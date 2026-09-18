@@ -944,9 +944,7 @@ impl QueuePane {
                 let mut right = inner.x + inner.width;
                 let fits = |right: u16, w: u16| right.checked_sub(w).filter(|&x| x >= inner.x);
 
-                let cancel_label = crate::locale::ctx()
-                    .tr("[cancel]")
-                    .into_owned();
+                let cancel_label = crate::locale::ctx().tr("[cancel]").into_owned();
                 let cancel_w = cancel_label.width() as u16;
                 if entry.capabilities.can_delete()
                     && let Some(cancel_x) = fits(right, cancel_w)
@@ -962,18 +960,14 @@ impl QueuePane {
                         .bind(Rect::new(cancel_x, screen_y, cancel_w, 1), entry.id);
                 }
 
-                let interject_label = crate::locale::ctx()
-                    .tr("[Send now]")
-                    .into_owned();
+                let interject_label = crate::locale::ctx().tr("[Send now]").into_owned();
                 let interject_w = interject_label.width() as u16;
                 let show_send_now = can_send_now && entry.capabilities.can_send_now();
 
                 // [edit] always paints; keyboard `e` works either way. Flush to
                 // neighbours so the queued message cannot leak through a gap.
                 // Drop [edit] if [Send now] fits alone but not with [edit].
-                let edit_label = crate::locale::ctx()
-                    .tr("[edit]")
-                    .into_owned();
+                let edit_label = crate::locale::ctx().tr("[edit]").into_owned();
                 let edit_w = edit_label.width() as u16;
                 let send_now_fits_alone = show_send_now && fits(right, interject_w).is_some();
                 if entry.capabilities.can_edit()

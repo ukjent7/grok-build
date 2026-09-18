@@ -330,9 +330,7 @@ impl ClipboardFeedback {
         match self {
             Self::Copied => ctx.tr_static("Copied!"),
             Self::CopiedTmux => ctx.tr_static("Copied to tmux buffer, paste with prefix + ]"),
-            Self::CopiedOscContainer => {
-                ctx.tr_static("Copied via OSC 52 from the container.")
-            }
+            Self::CopiedOscContainer => ctx.tr_static("Copied via OSC 52 from the container."),
             Self::CopiedOscRemote => ctx.tr_static("Copied via OSC 52."),
             Self::UnverifiedOscRemote | Self::UnverifiedOscContainer => {
                 ctx.tr_static("Copy sent. If paste fails, use grok wrap or /minimal.")
@@ -354,9 +352,7 @@ impl ClipboardFeedback {
             Self::CopiedTmux => ctx.tr_static("Copied to tmux buffer, paste with prefix + ]"),
             Self::CopiedOscContainer => ctx.tr_static("Copied via OSC 52 from the container"),
             Self::CopiedOscRemote => ctx.tr_static("Copied via OSC 52"),
-            Self::UnverifiedOscRemote | Self::UnverifiedOscContainer => {
-                ctx.tr_static("Copy sent")
-            }
+            Self::UnverifiedOscRemote | Self::UnverifiedOscContainer => ctx.tr_static("Copy sent"),
             Self::VsCodeSshNonAscii => ctx.tr_static("Copied"),
             Self::FailedRemote | Self::Failed => ctx.tr_static("Copy failed"),
         }

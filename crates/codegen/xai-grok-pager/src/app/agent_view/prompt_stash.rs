@@ -81,8 +81,9 @@ impl AgentView {
         // The history does not hold it: `Ctrl+S` was the only way back
         self.prompt_stash = Some(entry);
 
-        self.note_stash_change_in_minimal(&crate::locale::ctx().tr("Draft stashed. Press the stash key again to restore it.",
-        ));
+        self.note_stash_change_in_minimal(
+            &crate::locale::ctx().tr("Draft stashed. Press the stash key again to restore it."),
+        );
     }
 
     /// An explicit stash means "get this out of my way", so the composer drops its `!`/`#` mode too.
@@ -116,9 +117,9 @@ impl AgentView {
         };
 
         self.restore_stash_entry(entry);
-        self.note_stash_change_in_minimal(crate::locale::ctx().tr("Stashed draft restored.",
-        )
-        .as_ref());
+        self.note_stash_change_in_minimal(
+            crate::locale::ctx().tr("Stashed draft restored.").as_ref(),
+        );
     }
 
     /// A browse that commits the stashed draft is a pop: two live copies means the next send restores what the user just sent.
@@ -165,9 +166,9 @@ impl AgentView {
         };
 
         self.restore_stash_entry(entry);
-        self.note_stash_change_in_minimal(crate::locale::ctx().tr("Stashed draft restored.",
-        )
-        .as_ref());
+        self.note_stash_change_in_minimal(
+            crate::locale::ctx().tr("Stashed draft restored.").as_ref(),
+        );
         InputOutcome::Changed
     }
 

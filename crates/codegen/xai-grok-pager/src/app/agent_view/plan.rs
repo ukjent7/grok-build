@@ -370,9 +370,7 @@ impl AgentView {
         } else {
             None
         }) else {
-            self.show_toast(
-                &crate::locale::ctx().tr("No plan written yet."),
-            );
+            self.show_toast(&crate::locale::ctx().tr("No plan written yet."));
             return;
         };
         viewer.kind = crate::views::file_search::line_viewer::LineViewerKind::PlanPreview;

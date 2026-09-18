@@ -127,15 +127,13 @@ impl SearchToolCallBlock {
             theme.fg(theme.command)
         };
 
-        let prefix =
-            crate::locale::ctx().tr("Search Tools ");
+        let prefix = crate::locale::ctx().tr("Search Tools ");
 
         match max_width {
             Some(w) => {
                 let count = self.result_count.to_string();
-                let suffix = crate::locale::ctx().tr_format(" ({count} results)",
-                    &[("count", &count)],
-                );
+                let suffix =
+                    crate::locale::ctx().tr_format(" ({count} results)", &[("count", &count)]);
 
                 let suffix_fits = prefix.len() + suffix.len() < w;
                 let effective_suffix = if suffix_fits { &suffix } else { "" };
@@ -239,10 +237,7 @@ impl BlockContent for SearchToolCallBlock {
                     lines.push(Line::from("").into());
                     lines.push(
                         Line::from(Span::styled(
-                            crate::locale::ctx()
-                                .tr("  (no results found)",
-                                )
-                                .into_owned(),
+                            crate::locale::ctx().tr("  (no results found)").into_owned(),
                             theme.muted(),
                         ))
                         .into(),

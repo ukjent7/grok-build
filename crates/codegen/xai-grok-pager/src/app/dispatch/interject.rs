@@ -152,8 +152,7 @@ pub(super) fn dispatch_send_prompt_now(
                     crate::app::agent::QueueEntryKind::Prompt,
                 )
             });
-        agent.show_toast(crate::locale::ctx().tr_static("Reconnecting, please wait...",
-        ));
+        agent.show_toast(crate::locale::ctx().tr_static("Reconnecting, please wait..."));
         return vec![];
     }
 

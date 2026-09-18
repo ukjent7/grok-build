@@ -48,15 +48,16 @@ pub fn section_key(section: &McpSectionId) -> String {
 pub fn section_label(section: &McpSectionId, count: usize) -> String {
     let count = count.to_string();
     match section {
-        McpSectionId::Managed => crate::locale::ctx().tr_format("Managed by grok.com ({count})",
-            &[("count", &count)],
-        ),
-        McpSectionId::Plugin(name) => crate::locale::ctx().tr_format("Plugin: {name} ({count})",
+        McpSectionId::Managed => {
+            crate::locale::ctx().tr_format("Managed by grok.com ({count})", &[("count", &count)])
+        }
+        McpSectionId::Plugin(name) => crate::locale::ctx().tr_format(
+            "Plugin: {name} ({count})",
             &[("name", name), ("count", &count)],
         ),
-        McpSectionId::Local => crate::locale::ctx().tr_format("Local ({count})",
-            &[("count", &count)],
-        ),
+        McpSectionId::Local => {
+            crate::locale::ctx().tr_format("Local ({count})", &[("count", &count)])
+        }
     }
 }
 
@@ -94,8 +95,7 @@ pub fn section_description_lines(section: &McpSectionId, team_id: Option<&str>) 
             let url = managed_connectors_url_display(team_id);
             vec![
                 crate::locale::ctx()
-                    .tr("Add, remove, or manage connectors. Ctrl+O to open or go to:",
-                    )
+                    .tr("Add, remove, or manage connectors. Ctrl+O to open or go to:")
                     .into_owned(),
                 format!("[{url}]"),
             ]
@@ -270,22 +270,12 @@ impl McpServerDisplayStatus {
     /// Short human label for the status.
     pub(crate) fn label(&self) -> &'static str {
         match self {
-            Self::Ready => {
-                crate::locale::ctx().tr_static("ready")
-            }
-            Self::NeedsAuth => {
-                crate::locale::ctx().tr_static("needs auth")
-            }
-            Self::SetupRequired => crate::locale::ctx()
-                .tr_static("setup required"),
-            Self::Unavailable => {
-                crate::locale::ctx().tr_static("unavailable")
-            }
-            Self::Initializing => {
-                crate::locale::ctx().tr_static("initializing")
-            }
-            Self::BlockedByPolicy => crate::locale::ctx()
-                .tr_static("blocked by policy"),
+            Self::Ready => crate::locale::ctx().tr_static("ready"),
+            Self::NeedsAuth => crate::locale::ctx().tr_static("needs auth"),
+            Self::SetupRequired => crate::locale::ctx().tr_static("setup required"),
+            Self::Unavailable => crate::locale::ctx().tr_static("unavailable"),
+            Self::Initializing => crate::locale::ctx().tr_static("initializing"),
+            Self::BlockedByPolicy => crate::locale::ctx().tr_static("blocked by policy"),
         }
     }
 }

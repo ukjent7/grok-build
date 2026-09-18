@@ -265,9 +265,7 @@ pub fn compute_peek_fields(
                     } else {
                         opts.push((
                             "__other__".to_string(),
-                            crate::locale::ctx()
-                                .tr_static("Other")
-                                .to_string(),
+                            crate::locale::ctx().tr_static("Other").to_string(),
                         ));
                         Some(opts.len() - 1)
                     };
@@ -557,11 +555,9 @@ pub fn render_peek_panel(
                         // Permission reject vs. ask-tool "Other" free-text.
                         // Painted manually (not via the widget's unfocused-only placeholder) so the hint stays visible while the caret sits on the row
                         let placeholder_text = if panel.is_ask_question() {
-                            crate::locale::ctx().tr_static("Other (type your own answer)",
-                            )
+                            crate::locale::ctx().tr_static("Other (type your own answer)")
                         } else {
-                            crate::locale::ctx().tr_static("No, reject (type to add feedback)",
-                            )
+                            crate::locale::ctx().tr_static("No, reject (type to add feedback)")
                         };
                         let placeholder = truncate_str(placeholder_text, avail as usize);
                         buf.set_string(text_x, y, placeholder, theme.dim().bg(theme.bg_base));
@@ -619,9 +615,7 @@ pub fn render_peek_panel(
         let working = panel.response_type == "Working";
         let status_label = localize_status_word(&panel.response_type);
         let label_style = if working {
-            Style::default()
-                .fg(theme.text_secondary)
-                .bg(theme.bg_base)
+            Style::default().fg(theme.text_secondary).bg(theme.bg_base)
         } else {
             theme.dim().bg(theme.bg_base)
         };
@@ -647,8 +641,7 @@ pub fn render_peek_panel(
             if middle_h > 0 {
                 if scrollback.is_empty() {
                     if let Some(hint) =
-                        empty_hint.or(Some(crate::locale::ctx().tr_static("No activity yet",
-                        )))
+                        empty_hint.or(Some(crate::locale::ctx().tr_static("No activity yet")))
                     {
                         let trunc = truncate_str(hint, inner.width as usize);
                         buf.set_string(inner.x, middle_top, trunc, theme.dim().bg(theme.bg_base));
@@ -686,8 +679,7 @@ pub fn render_peek_panel(
         vpad_top: 0,
         chrome: false,
         bg: PromptBg::Canvas(theme.bg_base),
-        placeholder_override: Some(crate::locale::ctx().tr_static("reply\u{2026}",
-        )),
+        placeholder_override: Some(crate::locale::ctx().tr_static("reply\u{2026}")),
         image_preview: false,
         ..PromptStyle::default()
     };
@@ -923,32 +915,26 @@ fn block_short_text(block: &crate::scrollback::block::RenderBlock) -> Option<Str
             crate::locale::ctx().tr_static("(thinking) "),
             first_line_of(&b.text())
         )),
-        RenderBlock::System(_) => Some(
-            crate::locale::ctx().tr_static("(system event)").to_string(),
-        ),
+        RenderBlock::System(_) => {
+            Some(crate::locale::ctx().tr_static("(system event)").to_string())
+        }
         RenderBlock::SessionEvent(_) => Some(
             crate::locale::ctx()
                 .tr_static("(session event)")
                 .to_string(),
         ),
-        RenderBlock::ToolCall(_) => Some(
-            crate::locale::ctx().tr_static("(tool call)").to_string(),
-        ),
+        RenderBlock::ToolCall(_) => Some(crate::locale::ctx().tr_static("(tool call)").to_string()),
         RenderBlock::BgTask(_) => Some(
             crate::locale::ctx()
                 .tr_static("(background task)")
                 .to_string(),
         ),
-        RenderBlock::Subagent(_) => Some(
-            crate::locale::ctx().tr_static("(subagent)").to_string(),
-        ),
-        RenderBlock::Workflow(_) => Some(
-            crate::locale::ctx().tr_static("(workflow)").to_string(),
-        ),
+        RenderBlock::Subagent(_) => Some(crate::locale::ctx().tr_static("(subagent)").to_string()),
+        RenderBlock::Workflow(_) => Some(crate::locale::ctx().tr_static("(workflow)").to_string()),
         RenderBlock::Btw(_) => Some(crate::locale::ctx().tr_static("(btw)").to_string()),
-        RenderBlock::ContextInfo(_) => Some(
-            crate::locale::ctx().tr_static("(context info)").to_string(),
-        ),
+        RenderBlock::ContextInfo(_) => {
+            Some(crate::locale::ctx().tr_static("(context info)").to_string())
+        }
         RenderBlock::MemoryCapture(_) => Some(
             crate::locale::ctx()
                 .tr_static("(memory capture)")

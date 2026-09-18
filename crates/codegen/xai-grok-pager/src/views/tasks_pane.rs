@@ -440,9 +440,7 @@ impl TaskEntry {
 
         let mut spans = vec![
             Span::styled(
-                crate::locale::ctx()
-                    .tr("Workflow ")
-                    .into_owned(),
+                crate::locale::ctx().tr("Workflow ").into_owned(),
                 Style::default().fg(tag_color),
             ),
             Span::styled(run.name.clone(), name_style),
@@ -454,9 +452,7 @@ impl TaskEntry {
             ));
         }
 
-        let workflow_label = crate::locale::ctx()
-            .tr("Workflow ")
-            .into_owned();
+        let workflow_label = crate::locale::ctx().tr("Workflow ").into_owned();
         let label = format!("{workflow_label}{} {suffix}", run.name);
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         "workflow:".hash(&mut hasher);
@@ -1199,17 +1195,9 @@ impl TasksPane {
                         .fg(theme.text_primary)
                         .add_modifier(Modifier::BOLD);
                     let line = Line::from(vec![
-                        Span::styled(
-                            ctx.tr("No running tasks. Press ")
-                                .into_owned(),
-                            muted,
-                        ),
+                        Span::styled(ctx.tr("No running tasks. Press ").into_owned(), muted),
                         Span::styled("h", key_style),
-                        Span::styled(
-                            ctx.tr(" to show all.")
-                                .into_owned(),
-                            muted,
-                        ),
+                        Span::styled(ctx.tr(" to show all.").into_owned(), muted),
                     ]);
                     buf.set_line(inner.x, inner.y, &line, inner.width);
                 }
@@ -1448,9 +1436,7 @@ impl TasksPane {
             (
                 frames.get(frame_idx).copied().unwrap_or(""),
                 Style::default().fg(theme.accent_error),
-                crate::locale::ctx()
-                    .tr("killing\u{2026} ")
-                    .into_owned(),
+                crate::locale::ctx().tr("killing\u{2026} ").into_owned(),
                 Style::default().fg(theme.accent_error),
             )
         } else {
@@ -1592,9 +1578,7 @@ impl TasksPane {
             (
                 frames.get(frame_idx).copied().unwrap_or(""),
                 Style::default().fg(theme.accent_error),
-                crate::locale::ctx()
-                    .tr("killing\u{2026} ")
-                    .into_owned(),
+                crate::locale::ctx().tr("killing\u{2026} ").into_owned(),
                 Style::default().fg(theme.accent_error),
             )
         } else if info.is_running() {

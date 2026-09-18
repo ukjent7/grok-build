@@ -457,9 +457,7 @@ impl BlockContent for SentMessageToolCallBlock {
             }
             None => {
                 let mut line = BlockLine::styled(Line::from(Span::styled(
-                    crate::locale::ctx()
-                        .tr("unavailable")
-                        .into_owned(),
+                    crate::locale::ctx().tr("unavailable").into_owned(),
                     theme.muted(),
                 )));
                 line.selectable = Selectable::None;
