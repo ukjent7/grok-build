@@ -1265,7 +1265,13 @@ async fn restore_session_from_remote(
         RemoteRestoreOutcome::Restored { local_session_id } => {
             emit_pre_tui_restore_line(
                 progress_on_stdout,
-                &format!("  Restored conversation as local session {local_session_id}"),
+                &format!(
+                    "  {}",
+                    locale.tr_format(
+                        "Restored conversation as local session {session_id}",
+                        &[("session_id", local_session_id.as_str())],
+                    )
+                ),
             );
             Ok(ResolvedExisting {
                 id: local_session_id,
@@ -1276,18 +1282,23 @@ async fn restore_session_from_remote(
             })
         }
         RemoteRestoreOutcome::RecoveredAfterFailure { local_session_id } => {
+            let session_id = local_session_id.as_str();
             let msg = if timed_out {
-                format!(
-                    "Remote restore timed out after {}s; continuing with conversation {local_session_id}.",
-                    REMOTE_RESTORE_TIMEOUT.as_secs(),
+                let secs = REMOTE_RESTORE_TIMEOUT.as_secs().to_string();
+                locale.tr_format(
+                    "Remote restore timed out after {secs}s; continuing with conversation {session_id}.",
+                    &[("secs", &secs), ("session_id", session_id)],
                 )
             } else if let Some(Err(e)) = restore_result {
-                format!(
-                    "Remote restore failed ({e:#}); continuing with conversation {local_session_id}."
+                let reason = format!("{e:#}");
+                locale.tr_format(
+                    "Remote restore failed ({error}); continuing with conversation {session_id}.",
+                    &[("error", &reason), ("session_id", session_id)],
                 )
             } else {
-                format!(
-                    "Remote restore incomplete; continuing with conversation {local_session_id}."
+                locale.tr_format(
+                    "Remote restore incomplete; continuing with conversation {session_id}.",
+                    &[("session_id", session_id)],
                 )
             };
             emit_pre_tui_restore_line(progress_on_stdout, &msg);
@@ -1336,13 +1347,17 @@ pub(crate) fn classify_remote_restore(
         };
     }
     if timed_out {
-        return RemoteRestoreOutcome::Failed(format!(
-            "Timed out restoring session from remote after {}s. Conversation cannot be recovered.",
-            REMOTE_RESTORE_TIMEOUT.as_secs()
+        let secs = REMOTE_RESTORE_TIMEOUT.as_secs().to_string();
+        return RemoteRestoreOutcome::Failed(locale.tr_format(
+            "Timed out restoring session from remote after {secs}s. Conversation cannot be recovered.",
+            &[("secs", &secs)],
         ));
     }
     if let Some(e) = restore_err {
-        return RemoteRestoreOutcome::Failed(format!("Failed to restore session from remote: {e}"));
+        return RemoteRestoreOutcome::Failed(locale.tr_format(
+            "Failed to restore session from remote: {error}",
+            &[("error", e)],
+        ));
     }
     RemoteRestoreOutcome::Failed(
         locale
