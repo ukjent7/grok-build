@@ -4,7 +4,6 @@ fn main() {
     // option_env!: a tag-only change must alter the compiled sources,
     // or cargo/sccache would reuse an object stamped with the previous tag.
     println!("cargo:rerun-if-env-changed=BYOK_RELEASE");
-    println!("cargo:rerun-if-env-changed=GROK_BYOK_REPO");
     let decl = match std::env::var("BYOK_RELEASE").ok().filter(|v| !v.is_empty()) {
         Some(tag) => format!("pub const RELEASE: Option<&str> = Some({tag:?});"),
         None => "pub const RELEASE: Option<&str> = None;".to_string(),
