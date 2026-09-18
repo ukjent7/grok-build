@@ -52,6 +52,10 @@ on:
         description: 'Scan for i18n-unwrapped copy added since this rev (blank = skip)'
         required: false
 
+# FORK(byok): least privilege; this workflow only reads the repo.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -76,7 +80,7 @@ jobs:
       # Full history on purpose: the added-copy scan below diffs against the
       # commit the branch pointed at before the push, and checkout's default
       # depth-1 clone does not contain it. The pack is ~52 MB, i.e. seconds.
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
@@ -98,7 +102,7 @@ jobs:
       # xai-grok-tools-api runs proto codegen in its build script;
       # prefer a PATH protoc over the DotSlash-bundled one.
       - name: Install protoc
-        uses: arduino/setup-protoc@v3
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3 (v3 branch / v3.0.0 tag)
         with:
           version: "28.x"
           # Unauthenticated api.github.com calls share 60 req/h per runner IP;
@@ -106,7 +110,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master (2026-09-18)
         with:
           toolchain: 1.98.1
           # The action installs the components you list and no others: a
@@ -130,7 +134,7 @@ jobs:
       # spaces but share one 10 GB pool, so concurrent writers evicted each
       # other and every job stayed half-cold. CI runs alone most of the time
       # and stays warm by recency; release compilation belongs to sccache.
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           # FORK(byok): mint full-target entries on main only. PRs/tags/
           # dispatches restore without saving, so pushes stop adding GB

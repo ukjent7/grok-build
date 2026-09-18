@@ -41,8 +41,10 @@ if (-not $Version -and $env:GROK_VERSION) {
 }
 
 # This script is Windows-only. PS 5.1 has no Platform property and only runs on Windows.
+# FORK(byok): point at the fork's releases page, never the official installer
+# (mirrors byok::reinstall_hint in xai-grok-update/src/byok.rs).
 if ($PSVersionTable.Platform -and $PSVersionTable.Platform -ne 'Win32NT') {
-    Write-Error "This installer is for Windows. On macOS/Linux, use: curl -fsSL https://x.ai/cli/install.sh | bash"
+    Write-Error "This installer is for Windows. On macOS/Linux, please reinstall via: https://github.com/ukjent7/grok-build/releases"
     exit 1
 }
 
@@ -327,8 +329,12 @@ if ($AuthSource) {
 # FORK(byok): match the in-app updater's `grok-{version}-{platform}` name.
 # `cleanup_old_downloads` skips any file whose suffix does not start with a
 # digit, so a versionless name would sit in ~/.grok/downloads forever,
-# next to every versioned copy the updater leaves behind.
-$binaryPath = Join-Path $DownloadDir "grok-$resolvedVersion-$platform.exe"
+# next to every versioned copy the updater leaves behind. The unresolvable-
+# latest fallback therefore downloads under a parseable placeholder version
+# (`0.0.0-latest`, a semver pre-release the updater's name parser accepts);
+# the next successful install sweeps it as an old version.
+$downloadVersion = if ($resolvedVersion -eq 'latest') { '0.0.0-latest' } else { $resolvedVersion }
+$binaryPath = Join-Path $DownloadDir "grok-$downloadVersion-$platform.exe"
 
 try {
     $usedUrl = Try-Download-File $binaryUrls $binaryPath

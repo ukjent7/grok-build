@@ -391,10 +391,10 @@ incremental = true
 panic = "abort"
 
 # FORK(byok): CI-only release profile for cloud builds (see .github/workflows/byok-build.yml).
-# Same codegen as `release`, minus everything that slows one-shot CI builds or
-# bloats the shared 10 GB GitHub cache: no incremental artifacts, pinned
-# codegen-units, no debug info. Functionally identical binary (same opt-level,
-# same panic strategy).
+# Exists for CI build speed (fewer codegen units to schedule, no LTO link
+# time, no incremental artifacts bloating the shared cache); BYOK releases
+# ship with this profile. Unlike `release-dist` it keeps lto = false and
+# codegen-units = 16, trading some runtime optimization for faster builds.
 [profile.ci-release]
 inherits = "release"
 incremental = false
