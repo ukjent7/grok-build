@@ -109,6 +109,13 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.98.1
+          # The action installs the components you list and no others: a
+          # `toolchain:` input does not merge in the `components` of
+          # rust-toolchain.toml (that file asks for rustfmt too, and this step
+          # still produced a toolchain without it -- CI's first run of the gate
+          # below died on "'cargo-fmt' is not installed"). RUSTUP_TOOLCHAIN above
+          # points the job at this toolchain, so this is the one that needs rustfmt.
+          components: rustfmt
 
       # Formatting gates before compilation: it is the only check here that costs
       # nothing, and an unformatted tree hides the real diff for the rest of the run.
