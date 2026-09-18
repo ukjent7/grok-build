@@ -470,20 +470,24 @@ $cfgLines = Add-TomlValueIfMissing $cfgLines 'telemetry' 'trace_upload = false'
 # extra model call per turn — on a metered third-party endpoint that is pure overhead,
 # so they default off here. `prompt_suggestions` is a `[ui]` key, not `[features]`
 # (the shell reads `ui.prompt_suggestions`).
-# Memory is the one side-call feature this script turns ON, and it needs both keys:
-# `[memory] enabled` is the legacy gate, and `default(false)` in the `BoolFlag`
-# waterfall means nothing else turns it on here (BYOK has no remote-settings tier);
-# `[memory_v2] enabled` is what actually selects the v2 pipeline. `[memory] mode = "v2"`
-# used to do that, but upstream dropped the field in the 48271133 sync and
-# `MemorySettings` has no `mode`, so it is silently ignored (pinned by
-# `memory_v2_cannot_be_selected_from_legacy_memory_section`). A config.toml from an
-# older install may still carry that inert line; leave it.
+# Memory is the one side-call feature this script turns ON, and `[memory_v2]
+# enabled = true` is the only key it takes: it selects the v2 pipeline and enables
+# memory on its own (pinned by `local_memory_v2_enabled_selects_v2_with_active_defaults`).
+# Do NOT also seed `[memory] enabled`: a false v2 gate is not a kill switch, it
+# delegates to the independent legacy waterfall (`memory.rs` `resolve`), so a legacy
+# `enabled = true` would turn a user's `[memory_v2] enabled = false` into a silent
+# downgrade to the legacy implementation rather than memory off.
+# `[memory] mode = "v2"` used to select v2, but upstream dropped the field in the
+# 48271133 sync and `MemorySettings` has no `mode`, so it is silently ignored (pinned
+# by `memory_v2_cannot_be_selected_from_legacy_memory_section`). A config.toml from an
+# older install may still carry that inert line, or a legacy `enabled = true` this
+# script used to write; both are left alone, since rewriting a key the user may have
+# edited is worse than leaving a redundant one.
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'ui' 'prompt_suggestions = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'ui' 'locale = "zh-CN"'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'turn_summary = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'title_refresh = false'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'features' 'session_recap = false'
-$cfgLines = Add-TomlValueIfMissing $cfgLines 'memory' 'enabled = true'
 $cfgLines = Add-TomlValueIfMissing $cfgLines 'memory_v2' 'enabled = true'
 [System.IO.File]::WriteAllLines($ConfigFile, [string[]]$cfgLines, [System.Text.Encoding]::UTF8)
 
