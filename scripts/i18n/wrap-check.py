@@ -195,6 +195,21 @@ def rust_unescape(raw: str) -> str:
 MAX_SHOWN = 12
 
 
+def print_hits(rows, render, limit=MAX_SHOWN, indent="  "):
+    """Print the first `limit` rows, then one `... N more` line.
+
+    `render` turns one row into the printed text (it may be multi-line);
+    `indent` prefixes the `... more` line, which is deeper than the rows where
+    a block is already nested one level in. Shared by the "first N hits"
+    blocks here and by `sync-report.py` / `catalog-check.py`, which import it
+    alongside the scanner so the truncation style cannot drift per report.
+    """
+    for row in rows[:limit]:
+        print(render(row))
+    if len(rows) > limit:
+        print("%s... %d more" % (indent, len(rows) - limit))
+
+
 def is_excluded(rel: str) -> bool:
     return any(rel.startswith(d + "/") for d in EXCLUDED_DIRS)
 
@@ -205,7 +220,11 @@ def read_sources():
     for root in ROOTS:
         base = REPO / root
         if not base.exists():
-            continue
+            # Same reason `load_baseline` exits rather than returning empty: a
+            # silently empty scan checks nothing, and `check` would read a moved
+            # root as 1911 dropped wraps... or, worse, a fresh baseline would
+            # happily record them. A moved root is a rename, not a drift.
+            sys.exit(f"missing source root: {root}")
         for path in base.rglob("*.rs"):
             rel = path.relative_to(REPO).as_posix()
             if is_excluded(rel):
@@ -703,10 +722,7 @@ def cmd_diff(base):
     if not hits:
         print("  none")
         return 0
-    for rel, line_no, value in hits[:MAX_SHOWN]:
-        print('  %s:%d  "%s"' % (rel, line_no, value[:70]))
-    if len(hits) > MAX_SHOWN:
-        print("  ... %d more" % (len(hits) - MAX_SHOWN))
+    print_hits(hits, lambda h: '  %s:%d  "%s"' % (h[0], h[1], h[2][:70]))
     print("  wrap it, or leave it English on purpose and say so at the call site.")
     print("  (advisory: this never changes the exit code -- see the `diff` note above)")
     return 0
@@ -941,12 +957,11 @@ def cmd_check():
 
     if rewritten:
         print("\n=== upstream rewrote the English fallback (re-read the translation) ===")
-        for o, n in rewritten[:MAX_SHOWN]:
-            print(f'  {n["file"]}: {n["id"]}  [{n["kind"]}]')
-            print(f'    - "{o["english"][:70]}"')
-            print(f'    + "{n["english"][:70]}"')
-        if len(rewritten) > MAX_SHOWN:
-            print(f"  ... {len(rewritten) - MAX_SHOWN} more")
+        print_hits(
+            rewritten,
+            lambda p: '  %s: %s  [%s]\n    - "%s"\n    + "%s"'
+            % (p[1]["file"], p[1]["id"], p[1]["kind"],
+               p[0]["english"][:70], p[1]["english"][:70]))
 
     dropped = [w for w in missing if (w["file"], w["id"], w["kind"]) not in rewritten_sites]
     if dropped:
@@ -956,32 +971,28 @@ def cmd_check():
             by_file.setdefault(w["file"], []).append(w)
         for f in sorted(by_file):
             print(f"\n  {f}  ({len(by_file[f])})")
-            for w in by_file[f][:8]:
-                print(f'    {w["kind"]:18s} {w["id"]}  <- "{w["english"][:60]}"')
-            if len(by_file[f]) > 8:
-                print(f'    ... {len(by_file[f]) - 8} more')
+            print_hits(
+                by_file[f],
+                lambda w: '    %-18s %s  <- "%s"' % (w["kind"], w["id"], w["english"][:60]),
+                limit=8, indent="    ")
 
     fresh = [w for w in added if (w["file"], w["id"], w["kind"]) not in rewritten_sites]
     if fresh:
         print("\n=== new wraps not in the baseline (rerun `baseline` once reviewed) ===")
-        for w in fresh[:MAX_SHOWN]:
-            print(f'  {w["file"]}: {w["kind"]} {w["id"]}  <- "{w["english"][:60]}"')
-        if len(fresh) > MAX_SHOWN:
-            print(f"  ... {len(fresh) - MAX_SHOWN} more")
+        print_hits(fresh, lambda w: '  %s: %s %s  <- "%s"'
+                   % (w["file"], w["kind"], w["id"], w["english"][:60]))
 
     if thinned:
         print("\n=== anchors that lost wrap sites (key still present, copy now renders English) ===")
-        for k, was, now in thinned[:MAX_SHOWN]:
-            print(f'  {k[0]}: {k[2]} {k[1] if k[1] is not None else k[3]}  {was} -> {now} sites')
-        if len(thinned) > MAX_SHOWN:
-            print(f"  ... {len(thinned) - MAX_SHOWN} more")
+        print_hits(
+            thinned,
+            lambda t: '  %s: %s %s  %s -> %s sites'
+            % (t[0][0], t[0][2], t[0][1] if t[0][1] is not None else t[0][3], t[1], t[2]))
 
     if orphans:
         print("\n=== wraps with no zh-CN translation (these render English) ===")
-        for w in orphans[:MAX_SHOWN]:
-            print(f'  {w["file"]}: {w["kind"]} {w["id"]}  <- "{w["english"][:60]}"')
-        if len(orphans) > MAX_SHOWN:
-            print(f"  ... {len(orphans) - MAX_SHOWN} more")
+        print_hits(orphans, lambda w: '  %s: %s %s  <- "%s"'
+                   % (w["file"], w["kind"], w["id"], w["english"][:60]))
 
     if bare_braces:
         print("\n=== bare `{}` in an English anchor (never substituted: use {name}) ===")

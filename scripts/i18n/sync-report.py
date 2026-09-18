@@ -84,8 +84,15 @@ wc = _load_wrap_check()
 # Kinds a literal can be re-wrapped as. A `+const` anchor or a lookup-table arm
 # leaves no literal at the call site once dropped, so neither can be re-applied
 # mechanically; both are reported for a human instead.
-NAMED_KINDS = {"named_text", "named_static_text", "format_named"}
-RESTORABLE = wc.TR_KINDS | NAMED_KINDS
+#
+# `tr_format` and `format_named` are excluded on purpose, even though their call
+# sites do carry a literal: both take an arguments slice after the English
+# anchor (`tr_format("...", &[("name", value)]);` `format_named` adds the id in
+# front of it), and the baseline record does not preserve those arguments, so a
+# re-applied call would not compile. They land in the manual list with their own
+# reason.
+RESTORABLE = {"tr", "tr_static", "named_text", "named_static_text"}
+MANUAL_KINDS = {"tr_format", "format_named"}
 
 
 def git(*args):
@@ -97,7 +104,7 @@ def git(*args):
     return result.stdout
 
 
-def read_source(path):
+def read_source(path, errors="ignore"):
     """`(text with LF endings, whether the file is CRLF on disk)`.
 
     The fork's working tree is CRLF (`core.autocrlf=true`) while the repository
@@ -105,8 +112,12 @@ def read_source(path):
     put the convention back: `--apply` touches a handful of lines, but an LF
     write replaces *every* line ending in the file on disk. Git hides that under
     `core.autocrlf=true`, editors and `diff` do not.
+
+    `errors` is `"strict"` on the `--apply` path: the text read here is the text
+    written back, so a malformed byte must raise there instead of being
+    silently dropped from the file on disk. The dry run stays lenient.
     """
-    with open(path, encoding="utf-8", errors="ignore", newline="") as fh:
+    with open(path, encoding="utf-8", errors=errors, newline="") as fh:
         raw = fh.read()
     return raw.replace("\r\n", "\n"), "\r\n" in raw
 
@@ -183,6 +194,11 @@ def plan_restore(rel, src, missing):
     manual = []
     for rec in missing:
         kind = rec["kind"]
+        if kind in MANUAL_KINDS:
+            manual.append(
+                (rec, "a %s wrap needs its arguments; the baseline does not record them"
+                 % kind))
+            continue
         if kind not in RESTORABLE:
             manual.append((rec, "anchor is a %s, not a call-site literal" % kind))
             continue
@@ -250,9 +266,12 @@ def new_untranslated(since, baseline_files, known):
     return sorted(set(hits))
 
 
-def section_a(baseline, current, apply):
-    """Restore locatable drift; return (restored, manual, touched files)."""
-    missing = [w for k, w in baseline.items() if k not in current]
+def section_a(missing, apply):
+    """Restore locatable drift; return (restored, manual, touched files).
+
+    `missing` is computed once in `main` (it also feeds section B) and passed
+    in, so the two sections cannot disagree about what counts as lost.
+    """
     if not missing:
         return 0, [], []
     by_file = {}
@@ -267,7 +286,7 @@ def section_a(baseline, current, apply):
         if not path.exists():
             manual.extend((rec, "file is gone") for rec in by_file[rel])
             continue
-        src, crlf = read_source(path)
+        src, crlf = read_source(path, errors="strict" if apply else "ignore")
         replacements, count, refused = plan_restore(rel, src, by_file[rel])
         manual.extend(refused)
         if not replacements:
@@ -293,7 +312,8 @@ def main(argv):
     baseline = wc.load_baseline()
     current = wc.scan()
 
-    restored, manual, touched = section_a(baseline, current, apply)
+    missing = [w for k, w in baseline.items() if k not in current]
+    restored, manual, touched = section_a(missing, apply)
 
     print("baseline %d wraps | now %d" % (len(baseline), len(current)))
     actionable = False
@@ -303,24 +323,22 @@ def main(argv):
         print("  none")
     else:
         actionable = True
-        missing = len([w for k, w in baseline.items() if k not in current])
         print("  %d lost, %d re-applied%s, %d need a human"
-              % (missing, restored, "" if apply else " (dry run, use --apply)",
+              % (len(missing), restored, "" if apply else " (dry run, use --apply)",
                  len(manual)))
         if touched:
             print("  files %s%s" % ("written: " if apply else "would change: ",
                                     ", ".join(touched)))
-        for rec, why in manual[:MAX_SHOWN]:
-            locs = " ".join(
-                "fn %s#%d" % (f or "<top-level>", o) for f, o, _ in rec.get("locs", []))
-            print('    %s  [%s] %s  <- "%s"'
-                  % (rec["file"], rec["kind"], locs, rec["english"][:60]))
-            print("      %s" % why)
-        if len(manual) > MAX_SHOWN:
-            print("    ... %d more" % (len(manual) - MAX_SHOWN))
+        wc.print_hits(
+            manual,
+            lambda m: '    %s  [%s] %s  <- "%s"\n      %s'
+            % (m[0]["file"], m[0]["kind"],
+               " ".join("fn %s#%d" % (f or "<top-level>", o)
+                        for f, o, _ in m[0].get("locs", [])),
+               m[0]["english"][:60], m[1]),
+            limit=MAX_SHOWN, indent="    ")
 
-    missing_sites = {(w["file"], w["id"], w["kind"])
-                     for k, w in baseline.items() if k not in current}
+    missing_sites = {(w["file"], w["id"], w["kind"]) for w in missing}
     added = [w for k, w in current.items() if k not in baseline]
     rewritten = sorted({
         (w["file"], w["id"], w["kind"])
@@ -331,11 +349,11 @@ def main(argv):
         print("  none")
     else:
         actionable = True
-        for rel, id_, kind in rewritten[:MAX_SHOWN]:
-            print("  %s  [%s] %s" % (rel, kind, id_))
-            print('    re-read the translation: "%s"' % id_[:70])
-        if len(rewritten) > MAX_SHOWN:
-            print("  ... %d more" % (len(rewritten) - MAX_SHOWN))
+        wc.print_hits(
+            rewritten,
+            lambda t: '  %s  [%s] %s\n    re-read the translation: "%s"'
+            % (t[0], t[1], t[2], t[2][:70]),
+            limit=MAX_SHOWN)
 
     print("\n=== C new copy: literals new since %s with no catalog entry ==="
           % (since or "<not checked>"))
@@ -346,10 +364,8 @@ def main(argv):
             print("  none")
         else:
             actionable = True
-            for rel, line, value in hits[:MAX_SHOWN]:
-                print('  %s:%d  "%s"' % (rel, line, value[:70]))
-            if len(hits) > MAX_SHOWN:
-                print("  ... %d more" % (len(hits) - MAX_SHOWN))
+            wc.print_hits(hits, lambda h: '  %s:%d  "%s"' % (h[0], h[1], h[2][:70]),
+                          limit=MAX_SHOWN)
     else:
         print("  pass --since <rev> to check (e.g. the last upstream sync)")
 

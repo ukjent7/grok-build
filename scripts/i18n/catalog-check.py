@@ -76,6 +76,7 @@ fix is the code, not the gate.
 """
 
 import argparse
+import importlib.util
 import json
 import re
 import sys
@@ -83,28 +84,44 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]  # scripts/i18n/ -> repo root
-ROOTS = ["crates/codegen"]
-# The locale crate is scanned too, unlike `wrap-check.py`: that tool excludes it
-# because it counts *wraps* and the crate is only a definition site, but for
+
+
+def _load_wrap_check():
+    """`wrap-check.py` has a hyphen in its name, so it is not importable by name.
+
+    Sharing its lexer and scanner is the point: a second copy of the raw-string
+    and nested-comment rules would drift from the gate's (this file used to
+    carry its own `TR_KINDS`, source walk and escape decoder, and all three
+    had already diverged).
+    """
+    sys.dont_write_bytecode = True  # no __pycache__ in a tree we never import from
+    spec = importlib.util.spec_from_file_location("wrap_check", HERE / "wrap-check.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+wc = _load_wrap_check()
+
+# Source roots are `wc.ROOTS` (`crates/codegen`), walked by `wc.read_sources`.
+# The locale crate is scanned too, unlike in `wrap-check.py`: that tool excludes
+# it because it counts *wraps* and the crate is only a definition site, but for
 # reachability it is the opposite -- `LocaleContext::setting_label` builds the
 # `settings.setting.*` ids, and its tests look ids up by literal. Excluding it
 # here drops the only proof that those prefixes exist.
 # Skip a stray per-crate `target/` (someone ran cargo inside a crate directory).
-# Matched by path component: every relpath under ROOTS begins `crates/codegen/`,
-# so the `startswith` test this replaced could never fire against a "target"
-# prefix and the filter was decoration.
+# Matched by path component: every relpath under the roots begins
+# `crates/codegen/`, so the `startswith` test this replaced could never fire
+# against a "target" prefix and the filter was decoration.
 EXCLUDED_DIR_NAMES = {"target"}
-CATALOGS = [
-    "crates/codegen/xai-grok-locale/locales/zh-CN-metadata.json",
-    "crates/codegen/xai-grok-locale/locales/zh-CN.json",
-]
-BASELINE = HERE / "wraps.jsonl"
-TR_KINDS = {"tr", "tr_static", "tr_format"}
+CATALOGS = wc.ZH_CATALOGS
+BASELINE = wc.BASELINE
+TR_KINDS = wc.TR_KINDS
 # The English-keyed catalog is the dominant one and had no gate in either
 # direction: `wrap-check.py` proves every *wrap* has an entry here, never that
 # every entry has a wrap, so a translation of a string the UI stopped rendering
 # just keeps taking up space.
-EN_TO_ZH = "crates/codegen/xai-grok-locale/locales/en-to-zh.json"
+EN_TO_ZH = wc.EN_TO_ZH_CATALOG
 
 # Prefixes whose templates are not string literals (assembled from consts).
 EXTRA_PREFIXES: list[str] = []
@@ -173,15 +190,20 @@ TEMPLATE = re.compile(r'(?:format!|concat!)\s*\(\s*"([^"]*)"')
 
 
 def source_blob() -> str:
-    parts = []
-    for root in ROOTS:
-        base = REPO / root
-        if not base.exists():
-            sys.exit(f"missing source root: {root}")
-        for path in sorted(base.rglob("*.rs")):
-            if EXCLUDED_DIR_NAMES & set(path.parts):
-                continue
-            parts.append(path.read_text(encoding="utf-8"))
+    """Every scanned `.rs` body, joined; the walk is `wrap-check.py`'s.
+
+    `wc.read_sources` covers the shared roots but excludes the locale crate
+    (see the comment above), so the crate's files are appended here. Its
+    lenient `errors="ignore"` read is fine for reachability: ids, English
+    anchors and templates match on ASCII, and a byte that fails to decode
+    cannot carry one.
+    """
+    parts = [src for _rel, src in wc.read_sources()]
+    locale = REPO / "crates/codegen/xai-grok-locale"
+    for path in sorted(locale.rglob("*.rs")):
+        if EXCLUDED_DIR_NAMES & set(path.parts):
+            continue
+        parts.append(path.read_text(encoding="utf-8"))
     return "\n".join(parts)
 
 
@@ -196,23 +218,21 @@ def load_catalogs() -> dict[str, str]:
     return merged
 
 
-_RUST_ESCAPES = {"n": "\n", "r": "\r", "t": "\t", "0": "\0"}
-_U_BRACE = re.compile(r"\\u\{([0-9a-fA-F]+)\}")
-_U_SIMPLE = re.compile(r"\\(.)")
-_U_CONTINUED = re.compile(r"\\\n[ \t]*")
+def mask_comments(src: str) -> str:
+    """`src` with every comment blanked, offsets kept; string literals stay.
 
-
-def decode_rust_escapes(src: str) -> str:
-    r"""Rewrite Rust source into the character space the catalog is written in.
-
-    A multi-line English anchor is stored as `\n`, an ellipsis as `\u{2026}`, and
-    rustfmt may split a long literal with a trailing `\`. The catalog holds the real
-    characters, so comparing raw source text reports every such key as missing --
-    decode first, or the orphan check cries wolf and gets switched off.
+    Rule A matches quoted literals, so `wc.mask_code` -- which blanks strings
+    too -- cannot be used here; this blanks only the `comment` spans of the
+    same lexer, so an id spelled only inside a comment no longer counts as
+    reachable while every real call-site literal still does.
     """
-    src = _U_CONTINUED.sub("", src)
-    src = _U_BRACE.sub(lambda m: chr(int(m.group(1), 16)), src)
-    return _U_SIMPLE.sub(lambda m: _RUST_ESCAPES.get(m.group(1), m.group(1)), src)
+    out = list(src)
+    for kind, start, end, _value in wc.lex_spans(src):
+        if kind == "comment":
+            for k in range(start, end):
+                if out[k] != "\n":
+                    out[k] = " "
+    return "".join(out)
 
 
 def english_orphans(blob: str) -> list[str]:
@@ -224,7 +244,10 @@ def english_orphans(blob: str) -> list[str]:
     """
     with open(REPO / EN_TO_ZH, encoding="utf-8") as fh:
         keys = json.load(fh)
-    decoded = decode_rust_escapes(blob)
+    # Join line-continued literals first (offsets do not matter here), then
+    # decode with `wrap-check.py`'s unescape -- it also knows `\xNN`, which the
+    # local copy this replaced did not.
+    decoded = wc.rust_unescape(wc.CONTINUED_STRING.sub("", blob))
     return sorted(key for key in keys if key not in decoded)
 
 
@@ -286,7 +309,7 @@ def main() -> int:
 
     catalog = load_catalogs()
     blob = source_blob()
-    literal = set(LITERAL_ID.findall(blob))
+    literal = set(LITERAL_ID.findall(mask_comments(blob)))
     wrapped = wrap_ids()
     prefixes = dynamic_prefixes(blob, catalog)
     enumerated = enumerated_prefixes()
@@ -317,19 +340,13 @@ def main() -> int:
         print("instead. Either wire the id up or drop the entry.")
         print("Under settings.setting./tutorial.topic. the id is checked against the")
         print("registry and the topic list, so a rename there also lands here.")
-        for key in unreachable[:40]:
-            print(f"  {key}")
-        if len(unreachable) > 40:
-            print(f"  ... {len(unreachable) - 40} more")
+        wc.print_hits(unreachable, lambda key: "  %s" % key, limit=40)
 
     if orphans:
         print(f"\n=== {len(orphans)} en-to-zh.json keys no call site can spell ===")
         print("`tr` matches the English literal verbatim, so these translate")
         print("nothing. Drop them, or wire up the string they were meant for.")
-        for key in orphans[:40]:
-            print(f"  {key!r}")
-        if len(orphans) > 40:
-            print(f"  ... {len(orphans) - 40} more")
+        wc.print_hits(orphans, lambda key: "  %r" % key, limit=40)
     return 0 if args.list else 1
 
 
