@@ -300,6 +300,16 @@ required-features = ["test-support"]
 name = "test_startup_settings_unpersisted_session"
 required-features = ["test-support"]
 
+# Same class of breakage, one seam further up: this Grove E2E calls
+# `agent::testkit::spawn_isolated_subagent_for_e2e`, and `agent::testkit` is
+# `#[cfg(feature = "test-support")]`, so `cargo check --all-targets` failed
+# E0433 on a feature-free build. Gating skips it there instead; the bazel
+# `default-bazel` set still enables `test-support`, and this workflow never ran
+# the binary anyway (it needs FUSE and an out-of-band grove daemon).
+[[test]]
+name = "e2e_grove_worktree"
+required-features = ["test-support"]
+
 [lints]
 workspace = true
 [build-dependencies]
