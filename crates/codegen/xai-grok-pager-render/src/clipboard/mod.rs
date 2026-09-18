@@ -635,19 +635,6 @@ fn log_clipboard_copy_event(
     });
 }
 
-/// Return the parenthetical stats suffix used in clipboard success messages.
-/// Format: " (N chars, M lines)" with proper pluralization.
-pub fn clipboard_stats_suffix(text: &str) -> String {
-    let chars = text.len();
-    let lines = text.lines().count();
-    format!(
-        " ({} chars, {} {})",
-        chars,
-        lines,
-        if lines == 1 { "line" } else { "lines" }
-    )
-}
-
 /// CLIPBOARD text read failed.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ClipboardTextReadError;
@@ -2317,6 +2304,67 @@ mod tests {
             assert!(
                 message.starts_with(result.message_lead),
                 "message_lead must prefix message for {feedback:?}"
+            );
+        }
+    }
+
+    /// The zh-CN pair must keep the same lead-prefix relation as the English one (see the
+    /// comment on `message`): the path-bearing toast built from the lead never rewords the
+    /// static copy. Uses a direct zh `LocaleContext` because the process-wide `ctx()` is a
+    /// `OnceLock` that cannot be switched inside a test.
+    #[test]
+    fn clipboard_feedback_lead_prefix_holds_under_zh_cn() {
+        let zh = xai_grok_locale::LocaleContext::new(xai_grok_locale::UiLocale::ZhCn);
+        // Variant -> (lead key, message key); the English literals are the `en-to-zh.json` keys.
+        let cases: [(ClipboardFeedback, &str, &str); 9] = [
+            (ClipboardFeedback::Copied, "Copied!", "Copied!"),
+            (
+                ClipboardFeedback::CopiedTmux,
+                "Copied to tmux buffer, paste with prefix + ]",
+                "Copied to tmux buffer, paste with prefix + ]",
+            ),
+            (
+                ClipboardFeedback::CopiedOscContainer,
+                "Copied via OSC 52 from the container",
+                "Copied via OSC 52 from the container.",
+            ),
+            (
+                ClipboardFeedback::CopiedOscRemote,
+                "Copied via OSC 52",
+                "Copied via OSC 52.",
+            ),
+            (
+                ClipboardFeedback::UnverifiedOscRemote,
+                "Copy sent",
+                "Copy sent. If paste fails, use grok wrap or /minimal.",
+            ),
+            (
+                ClipboardFeedback::UnverifiedOscContainer,
+                "Copy sent",
+                "Copy sent. If paste fails, use grok wrap or /minimal.",
+            ),
+            (
+                ClipboardFeedback::VsCodeSshNonAscii,
+                "Copied",
+                "Copied. VS Code over SSH may garble non-ASCII; use /minimal if needed.",
+            ),
+            (
+                ClipboardFeedback::FailedRemote,
+                "Copy failed",
+                "Copy failed. Try /doctor or /minimal.",
+            ),
+            (
+                ClipboardFeedback::Failed,
+                "Copy failed",
+                "Copy failed. Try /doctor or /minimal.",
+            ),
+        ];
+        for (feedback, lead, message) in cases {
+            let zh_lead = zh.tr_static(lead);
+            let zh_message = zh.tr_static(message);
+            assert!(
+                zh_message.starts_with(zh_lead),
+                "zh lead must prefix zh message for {feedback:?}: {zh_lead:?} vs {zh_message:?}"
             );
         }
     }

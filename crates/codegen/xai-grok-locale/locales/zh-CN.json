@@ -6,14 +6,6 @@
   "reconnect.restore_failed": "会话恢复失败，已保留现有对话记录。",
   "reconnect.restored": "会话已恢复；进行中的工具和终端已丢失。",
   "reconnect.wait": "正在重新连接，请稍候…",
-  "settings.category.advanced": "高级",
-  "settings.category.agent": "代理与审批",
-  "settings.category.appearance": "外观",
-  "settings.category.editor": "编辑器与输入",
-  "settings.category.models": "模型",
-  "settings.category.mouse": "鼠标",
-  "settings.category.privacy": "隐私",
-  "settings.category.session": "会话",
   "welcome.login_with": "使用 {provider} 登录",
   "welcome.product_name": "Grok Build"
 }

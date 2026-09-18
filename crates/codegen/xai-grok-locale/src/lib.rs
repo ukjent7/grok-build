@@ -172,11 +172,37 @@ impl LocaleContext {
     /// Shared `{placeholder}` substitution behind [`Self::format_named`] and
     /// [`Self::tr_format`], which differ only in which of the two key spaces their
     /// template came from.
+    ///
+    /// Single pass: each recognized `{name}` is substituted once and the scan
+    /// continues *after* the substituted value, so an argument value containing
+    /// `{placeholder}`-shaped text is never itself re-substituted. Unknown
+    /// `{names}` stay literal; missing arguments remain visible.
     fn expand(template: Cow<'_, str>, arguments: &[(&str, &str)]) -> String {
-        let mut output = template.into_owned();
-        for (name, value) in arguments {
-            output = output.replace(&format!("{{{name}}}"), value);
+        let mut output = String::with_capacity(template.len());
+        let mut rest = template.as_ref();
+        while let Some(open) = rest.find('{') {
+            let after_open = &rest[open + 1..];
+            let Some(close) = after_open.find('}') else {
+                // Unterminated `{`: nothing from here on can be a placeholder.
+                output.push_str(rest);
+                return output;
+            };
+            let name = &after_open[..close];
+            output.push_str(&rest[..=open]);
+            match arguments.iter().find(|(argument, _)| *argument == name) {
+                Some((_, value)) => {
+                    output.push_str(value);
+                    rest = &after_open[close + 1..];
+                }
+                // Unknown name (or a bare `{}`): keep the braces literal.
+                None => {
+                    output.push_str(name);
+                    output.push('}');
+                    rest = &after_open[close + 1..];
+                }
+            }
         }
+        output.push_str(rest);
         output
     }
 
@@ -419,6 +445,23 @@ mod tests {
     }
 
     #[test]
+    fn zh_cn_and_metadata_key_sets_are_disjoint() {
+        // `lookup` consults the metadata catalog first, so an id carried by both
+        // catalogs can only ever resolve to the metadata copy: the zh-CN.json
+        // entry is unreachable dead weight and silently rots. Fail loudly, naming
+        // the offenders.
+        let shared: Vec<&str> = ZH_CN
+            .keys()
+            .filter(|id| ZH_CN_METADATA.contains_key(*id))
+            .map(String::as_str)
+            .collect();
+        assert!(
+            shared.is_empty(),
+            "ids present in both zh-CN.json and zh-CN-metadata.json (metadata wins, the zh-CN.json copies are unreachable): {shared:?}"
+        );
+    }
+
+    #[test]
     fn structured_setting_lookup_localizes_display_text_without_touching_identity() {
         let context = LocaleContext::new(UiLocale::ZhCn);
         assert_eq!(
@@ -456,6 +499,21 @@ mod tests {
             }
             assert!(!value.trim().is_empty(), "blank metadata value for {id}");
         }
+    }
+
+    #[test]
+    fn expansion_does_not_rescan_substituted_values() {
+        // An argument value that itself contains `{placeholder}`-shaped text (a
+        // runtime error string, a label copied from elsewhere) must be inserted
+        // verbatim, not re-substituted by a later argument.
+        let context = LocaleContext::default();
+        assert_eq!(
+            context.tr_format(
+                "{label}: {value}",
+                &[("label", "x {value} y"), ("value", "on")]
+            ),
+            "x {value} y: on"
+        );
     }
 
     #[test]
