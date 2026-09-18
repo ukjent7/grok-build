@@ -68,7 +68,7 @@ impl SlashCommand for EffortCommand {
                 model_id,
                 effort: Some(effort),
             }),
-            Err(err) => CommandResult::Error(err.message()),
+            Err(err) => CommandResult::Error(err.message(crate::locale::ctx())),
         }
     }
 }

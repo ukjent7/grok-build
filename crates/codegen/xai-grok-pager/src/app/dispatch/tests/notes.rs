@@ -1064,7 +1064,7 @@ fn feedback_modal_open_refuses_visibly_on_dashboard() {
     assert!(effects.is_empty());
     let dashboard = app.dashboard.as_ref().unwrap();
     assert_eq!(dashboard.dispatch.text(), "");
-    let expected = format!("{} {no_session_notice()}", crate::glyphs::ballot_x());
+    let expected = format!("{} {}", crate::glyphs::ballot_x(), no_session_notice());
     assert_eq!(dashboard.error_toast.as_deref(), Some(expected.as_str()));
     assert!(agent_ref(&app, AgentId(0)).feedback_modal.is_none());
 }

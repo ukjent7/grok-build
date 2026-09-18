@@ -240,17 +240,25 @@ impl SentMessageToolCallBlock {
             theme.primary()
         }
         .add_modifier(Modifier::BOLD);
+        // The process-wide locale, as `header_text` uses it: `output` is only ever
+        // the screen. Export goes through `header_text_with(english())`, not here.
+        // (`ctx` in scope is the render context, not the locale.)
+        let locale = crate::locale::ctx();
         Line::from(vec![
-            Span::styled(header_label(), label_style),
-            Span::styled(self.verb_and_target(), theme.muted()),
+            Span::styled(header_label(locale), label_style),
+            Span::styled(self.verb_and_target(locale), theme.muted()),
         ])
     }
 
     /// Never muted. Suffixes name the requested delivery and, for a finished send that stalled, its admission time.
     fn expanded_header(&self, theme: &Theme) -> Line<'static> {
+        let locale = crate::locale::ctx();
         let mut spans = vec![
-            Span::styled(header_label(), theme.primary().add_modifier(Modifier::BOLD)),
-            Span::styled(self.verb_and_target(), theme.primary()),
+            Span::styled(
+                header_label(locale),
+                theme.primary().add_modifier(Modifier::BOLD),
+            ),
+            Span::styled(self.verb_and_target(locale), theme.primary()),
         ];
         if let Some(delivery) = self.input.as_ref().and_then(|input| input.delivery) {
             let delivery = <&str>::from(delivery);
