@@ -19,10 +19,16 @@
 //! Both paths take the upstream English literal as an explicit fallback, so a
 //! missing catalog entry renders English instead of blank. That fallback is why
 //! an id-keyed entry with no call site is invisible: nothing complains, and no
-//! test can, because the lookup never happens. The migration to `tr()` left
-//! 2882 such entries behind (85% of the two id-keyed catalogs), so
-//! `scripts/i18n/catalog-check.py` now gates reachability in CI, and
-//! `scripts/i18n/wrap-check.py` gates the wraps and the catalog coverage.
+//! test can, because the lookup never happens. The migration to `tr()` left it to
+//! a manual prune to clear 2882 such entries, so `scripts/i18n/catalog-check.py`
+//! now gates reachability in CI and `scripts/i18n/wrap-check.py` gates the wraps
+//! and the catalog coverage.
+//!
+//! Known hole in that gate, so nobody reads a green CI as proof: `catalog-check.py`
+//! also counts an id as reachable when a `format!`/`concat!` template proves its
+//! namespace is built at runtime, which clears a whole namespace on one anchor.
+//! 341 of the 489 metadata ids are reachable on that basis alone with no literal
+//! anchor of their own, so deleting almost any of them still leaves CI green.
 //!
 //! # Process-wide context
 //!
@@ -40,7 +46,6 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 #[cfg(test)]
 use std::collections::BTreeSet;
-use std::fmt;
 use std::sync::{LazyLock, OnceLock};
 
 const EN_US_SOURCE: &str = include_str!("../locales/en-US.json");
@@ -75,13 +80,6 @@ pub enum UiLocale {
 }
 
 impl UiLocale {
-    pub const fn as_bcp47(self) -> &'static str {
-        match self {
-            Self::EnUs => "en-US",
-            Self::ZhCn => "zh-CN",
-        }
-    }
-
     /// Canonicalize common BCP-47 and POSIX spellings.
     ///
     /// This deliberately does not reuse the voice/STT language catalog: that
@@ -103,107 +101,36 @@ impl UiLocale {
     }
 }
 
-impl fmt::Display for UiLocale {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.as_bcp47())
-    }
-}
-
-/// Source that selected the effective locale, in descending precedence.
-///
-/// Only [`LocaleSource::Config`] and [`LocaleSource::ProductDefault`] are reached
-/// today: the composition root (`xai-grok-pager`'s `init_locale_from_config`) feeds
-/// [`LocalePreferences::config`] from `[ui].locale` and leaves every other layer
-/// unset. The remaining variants keep the reference implementation's precedence
-/// contract intact for a future `--locale` / environment / system-detection layer;
-/// the resolver tests below pin that ordering.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum LocaleSource {
-    Requirement,
-    Cli,
-    Environment,
-    Config,
-    ManagedConfig,
-    System,
-    ProductDefault,
-}
-
-/// Inputs for deterministic locale resolution.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct LocalePreferences<'a> {
-    pub requirement: Option<&'a str>,
-    pub cli: Option<&'a str>,
-    pub environment: Option<&'a str>,
-    pub config: Option<&'a str>,
-    pub managed: Option<&'a str>,
-    pub system: Option<&'a str>,
-    pub product_default: Option<&'a str>,
-}
-
-/// Canonical locale plus the layer that selected it.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct ResolvedLocale {
-    pub locale: UiLocale,
-    pub source: LocaleSource,
-}
-
-impl ResolvedLocale {
-    pub fn resolve(preferences: LocalePreferences<'_>) -> Self {
-        let candidates = [
-            (LocaleSource::Requirement, preferences.requirement),
-            (LocaleSource::Cli, preferences.cli),
-            (LocaleSource::Environment, preferences.environment),
-            (LocaleSource::Config, preferences.config),
-            (LocaleSource::ManagedConfig, preferences.managed),
-            (LocaleSource::System, preferences.system),
-            (LocaleSource::ProductDefault, preferences.product_default),
-        ];
-        candidates
-            .into_iter()
-            .find_map(|(source, value)| {
-                value
-                    .filter(|value| !value.trim().is_empty())
-                    .and_then(UiLocale::parse)
-                    .map(|locale| Self { locale, source })
-            })
-            .unwrap_or(Self {
-                locale: UiLocale::EnUs,
-                source: LocaleSource::ProductDefault,
-            })
-    }
-}
-
 /// Immutable localization context resolved once at the composition root.
 #[derive(Clone, Debug)]
 pub struct LocaleContext {
-    resolved: ResolvedLocale,
+    locale: UiLocale,
 }
 
 impl Default for LocaleContext {
     fn default() -> Self {
-        Self::new(ResolvedLocale {
-            locale: UiLocale::EnUs,
-            source: LocaleSource::ProductDefault,
-        })
+        Self::ENGLISH
     }
 }
 
 impl LocaleContext {
-    pub const fn new(resolved: ResolvedLocale) -> Self {
-        Self { resolved }
-    }
+    /// The English context: what a process that never called [`init`] serves, and
+    /// what [`english`] hands to a surface that must not follow `[ui].locale`.
+    pub const ENGLISH: Self = Self {
+        locale: UiLocale::EnUs,
+    };
 
-    pub const fn resolved(&self) -> ResolvedLocale {
-        self.resolved
+    pub const fn new(locale: UiLocale) -> Self {
+        Self { locale }
     }
 
     pub const fn locale(&self) -> UiLocale {
-        self.resolved.locale
+        self.locale
     }
 
     /// True when UI copy should come from the Chinese catalogs.
     pub const fn is_zh_cn(&self) -> bool {
-        matches!(self.resolved.locale, UiLocale::ZhCn)
+        matches!(self.locale, UiLocale::ZhCn)
     }
 
     /// Catalog value for `id` in the active locale, if any.
@@ -212,12 +139,41 @@ impl LocaleContext {
     /// surface); both typed catalogs carry the same key set, pinned by
     /// `catalogs_have_matching_keys_and_placeholders`, so the zh-CN path needs no
     /// extra English lookup.
-    fn lookup(&self, id: &str) -> Option<&'static String> {
-        if self.is_zh_cn() {
+    fn lookup(&self, id: &str) -> Option<&'static str> {
+        let found: Option<&'static String> = if self.is_zh_cn() {
             ZH_CN_METADATA.get(id).or_else(|| ZH_CN.get(id))
         } else {
             EN_US.get(id)
+        };
+        found.map(String::as_str)
+    }
+
+    /// English-keyed catalog value, if any. Under en-US the literal *is* the
+    /// translation, so there is nothing to look up.
+    ///
+    /// This path deliberately never consults the id-keyed catalogs, and
+    /// [`Self::lookup`] never consults `EN_TO_ZH`: a `tr` site keys on English
+    /// copy, an id site keys on an invented id. Nothing enforces that the two key
+    /// spaces stay disjoint, so a metadata id that happened to equal some English
+    /// sentence would not be picked up by `tr` -- by design, since `tr` callers can
+    /// pass runtime strings that would then translate unpredictably.
+    fn en_text(&self, english: &str) -> Option<&'static str> {
+        if self.is_zh_cn() {
+            EN_TO_ZH.get(english).map(String::as_str)
+        } else {
+            None
         }
+    }
+
+    /// Shared `{placeholder}` substitution behind [`Self::format_named`] and
+    /// [`Self::tr_format`], which differ only in which of the two key spaces their
+    /// template came from.
+    fn expand(template: Cow<'_, str>, arguments: &[(&str, &str)]) -> String {
+        let mut output = template.into_owned();
+        for (name, value) in arguments {
+            output = output.replace(&format!("{{{name}}}"), value);
+        }
+        output
     }
 
     /// Localized display label for a stable setting key. The key itself remains
@@ -281,16 +237,14 @@ impl LocaleContext {
     /// Look up a catalog entry while retaining an explicit English fallback at the
     /// call site; falls back to `english` when the id is absent from every catalog.
     pub fn named_text<'a>(&self, id: &str, english: &'a str) -> Cow<'a, str> {
-        self.lookup(id)
-            .map(|value| Cow::Borrowed(value.as_str()))
-            .unwrap_or_else(|| Cow::Borrowed(english))
+        Cow::Borrowed(self.lookup(id).unwrap_or(english))
     }
 
     /// Static variant for UI metadata stored in structures that borrow their
     /// labels (for example modal shortcut rows). Both built-in catalogs and
     /// the English fallback live for the duration of the process.
     pub fn named_static_text(&self, id: &str, english: &'static str) -> &'static str {
-        self.lookup(id).map(String::as_str).unwrap_or(english)
+        self.lookup(id).unwrap_or(english)
     }
 
     /// Format a metadata-backed template using named placeholders such as
@@ -302,11 +256,7 @@ impl LocaleContext {
     /// formatting, so a bare `{}` in it stays literal — `scripts/i18n/wrap-check.py`
     /// rejects that in CI.
     pub fn format_named(&self, id: &str, english: &str, arguments: &[(&str, &str)]) -> String {
-        let mut output = self.named_text(id, english).into_owned();
-        for (name, value) in arguments {
-            output = output.replace(&format!("{{{name}}}"), value);
-        }
-        output
+        Self::expand(self.named_text(id, english), arguments)
     }
 
     /// English-keyed lookup for migrated call sites. No invented id: upstream
@@ -314,23 +264,12 @@ impl LocaleContext {
     /// Only sentence templates belong here; fragments and identifiers stay in
     /// English by design (see `en-to-zh.json`).
     pub fn tr<'a>(&self, english: &'a str) -> Cow<'a, str> {
-        if self.is_zh_cn() {
-            EN_TO_ZH
-                .get(english)
-                .map(|value| Cow::Borrowed(value.as_str()))
-                .unwrap_or_else(|| Cow::Borrowed(english))
-        } else {
-            Cow::Borrowed(english)
-        }
+        Cow::Borrowed(self.en_text(english).unwrap_or(english))
     }
 
     /// Static variant of [`Self::tr`] for labels stored in borrowed structures.
     pub fn tr_static(&self, english: &'static str) -> &'static str {
-        if self.is_zh_cn() {
-            EN_TO_ZH.get(english).map(String::as_str).unwrap_or(english)
-        } else {
-            english
-        }
+        self.en_text(english).unwrap_or(english)
     }
 
     /// English-keyed format with named `{placeholder}` substitution.
@@ -340,11 +279,7 @@ impl LocaleContext {
     /// the English has (e.g. the `{s}` plural suffix, absent in Chinese)
     /// is safe.
     pub fn tr_format(&self, english: &str, arguments: &[(&str, &str)]) -> String {
-        let mut output = self.tr(english).into_owned();
-        for (name, value) in arguments {
-            output = output.replace(&format!("{{{name}}}"), value);
-        }
-        output
+        Self::expand(self.tr(english), arguments)
     }
 }
 
@@ -357,10 +292,7 @@ fn setting_choice_catalog_key(setting_key: &str) -> &str {
 }
 
 static CONTEXT: OnceLock<LocaleContext> = OnceLock::new();
-static DEFAULT_CONTEXT: LocaleContext = LocaleContext::new(ResolvedLocale {
-    locale: UiLocale::EnUs,
-    source: LocaleSource::ProductDefault,
-});
+static DEFAULT_CONTEXT: LocaleContext = LocaleContext::ENGLISH;
 
 /// Publish the process-wide locale context. Only the first call wins; later
 /// calls are ignored so test harnesses cannot race the composition root.
@@ -427,81 +359,20 @@ mod tests {
     }
 
     #[test]
-    fn requirement_wins_and_invalid_values_fall_through() {
-        let resolved = ResolvedLocale::resolve(LocalePreferences {
-            requirement: Some("en-US"),
-            cli: Some("zh-CN"),
-            ..LocalePreferences::default()
-        });
-        assert_eq!(resolved.locale, UiLocale::EnUs);
-        assert_eq!(resolved.source, LocaleSource::Requirement);
-
-        let resolved = ResolvedLocale::resolve(LocalePreferences {
-            cli: Some("unsupported"),
-            environment: Some("zh_CN.UTF-8"),
-            ..LocalePreferences::default()
-        });
-        assert_eq!(resolved.locale, UiLocale::ZhCn);
-        assert_eq!(resolved.source, LocaleSource::Environment);
-    }
-
-    #[test]
-    fn every_locale_layer_obeys_declared_precedence() {
-        let candidates = [
-            (LocaleSource::Requirement, "requirement"),
-            (LocaleSource::Cli, "cli"),
-            (LocaleSource::Environment, "environment"),
-            (LocaleSource::Config, "config"),
-            (LocaleSource::ManagedConfig, "managed"),
-            (LocaleSource::System, "system"),
-            (LocaleSource::ProductDefault, "product"),
-        ];
-        for (selected_index, (expected_source, _)) in candidates.iter().enumerate() {
-            let values = candidates.map(|_| Some("unsupported"));
-            let mut values = values;
-            values[selected_index] = Some("zh-CN");
-            let resolved = ResolvedLocale::resolve(LocalePreferences {
-                requirement: values[0],
-                cli: values[1],
-                environment: values[2],
-                config: values[3],
-                managed: values[4],
-                system: values[5],
-                product_default: values[6],
-            });
-            assert_eq!(resolved.locale, UiLocale::ZhCn);
-            assert_eq!(resolved.source, *expected_source);
+    fn a_configured_value_resolves_or_falls_back_to_english() {
+        // What the composition root actually does with `[ui].locale`: a recognised
+        // value wins, and a blank or unsupported one leaves English in place rather
+        // than aborting startup. `UiLocale::parse` maps both to `None`.
+        let resolve = |raw: &str| LocaleContext::new(UiLocale::parse(raw).unwrap_or_default());
+        assert_eq!(resolve("zh-CN").locale(), UiLocale::ZhCn);
+        assert_eq!(resolve("zh_CN.UTF-8").locale(), UiLocale::ZhCn);
+        for rejected in ["", " ", "fr-FR", "unsupported"] {
+            assert_eq!(
+                resolve(rejected).locale(),
+                UiLocale::EnUs,
+                "{rejected:?} must not select a locale"
+            );
         }
-    }
-
-    #[test]
-    fn invalid_candidates_fall_back_to_product_default_then_english() {
-        let unsupported = LocalePreferences {
-            requirement: Some(""),
-            cli: Some("fr-FR"),
-            environment: Some("unsupported"),
-            config: Some(" "),
-            managed: Some("de-DE"),
-            system: Some("ja-JP"),
-            product_default: Some("zh-CN"),
-        };
-        assert_eq!(
-            ResolvedLocale::resolve(unsupported),
-            ResolvedLocale {
-                locale: UiLocale::ZhCn,
-                source: LocaleSource::ProductDefault,
-            }
-        );
-        assert_eq!(
-            ResolvedLocale::resolve(LocalePreferences {
-                product_default: None,
-                ..unsupported
-            }),
-            ResolvedLocale {
-                locale: UiLocale::EnUs,
-                source: LocaleSource::ProductDefault,
-            }
-        );
     }
 
     #[test]
@@ -542,10 +413,7 @@ mod tests {
 
     #[test]
     fn structured_setting_lookup_localizes_display_text_without_touching_identity() {
-        let context = LocaleContext::new(ResolvedLocale {
-            locale: UiLocale::ZhCn,
-            source: LocaleSource::Cli,
-        });
+        let context = LocaleContext::new(UiLocale::ZhCn);
         assert_eq!(
             context.setting_label("compact_mode", "Compact mode"),
             "紧凑模式"
@@ -585,10 +453,7 @@ mod tests {
 
     #[test]
     fn formatting_preserves_opaque_dynamic_values() {
-        let context = LocaleContext::new(ResolvedLocale {
-            locale: UiLocale::ZhCn,
-            source: LocaleSource::Cli,
-        });
+        let context = LocaleContext::new(UiLocale::ZhCn);
         assert_eq!(
             context.format_named(
                 "welcome.login_with",
@@ -601,10 +466,7 @@ mod tests {
 
     #[test]
     fn english_keyed_lookup_falls_back_without_an_id() {
-        let zh = LocaleContext::new(ResolvedLocale {
-            locale: UiLocale::ZhCn,
-            source: LocaleSource::Config,
-        });
+        let zh = LocaleContext::new(UiLocale::ZhCn);
         assert_eq!(zh.tr("(no matches)"), "（无匹配项）");
         assert_eq!(
             zh.tr_format("({count} matches)", &[("count", "3")]),
@@ -633,10 +495,7 @@ mod tests {
 
     #[test]
     fn chinese_composer_and_shortcut_labels_are_catalog_backed() {
-        let context = LocaleContext::new(ResolvedLocale {
-            locale: UiLocale::ZhCn,
-            source: LocaleSource::Cli,
-        });
+        let context = LocaleContext::new(UiLocale::ZhCn);
         assert_eq!(
             context.tr("Build anything"),
             "告诉我你想做些什么…"

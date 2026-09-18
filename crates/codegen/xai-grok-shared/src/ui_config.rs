@@ -171,9 +171,9 @@ pub struct UiConfig {
     pub status_line: StatusLineConfig,
     /// UI language for user-facing interface copy (`en-US` | `zh-CN`).
     /// Unset keeps the upstream English interface; that default lives in
-    /// `xai-grok-locale`'s resolver (the `en`/`zh` families are the only
-    /// supported ones), not here. Declared in this struct so `serde_ignored`
-    /// stays quiet about a key the pager reads itself.
+    /// `xai-grok-locale` (the `en`/`zh` families are the only supported ones) and is
+    /// applied by the pager's composition root, not here. Declared in this struct so
+    /// `serde_ignored` stays quiet about a key the pager reads itself.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
 }

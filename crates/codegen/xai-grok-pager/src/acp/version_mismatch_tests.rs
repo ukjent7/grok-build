@@ -3,13 +3,10 @@ use super::{
     VERSION_MISMATCH_MARKER, VERSION_MISMATCH_MARKER_ZH,
 };
 use crate::glyphs::sanitize_toast_message;
-use crate::locale::{LocaleContext, LocaleSource, ResolvedLocale, UiLocale};
+use crate::locale::{LocaleContext, UiLocale};
 
 fn zh_cn() -> LocaleContext {
-    LocaleContext::new(ResolvedLocale {
-        locale: UiLocale::ZhCn,
-        source: LocaleSource::ProductDefault,
-    })
+    LocaleContext::new(UiLocale::ZhCn)
 }
 
 fn expected_banner(client: &str, leader: &str) -> String {

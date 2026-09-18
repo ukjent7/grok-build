@@ -78,11 +78,11 @@ pub fn init_locale_from_config() {
             .map(str::trim)
             .filter(|value| !value.is_empty())
     });
-    let resolved = locale::ResolvedLocale::resolve(locale::LocalePreferences {
-        config: configured,
-        ..locale::LocalePreferences::default()
-    });
-    locale::init(locale::LocaleContext::new(resolved));
+    locale::init(locale::LocaleContext::new(
+        configured
+            .and_then(locale::UiLocale::parse)
+            .unwrap_or_default(),
+    ));
 }
 #[cfg(test)]
 pub mod test_util;

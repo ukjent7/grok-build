@@ -8114,11 +8114,8 @@ fn welcome_ctrl_e_ignored_when_zdr_blocked() {
 /// toast replace a still-true mismatch banner as soon as the interface was Chinese.
 #[test]
 fn reconnect_guard_holds_for_chinese_success_toasts() {
-    use crate::locale::{LocaleContext, LocaleSource, ResolvedLocale, UiLocale};
-    let zh = LocaleContext::new(ResolvedLocale {
-        locale: UiLocale::ZhCn,
-        source: LocaleSource::Config,
-    });
+    use crate::locale::{LocaleContext, UiLocale};
+    let zh = LocaleContext::new(UiLocale::ZhCn);
     let banner = zh.tr_format(
         crate::acp::VERSION_MISMATCH_BANNER_EN,
         &[("client_version", "0.1.157"), ("leader_version", "0.1.150")],
