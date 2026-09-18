@@ -149,33 +149,9 @@ def wrap_call(kind, id_, english):
     return 'crate::locale::ctx().%s("%s", "%s")' % (kind, id_, text)
 
 
-def _join_same_length(src):
-    """`src` with line continuations blanked, offsets preserved.
-
-    `wrap-check.py` joins them before matching consts; the join must not move
-    offsets here because the spans are used against the original text.
-    """
-    return wc.CONTINUED_STRING.sub(lambda m: " " * len(m.group(0)), src)
-
-
 def taken_offsets(src):
-    """Offsets holding a literal that must never be re-wrapped.
-
-    Three groups: anything already inside a wrap call (else `--apply` would
-    nest a wrap inside a wrap), comment/char/raw-literal tokens (a raw string
-    does not honour escapes, so re-escaping it would corrupt it), and const
-    initializers (wrapping one would translate every use of the const, not just
-    a UI call site).
-    """
-    taken = wc.wrapped_offsets(src)
-    for kind, start, end, _ in wc.lex_spans(src):
-        if kind != "str":
-            for k in range(start, end):
-                taken[k] = 1
-    for m in wc.CONST_DEF.finditer(_join_same_length(src)):
-        for k in range(*m.span(2)):
-            taken[k] = 1
-    return taken
+    """The one definition, in `wrap-check.py`, shared with its `diff` report."""
+    return wc.taken_offsets(src)
 
 
 def literal_groups(src):

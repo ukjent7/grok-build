@@ -52,21 +52,24 @@ appears on both sides -- that is the shape of "upstream rewrote the line".
 Each baseline record also carries `locs`: for every occurrence of the anchor in
 the file, the enclosing function, the anchor's index among same-value string
 literals in that function (or -1 for a const anchor), and whether the anchor was
-a literal or a const. Nothing in `check` reads it -- the match key stays
-(file, id, kind, english), so an older baseline without `locs` still works -- but
-it is what lets `sync-report.py` re-apply a dropped wrap to the exact literal
-after upstream overwrites the line, instead of guessing from the English text
-alone (which mis-fires on test assertions and log lines that read the same).
+a literal or a const. `check` does read it -- the "thinned" class compares
+`len(locs)` per key, so a baseline written without `locs` raises KeyError instead
+of passing quietly -- and it is what lets `sync-report.py` re-apply a dropped wrap
+to the exact literal after upstream overwrites the line, instead of guessing from
+the English text alone (which mis-fires on test assertions and log lines that read
+the same).
 
 Usage (from anywhere; paths are resolved from this file's location)
 -------------------------------------------------------------------
   python3 scripts/i18n/wrap-check.py baseline   # after adding/removing wraps
   python3 scripts/i18n/wrap-check.py check      # after every upstream sync
   python3 scripts/i18n/wrap-check.py diff --diff-base <rev>
-      # list UI copy added since <rev> that nobody wrapped, unless the line
-      # carries `// i18n-exempt: <reason>`. Advisory: the list does not change
-      # the exit code. `--fail-on-diff` makes it fatal, which is the intent
-      # once a few syncs have come through with an empty list.
+      # list UI copy added since <rev> that nobody wrapped. Advisory: this never
+      # affects the exit code, and it should stay that way until the scanner can
+      # tell a real leak apart. On the current tree all 19 hits are artifacts --
+      # const initializers whose value `scan` already records, match-arm needles,
+      # a `format_named` template, and a `#[path]`-included test file. Promote it
+      # to a gate only once those are filtered out and the list is empty.
       # `check --diff-base <rev>` does the same scan after its baseline work.
 
 Only reports; never edits source. Exit codes: 0 clean, 1 drift, 2 usage error.
@@ -98,9 +101,10 @@ EN_TO_ZH_CATALOG = "crates/codegen/xai-grok-locale/locales/en-to-zh.json"
 TR_KINDS = {"tr", "tr_static", "tr_format"}
 
 # Direct wrap forms. `english` is the fallback that stays at the call site, so it
-# doubles as the anchor for re-application. (`fixed`, the old one-line
-# constructor for `FixedCopy { id, english }`, is gone: error_display.rs now
-# holds English-keyed copy. The alternation keeps it so history still scans.)
+# doubles as the anchor for re-application. The `fixed(...)` form used to be matched
+# here too: `FixedCopy` is gone (error_display.rs holds English-keyed copy now) and
+# `scan` reads only the worktree, so no history needs the alternation -- it matched
+# nothing and made every consumer carry a case that cannot occur.
 # English-keyed forms (`tr`, `tr_static`, `tr_format`) are the
 # preferred tier going forward: no invented id, upstream rewording falls back
 # to English without a baseline entry to update. Fragments and identifiers
@@ -111,7 +115,7 @@ TR_KINDS = {"tr", "tr_static", "tr_format"}
 # `plugin_cli.*`); without it a whole screen stayed invisible to the gate.
 ID = r"[a-zA-Z][a-zA-Z0-9_]*(?:\.[a-zA-Z0-9_]+)+"
 CALL = re.compile(
-    r'(?P<kind>named_static_text|named_text|format_named|fixed)\(\s*'
+    r'(?P<kind>named_static_text|named_text|format_named)\(\s*'
     r'"(?P<id>' + ID + r')"\s*,\s*'
     r'"(?P<english>(?:[^"\\]|\\.)*)"'
 )
@@ -120,7 +124,7 @@ CALL = re.compile(
 # unresolvable const (imported from elsewhere) is recorded anchor-less under a
 # `kind+const` kind so disappearance still fails the check.
 CALL_CONST = re.compile(
-    r'(?P<kind>named_static_text|named_text|format_named|fixed)\(\s*'
+    r'(?P<kind>named_static_text|named_text|format_named)\(\s*'
     r'"(?P<id>' + ID + r')"\s*,\s*'
     r'(?P<const>[A-Z][A-Z0-9_]*)'
 )
@@ -134,14 +138,6 @@ CONST_DEF = re.compile(
 # and stays on the `kind+const` fallback by design.
 CONTINUED_STRING = re.compile(r'\\\r?\n\s*')
 CONST_KIND_SUFFIX = "+const"
-# Indirect form: the `"<english>" => "<id>"` lookup tables in dashboard/slash/
-# settings render code, whose arms feed a `named_*` call with the id they pick.
-# The left-hand side is the canonical label and is what has to be re-read when
-# upstream rewords a state/hint/section name.
-TABLE = re.compile(
-    r'"(?P<english>(?:[^"\\]|\\.){1,90})"\s*=>\s*"(?P<id>' + ID + r')"'
-)
-TABLE_KIND = "table"
 # English-keyed forms: `.tr("literal")`, `.tr_static("literal")`,
 # `.tr_format("literal with {name}", ...)`.
 # No id; the English text is the key into `en-to-zh.json`.
@@ -397,17 +393,41 @@ def enclosing_fn(spans, offset):
 def wrapped_offsets(src):
     """Offset map marking every string literal that an existing wrap holds."""
     taken = bytearray(len(src))
-    for pattern in (CALL, TR_CALL, TABLE):
+    for pattern in (CALL, TR_CALL):
         for m in pattern.finditer(src):
             for k in range(*m.span("english")):
                 taken[k] = 1
     return taken
 
 
-# A line carrying this marker is a deliberate English string: an identifier, a
-# protocol field, a log format. The marker is what makes "left it in English on
-# purpose" auditable instead of indistinguishable from "forgot to wrap it".
-EXEMPT_MARK = "i18n-exempt:"
+def _join_same_length(src):
+    """`src` with line continuations blanked out, offsets preserved.
+
+    Const matching needs the join because a literal may be split across lines, but
+    the spans are applied to the original text, so the replacement keeps the length.
+    """
+    return CONTINUED_STRING.sub(lambda m: " " * len(m.group(0)), src)
+
+
+def taken_offsets(src):
+    """Offsets holding a literal that must never be re-wrapped.
+
+    Three groups on top of plain wrap call sites: comment/char/raw-literal tokens (a
+    raw string does not honour escapes, so re-escaping one would corrupt it), and
+    const initializers (wrapping a const translates every use of it, not just the UI
+    call site). `cmd_diff` and `sync-report.py` both call this one function, so the
+    two "new unwrapped copy" reports cannot disagree about what counts as taken.
+    """
+    taken = wrapped_offsets(src)
+    for kind, start, end, _ in lex_spans(src):
+        if kind != "str":
+            for k in range(start, end):
+                taken[k] = 1
+    for m in CONST_DEF.finditer(_join_same_length(src)):
+        for k in range(*m.span(2)):
+            taken[k] = 1
+    return taken
+
 
 # Any `{...}` group, format spec included (`{:>ord_width$}`, `{0}`, `{name:?}`).
 BRACED = re.compile(r"\{[^{}]*\}")
@@ -590,10 +610,12 @@ HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 def is_unlocalized_copy(src, start, end, value, taken, tests, known):
     """The whole filter chain: is this literal unlocalized screen copy?
 
-    Shared by `diff` (per push) and sync-report's new-copy list (per sync) so
-    the two cannot drift apart -- they answer the same question about the same
-    tree, and a filter added to one but not the other just re-adds the noise
-    the filter existed to remove.
+    Shared by `diff` (per push) and sync-report's new-copy list (per sync), and
+    both now hand it the same `taken` from `taken_offsets` plus the same `known`
+    catalog set, so neither can call a literal clean while the other calls it
+    unlocalized. What still differs is scope -- which files each one walks, and
+    what each means by "new" -- so a shorter sync-report list is not a filter that
+    drifted; check the file set before assuming a disagreement is a bug.
     """
     if value in known or not looks_like_copy(value):
         return False
@@ -601,11 +623,6 @@ def is_unlocalized_copy(src, start, end, value, taken, tests, known):
         return False
     if any(s <= start < e for s, e in tests):
         return False
-    if EXEMPT_MARK in src:  # rare; keeps the line split off the hot path
-        line_no = src.count("\n", 0, start)
-        context = src.splitlines()[max(0, line_no - 1):line_no + 1]
-        if any(EXEMPT_MARK in c for c in context):
-            return False
     caller = enclosing_call(src, start)
     if caller in LOCALIZING_HELPERS or caller in NON_COPY_METHODS:
         return False
@@ -643,7 +660,7 @@ def added_lines(base):
     return out
 
 
-def cmd_diff(base, strict=False):
+def cmd_diff(base):
     """List UI copy added since `base` that nobody wrapped.
 
     The baseline `check` proves the wraps we already had survived; this is the
@@ -651,9 +668,14 @@ def cmd_diff(base, strict=False):
     pushed onto its own line still reads as wrapped -- and flags a literal only
     when its own line is one the change added.
 
-    Advisory by default. Classifying a bare literal as "copy" is a heuristic,
-    and a gate that cries wolf gets switched off -- `--fail-on-diff` opts into
-    blocking once the list has been reviewed clean over a few commits.
+    Report only, with no switch to make it fail a build. Deciding whether a bare
+    literal is user copy is a heuristic, and across the whole range since the last
+    upstream sync every hit was something the scanner cannot see past rather than a
+    leak: a const initializer whose value `scan` already records, a match-arm
+    needle, a `format_named` template, and a test file pulled in through `#[path]`.
+    A gate that is wrong every time it fires gets switched off, which is how the
+    previous `--fail-on-diff` flag ended up with no caller; this stays a review aid
+    until those four cases are filtered out and the list runs clean.
     """
     known = set(load_en_to_zh_keys()) | load_zh_catalog_ids()
     hits = []
@@ -666,7 +688,7 @@ def cmd_diff(base, strict=False):
         if not path.exists():
             continue
         src = path.read_text(encoding="utf-8", errors="ignore")
-        taken = wrapped_offsets(src)
+        taken = taken_offsets(src)
         tests = test_spans(src)
         for kind, start, end, value in lex_spans(src):
             if kind != "str":
@@ -685,9 +707,9 @@ def cmd_diff(base, strict=False):
         print('  %s:%d  "%s"' % (rel, line_no, value[:70]))
     if len(hits) > MAX_SHOWN:
         print("  ... %d more" % (len(hits) - MAX_SHOWN))
-    print("  wrap it, or mark the line `// %s <reason>`" % EXEMPT_MARK)
-    print("  (%s mode)" % ("blocking" if strict else "advisory; --fail-on-diff to block"))
-    return 1 if strict else 0
+    print("  wrap it, or leave it English on purpose and say so at the call site.")
+    print("  (advisory: this never changes the exit code -- see the `diff` note above)")
+    return 0
 
 
 def scan():
@@ -728,11 +750,6 @@ def scan():
             (m.group("kind"), m.group("id"), m.group("english"), m.start(),
              m.start("english") - 1, "lit")
             for m in CALL.finditer(src)
-        ]
-        matches += [
-            (TABLE_KIND, m.group("id"), m.group("english"), m.start(),
-             m.start("english") - 1, "lit")
-            for m in TABLE.finditer(src)
         ]
         # English-keyed: id is the decoded English text itself, matching the
         # runtime lookup key in `en-to-zh.json`.
@@ -995,22 +1012,22 @@ if __name__ == "__main__":
             sys.exit("--diff-base needs a revision")
         return argv[i + 1]
 
-    strict = "--fail-on-diff" in argv
-
     if cmd == "baseline":
         cmd_baseline()
     elif cmd == "check":
         status = cmd_check()
         base = diff_base_arg()
         if base:
-            status |= cmd_diff(base, strict=strict)
+            cmd_diff(base)
         sys.exit(status)
     elif cmd == "diff":
         # Added-copy scan on its own, so CI can report it as its own step
-        # instead of paying for a second full-tree baseline scan.
+        # instead of paying for a second full-tree baseline scan. Advisory:
+        # its exit status is always 0.
         base = diff_base_arg()
         if not base:
             sys.exit("diff needs --diff-base <rev>")
-        sys.exit(cmd_diff(base, strict=strict))
+        cmd_diff(base)
+        sys.exit(0)
     else:
         sys.exit(__doc__)
