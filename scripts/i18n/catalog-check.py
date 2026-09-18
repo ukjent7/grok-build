@@ -12,9 +12,12 @@ can, because the ids never appear in a failing lookup.
 They accumulated during the migration to English-keyed `tr()` (commit
 `9b77299b` onward): a surface that used to be id-keyed got re-wrapped as
 `tr("literal")`, and the metadata block it left behind was never pruned. The
-result was 2731 unreachable entries out of 3320 (82%), ~215 KB of dead weight
-that also diluted `wrap-check.py`'s orphan check, since that check is
-"`wrap id` not in catalog" and the catalog had grown to cover almost anything.
+result was 2882 unreachable entries out of the 3388 both id-keyed catalogs
+held (85%), 198 KB of dead weight that also diluted `wrap-check.py`'s orphan
+check, since that check is "`wrap id` not in catalog" and the catalog had grown
+to cover almost anything. Those are the counts `d5ec9899` pruned
+(`zh-CN-metadata.json` 3320 -> 489, `zh-CN.json` 68 -> 17); re-measure them with
+`git show d5ec9899 --stat` rather than trusting this paragraph.
 
 What it checks
 --------------
@@ -28,13 +31,23 @@ An id is considered reachable when any of these holds:
      that reliably catches CamelCase ids such as
      `shortcuts.action.Collapse.label`.
   C. It starts with a prefix that a `format!`/`concat!` template proves is
-     built at runtime (e.g. `settings.setting.{setting_key}.label` covers every
-     `settings.setting.*` id). Prefixes are derived from the tree rather than
+     built at runtime (e.g. `slash.command.{name}.description` covers every
+     `slash.command.*` id). Prefixes are derived from the tree rather than
      hardcoded, and kept only when the catalog actually holds a key under them.
      WEAKNESS, stated so nobody over-trusts a green run: C clears a whole
-     namespace on a single anchor. 341 of the 489 metadata ids are reachable on
-     C alone with no literal of their own, so deleting almost any of them still
-     passes. Tightening C to per-id enumeration is the outstanding work here.
+     namespace on a single anchor, so deleting almost any id it covers still
+     passes. For the two namespaces that hold most of that weight it is
+     replaced by C-prime.
+  C'. `settings.setting.*` and `tutorial.topic.*` -- 213 of the catalog ids,
+     and the two namespaces C used to clear wholesale -- are checked against an
+     enumeration instead: the setting keys registered in `settings/defs.rs`,
+     and the topic count in `tutorial_docs.rs`. A renamed setting key or a
+     deleted topic now reports its catalog ids as unreachable.
+     Still open inside these namespaces: the `<canonical>` segment of
+     `settings.setting.<key>.choice.<canonical>.label`. Enum choice literals
+     could be listed, but `SettingKind::DynamicEnum` choices (models, voices)
+     are built from runtime catalogs at picker-open time, so any enumeration of
+     them would red a correct change. The key and leaf segments are checked.
 
 Anything else is unreachable and fails the gate.
 
@@ -55,6 +68,11 @@ Adding a genuinely dynamic prefix: it is picked up automatically from the
 template, as long as the template is a string literal in a `format!`/`concat!`
 call. A prefix assembled entirely from constants needs a manual entry in
 EXTRA_PREFIXES.
+
+Adding a setting or a tutorial topic needs nothing here: the enumeration reads
+`settings/defs.rs` and `tutorial_docs.rs`. Adding a `settings.setting.*` id whose
+key is not registered -- or a topic id past the last topic -- does fail, and the
+fix is the code, not the gate.
 """
 
 import argparse
@@ -90,6 +108,62 @@ EN_TO_ZH = "crates/codegen/xai-grok-locale/locales/en-to-zh.json"
 
 # Prefixes whose templates are not string literals (assembled from consts).
 EXTRA_PREFIXES: list[str] = []
+
+# Namespaces rule C would clear on one anchor, narrowed to an enumeration.
+ENUMERATED_NAMESPACES = ("settings.setting.", "tutorial.topic.")
+SETTINGS_DEFS = "crates/codegen/xai-grok-pager/src/settings/defs.rs"
+TUTORIAL_DOCS = "crates/codegen/xai-grok-pager/src/tutorial_docs.rs"
+# A registry entry's stable key, spelled either inline or as a `&str` const
+# defined in the same file (`key: MAX_THOUGHTS_WIDTH_KEY`).
+SETTING_KEY = re.compile(r'key:\s*(?:"([^"]+)"|([A-Za-z_][A-Za-z0-9_]*))')
+CONST_STR = re.compile(r'const\s+([A-Za-z_][A-Za-z0-9_]*)\s*:\s*&str\s*=\s*"([^"]+)"')
+# One `topic!(..)` call in the `TUTORIAL_TOPICS` list.
+TOPIC = re.compile(r'^\s*topic!\(', re.M)
+
+
+def read(rel: str, what: str) -> str:
+    path = REPO / rel
+    if not path.exists():
+        # Same reason `wrap_ids` exits rather than returning an empty set: an
+        # enumeration that silently found nothing checks nothing, and the gate
+        # would read as a pass. A moved file is a rename, not a bug to ignore.
+        sys.exit(f"missing {what}: {rel}")
+    return path.read_text(encoding="utf-8")
+
+
+def enumerated_prefixes() -> list[str]:
+    """Longest-prefix anchors that replace rule C for ENUMERATED_NAMESPACES.
+
+    `settings.setting.<key>.` expands to three shapes -- `.label`,
+    `.description`, `.choice.` -- so a misspelt leaf (`...lable`) is caught too.
+    The remap in `setting_choice_catalog_key` needs no mirror here: every target
+    it names (`theme`, `default_model`) is itself a registered key. A future
+    remap to a non-registry key would report that key's choice ids unreachable,
+    which is loud and points straight at the enumeration.
+    """
+    defs = read(SETTINGS_DEFS, "settings registry")
+    consts = dict(CONST_STR.findall(defs))
+    keys = {inline or consts.get(symbol, symbol)
+            for inline, symbol in SETTING_KEY.findall(defs)}
+    if not keys:
+        sys.exit(f"no setting keys found in {SETTINGS_DEFS}")
+
+    out = set()
+    for key in keys:
+        out.add(f"{ENUMERATED_NAMESPACES[0]}{key}.label")
+        out.add(f"{ENUMERATED_NAMESPACES[0]}{key}.description")
+        out.add(f"{ENUMERATED_NAMESPACES[0]}{key}.choice.")
+
+    # `tutorial.rs` spells the ids `index + 1` (the open topic) and `index + 2`
+    # (the next-topic hint, only reached when `TUTORIAL_TOPICS.get(index + 1)`
+    # is Some), so 1..=topic count is the whole reachable range.
+    topics = len(TOPIC.findall(read(TUTORIAL_DOCS, "tutorial topics")))
+    if not topics:
+        sys.exit(f"no topic!() entries found in {TUTORIAL_DOCS}")
+    out.update(f"{ENUMERATED_NAMESPACES[1]}{i}.title" for i in range(1, topics + 1))
+    out.update(f"{ENUMERATED_NAMESPACES[1]}{i}.blurb" for i in range(1, topics + 1))
+    return sorted(out)
+
 
 # An id-shaped literal: dot-separated segments, mixed case, digits, dashes
 # (`settings.setting.default_model.choice.grok-4.5.label`).
@@ -181,6 +255,10 @@ def dynamic_prefixes(blob: str, catalog: dict[str, str]) -> list[str]:
     silently mark whole blocks reachable. Catalog id prefixes are always at
     least two segments (`settings.setting.`, `slash.command.`), so require that,
     plus a trailing dot and nothing path- or sentence-shaped.
+
+    A template that only proves an ENUMERATED_NAMESPACES ancestor is dropped:
+    those namespaces are checked per-id instead, and keeping the blanket anchor
+    here would make the enumeration dead code.
     """
     found = set(EXTRA_PREFIXES)
     for template in TEMPLATE.findall(blob):
@@ -192,6 +270,8 @@ def dynamic_prefixes(blob: str, catalog: dict[str, str]) -> list[str]:
         if prefix.count(".") < 2:
             continue
         if any(ch in prefix for ch in " /=\n\t"):
+            continue
+        if any(ns.startswith(prefix) for ns in ENUMERATED_NAMESPACES):
             continue
         if any(key.startswith(prefix) for key in catalog):
             found.add(prefix)
@@ -209,12 +289,14 @@ def main() -> int:
     literal = set(LITERAL_ID.findall(blob))
     wrapped = wrap_ids()
     prefixes = dynamic_prefixes(blob, catalog)
+    enumerated = enumerated_prefixes()
 
     unreachable = sorted(
         key for key in catalog
         if not (
             key in literal
             or key in wrapped
+            or any(key.startswith(p) for p in enumerated)
             or any(key.startswith(p) for p in prefixes)
         )
     )
@@ -222,7 +304,8 @@ def main() -> int:
     orphans = english_orphans(blob)
 
     print(f"catalog {len(catalog)} ids | literal {len(literal)}"
-          f" | wrapped {len(wrapped)} | dynamic prefixes {len(prefixes)}"
+          f" | wrapped {len(wrapped)} | enumerated {len(enumerated)}"
+          f" | dynamic prefixes {len(prefixes)}"
           f" | en-to-zh orphans {len(orphans)}")
     if not unreachable and not orphans:
         print("OK: every catalog id is reachable")
@@ -232,6 +315,8 @@ def main() -> int:
         print(f"\n=== {len(unreachable)} catalog ids no code path can reach ===")
         print("These never resolve: the English fallback at the call site renders")
         print("instead. Either wire the id up or drop the entry.")
+        print("Under settings.setting./tutorial.topic. the id is checked against the")
+        print("registry and the topic list, so a rename there also lands here.")
         for key in unreachable[:40]:
             print(f"  {key}")
         if len(unreachable) > 40:

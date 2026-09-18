@@ -11,10 +11,11 @@
 //! * **id-keyed** — [`LocaleContext::named_text`], [`LocaleContext::named_static_text`]
 //!   and [`LocaleContext::format_named`] resolve a stable id against
 //!   `zh-CN-metadata.json` first and then `zh-CN.json` (a small typed catalog
-//!   whose ids mirror `en-US.json`). Only ~100 call sites still take this path:
-//!   labels whose id is built from a runtime key (settings, slash commands,
-//!   tutorial topics, skill catalog entries) plus a handful of literal ids.
-//!   Everything else moved to the English-keyed path during the `tr()` migration.
+//!   whose ids mirror `en-US.json`). Only about 140 call sites still take this
+//!   path: labels whose id is built from a runtime key (settings, slash
+//!   commands, tutorial topics, skill catalog entries) plus a handful of
+//!   literal ids. Everything else moved to the English-keyed path during the
+//!   `tr()` migration.
 //!
 //! Both paths take the upstream English literal as an explicit fallback, so a
 //! missing catalog entry renders English instead of blank. That fallback is why
@@ -24,11 +25,14 @@
 //! now gates reachability in CI and `scripts/i18n/wrap-check.py` gates the wraps
 //! and the catalog coverage.
 //!
-//! Known hole in that gate, so nobody reads a green CI as proof: `catalog-check.py`
-//! also counts an id as reachable when a `format!`/`concat!` template proves its
-//! namespace is built at runtime, which clears a whole namespace on one anchor.
-//! 341 of the 489 metadata ids are reachable on that basis alone with no literal
-//! anchor of their own, so deleting almost any of them still leaves CI green.
+//! How far to trust that gate: `catalog-check.py` also counts an id as reachable
+//! when a `format!`/`concat!` template proves its namespace is built at runtime,
+//! which clears a whole namespace on one anchor. It used to account for 341 of
+//! the catalog's ids. The two namespaces that made up all but 128 of those —
+//! `settings.setting.*` and `tutorial.topic.*` — are now checked per id against
+//! the settings registry and the tutorial topic list, and the ids that still
+//! ride a blanket anchor (`slash.command.*`, `extensions.catalog.skill.*`) are
+//! enumerated in `catalog-check.py`'s header.
 //!
 //! # Process-wide context
 //!
