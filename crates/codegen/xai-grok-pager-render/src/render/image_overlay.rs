@@ -15,6 +15,7 @@ use ratatui::layout::Rect;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Paragraph, Widget, Wrap};
+use unicode_width::UnicodeWidthStr;
 
 use crate::prompt_images::PastedImage;
 use crate::terminal::image as terminal_image;
@@ -150,7 +151,10 @@ fn render_image_overlay_inner(
 
     let title_text = format!(" {} #{} ", labels.image, image.display_number);
     let meta = build_meta_line(image, plan.display_path);
-    let full_title = if meta.len() + title_text.len() + 6 < overlay_rect.width as usize {
+    // Display columns, not bytes: every label here is localized, and `图片` costs 6
+    // bytes for 4 columns. `+ 6` is the `─` joiner and its spaces, not a label width.
+    let full_title =
+        if meta.width() + title_text.width() + 6 < overlay_rect.width as usize {
         format!("{}\u{2500} {} ", title_text, meta)
     } else {
         title_text.clone()
@@ -159,7 +163,7 @@ fn render_image_overlay_inner(
         .fg(text_fg)
         .bg(bg)
         .add_modifier(ratatui::style::Modifier::BOLD);
-    let title_width = full_title.len() as u16;
+    let title_width = full_title.width() as u16;
     let title_x = overlay_rect.x + (overlay_rect.width.saturating_sub(title_width)) / 2;
     buf.set_span(
         title_x,
@@ -251,7 +255,7 @@ fn render_image_overlay_inner(
     if image_inner.width > 0 && image_inner.height > 0 {
         use crate::render::SafeBuf;
         let loading = labels.loading;
-        let lw = loading.len() as u16;
+        let lw = loading.width() as u16;
         let lx = image_inner.x + image_inner.width.saturating_sub(lw) / 2;
         let ly = image_inner.y + image_inner.height / 2;
         buf.set_span_safe(

@@ -3,6 +3,7 @@ use std::path::Path;
 use ratatui::buffer::Buffer;
 use ratatui::style::{Color, Style};
 use ratatui::text::Span;
+use unicode_width::UnicodeWidthStr;
 
 use crate::prompt_images::PastedImage;
 use crate::render::SafeBuf;
@@ -19,10 +20,14 @@ pub(super) fn paint_path_line(
     bg: Color,
 ) {
     let raw = path.display().to_string();
+    // The reserve is the label plus its separating space, derived rather than
+    // hardcoded: `"Path:"` is 5 columns so the old literal 6 was right in English,
+    // but the Chinese label is 7 and the joined line then overflowed `width` and
+    // got a grapheme clipped off the path.
     let label = format!(
         "{} {}",
         path_label,
-        truncate_path_for_overlay(&raw, width.saturating_sub(6) as usize)
+        truncate_path_for_overlay(&raw, width.saturating_sub(path_label.width() + 1) as usize)
     );
     let clipped = crate::render::line_utils::truncate_str(&label, width as usize);
     buf.set_span_safe(
