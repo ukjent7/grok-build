@@ -110,6 +110,14 @@ jobs:
         with:
           toolchain: 1.98.1
 
+      # Formatting gates before compilation: it is the only check here that costs
+      # nothing, and an unformatted tree hides the real diff for the rest of the run.
+      # Deliberately pinned-free -- `cargo fmt` resolves whatever this job actually
+      # runs (rust-toolchain.toml says 1.94.0, the step above installs 1.98.1), and
+      # both were verified to agree on this tree, so the gate cannot flap between them.
+      - name: Check formatting
+        run: cargo fmt --all --check
+
       # Full target-dir cache (debug only). sccache was removed here on
       # purpose: CI(debug) and Build(release x N OSes) use disjoint hash
       # spaces but share one 10 GB pool, so concurrent writers evicted each
