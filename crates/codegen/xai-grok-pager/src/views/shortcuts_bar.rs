@@ -158,98 +158,21 @@ pub struct CompactConfig {
 /// unknown input (including already-translated text) passes through.
 fn localized_hint_label(label: &str) -> Cow<'_, str> {
     let ctx = crate::locale::ctx();
-    let translated: &'static str = match label {
-        "accept" => ctx.tr_static("accept"),
-        "accept / toggle" => ctx.tr_static("accept / toggle"),
-        "accept suggestion" => {
-            ctx.tr_static("accept suggestion")
-        }
-        "always-approve" => ctx.named_static_text("shortcut.always_approve", "always-approve"),
-        "answer" => ctx.tr_static("answer"),
-        "apply" => ctx.tr_static("apply"),
-        "approve" => ctx.tr_static("approve"),
-        "back" => ctx.tr_static("back"),
-        "cancel" => ctx.tr_static("cancel"),
-        "clear" => ctx.tr_static("clear"),
-        "clear search" => ctx.tr_static("clear search"),
-        "close" => ctx.tr_static("close"),
-        "collapse" => ctx.tr_static("collapse"),
-        "collapse thinking" => {
-            ctx.tr_static("collapse thinking")
-        }
-        "comment" => ctx.tr_static("comment"),
-        "confirm" => ctx.tr_static("confirm"),
-        "copy" => ctx.tr_static("copy"),
-        "copy cmd" => ctx.tr_static("copy cmd"),
-        "copy output" => ctx.tr_static("copy output"),
-        "copy path" => ctx.tr_static("copy path"),
-        "copy pattern" => ctx.tr_static("copy pattern"),
-        "copy plan" => ctx.tr_static("copy plan"),
-        "copy query" => ctx.tr_static("copy query"),
-        "copy url" => ctx.tr_static("copy url"),
-        "create" => ctx.tr_static("create"),
-        "dashboard" => ctx.tr_static("dashboard"),
-        "decline" => ctx.tr_static("decline"),
-        "delete" => ctx.tr_static("delete"),
-        "delete row" => ctx.tr_static("delete row"),
-        "dismiss" => ctx.tr_static("dismiss"),
-        "drill" => ctx.tr_static("drill"),
-        "edit" => ctx.tr_static("edit"),
-        "edit pattern" => ctx.tr_static("edit pattern"),
-        "expand" => ctx.tr_static("expand"),
-        "expand thinking" => ctx.tr_static("expand thinking"),
-        "filename" => ctx.tr_static("filename"),
-        "filter" => ctx.tr_static("filter"),
-        "fire" => ctx.tr_static("fire"),
-        "fullscreen" => ctx.tr_static("fullscreen"),
-        "fwd" => ctx.tr_static("fwd"),
-        "go" => ctx.tr_static("go"),
-        "goto" => ctx.tr_static("goto"),
-        "input" => ctx.tr_static("input"),
-        "keep filter" => ctx.tr_static("keep filter"),
-        "kill" => ctx.tr_static("kill"),
-        "lines" => ctx.tr_static("lines"),
-        "list" => ctx.tr_static("list"),
-        "mode" => ctx.named_static_text("shortcut.mode", "mode"),
-        "nav" => ctx.tr_static("nav"),
-        "navigate" => ctx.tr_static("navigate"),
-        "New Agent" => ctx.tr_static("New Agent"),
-        "newline" => ctx.tr_static("newline"),
-        "next answer" => ctx.tr_static("next answer"),
-        "next choice" => ctx.tr_static("next choice"),
-        "next field" => ctx.tr_static("next field"),
-        "next option" => ctx.tr_static("next option"),
-        "next/prev" => ctx.tr_static("next/prev"),
-        "open" => ctx.tr_static("open"),
-        "page" => ctx.tr_static("page"),
-        "plan" => ctx.tr_static("plan"),
-        "prompt" => ctx.named_static_text("shortcut.prompt", "prompt"),
-        "quit" => ctx.tr_static("quit"),
-        "quit plan" => ctx.tr_static("quit plan"),
-        "quote" => ctx.tr_static("quote"),
-        "raw" => ctx.tr_static("raw"),
-        "reorder" => ctx.tr_static("reorder"),
-        "request changes" => ctx.tr_static("request changes"),
-        "save" => ctx.tr_static("save"),
-        "save comment" => ctx.tr_static("save comment"),
-        "scope" => ctx.tr_static("scope"),
-        "search" => ctx.tr_static("search"),
-        "select" => ctx.tr_static("select"),
-        "send" => ctx.tr_static("send"),
-        "send now" => ctx.tr_static("send now"),
-        "send to bg" => ctx.named_static_text("shortcut.send_to_background", "send to bg"),
-        "send+open" => ctx.tr_static("send+open"),
-        "shortcuts" => ctx.tr_static("shortcuts"),
-        "show done" => ctx.tr_static("show done"),
-        "hide done" => ctx.tr_static("hide done"),
-        "submit" => ctx.tr_static("submit"),
-        "top/btm" => ctx.tr_static("top/btm"),
-        "turn" => ctx.named_static_text("shortcut.turn", "turn"),
-        "view" => ctx.tr_static("view"),
-        "wrap" => ctx.tr_static("wrap"),
-        _ => return Cow::Borrowed(label),
+    // These five are id-keyed because the same English lettering stands for
+    // different actions elsewhere in the bar, so a lookup on the word alone is
+    // ambiguous. Every other word goes through the English-keyed catalog, which is
+    // what `dashboard::render::hint_text` already does: a new hint word needs no
+    // arm here to translate, and text that is not in the catalog -- including an
+    // already-translated label -- passes through untouched.
+    let by_id: Option<&'static str> = match label {
+        "always-approve" => Some(ctx.named_static_text("shortcut.always_approve", label)),
+        "mode" => Some(ctx.named_static_text("shortcut.mode", label)),
+        "prompt" => Some(ctx.named_static_text("shortcut.prompt", label)),
+        "send to bg" => Some(ctx.named_static_text("shortcut.send_to_background", label)),
+        "turn" => Some(ctx.named_static_text("shortcut.turn", label)),
+        _ => None,
     };
-    Cow::Borrowed(translated)
+    by_id.map(Cow::Borrowed).unwrap_or_else(|| ctx.tr(label))
 }
 
 /// Info needed to render the "press again" hint.
