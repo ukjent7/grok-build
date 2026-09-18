@@ -724,11 +724,13 @@ pub fn reset_confirm_prompt(modal: &ActiveModal) -> Option<String> {
         return None;
     };
     let meta = settings_state.registry.find(key)?;
+    let ctx = crate::locale::ctx();
+    let label = ctx.setting_label(meta.key, meta.label);
     let default = crate::settings::default_value_for(meta);
-    let default_display = format_default_for_prompt(&meta.kind, &default);
-    Some(crate::locale::ctx().tr_format(
+    let default_display = format_default_for_prompt(meta, &default);
+    Some(ctx.tr_format(
         "Reset '{label}' to default ({default})?",
-        &[("label", meta.label), ("default", &default_display)],
+        &[("label", &label), ("default", &default_display)],
     ))
 }
 /// Abbreviated title breadcrumb for the reset-confirm dialog, e.g. "Reset 'Compact mode'".
@@ -742,11 +744,13 @@ pub fn reset_confirm_breadcrumb(modal: &ActiveModal) -> Option<String> {
         return None;
     };
     let meta = settings_state.registry.find(key)?;
-    Some(crate::locale::ctx().tr_format("Reset '{label}'", &[("label", meta.label)]))
+    let ctx = crate::locale::ctx();
+    let label = ctx.setting_label(meta.key, meta.label);
+    Some(ctx.tr_format("Reset '{label}'", &[("label", &label)]))
 }
 /// Format a `SettingValue` for the prompt's `(<default>)` display.
 fn format_default_for_prompt(
-    kind: &crate::settings::SettingKind,
+    meta: &crate::settings::SettingMeta,
     value: &crate::settings::SettingValue,
 ) -> String {
     use crate::settings::{SettingKind, SettingValue};
@@ -755,10 +759,12 @@ fn format_default_for_prompt(
         SettingValue::Bool(true) => ctx.tr_static("on").to_owned(),
         SettingValue::Bool(false) => ctx.tr_static("off").to_owned(),
         SettingValue::Enum(canonical) => {
-            if let SettingKind::Enum { choices, .. } = kind {
-                for c in *choices {
+            if let SettingKind::Enum { choices, .. } = &meta.kind {
+                for c in choices {
                     if c.canonical == *canonical {
-                        return c.display.to_owned();
+                        return ctx
+                            .setting_choice_label(meta.key, &c.canonical, &c.display)
+                            .into_owned();
                     }
                 }
             }

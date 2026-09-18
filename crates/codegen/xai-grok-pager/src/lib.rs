@@ -70,14 +70,10 @@ pub use xai_grok_pager_render::{
 /// families fall back to the upstream English interface.
 pub fn init_locale_from_config() {
     let config = xai_grok_config::load_from_disk().ok();
-    let configured = config.as_ref().and_then(|value| {
-        value
-            .get("ui")?
-            .get("locale")?
-            .as_str()
-            .map(str::trim)
-            .filter(|value| !value.is_empty())
-    });
+    // Deliberately user-config-only: the managed layer never sets `[ui].locale`.
+    let configured = config
+        .as_ref()
+        .and_then(|value| value.get("ui")?.get("locale")?.as_str());
     locale::init(locale::LocaleContext::new(
         configured
             .and_then(locale::UiLocale::parse)

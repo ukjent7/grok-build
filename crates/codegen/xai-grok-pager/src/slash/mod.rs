@@ -119,7 +119,7 @@ pub struct SuggestionRow {
 /// reuse the same catalog; bundled skills (`skill-design-principles`,
 /// `statusline`, …) fall back to their `extensions.catalog.skill.*` copy
 /// (dashes become underscores); unknown names fall back to the original English.
-fn localized_command_description(_source: CommandSource, canonical: &str, english: &str) -> String {
+fn localized_command_description(canonical: &str, english: &str) -> String {
     let ctx = crate::locale::ctx();
     let hit = ctx.named_text(&format!("slash.command.{canonical}.description"), english);
     if hit.as_ref() != english {
@@ -221,7 +221,6 @@ impl SuggestionRow {
         Self {
             display: trigger.display.clone(),
             description: localized_command_description(
-                trigger.source,
                 &trigger.canonical,
                 &trigger.description,
             ),

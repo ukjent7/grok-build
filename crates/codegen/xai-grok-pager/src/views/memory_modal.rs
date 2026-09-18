@@ -1224,7 +1224,7 @@ fn render_file_list(buf: &mut Buffer, area: Rect, state: &mut MemoryModalState, 
                 && matches!(state.mode, MemoryModalMode::ConfirmingDelete { idx } if idx == filt_idx)
             {
                 let hint = crate::locale::ctx().tr_static(" [x to confirm]");
-                let hint_w = hint.len() as u16;
+                let hint_w = hint.width() as u16;
                 let hint_x = (area.x + content_width).saturating_sub(hint_w + 1);
                 buf.set_span(
                     hint_x,
@@ -1821,12 +1821,15 @@ fn handle_browse(state: &mut MemoryModalState, key: &KeyEvent) -> InputOutcome {
                 });
                 return InputOutcome::Changed;
             }
+            let ctx = crate::locale::ctx();
             let scope = match entry.source.as_str() {
-                "session" => "session logs".to_owned(),
+                "session" => ctx.tr("session logs").into_owned(),
+                "global" => ctx.tr("global memory").into_owned(),
+                "workspace" => ctx.tr("workspace memory").into_owned(),
                 source => format!("{source} memory"),
             };
             state.status = Some(MemoryStatusLine {
-                text: crate::locale::ctx().tr_format(
+                text: ctx.tr_format(
                     "Delete {label} from {scope}? Dream may re-derive it from future sessions. x confirm · any other key cancels",
                     &[("label", entry.label.as_str()), ("scope", scope.as_str())],
                 ),

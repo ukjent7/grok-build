@@ -40,10 +40,10 @@ pub(in crate::app::dispatch) fn save_success_toast(label: &str, on: bool) -> Str
 
 /// Format a "✓ <label>: <value>" toast with a translated template.
 fn format_save_toast(label: &str, value: &str) -> String {
-    crate::locale::ctx()
-        .tr("\u{2713} {label}: {value}")
-        .replace("{label}", label)
-        .replace("{value}", value)
+    crate::locale::ctx().tr_format(
+        "\u{2713} {label}: {value}",
+        &[("label", label), ("value", value)],
+    )
 }
 
 /// Format a "✓ <label>: <value>" toast, localizing the display label by the
@@ -87,9 +87,7 @@ pub(in crate::app::dispatch) fn save_setting_choice_toast(
 
 /// Wrap a toast message with the "restart to apply" cue (localized template).
 pub(in crate::app::dispatch) fn restart_required_toast(message: &str) -> String {
-    crate::locale::ctx()
-        .tr("{message} (restart to apply)")
-        .replace("{message}", message)
+    crate::locale::ctx().tr_format("{message} (restart to apply)", &[("message", message)])
 }
 
 /// Format the "already at default" toast for a reset no-op.
@@ -98,9 +96,7 @@ pub(in crate::app::dispatch) fn setting_already_default_toast(
     label: &str,
 ) -> String {
     let label = crate::locale::ctx().setting_label(setting_key, label);
-    crate::locale::ctx()
-        .tr("{label}: already at default")
-        .replace("{label}", label.as_ref())
+    crate::locale::ctx().tr_format("{label}: already at default", &[("label", label.as_ref())])
 }
 
 /// Format the "cleared" toast for a cleared override value.

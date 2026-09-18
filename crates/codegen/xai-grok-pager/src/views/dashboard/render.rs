@@ -2195,7 +2195,7 @@ fn render_no_match(buf: &mut Buffer, area: Rect, theme: &Theme, filter: &Filter)
         Filter::None => crate::locale::ctx().tr("No matching rows.").into_owned(),
         Filter::Agent(n) => crate::locale::ctx().tr_format(
             "No agents match `a:{n}`. Press Esc to clear the filter.",
-            &[("n", n), ("value", n)],
+            &[("n", n)],
         ),
         Filter::State(s) => {
             let label = s.group_label();
@@ -2206,7 +2206,7 @@ fn render_no_match(buf: &mut Buffer, area: Rect, theme: &Theme, filter: &Filter)
         }
         Filter::Substring(n) => crate::locale::ctx().tr_format(
             "No rows match `{n}`: press Esc to clear the filter.",
-            &[("n", n), ("value", n)],
+            &[("n", n)],
         ),
     };
     let truncated = truncate_str(&hint, area.width.saturating_sub(2) as usize);

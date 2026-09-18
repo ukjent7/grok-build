@@ -262,9 +262,9 @@ pub(super) async fn fetch_plugin_cta_mcps(
                         .into_owned()
                 })
         }
-        Err(e) => Err(sanitize_user_error(&format!(
-            "couldn't load server list: {e}"
-        ))),
+        Err(e) => Err(sanitize_user_error(
+            &crate::locale::ctx().tr_format("couldn't load server list: {e}", &[("e", &e.to_string())]),
+        )),
     };
     TaskResult::PluginCtaMcpsLoaded {
         agent_id,

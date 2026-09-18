@@ -166,7 +166,7 @@ fn legal_width(variant: &[LegalSegment]) -> u16 {
 /// A clipped/overflowing `[Opt in]` must not leave a click target in the blank margin (a stray click there would silently opt the user in).
 fn buttons_fit(area_width: u16) -> bool {
     use unicode_width::UnicodeWidthStr;
-    area_width >= PRIVACY_BANNER_TITLE.width() as u16 + 1 + button_block_width()
+    area_width >= banner_title().width() as u16 + 1 + button_block_width()
 }
 
 fn title_width(area_width: u16) -> u16 {

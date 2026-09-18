@@ -519,7 +519,9 @@ impl SessionEvent {
                     &[("duration", &duration)],
                 )
             }
-            SessionEvent::MemoryCommandStarted { command } => command.started_text().to_string(),
+            SessionEvent::MemoryCommandStarted { command } => {
+                locale.tr(command.started_text()).into_owned()
+            }
             SessionEvent::MemoryCommandCompleted {
                 summary,
                 succeeded,

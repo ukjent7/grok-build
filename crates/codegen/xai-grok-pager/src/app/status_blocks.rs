@@ -72,7 +72,9 @@ pub(crate) fn tasks_block_text(agent: &AgentView) -> String {
             if run.is_active() {
                 crate::locale::ctx().tr_static("running").to_string()
             } else {
-                run.status.replace('_', " ")
+                crate::locale::ctx()
+                    .tr(&run.status.replace('_', " "))
+                    .into_owned()
             },
             crate::locale::ctx().tr("Workflow"),
             run.name,

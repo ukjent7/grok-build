@@ -488,9 +488,7 @@ fn localized_existing_count_detail(detail: &str, id: &str) -> String {
     let Some((count, _)) = detail.split_once(' ') else {
         return detail.to_string();
     };
-    crate::locale::ctx()
-        .named_text(id, detail)
-        .replace("{count}", count)
+    crate::locale::ctx().format_named(id, detail, &[("count", count)])
 }
 
 fn fmt_tok(n: u64) -> String {

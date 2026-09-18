@@ -1176,7 +1176,7 @@ pub(super) fn dispatch_run_edited_queued_command(
     // (The dashboard popup forwards keys to an attached agent without switching it.)
     // The edit exit has already taken the composer text, so a silent bail would drop the command without a trace
     let ActiveView::Agent(agent_id) = app.active_view else {
-        app.show_toast("Open the session to run this command");
+        app.show_toast(crate::locale::ctx().tr_static("Open the session to run this command"));
         preserve_queued_image_paths(app, &mut submission);
         return vec![];
     };
