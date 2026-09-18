@@ -7,7 +7,13 @@
 
 /// True when `candidate` is `trusted_base` or a path under it (same scheme, host, and port).
 /// Single implementation on purpose: `xai-grok-shell-base` delegates here too, so the
-/// BYOK trust decision and the shell's URL checks cannot drift apart.
+/// BYOK trust decision and the shell's compression decision cannot drift apart.
+///
+/// Scope of that claim: this base-URL matcher only. The `x.ai` host-suffix rule still
+/// has a second, deliberately broader copy in `shell-base::util::is_xai_api_url_impl`,
+/// which is scheme-agnostic and accepts loopback because it decides credential
+/// *refusal* and must fail closed. Do not merge them: unifying the two would either
+/// widen the origins a key is sent to or narrow the ones a key is withheld from.
 pub fn matches_trusted_base_url(candidate: &str, trusted_base: &str) -> bool {
     let Ok(candidate) = reqwest::Url::parse(candidate) else {
         return false;

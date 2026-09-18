@@ -1,11 +1,22 @@
 //! FORK(byok): third-party (BYOK) payload compat lives here, not in `client.rs`.
 //! `client.rs` keeps only the `byok_compat` flag derivation plus call sites,
 //! so upstream refactors of the request pipeline rarely conflict with the fork.
-//! First-party requests never enter the payload-rewriting helpers here; every
-//! one of them is called behind `byok_compat`. `is_ignorable_response_event` is
-//! the exception and is deliberately ungated -- a tagged event enum with no
-//! `#[serde(other)]` arm turns a keep-alive frame into a non-retryable error
-//! that ends the turn, on any endpoint.
+//!
+//! Two unrelated concerns share this file, and only the first is BYOK-only:
+//!
+//! * Request rewrites a strict third-party gateway rejects -- `normalize_byok_chat_
+//!   message_content`, `strip_byok_response_extensions`, `retain_byok_hosted_tool_
+//!   entries`. Every one of these is called behind `byok_compat`.
+//! * Tolerant response parsing, which is **not** gated and runs on first-party
+//!   traffic too: the `deserialize_*` entry points, `apply_terminal_event_overrides`,
+//!   `backfill_usage_details`, `coerce_integral_floats_to_ints` and
+//!   `is_ignorable_response_event`. A frame that fails the `#[serde(tag = "type")]`
+//!   event enum, or that carries a float where an int is declared, is a non-retryable
+//!   turn-ending error on any endpoint, so leniency there is not a BYOK feature.
+//!
+//! First-party requests therefore do enter this file, through the recovery path of
+//! `client.rs::deserialize_response_event`. Read an ungated call as intended
+//! leniency, not as a missed flag.
 //! NOTE: this file is covered by BYOK CI (`cargo test -p xai-grok-sampler`).
 
 use xai_grok_sampling_types::{
