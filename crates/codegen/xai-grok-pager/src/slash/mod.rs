@@ -220,10 +220,7 @@ impl SuggestionRow {
         }
         Self {
             display: trigger.display.clone(),
-            description: localized_command_description(
-                &trigger.canonical,
-                &trigger.description,
-            ),
+            description: localized_command_description(&trigger.canonical, &trigger.description),
             insert_text,
             indices: Vec::new(),
             tag: None,
