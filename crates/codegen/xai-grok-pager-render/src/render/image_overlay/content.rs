@@ -27,7 +27,10 @@ pub(super) fn paint_path_line(
     let label = format!(
         "{} {}",
         path_label,
-        truncate_path_for_overlay(&raw, width.saturating_sub(path_label.width() + 1) as usize)
+        truncate_path_for_overlay(
+            &raw,
+            width.saturating_sub((path_label.width() + 1) as u16) as usize,
+        )
     );
     let clipped = crate::render::line_utils::truncate_str(&label, width as usize);
     buf.set_span_safe(
