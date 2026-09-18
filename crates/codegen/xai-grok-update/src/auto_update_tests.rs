@@ -942,6 +942,21 @@ fn test_reinstall_hint_gh_release_mentions_gh_command() {
 }
 
 #[test]
+fn test_reinstall_hint_byok_never_names_the_official_installer() {
+    // A fork install has to be sent to the fork's own source on every platform:
+    // following the x.ai bootstrap would silently replace it with an upstream binary.
+    let hint = reinstall_hint("byok", "stable");
+    assert!(
+        hint.contains(crate::byok::DEFAULT_REPO),
+        "should name the fork repo: {hint}"
+    );
+    assert!(
+        !hint.contains("x.ai"),
+        "must not offer the official installer: {hint}"
+    );
+}
+
+#[test]
 fn test_reinstall_hint_internal_mentions_platform_installer() {
     let hint = reinstall_hint("internal", "stable");
     if cfg!(windows) {

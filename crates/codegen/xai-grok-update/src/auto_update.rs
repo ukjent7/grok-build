@@ -74,7 +74,9 @@ fn reinstall_hint(installer: &str, channel: &str) -> String {
         "npm" => "Please reinstall via npm:\n  npm i -g @xai-official/grok".to_string(),
         "gh-release" => "Please reinstall via GitHub Releases:\n  gh release download --repo xai-org-shared/grok-build --pattern 'grok-*' --output grok && chmod +x grok".to_string(),
         // FORK(byok): point at the fork's installer, never the official one.
-        "byok" => "Please reinstall via:\n  irm https://cdn.jsdelivr.net/gh/ukjent7/grok-build@main/install.ps1 | iex".to_string(),
+        // The wording is owned by `byok` so the repo stays resolved through
+        // `GROK_BYOK_REPO` and a POSIX host is not handed a PowerShell command.
+        "byok" => crate::byok::reinstall_hint(),
         _ => format!("Please reinstall via:\n  {}", manual_install_cmd(channel)),
     }
 }

@@ -28,6 +28,27 @@ fn env_repo() -> String {
         .unwrap_or_else(|| DEFAULT_REPO.to_string())
 }
 
+/// How to reinstall a BYOK build without reaching GitHub. `install.ps1` is served
+/// from the repo tree through jsDelivr; there is no POSIX equivalent of it, so other
+/// platforms get the release page instead of a PowerShell one-liner that cannot run.
+/// The repo is resolved through [`env_repo`] so a fork-of-fork is never told to
+/// reinstall from `DEFAULT_REPO`.
+fn reinstall_command() -> String {
+    let repo = env_repo();
+    if cfg!(windows) {
+        format!("irm https://cdn.jsdelivr.net/gh/{repo}@main/install.ps1 | iex")
+    } else {
+        format!("https://github.com/{repo}/releases")
+    }
+}
+
+/// Reinstall instructions for a BYOK install. Used by
+/// `auto_update::reinstall_hint`, which must never fall through to the official
+/// `x.ai` installers for a fork install.
+pub fn reinstall_hint() -> String {
+    format!("Please reinstall via:\n  {}", reinstall_command())
+}
+
 /// Release tag of the running binary, if it is a tagged fork build.
 pub fn release_tag() -> Option<&'static str> {
     match RELEASE {
@@ -221,7 +242,10 @@ pub async fn install(
     };
     // Source-build fallback resolves to a Cargo version with no matching tag.
     if release_tag().is_none() && target.is_none() {
-        anyhow::bail!("no BYOK release tag in this build; reinstall via install.ps1");
+        anyhow::bail!(
+            "no BYOK release tag in this build; reinstall from a BYOK release:\n  {}",
+            reinstall_command()
+        );
     }
     let repo = env_repo();
     let tag = format!("{TAG_PREFIX}{version}");
@@ -240,11 +264,12 @@ pub async fn install(
     let binary_path = download_dir.join(format!("grok-{version}-{platform}"));
 
     eprintln!("  Downloading grok {tag} ({platform}) from {repo}...");
-    // FORK(byok): point users whose network cannot reach GitHub at the
-    // jsDelivr-served installer, which carries its own mirror fallback.
+    // FORK(byok): point users who cannot reach GitHub at a mirror that exists on
+    // their platform -- see `reinstall_command`.
     super::auto_update::download_with_progress(&url, &binary_path).await.map_err(|e| {
         anyhow::anyhow!(
-            "{e:#}\n  hint: if GitHub is unreachable, reinstall via install.ps1 instead:\n    irm https://cdn.jsdelivr.net/gh/{repo}@main/install.ps1 | iex"
+            "{e:#}\n  hint: if GitHub is unreachable, reinstall without it:\n    {}",
+            reinstall_command()
         )
     })?;
     // FORK(byok): install.ps1 verifies its download; the in-app path must not be weaker.
