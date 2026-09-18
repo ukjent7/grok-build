@@ -164,15 +164,19 @@ fn localized_hint_label(label: &str) -> Cow<'_, str> {
     // what `dashboard::render::hint_text` already does: a new hint word needs no
     // arm here to translate, and text that is not in the catalog -- including an
     // already-translated label -- passes through untouched.
-    let by_id: Option<&'static str> = match label {
-        "always-approve" => Some(ctx.named_static_text("shortcut.always_approve", label)),
-        "mode" => Some(ctx.named_static_text("shortcut.mode", label)),
-        "prompt" => Some(ctx.named_static_text("shortcut.prompt", label)),
-        "send to bg" => Some(ctx.named_static_text("shortcut.send_to_background", label)),
-        "turn" => Some(ctx.named_static_text("shortcut.turn", label)),
+    //
+    // `named_text`, not `named_static_text`: `label` is borrowed, so it cannot be
+    // the `&'static str` fallback that variant demands. The arms are equivalent
+    // either way -- each matches `label` against exactly the word it passes.
+    let by_id: Option<Cow<'_, str>> = match label {
+        "always-approve" => Some(ctx.named_text("shortcut.always_approve", label)),
+        "mode" => Some(ctx.named_text("shortcut.mode", label)),
+        "prompt" => Some(ctx.named_text("shortcut.prompt", label)),
+        "send to bg" => Some(ctx.named_text("shortcut.send_to_background", label)),
+        "turn" => Some(ctx.named_text("shortcut.turn", label)),
         _ => None,
     };
-    by_id.map(Cow::Borrowed).unwrap_or_else(|| ctx.tr(label))
+    by_id.unwrap_or_else(|| ctx.tr(label))
 }
 
 /// Info needed to render the "press again" hint.
