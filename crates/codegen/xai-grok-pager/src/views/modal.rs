@@ -760,7 +760,7 @@ fn format_default_for_prompt(
         SettingValue::Bool(false) => ctx.tr_static("off").to_owned(),
         SettingValue::Enum(canonical) => {
             if let SettingKind::Enum { choices, .. } = &meta.kind {
-                for c in choices {
+                for c in *choices {
                     if c.canonical == *canonical {
                         return ctx
                             .setting_choice_label(meta.key, &c.canonical, &c.display)
