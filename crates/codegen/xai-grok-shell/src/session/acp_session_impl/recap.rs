@@ -589,7 +589,7 @@ impl SessionActor {
             None,
             session
                 .as_ref()
-                .map(|config| (&config.base_url, &config.model)),
+                .map(|config| (config.base_url.as_str(), config.model.as_str())),
         )
     }
 
