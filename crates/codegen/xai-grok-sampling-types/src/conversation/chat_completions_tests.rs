@@ -650,4 +650,3 @@ fn scrub_invalid_chat_messages_drops_empty_assistant_after_tool_call_strip() {
     assert_eq!(msgs[1].role, Role::User);
     assert_eq!(msgs[1].text_content(), "next prompt");
 }
-
