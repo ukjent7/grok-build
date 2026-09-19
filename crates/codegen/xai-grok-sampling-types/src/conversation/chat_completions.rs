@@ -219,9 +219,11 @@ pub fn conversation_to_chat_messages(items: Vec<ConversationItem>) -> Vec<ChatRe
     out
 }
 
-/// FORK(byok): drop `tool_calls` with empty id/name and orphan `tool` results before send.
-/// The provider rejects the whole request for one malformed call, so filtering here
-/// keeps a single bad turn from breaking every turn after it. History on disk is untouched.
+/// FORK(byok): drop `tool_calls` with empty id/name, orphan `tool` results,
+/// and empty assistant messages before send.
+/// The provider rejects the whole request for one malformed call or an assistant
+/// message with neither content nor tool_calls, so filtering here keeps a single
+/// bad turn from breaking every turn after it. History on disk is untouched.
 /// First-party requests take this path too, and that is safe: `sanitize_tool_arguments`
 /// has already turned empty/invalid arguments into `{}`, so arguments need no check here,
 /// and a call with an empty id/name is invalid for any backend, not just third-party.
@@ -254,6 +256,15 @@ fn scrub_invalid_chat_messages(msgs: &mut Vec<ChatRequestMessage>) {
                 tracing::warn!("dropping orphan tool result before chat_completions send");
             }
             ok
+        } else if m.role == Role::Assistant
+            && m.tool_calls.is_empty()
+            && m.content.is_empty()
+            && m.reasoning_content.is_none()
+        {
+            tracing::warn!(
+                "dropping empty assistant message with no tool_calls before chat_completions send"
+            );
+            false
         } else {
             true
         }

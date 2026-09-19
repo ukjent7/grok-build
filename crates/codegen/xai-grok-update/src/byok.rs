@@ -299,10 +299,11 @@ pub async fn install(target: Option<&str>, _update_config: &UpdateConfig) -> Res
 }
 
 /// FORK(byok): verify the downloaded release binary against SHA256 before it is
-/// activated. Trust order mirrors `install.ps1`: the repo-tree copy over
-/// raw.githubusercontent.com is the anchor (a tampered release asset cannot forge
-/// it), then the release-asset copy next to the binary. A missing checksum aborts
-/// unless `GROK_ALLOW_UNVERIFIED=1` is set explicitly; a mismatch always aborts.
+/// activated. Trust order mirrors `install.ps1`: the repo-tree copy over jsDelivr
+/// is the anchor (a tampered release asset cannot forge it, and it does not need
+/// direct GitHub access), then raw.githubusercontent.com and the release-asset
+/// copy next to the binary. A missing checksum aborts unless
+/// `GROK_ALLOW_UNVERIFIED=1` is set explicitly; a mismatch always aborts.
 async fn verify_sha256(
     repo: &str,
     tag: &str,
@@ -310,6 +311,7 @@ async fn verify_sha256(
     binary_path: &std::path::Path,
 ) -> Result<()> {
     let checksum_urls = [
+        format!("https://cdn.jsdelivr.net/gh/{repo}@main/checksums/{tag}/{asset}.sha256"),
         format!("https://raw.githubusercontent.com/{repo}/main/checksums/{tag}/{asset}.sha256"),
         format!("https://github.com/{repo}/releases/download/{tag}/{asset}.sha256"),
     ];

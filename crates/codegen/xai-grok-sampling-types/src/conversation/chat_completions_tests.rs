@@ -629,3 +629,25 @@ fn upgrade_then_fold_through_conversation_to_chat_messages() {
         "reconstructed sibling folded onto assistant.reasoning_content"
     );
 }
+
+#[test]
+fn scrub_invalid_chat_messages_drops_empty_assistant_after_tool_call_strip() {
+    let bad_tool = ToolCall {
+        id: "".into(),
+        name: "test".to_string(),
+        arguments: "{}".into(),
+    };
+    let items = vec![
+        ConversationItem::user("fetch data"),
+        ConversationItem::assistant_tool_calls(vec![bad_tool]),
+        ConversationItem::tool_result("orphan_id", "data"),
+        ConversationItem::user("next prompt"),
+    ];
+    let msgs = conversation_to_chat_messages(items);
+    assert_eq!(msgs.len(), 2);
+    assert_eq!(msgs[0].role, Role::User);
+    assert_eq!(msgs[0].text_content(), "fetch data");
+    assert_eq!(msgs[1].role, Role::User);
+    assert_eq!(msgs[1].text_content(), "next prompt");
+}
+

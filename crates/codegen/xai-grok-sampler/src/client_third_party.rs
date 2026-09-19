@@ -214,9 +214,11 @@ pub(crate) fn coerce_integral_floats_to_ints(value: &mut serde_json::Value) {
 
     match value {
         serde_json::Value::Number(number) => {
-            if let Some(float) = number.as_f64() {
-                if float.fract() == 0.0 && float.abs() <= EXACT_F64_INT_MAX {
-                    *number = serde_json::Number::from(float as i64);
+            if number.is_f64() {
+                if let Some(float) = number.as_f64() {
+                    if float.fract() == 0.0 && float.abs() <= EXACT_F64_INT_MAX {
+                        *number = serde_json::Number::from(float as i64);
+                    }
                 }
             }
         }
