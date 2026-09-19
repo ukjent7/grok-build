@@ -188,19 +188,16 @@ impl LocaleContext {
                 return output;
             };
             let name = &after_open[..close];
-            output.push_str(&rest[..=open]);
+            let end = open + 1 + close + 1;
             match arguments.iter().find(|(argument, _)| *argument == name) {
                 Some((_, value)) => {
+                    output.push_str(&rest[..open]);
                     output.push_str(value);
-                    rest = &after_open[close + 1..];
                 }
-                // Unknown name (or a bare `{}`): keep the braces literal.
-                None => {
-                    output.push_str(name);
-                    output.push('}');
-                    rest = &after_open[close + 1..];
-                }
+                // Unknown name (or a bare `{}`): keep the whole `{name}` literal.
+                None => output.push_str(&rest[..end]),
             }
+            rest = &rest[end..];
         }
         output.push_str(rest);
         output

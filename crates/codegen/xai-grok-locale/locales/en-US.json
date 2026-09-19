@@ -6,14 +6,6 @@
   "reconnect.restore_failed": "Session restore failed. Kept the existing transcript.",
   "reconnect.restored": "Session restored. In-progress tools and terminals were lost.",
   "reconnect.wait": "Reconnecting, please wait...",
-  "settings.category.advanced": "Advanced",
-  "settings.category.agent": "Agent & Approval",
-  "settings.category.appearance": "Appearance",
-  "settings.category.editor": "Editor & Input",
-  "settings.category.models": "Models",
-  "settings.category.mouse": "Mouse",
-  "settings.category.privacy": "Privacy",
-  "settings.category.session": "Session",
   "welcome.login_with": "Login with {provider}",
   "welcome.product_name": "Grok Build"
 }
